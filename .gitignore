@@ -1,0 +1,17 @@
+# Scala
+target
+*.class
+
+# IntelliJ
+*.impl
+*.ipr
+*.iws
+.idea
+out
+
+
+# Vim
+tags
+.*.swp
+.*.swo
+
