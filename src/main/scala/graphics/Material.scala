@@ -34,14 +34,24 @@ class Material(val gl: GL4, vsPath: String, fsPath: String) {
 
   // define vertex attribute object (maps vbo data to shader variables)
   protected val attributeVP = glGetAttribLocation(programID, "vp")
+  protected val uniformProjection = glGetUniformLocation(programID, "projection")
 
 
   /********************
    * PUBLIC INTERFACE *
    ********************/
 
-  def beforeDraw(): Unit = {
+  def beforeDraw(projection: Array[Float]): Unit = {
+
+    glUniformMatrix4fv(
+      uniformProjection,
+      1 /* only setting 1 matrix */,
+      false /* transpose? */,
+      projection,
+      0 /* offset */)
+
     glUseProgram(programID)
+
   }
 
   def draw(vbo: VBO): Unit = {

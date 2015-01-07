@@ -1,6 +1,7 @@
 import java.awt.Frame
 import java.awt.event.{WindowAdapter, WindowEvent}
 import javax.media.opengl._
+import javax.media.opengl.glu.GLU
 import javax.media.opengl.awt.GLCanvas
 
 import com.jogamp.opengl.util.FPSAnimator
@@ -19,16 +20,31 @@ object Main extends GLEventListener {
   }
 
   private def render(drawable: GLAutoDrawable): Unit = {
-    var gl = drawable.getGL.getGL4
-    if (Debug) {
-      gl = drawable.setGL(new DebugGL4(gl)).getGL4
-    }
+    val gl =
+      if (Debug) {
+        drawable.setGL(new DebugGL4(drawable.getGL.getGL4)).getGL4
+      } else {
+        drawable.getGL.getGL4
+      }
+    import gl._
+
+
+    val glu = GLU.createGLU()
+    glu.gluPerspective(45, /* width height ratio */0, 1, 1000)
 
     // set background color
-    gl.glClearColor(0, 0, 0, 0.0f)
-    gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
+    glClearColor(0, 0, 0, 0.0f)
+    glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
 
-    material.beforeDraw()
+
+    val projection = Array[Float](
+      0.1f, 0.0f, 0.0f, 0.0f,
+      0.0f, 0.1f, 0.0f, 0.0f,
+      0.0f, 0.0f, 0.1f, 0.0f,
+      0.0f, 0.0f, 0.0f, 1.0f
+    )
+
+    material.beforeDraw(projection)
 
     triangle.draw()
 
