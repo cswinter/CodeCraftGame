@@ -41,14 +41,13 @@ class Material(val gl: GL4, vsPath: String, fsPath: String) {
     glUseProgram(programID)
   }
 
-  def draw(vbo: Int): Unit = {
-    // bind vao, and vbo and enable attributes
-    //glBindVertexArray(vao)
-    glBindBuffer(GL_ARRAY_BUFFER, vbo)
+  def draw(vbo: VBO): Unit = {
+    // bind vbo and enable attributes
+    glBindBuffer(GL_ARRAY_BUFFER, vbo.id)
     glEnableVertexAttribArray(attributeVP)
 
     // actual drawing call
-    glDrawArrays(GL_TRIANGLES, 0, 3)
+    glDrawArrays(GL_TRIANGLES, 0, vbo.size)
   }
 
   def afterDraw(): Unit = {
@@ -66,8 +65,9 @@ class Material(val gl: GL4, vsPath: String, fsPath: String) {
    * PRIVATE METHODS *
    *******************/
 
-  def bindAttributes(vbo: Int): Unit = {
-    glVertexAttribPointer(attributeVP, 3, GL_FLOAT, false, 12, 0)
+  def bindAttributes(vbo: VBO): Unit = {
+    glBindBuffer(GL_ARRAY_BUFFER, vbo.id)
+    glVertexAttribPointer(attributeVP, vbo.size, GL_FLOAT, false, 12, 0)
   }
 
   /**
