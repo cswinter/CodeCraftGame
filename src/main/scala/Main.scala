@@ -4,12 +4,14 @@ import javax.media.opengl._
 import javax.media.opengl.awt.GLCanvas
 
 import com.jogamp.opengl.util.FPSAnimator
+import graphics._
 
 
 object Main extends GLEventListener {
   var gl: GL4 = null
   var material: Material = null
   var triangle: Model = null
+  val Debug = false
 
   override def display(drawable: GLAutoDrawable): Unit = {
     update()
@@ -17,7 +19,10 @@ object Main extends GLEventListener {
   }
 
   private def render(drawable: GLAutoDrawable): Unit = {
-    val gl = drawable.getGL.getGL4
+    var gl = drawable.getGL.getGL4
+    if (Debug) {
+      gl = drawable.setGL(new DebugGL4(gl)).getGL4
+    }
 
     // set background color
     gl.glClearColor(0, 0, 0, 0.0f)
@@ -39,7 +44,10 @@ object Main extends GLEventListener {
 
 
   def init(drawable: GLAutoDrawable): Unit = {
-    implicit val gl = drawable.getGL.getGL4
+    implicit var gl: GL4 = drawable.getGL.getGL4
+    if (Debug) {
+      gl = drawable.setGL(new DebugGL4(gl)).getGL4
+    }
 
     println("Chosen GLCapabilities: " + drawable.getChosenGLCapabilities)
     println("INIT GL IS: " + gl.getClass.getName)
@@ -49,14 +57,25 @@ object Main extends GLEventListener {
 
     material = new Material(gl, "src/main/shaders/vs_basic.glsl", "src/main/shaders/fs_basic.glsl")
 
-    triangle = new Model(
+    var modelBuilder: Model = new ModelBuilder(
       material,
       Array[Float](
          0,  1, 1,
-         1, -1, 1,
-        -1, -1, 1
+         1,  0, 1,
+         0, -1, 1
       )
     )
+
+    modelBuilder += new ModelBuilder(
+      material,
+      Array[Float](
+         0,  1, 1,
+         0, -1, 1,
+        -1,  0, 1
+      )
+    )
+
+    triangle = modelBuilder.init()
   }
 
   def reshape(arg0: GLAutoDrawable, arg1: Int, arg2: Int, arg3: Int, arg4: Int): Unit = {

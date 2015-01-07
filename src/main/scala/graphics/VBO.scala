@@ -1,3 +1,4 @@
+package graphics
 
 /**
  * Vertex Buffer Object
