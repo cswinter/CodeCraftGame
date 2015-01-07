@@ -1,9 +1,9 @@
 import javax.media.opengl.GL._
+import javax.media.opengl.GL2ES2._
 
 import scala.io.Source
 
 import javax.media.opengl._
-import com.jogamp.common.nio.Buffers
 
 
 
@@ -24,15 +24,13 @@ class Material(val gl: GL4, vsPath: String, fsPath: String) {
 
   // compile shaders and attach to program
   protected val programID = glCreateProgram()
-  protected val vertexShaderID = compileShader(vsPath, GL2ES2.GL_VERTEX_SHADER, programID)
-  protected val fragmentShaderID = compileShader(fsPath, GL2ES2.GL_FRAGMENT_SHADER, programID)
+  protected val vertexShaderID = compileShader(vsPath, GL_VERTEX_SHADER, programID)
+  protected val fragmentShaderID = compileShader(fsPath, GL_FRAGMENT_SHADER, programID)
   glLinkProgram(programID)
   checkProgramInfoLog(programID)
 
   // define vertex attribute object (maps vbo data to shader variables)
   protected val attributeVP = glGetAttribLocation(programID, "vp")
-  protected val vao = createVertexAttributeObject(attributeVP)
-  println("init complete")
 
 
   /********************
@@ -46,11 +44,11 @@ class Material(val gl: GL4, vsPath: String, fsPath: String) {
   def draw(vbo: Int): Unit = {
     // bind vao, and vbo and enable attributes
     //glBindVertexArray(vao)
-    glBindBuffer(GL.GL_ARRAY_BUFFER, vbo)
+    glBindBuffer(GL_ARRAY_BUFFER, vbo)
     glEnableVertexAttribArray(attributeVP)
 
     // actual drawing call
-    glDrawArrays(GL.GL_TRIANGLES, 0, 3)
+    glDrawArrays(GL_TRIANGLES, 0, 3)
   }
 
   def afterDraw(): Unit = {
@@ -70,18 +68,6 @@ class Material(val gl: GL4, vsPath: String, fsPath: String) {
 
   def bindAttributes(vbo: Int): Unit = {
     glVertexAttribPointer(attributeVP, 3, GL_FLOAT, false, 12, 0)
-  }
-
-  private def createVertexAttributeObject(attributeVP: Int): Int = {
-    // generate new handle
-//    val vaoRef = new Array[Int](1)
-//    glGenVertexArrays(1, vaoRef, 0)
-//    val vao = vaoRef(0)
-    // glBindVertexArray(vao)
-//    glBindBuffer(GL.GL_ARRAY_BUFFER, vbo) // NEED THIS
-//    glVertexAttribPointer(attributeVP, 3, GL.GL_FLOAT, false, 12, 0)
-
-    vao
   }
 
   /**
@@ -109,7 +95,7 @@ class Material(val gl: GL4, vsPath: String, fsPath: String) {
 
     // Check compile status.
     val compiled = new Array[Int](1)
-    glGetShaderiv(shaderHandle, GL2ES2.GL_COMPILE_STATUS, compiled, 0)
+    glGetShaderiv(shaderHandle, GL_COMPILE_STATUS, compiled, 0)
     if (compiled(0) != 0) {
       println("Horray! shader compiled")
     } else {
@@ -127,7 +113,7 @@ class Material(val gl: GL4, vsPath: String, fsPath: String) {
   private def checkProgramInfoLog(programID: Int): Unit = {
     // obtain log message byte count
     val logLength = new Array[Int](1)
-    glGetProgramiv(programID, GL2ES2.GL_INFO_LOG_LENGTH, logLength, 0)
+    glGetProgramiv(programID, GL_INFO_LOG_LENGTH, logLength, 0)
 
     if (logLength(0) > 1) {
       val log = new Array[Byte](logLength(0))
@@ -142,7 +128,7 @@ class Material(val gl: GL4, vsPath: String, fsPath: String) {
    */
   private def checkShaderInfoLog(shaderID: Int): Unit = {
     val logLength = new Array[Int](1)
-    glGetShaderiv(shaderID, GL2ES2.GL_INFO_LOG_LENGTH, logLength, 0)
+    glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, logLength, 0)
 
     if (logLength(0) > 1) {
       val log = new Array[Byte](logLength(0))

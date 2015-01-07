@@ -70,7 +70,6 @@ object Main extends GLEventListener {
     val caps = new GLCapabilities(glp)
     val canvas = new GLCanvas(caps)
     canvas.addGLEventListener(this)
-    println(glp)
 
     val frame = new Frame("AWT Window Test")
     frame.setSize(300, 300)
