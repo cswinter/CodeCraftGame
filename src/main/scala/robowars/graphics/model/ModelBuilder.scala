@@ -1,7 +1,4 @@
-package graphics
-
-
-
+package robowars.graphics.model
 
 class ModelBuilder(val material: Material, val vertices: Array[Float]) extends Model {
   def draw(): Unit =

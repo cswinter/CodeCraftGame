@@ -1,10 +1,11 @@
-package graphics
+package robowars.graphics.model
 
 import javax.media.opengl.GL._
 import javax.media.opengl.GL2ES2._
 import javax.media.opengl._
 
 import com.jogamp.common.nio.Buffers
+import robowars.graphics.matrices.Matrix4x4
 
 import scala.io.Source
 
@@ -16,7 +17,7 @@ import scala.io.Source
  * Program: can be used to store and then reference a vertex + fragment shader on the GPU
  * Vertex Buffer Object: unstructured vertex data
  * (Vertex) Attribute: input parameter to a shader
- * Vertex Attribute Object: maps data from graphics.VBO to one or more attributes
+ * Vertex Attribute Object: maps data from robowars.graphics.model.VBO to one or more attributes
  */
 class Material(val gl: GL4, vsPath: String, fsPath: String) {
   /******************
@@ -41,13 +42,12 @@ class Material(val gl: GL4, vsPath: String, fsPath: String) {
    * PUBLIC INTERFACE *
    ********************/
 
-  def beforeDraw(projection: Array[Float]): Unit = {
-
+  def beforeDraw(projection: Matrix4x4): Unit = {
     glUniformMatrix4fv(
       uniformProjection,
       1 /* only setting 1 matrix */,
       false /* transpose? */,
-      projection,
+      projection.data,
       0 /* offset */)
 
     glUseProgram(programID)
@@ -77,9 +77,9 @@ class Material(val gl: GL4, vsPath: String, fsPath: String) {
 
   var vao: Int = 0
   /**
-   * Allocates a graphics.VBO handle, loads vertex data into GPU and defines attribute pointers.
-   * @param vertexData The data for the graphics.VBO.
-   * @return Returns a `graphics.VBO` class which give the handle and number of data of the vbo.
+   * Allocates a robowars.graphics.model.VBO handle, loads vertex data into GPU and defines attribute pointers.
+   * @param vertexData The data for the robowars.graphics.model.VBO.
+   * @return Returns a `robowars.graphics.model.VBO` class which give the handle and number of data of the vbo.
    */
   def createVBO(vertexData: Array[Float]): VBO = {
     val DATA_LENGTH = 3 // TODO: make dynamic

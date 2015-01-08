@@ -1,6 +1,4 @@
-package graphics
-
-import javax.media.opengl.GL4
+package robowars.graphics.model
 
 /**
   * Plan for model hierachy:

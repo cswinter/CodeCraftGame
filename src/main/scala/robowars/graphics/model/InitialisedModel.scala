@@ -1,4 +1,4 @@
-package graphics
+package robowars.graphics.model
 
 class InitialisedModel(material: Material, vertices: Array[Float]) extends Model {
   val vbo = material.createVBO(vertices)

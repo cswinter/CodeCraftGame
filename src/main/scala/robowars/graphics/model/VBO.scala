@@ -1,4 +1,4 @@
-package graphics
+package robowars.graphics.model
 
 /**
  * Vertex Buffer Object

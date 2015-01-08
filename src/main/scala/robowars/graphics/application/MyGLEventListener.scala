@@ -1,13 +1,9 @@
-import java.awt.BorderLayout
+package robowars.graphics.application
+
 import javax.media.opengl._
-import javax.media.opengl.glu.GLU
-import javax.media.opengl.awt.{GLJPanel, GLCanvas}
 
-import com.jogamp.opengl.util.FPSAnimator
-import graphics._
-
-import scala.swing._
-import scala.swing.event._
+import robowars.graphics.matrices.{OrthographicProjectionMatrix4x4, Matrix4x4}
+import robowars.graphics.model.{Material, Model, ModelBuilder}
 
 
 object MyGLEventListener extends GLEventListener {
@@ -15,7 +11,7 @@ object MyGLEventListener extends GLEventListener {
   var material: Material = null
   var triangle: Model = null
   val Debug = false
-  var projection: Array[Float] = null
+  var projection: Matrix4x4 = null
 
 
   override def display(drawable: GLAutoDrawable): Unit = {
@@ -85,12 +81,7 @@ object MyGLEventListener extends GLEventListener {
   }
 
   def reshape(drawable: GLAutoDrawable, x: Int, y: Int, width: Int, height: Int): Unit = {
-    projection = Array[Float](
-      1.0f / width, 0.0f, 0.0f, 0.0f,
-      0.0f, 1.0f / height, 0.0f, 0.0f,
-      0.0f, 0.0f, 1.0f, 0.0f,
-      0.0f, 0.0f, 0.0f, 1.0f
-    )
+    projection = new OrthographicProjectionMatrix4x4(width, height)
     println(s"reshape($x, $y, $width, $height)")
   }
 
@@ -101,26 +92,3 @@ object MyGLEventListener extends GLEventListener {
       drawable.getGL.getGL4
     }
 }
-
-
-object HelloWorld extends SwingApplication {
-
-  def startup(args: Array[String]): Unit = {
-
-    GLProfile.initSingleton()
-    val glp = GLProfile.getDefault
-    val caps = new GLCapabilities(glp)
-    val canvas = new GLCanvas(caps)
-    canvas.addGLEventListener(MyGLEventListener)
-
-    val frame = new MainFrame()
-    frame.resizable = true
-    frame.peer.setSize(1920, 1080)
-    frame.peer.add(canvas, BorderLayout.CENTER)
-    frame.peer.setVisible(true)
-
-    val animator = new FPSAnimator(canvas, 60)
-    animator.start()
-  }
-}
-

@@ -1,6 +1,8 @@
-package graphics
+package robowars.graphics.model
 
-
+/**
+ * Created by clemens on 08.01.15.
+ */
 object EmptyModel extends Model {
    def draw() = { }
    def init() = this
