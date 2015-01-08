@@ -24,12 +24,7 @@ object MyGLEventListener extends GLEventListener {
   }
 
   private def render(drawable: GLAutoDrawable): Unit = {
-    val gl =
-      if (Debug) {
-        drawable.setGL(new DebugGL4(drawable.getGL.getGL4)).getGL4
-      } else {
-        drawable.getGL.getGL4
-      }
+    val gl = getGL(drawable)
     import gl._
 
 
@@ -57,16 +52,14 @@ object MyGLEventListener extends GLEventListener {
 
 
   def init(drawable: GLAutoDrawable): Unit = {
-    implicit var gl: GL4 = drawable.getGL.getGL4
-    if (Debug) {
-      gl = drawable.setGL(new DebugGL4(gl)).getGL4
-    }
+    val gl = getGL(drawable)
+    import gl._
 
     println("Chosen GLCapabilities: " + drawable.getChosenGLCapabilities)
     println("INIT GL IS: " + gl.getClass.getName)
-    println("GL_VENDOR: " + gl.glGetString(GL.GL_VENDOR))
-    println("GL_RENDERER: " + gl.glGetString(GL.GL_RENDERER))
-    println("GL_VERSION: " + gl.glGetString(GL.GL_VERSION))
+    println("GL_VENDOR: " + glGetString(GL.GL_VENDOR))
+    println("GL_RENDERER: " + glGetString(GL.GL_RENDERER))
+    println("GL_VERSION: " + glGetString(GL.GL_VERSION))
 
     material = new Material(gl, "src/main/shaders/vs_basic.glsl", "src/main/shaders/fs_basic.glsl")
 
@@ -100,6 +93,13 @@ object MyGLEventListener extends GLEventListener {
     )
     println(s"reshape($x, $y, $width, $height)")
   }
+
+  def getGL(drawable: GLAutoDrawable): GL4 =
+    if (Debug) {
+      drawable.setGL(new DebugGL4(drawable.getGL.getGL4)).getGL4
+    } else {
+      drawable.getGL.getGL4
+    }
 }
 
 
@@ -115,7 +115,7 @@ object HelloWorld extends SwingApplication {
 
     val frame = new MainFrame()
     frame.resizable = true
-    frame.peer.setSize(1024, 768)
+    frame.peer.setSize(1920, 1080)
     frame.peer.add(canvas, BorderLayout.CENTER)
     frame.peer.setVisible(true)
 
