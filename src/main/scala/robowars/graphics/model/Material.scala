@@ -36,6 +36,7 @@ class Material(val gl: GL4, vsPath: String, fsPath: String) {
   // define vertex attribute object (maps vbo data to shader variables)
   protected val attributeVP = glGetAttribLocation(programID, "vp")
   protected val uniformProjection = glGetUniformLocation(programID, "projection")
+  val uniformModelview = glGetUniformLocation(programID, "modelview")
 
 
   /********************
@@ -46,7 +47,7 @@ class Material(val gl: GL4, vsPath: String, fsPath: String) {
     glUniformMatrix4fv(
       uniformProjection,
       1 /* only setting 1 matrix */,
-      false /* transpose? */,
+      true /* transpose? */,
       projection.data,
       0 /* offset */)
 
@@ -54,12 +55,14 @@ class Material(val gl: GL4, vsPath: String, fsPath: String) {
 
   }
 
-  def draw(vbo: VBO): Unit = {
+  def draw(vbo: VBO, modelview: Matrix4x4): Unit = {
+    // upload modelview
+    glUniformMatrix4fv(uniformModelview, 1, true, modelview.data, 0)
+
     // bind vbo and enable attributes
     gl.glBindVertexArray(vao)
     glBindBuffer(GL_ARRAY_BUFFER, vbo.id)
     glEnableVertexAttribArray(attributeVP)
-
 
     // actual drawing call
     glDrawArrays(GL_TRIANGLES, 0, 6)

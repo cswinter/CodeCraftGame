@@ -2,14 +2,14 @@ package robowars.graphics.application
 
 import javax.media.opengl._
 
-import robowars.graphics.matrices.{OrthographicProjectionMatrix4x4, Matrix4x4}
-import robowars.graphics.model.{Material, Model, ModelBuilder}
+import robowars.graphics.matrices._
+import robowars.graphics.model._
 
 
 object MyGLEventListener extends GLEventListener {
   var gl: GL4 = null
   var material: Material = null
-  var triangle: Model = null
+  var triangle: InitialisedModel = null
   val Debug = false
   var projection: Matrix4x4 = null
 
@@ -39,7 +39,14 @@ object MyGLEventListener extends GLEventListener {
     material.afterDraw()
   }
 
+  var time = 0.0f
   private def update(): Unit = {
+    time += 0.05f
+    val t = time + 0.5 * math.sin(1.41 * time).toFloat
+    val t2 = time + 1.5 * math.cos(1.73 * time).toFloat
+    val translation = new TranslationXYMatrix4x4(300 * math.sin(t2).toFloat, 300 * math.cos(t).toFloat)
+    val rotation = new RotationZMatrix4x4(3 * t2)
+    triangle.modelview = rotation * translation
   }
 
   def dispose(arg0: GLAutoDrawable): Unit = {
@@ -56,6 +63,10 @@ object MyGLEventListener extends GLEventListener {
     println("GL_VENDOR: " + glGetString(GL.GL_VENDOR))
     println("GL_RENDERER: " + glGetString(GL.GL_RENDERER))
     println("GL_VERSION: " + glGetString(GL.GL_VERSION))
+
+    // vsync to prevent screen tearing.
+    // seems to work with Ubuntu + i3, but might not be portable
+    setSwapInterval(1)
 
     material = new Material(gl, "src/main/shaders/vs_basic.glsl", "src/main/shaders/fs_basic.glsl")
 

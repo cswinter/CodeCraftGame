@@ -5,7 +5,7 @@ class ModelBuilder(val material: Material, val vertices: Array[Float]) extends M
     throw new UnsupportedOperationException(
         "This model is not initialised. Call init() to obtain a drawable model.")
 
-  def init(): Model = new InitialisedModel(material, vertices)
+  def init(): InitialisedModel = new InitialisedModel(material, vertices)
 
   def +(other: Model): Model = {
     other match {

@@ -1,11 +1,8 @@
 package robowars.graphics.model
 
-/**
- * Created by clemens on 08.01.15.
- */
 object EmptyModel extends Model {
    def draw() = { }
-   def init() = this
+   def init(): InitialisedModel = new InitialisedModel(null, null) // TODO: fix Model hierarchy and do this properly
    def +(model: Model) = model
    def project(material: Material) = this
    def hasMaterial(material: Material) = false

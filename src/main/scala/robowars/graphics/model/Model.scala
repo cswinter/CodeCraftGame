@@ -28,7 +28,7 @@ package robowars.graphics.model
 
 trait Model {
    def draw(): Unit
-   def init(): Model
+   def init(): InitialisedModel
    def +(model: Model): Model
    def project(material: Material): Model
    def hasMaterial(material: Material): Boolean
