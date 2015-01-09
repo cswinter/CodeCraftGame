@@ -9,7 +9,7 @@ import robowars.graphics.model._
 object MyGLEventListener extends GLEventListener {
   var gl: GL4 = null
   var material: Material = null
-  var triangle: InitialisedModel = null
+  var triangle: DrawableModel = null
   val Debug = false
   var projection: Matrix4x4 = null
 
@@ -46,7 +46,7 @@ object MyGLEventListener extends GLEventListener {
     val t2 = time + 1.5 * math.cos(1.73 * time).toFloat
     val translation = new TranslationXYMatrix4x4(300 * math.sin(t2).toFloat, 300 * math.cos(t).toFloat)
     val rotation = new RotationZMatrix4x4(3 * t2)
-    triangle.modelview = rotation * translation
+    triangle.setModelview(rotation * translation)
   }
 
   def dispose(arg0: GLAutoDrawable): Unit = {

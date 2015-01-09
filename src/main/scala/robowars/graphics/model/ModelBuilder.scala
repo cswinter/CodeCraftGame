@@ -1,9 +1,6 @@
 package robowars.graphics.model
 
 class ModelBuilder(val material: Material, val vertices: Array[Float]) extends Model {
-  def draw(): Unit =
-    throw new UnsupportedOperationException(
-        "This model is not initialised. Call init() to obtain a drawable model.")
 
   def init(): InitialisedModel = new InitialisedModel(material, vertices)
 
