@@ -5,11 +5,12 @@ import javax.media.opengl.awt.GLCanvas
 import javax.media.opengl.{GLCapabilities, GLProfile}
 
 import com.jogamp.opengl.util.FPSAnimator
+import robowars.graphics.engine.MyGLEventListener
 
 import scala.swing.{MainFrame, SwingApplication}
 
 
-object HelloWorld extends SwingApplication {
+object SwingApp extends SwingApplication {
 
   def startup(args: Array[String]): Unit = {
 

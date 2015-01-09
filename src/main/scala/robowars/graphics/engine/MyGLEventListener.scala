@@ -1,4 +1,4 @@
-package robowars.graphics.application
+package robowars.graphics.engine
 
 import javax.media.opengl._
 
