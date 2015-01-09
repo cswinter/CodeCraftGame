@@ -11,7 +11,7 @@ object MyGLEventListener extends GLEventListener {
   var material: Material = null
   var triangle: DrawableModel = null
   val Debug = false
-  var projection: Matrix4x4 = null
+  var camera = new Camera()
 
 
   override def display(drawable: GLAutoDrawable): Unit = {
@@ -32,7 +32,7 @@ object MyGLEventListener extends GLEventListener {
     glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
 
 
-    material.beforeDraw(projection)
+    material.beforeDraw(camera.projection)
 
     triangle.draw()
 
@@ -92,7 +92,7 @@ object MyGLEventListener extends GLEventListener {
   }
 
   def reshape(drawable: GLAutoDrawable, x: Int, y: Int, width: Int, height: Int): Unit = {
-    projection = new OrthographicProjectionMatrix4x4(width, height)
+    camera.screenDims = (width, height)
     println(s"reshape($x, $y, $width, $height)")
   }
 
