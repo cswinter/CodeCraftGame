@@ -3,12 +3,13 @@ package robowars.graphics.engine
 import robowars.graphics.matrices._
 
 
-class Camera {
+class Camera2D {
   private[this] var _screenWidth: Int = 0
   private[this] var _screenHeight: Int = 0
   private[this] var _projection: Matrix4x4 = IdentityMatrix4x4
   private[this] var _x: Float = 0
   private[this] var _y: Float = 0
+  private[this] var _zoom: Float = 0
 
 
   def projection = _projection
@@ -16,6 +17,7 @@ class Camera {
   private def recomputeProjection() = {
     _projection =
       new OrthographicProjectionMatrix4x4(_screenWidth, _screenHeight) *
+        new DilationXYMatrix4x4(math.exp(zoom).toFloat) *
         new TranslationXYMatrix4x4(-x, -y)
   }
 
@@ -60,6 +62,14 @@ class Camera {
   def y = _y
   def y_=(y: Float) = {
     _y = y
+
+    recomputeProjection()
   }
 
+  def zoom = _zoom
+  def zoom_=(zoom: Float) = {
+    _zoom = zoom
+
+    recomputeProjection()
+  }
 }

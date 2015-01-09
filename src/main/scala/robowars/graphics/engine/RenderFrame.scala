@@ -1,18 +1,56 @@
 package robowars.graphics.engine
 
+import java.awt.BorderLayout
+import java.awt.event.{KeyEvent, KeyListener}
 import javax.media.opengl._
+import javax.media.opengl.awt.GLCanvas
 
+import com.jogamp.opengl.util.FPSAnimator
 import robowars.graphics.matrices._
 import robowars.graphics.model._
 
+import scala.swing.MainFrame
 
-object MyGLEventListener extends GLEventListener {
+
+object RenderFrame extends MainFrame with GLEventListener {
+  // Setup code
+  GLProfile.initSingleton()
+  val glp = GLProfile.getDefault
+  val caps = new GLCapabilities(glp)
+  val canvas = new GLCanvas(caps)
+  canvas.addGLEventListener(this)
+  resizable = true
+  peer.setSize(1920, 1080)
+  peer.add(canvas, BorderLayout.CENTER)
+  peer.setVisible(true)
+  new FPSAnimator(canvas, 60).start()
+  canvas.transferFocus()
+
+
+
   var gl: GL4 = null
   var material: Material = null
   var triangle: DrawableModel = null
+  var models = List.empty[DrawableModel]
   val Debug = false
-  var camera = new Camera()
+  var camera = new Camera2D()
 
+
+  canvas.addKeyListener(new KeyListener {
+    override def keyTyped(keyEvent: KeyEvent): Unit = println(s"keyTyped($keyEvent)")
+
+    override def keyPressed(keyEvent: KeyEvent): Unit = keyEvent.getKeyCode match {
+      case 37 /* LEFT */ => camera.x -= 0.4f
+      case 39 /* RIGHT */ => camera.x += 0.4f
+      case 38 /* UP */ => camera.y += 0.4f
+      case 40 /* DOWN */ => camera.y -= 0.4f
+      case 33 /* PAGE UP */ => camera.zoom += 0.2f
+      case 34 /* PAGE DOWN */ => camera.zoom -= 0.2f
+      case _ =>
+    }//println(s"keyPressed($keyEvent)")
+
+    override def keyReleased(keyEvent: KeyEvent): Unit = println(s"keyReleased($keyEvent)")
+  })
 
   override def display(drawable: GLAutoDrawable): Unit = {
     update()
@@ -24,17 +62,14 @@ object MyGLEventListener extends GLEventListener {
     import gl._
 
 
-    //val glu = GLU.createGLU()
-    //glu.gluPerspective(45, /* width height ratio */0, 1, 1000)
-
     // set background color
-    glClearColor(0, 0, 1, 0.0f)
+    glClearColor(0.1f, 0, 0.1f, 0.0f)
     glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
 
 
     material.beforeDraw(camera.projection)
 
-    triangle.draw()
+    models.foreach(_.draw())
 
     material.afterDraw()
   }
@@ -89,6 +124,8 @@ object MyGLEventListener extends GLEventListener {
     )
 
     triangle = modelBuilder.init()
+    models ::= triangle
+    models ::= modelBuilder.init()
   }
 
   def reshape(drawable: GLAutoDrawable, x: Int, y: Int, width: Int, height: Int): Unit = {
