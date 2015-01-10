@@ -1,7 +1,7 @@
 package robowars.graphics.model
 
 
-trait Vertex {
+trait Vertex extends {
   def apply(i: Int): Float
 }
 
@@ -10,6 +10,15 @@ case class VertexXY(x: Float, y: Float) extends Vertex {
     case 0 => x
     case 1 => y
     case _ => throw new IndexOutOfBoundsException("VerteXY only has 2 components.")
+  }
+}
+
+case class VertexXYZ(x: Float, y: Float, z: Float) extends Vertex {
+  def apply(i: Int) = i match {
+    case 0 => x
+    case 1 => y
+    case 2 => z
+    case _ => throw new IndexOutOfBoundsException("VertexXYZ only has 3 components")
   }
 }
 
@@ -32,6 +41,7 @@ object EmptyVertex extends Vertex {
 trait VertexManifest[TVertex <: Vertex] {
   val nComponents: Int
 }
+
 
 object VertexManifest {
   implicit object VertexXY extends VertexManifest[VertexXY] {

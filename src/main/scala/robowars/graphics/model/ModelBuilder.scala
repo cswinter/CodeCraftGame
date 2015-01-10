@@ -1,17 +1,16 @@
 package robowars.graphics.model
 
 class ModelBuilder[TPosition <: Vertex, TColor <: Vertex]
-(val material: Material[TPosition, TColor], val vertices: Seq[(TPosition, TColor)])
+(val material: Material[TPosition, TColor], val vertexData: Seq[(TPosition, TColor)])
   extends Model {
 
   def init(): ConcreteModel[TPosition, TColor] =
-    new ConcreteModel[TPosition, TColor](material, vertices)
+    new ConcreteModel[TPosition, TColor](material, vertexData)
 
   def +(other: Model): Model = {
     other match {
-      case mb: ModelBuilder[TPosition, TColor] =>
-        if (mb.material == material) new ModelBuilder[TPosition, TColor](material, vertices ++ mb.vertices)
-        else ???
+      case mb: ModelBuilder[TPosition, TColor] if mb.material == material =>
+        new ModelBuilder[TPosition, TColor](material, vertexData ++ mb.vertexData)
       case _ => ???
     }
   }
