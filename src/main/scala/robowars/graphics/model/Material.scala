@@ -19,7 +19,13 @@ import scala.io.Source
  * (Vertex) Attribute: input parameter to a shader
  * Vertex Attribute Object: maps data from robowars.graphics.model.VBO to one or more attributes
  */
-class Material(val gl: GL4, vsPath: String, fsPath: String) {
+class Material[TPosition <: Vertex, TColor <: Vertex](
+  val gl: GL4,
+  vsPath: String,
+  fsPath: String,
+  attributeNames: String*)
+(implicit val posVM: VertexManifest[TPosition], val colVM: VertexManifest[TColor]) {
+
   /******************
    * INITIALISATION *
    ******************/
@@ -33,10 +39,10 @@ class Material(val gl: GL4, vsPath: String, fsPath: String) {
   glLinkProgram(programID)
   checkProgramInfoLog(programID)
 
-  // define vertex attribute object (maps vbo data to shader variables)
-  protected val attributeVP = glGetAttribLocation(programID, "vp")
-  protected val uniformProjection = glGetUniformLocation(programID, "projection")
+  val uniformProjection = glGetUniformLocation(programID, "projection")
   val uniformModelview = glGetUniformLocation(programID, "modelview")
+
+  val attributes = attributeNames.map(glGetAttribLocation(programID, _))
 
 
   /********************
@@ -62,7 +68,7 @@ class Material(val gl: GL4, vsPath: String, fsPath: String) {
     // bind vbo and enable attributes
     gl.glBindVertexArray(vao)
     glBindBuffer(GL_ARRAY_BUFFER, vbo.id)
-    glEnableVertexAttribArray(attributeVP)
+    attributes.foreach(glEnableVertexAttribArray)
 
     // actual drawing call
     glDrawArrays(GL_TRIANGLES, 0, 6)
@@ -70,7 +76,7 @@ class Material(val gl: GL4, vsPath: String, fsPath: String) {
 
   def afterDraw(): Unit = {
     // disable attributes
-    glDisableVertexAttribArray(attributeVP)
+    attributes.foreach(glDisableVertexAttribArray)
 
     // check logs for errors
     checkProgramInfoLog(programID)
@@ -78,19 +84,33 @@ class Material(val gl: GL4, vsPath: String, fsPath: String) {
     checkShaderInfoLog(vertexShaderID)
   }
 
+
   var vao: Int = 0
   /**
-   * Allocates a robowars.graphics.model.VBO handle, loads vertex data into GPU and defines attribute pointers.
-   * @param vertexData The data for the robowars.graphics.model.VBO.
+   * Allocates a VBO handle, loads vertex data into GPU and defines attribute pointers.
+   * @param vertexData The data for the VBO.
    * @return Returns a `robowars.graphics.model.VBO` class which give the handle and number of data of the vbo.
    */
-  def createVBO(vertexData: Array[Float]): VBO = {
-    val DATA_LENGTH = 3 // TODO: make dynamic
+  def createVBO(vertexData: Seq[(TPosition, TColor)]): VBO = {
+    val nCompPos = posVM.nComponents
+    val nCompCol = colVM.nComponents
+    val nComponents = nCompPos + nCompCol
+    val data = new Array[Float](nComponents * vertexData.size)
+    for (((pos, col), i) <- vertexData.zipWithIndex) {
+      for (j <- 0 until nCompPos) {
+        data(i * nComponents + j) = pos(j)
+      }
+      for (j <- 0 until nCompCol) {
+        data(i * nComponents + j + nCompPos) = col(j)
+      }
+    }
+
+
     // create vbo handle
     val vboRef = new Array[Int](1)
     glGenBuffers(1, vboRef, 0)
     val vboHandle = vboRef(0)
-    val vbo = VBO(vboHandle, vertexData.length / DATA_LENGTH)
+    val vbo = VBO(vboHandle, vertexData.length)
 
     val vaoRef = new Array[Int](1)
     glGenVertexArrays(1, vaoRef, 0)
@@ -98,15 +118,17 @@ class Material(val gl: GL4, vsPath: String, fsPath: String) {
 
     glBindVertexArray(vao)
 
+
     // store data to GPU
     glBindBuffer(GL_ARRAY_BUFFER, vboHandle)
-    val numBytes = vertexData.length * 4
-    val verticesBuffer = Buffers.newDirectFloatBuffer(vertexData)
+    val numBytes = data.length * 4
+    val verticesBuffer = Buffers.newDirectFloatBuffer(data)
     glBufferData(GL_ARRAY_BUFFER, numBytes, verticesBuffer, GL_STATIC_DRAW)
 
-
     // bind shader attributes (input parameters)
-    glVertexAttribPointer(attributeVP, DATA_LENGTH, GL_FLOAT, false, 4 * DATA_LENGTH, 0)
+    for ((attribute, offset) <- attributes.zip(Seq(0, nCompPos))) {
+      glVertexAttribPointer(attribute, nComponents, GL_FLOAT, false, 4 * nComponents, 4 * offset)
+    }
     glBindBuffer(GL_ARRAY_BUFFER, 0)
 
     vbo
@@ -125,7 +147,7 @@ class Material(val gl: GL4, vsPath: String, fsPath: String) {
    * @param programID The handle to the program.
    * @return
    */
-  private def compileShader(filepath: String, shaderType: Int, programID: Int): Int = {
+  protected def compileShader(filepath: String, shaderType: Int, programID: Int): Int = {
     // Create GPU shader handles
     // OpenGL returns an index id to be stored for future reference.
     val shaderHandle = glCreateShader(shaderType)
@@ -158,7 +180,7 @@ class Material(val gl: GL4, vsPath: String, fsPath: String) {
   /**
    * Print out errors from the program info log, if any.
    */
-  private def checkProgramInfoLog(programID: Int): Unit = {
+  protected def checkProgramInfoLog(programID: Int): Unit = {
     // obtain log message byte count
     val logLength = new Array[Int](1)
     glGetProgramiv(programID, GL_INFO_LOG_LENGTH, logLength, 0)
@@ -174,7 +196,7 @@ class Material(val gl: GL4, vsPath: String, fsPath: String) {
   /**
    * Print out errors from the shader info log, if any.
    */
-  private def checkShaderInfoLog(shaderID: Int): Unit = {
+  protected def checkShaderInfoLog(shaderID: Int): Unit = {
     val logLength = new Array[Int](1)
     glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, logLength, 0)
 

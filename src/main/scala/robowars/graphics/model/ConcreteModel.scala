@@ -2,7 +2,10 @@ package robowars.graphics.model
 
 import robowars.graphics.matrices._
 
-class InitialisedModel(material: Material, vertices: Array[Float]) extends DrawableModel {
+class ConcreteModel[TPosition <: Vertex, TColor <: Vertex]
+(material: Material[TPosition, TColor], vertices: Seq[(TPosition, TColor)])
+  extends DrawableModel {
+
   val vbo = material.createVBO(vertices)
   var modelview: Matrix4x4 = IdentityMatrix4x4
 
@@ -19,11 +22,11 @@ class InitialisedModel(material: Material, vertices: Array[Float]) extends Drawa
   def +(model: Model): Model = throw new UnsupportedOperationException(
     "Cannot sum initialised models.")
 
-  def project(material: Material): Model = material match {
+  def project(material: Material[_, _]): Model = material match {
     case this.material => this
     case _ => EmptyModel
   }
 
-  def hasMaterial(material: Material): Boolean =
+  def hasMaterial(material: Material[_, _]): Boolean =
     material == this.material
 }

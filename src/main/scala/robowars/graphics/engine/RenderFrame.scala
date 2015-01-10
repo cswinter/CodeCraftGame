@@ -29,7 +29,7 @@ object RenderFrame extends MainFrame with GLEventListener {
 
 
   var gl: GL4 = null
-  var material: Material = null
+  var simpleMaterial: SimpleMaterial = null
   var triangle: DrawableModel = null
   var models = List.empty[DrawableModel]
   val Debug = false
@@ -67,11 +67,11 @@ object RenderFrame extends MainFrame with GLEventListener {
     glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
 
 
-    material.beforeDraw(camera.projection)
+    simpleMaterial.beforeDraw(camera.projection)
 
     models.foreach(_.draw())
 
-    material.afterDraw()
+    simpleMaterial.afterDraw()
   }
 
   var time = 0.0f
@@ -103,23 +103,23 @@ object RenderFrame extends MainFrame with GLEventListener {
     // seems to work with Ubuntu + i3, but might not be portable
     setSwapInterval(1)
 
-    material = new Material(gl, "src/main/shaders/vs_basic.glsl", "src/main/shaders/fs_basic.glsl")
+    simpleMaterial = new SimpleMaterial(gl)
 
-    var modelBuilder: Model = new ModelBuilder(
-      material,
-      Array[Float](
-          0,  100, 1,
-          100,  0, 1,
-          0, -100, 1
+    var modelBuilder: Model = new ModelBuilder[VertexXY, EmptyVertex.type](
+      simpleMaterial,
+      Array(
+        (VertexXY(0, 100), EmptyVertex),
+        (VertexXY(100, 0), EmptyVertex),
+        (VertexXY(0, -100), EmptyVertex)
       )
     )
 
     modelBuilder += new ModelBuilder(
-      material,
-      Array[Float](
-           0,  100, 1,
-           0, -100, 1,
-        -100,  0, 1
+      simpleMaterial,
+      Array(
+        (VertexXY(0, 100), EmptyVertex),
+        (VertexXY(0, -100), EmptyVertex),
+        (VertexXY(-100, 0), EmptyVertex)
       )
     )
 
