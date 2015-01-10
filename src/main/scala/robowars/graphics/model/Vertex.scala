@@ -13,7 +13,7 @@ case class VertexXY(x: Float, y: Float) extends Vertex {
   }
 }
 
-class ColorRGB(r: Float, g: Float, b: Float) extends Vertex {
+case class ColorRGB(r: Float, g: Float, b: Float) extends Vertex {
   def apply(i: Int) = i match {
     case 0 => r
     case 1 => g

@@ -22,7 +22,7 @@ class ConcreteModel[TPosition <: Vertex, TColor <: Vertex]
   def +(model: Model): Model = throw new UnsupportedOperationException(
     "Cannot sum initialised models.")
 
-  def project(material: Material[_, _]): Model = material match {
+  def project(material: Material[_, _]): DrawableModel = material match {
     case this.material => this
     case _ => EmptyModel
   }

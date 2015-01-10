@@ -13,6 +13,9 @@ import scala.swing.MainFrame
 
 
 object RenderFrame extends MainFrame with GLEventListener {
+  val Debug = false
+
+
   // Setup code
   GLProfile.initSingleton()
   val glp = GLProfile.getDefault
@@ -30,9 +33,9 @@ object RenderFrame extends MainFrame with GLEventListener {
 
   var gl: GL4 = null
   var simpleMaterial: SimpleMaterial = null
+  var materialXYRGB: MaterialXYRGB = null
   var triangle: DrawableModel = null
   var models = List.empty[DrawableModel]
-  val Debug = false
   var camera = new Camera2D()
 
 
@@ -67,11 +70,14 @@ object RenderFrame extends MainFrame with GLEventListener {
     glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
 
 
-    simpleMaterial.beforeDraw(camera.projection)
+    for (material <- Seq(simpleMaterial, materialXYRGB)) {
+      material.beforeDraw(camera.projection)
 
-    models.foreach(_.draw())
+      for (model <- models if model.hasMaterial(material))
+        model.project(material).draw()
 
-    simpleMaterial.afterDraw()
+      material.afterDraw()
+    }
   }
 
   var time = 0.0f
@@ -104,6 +110,7 @@ object RenderFrame extends MainFrame with GLEventListener {
     setSwapInterval(1)
 
     simpleMaterial = new SimpleMaterial(gl)
+    materialXYRGB = new MaterialXYRGB(gl)
 
     var modelBuilder: Model = new ModelBuilder[VertexXY, EmptyVertex.type](
       simpleMaterial,
@@ -125,7 +132,17 @@ object RenderFrame extends MainFrame with GLEventListener {
 
     triangle = modelBuilder.init()
     models ::= triangle
-    models ::= modelBuilder.init()
+
+    val coloredModel = new ModelBuilder(
+      materialXYRGB,
+      Array(
+        (VertexXY(0, 100), ColorRGB(1, 0, 0)),
+        (VertexXY(100, 0), ColorRGB(0, 1, 0)),
+        (VertexXY(0, -100), ColorRGB(0, 0, 1))
+      )
+    )
+
+    models ::= coloredModel.init()
   }
 
   def reshape(drawable: GLAutoDrawable, x: Int, y: Int, width: Int, height: Int): Unit = {

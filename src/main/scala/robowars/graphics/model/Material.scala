@@ -23,7 +23,8 @@ class Material[TPosition <: Vertex, TColor <: Vertex](
   val gl: GL4,
   vsPath: String,
   fsPath: String,
-  attributeNames: String*)
+  attributeNamePos: String,
+  attributeNameCol: Option[String])
 (implicit val posVM: VertexManifest[TPosition], val colVM: VertexManifest[TColor]) {
 
   /******************
@@ -42,7 +43,8 @@ class Material[TPosition <: Vertex, TColor <: Vertex](
   val uniformProjection = glGetUniformLocation(programID, "projection")
   val uniformModelview = glGetUniformLocation(programID, "modelview")
 
-  val attributes = attributeNames.map(glGetAttribLocation(programID, _))
+  val attributePos = glGetAttribLocation(programID, attributeNamePos)
+  val attributeCol = attributeNameCol.map(glGetAttribLocation(programID, _))
 
 
   /********************
@@ -50,15 +52,14 @@ class Material[TPosition <: Vertex, TColor <: Vertex](
    ********************/
 
   def beforeDraw(projection: Matrix4x4): Unit = {
+    glUseProgram(programID)
+
     glUniformMatrix4fv(
       uniformProjection,
       1 /* only setting 1 matrix */,
       true /* transpose? */,
       projection.data,
       0 /* offset */)
-
-    glUseProgram(programID)
-
   }
 
   def draw(vbo: VBO, modelview: Matrix4x4): Unit = {
@@ -68,7 +69,8 @@ class Material[TPosition <: Vertex, TColor <: Vertex](
     // bind vbo and enable attributes
     gl.glBindVertexArray(vao)
     glBindBuffer(GL_ARRAY_BUFFER, vbo.id)
-    attributes.foreach(glEnableVertexAttribArray)
+    glEnableVertexAttribArray(attributePos)
+    attributeCol.foreach(glEnableVertexAttribArray)
 
     // actual drawing call
     glDrawArrays(GL_TRIANGLES, 0, 6)
@@ -76,7 +78,8 @@ class Material[TPosition <: Vertex, TColor <: Vertex](
 
   def afterDraw(): Unit = {
     // disable attributes
-    attributes.foreach(glDisableVertexAttribArray)
+    glDisableVertexAttribArray(attributePos)
+    attributeCol.foreach(glDisableVertexAttribArray)
 
     // check logs for errors
     checkProgramInfoLog(programID)
@@ -126,9 +129,9 @@ class Material[TPosition <: Vertex, TColor <: Vertex](
     glBufferData(GL_ARRAY_BUFFER, numBytes, verticesBuffer, GL_STATIC_DRAW)
 
     // bind shader attributes (input parameters)
-    for ((attribute, offset) <- attributes.zip(Seq(0, nCompPos))) {
-      glVertexAttribPointer(attribute, nComponents, GL_FLOAT, false, 4 * nComponents, 4 * offset)
-    }
+    glVertexAttribPointer(attributePos, nCompPos, GL_FLOAT, false, 4 * nComponents, 0)
+    attributeCol.foreach(glVertexAttribPointer(_, nCompCol, GL_FLOAT, false, 4 * nComponents, 4 * nCompPos))
+
     glBindBuffer(GL_ARRAY_BUFFER, 0)
 
     vbo
