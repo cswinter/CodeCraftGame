@@ -6,8 +6,10 @@ import javax.media.opengl._
 import javax.media.opengl.awt.GLCanvas
 
 import com.jogamp.opengl.util.FPSAnimator
+
 import robowars.graphics.matrices._
 import robowars.graphics.model._
+import robowars.graphics.primitives._
 
 import scala.swing.MainFrame
 
@@ -143,6 +145,23 @@ object RenderFrame extends MainFrame with GLEventListener {
     )
 
     models ::= coloredModel.init()
+
+
+    models ::=
+      new Polygon[ColorRGB](7, materialXYRGB)
+        .color(ColorRGB(0, 0.1f, 0))
+        .zPos(0.5f)
+        .scale(100)
+        .translate(-500, 100)
+        .init()
+
+    models ::=
+      new Polygon[ColorRGB](5, materialXYRGB)
+        .colorMidpoint(ColorRGB(0, 0.7f, 0))
+        .colorOutside(ColorRGB(0, 0.3f, 0))
+        .scale(50)
+        .translate(-200, -200)
+        .init()
   }
 
   def reshape(drawable: GLAutoDrawable, x: Int, y: Int, width: Int, height: Int): Unit = {

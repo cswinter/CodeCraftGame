@@ -3,10 +3,15 @@ package robowars.graphics.primitives
 import robowars.graphics.matrices.Matrix2x2
 import robowars.graphics.model._
 
+import scala.reflect.ClassTag
 
-class Primitive2D[TColor <: Vertex]
-(val vertices: Array[(VertexXY, TColor)], material: Material[VertexXY, TColor])
-  extends ModelBuilder[VertexXY, TColor](material, vertices) {
+
+class Primitive2D[TColor <: Vertex : ClassTag] private
+(val positions: Array[VertexXY], val colors: Array[TColor], material: Material[VertexXY, TColor])
+  extends ModelBuilder[VertexXY, TColor](material, positions.view zip colors) {
+
+  def this(positions: Array[VertexXY], material: Material[VertexXY, TColor]) =
+    this(positions, new Array[TColor](positions.length), material)
 
   private[this] var _zPos: Float = 1
 
@@ -39,6 +44,9 @@ class Primitive2D[TColor <: Vertex]
     mapPos(scaleMat * _)
   }
 
+  def scale(s: Float): Primitive2D[TColor] =
+    mapPos{case VertexXY(x, y) => VertexXY(s * x, s * y)}
+
   def scaleX(x: Float): Primitive2D[TColor] =
     scale(x, 1)
 
@@ -47,20 +55,14 @@ class Primitive2D[TColor <: Vertex]
 
 
   @inline
-  private def map(f: ((VertexXY, TColor)) => (VertexXY, TColor)): Primitive2D[TColor] = {
-    vertices.transform(f)
+  protected def mapPos(f: VertexXY => VertexXY): Primitive2D[TColor] = {
+    positions.transform(f)
     this
   }
 
   @inline
-  private def mapPos(f: VertexXY => VertexXY): Primitive2D[TColor] = {
-    vertices.transform { case (pos, col) => (f(pos), col)}
-    this
-  }
-
-  @inline
-  private def mapCol(f: TColor => TColor): Primitive2D[TColor] = {
-    vertices.transform { case (pos, col) => (pos, f(col))}
+  protected def mapCol(f: TColor => TColor): Primitive2D[TColor] = {
+    colors.transform(f)
     this
   }
 }

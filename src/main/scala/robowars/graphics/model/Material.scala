@@ -67,13 +67,13 @@ class Material[TPosition <: Vertex, TColor <: Vertex](
     glUniformMatrix4fv(uniformModelview, 1, true, modelview.data, 0)
 
     // bind vbo and enable attributes
-    gl.glBindVertexArray(vao)
+    gl.glBindVertexArray(vbo.vao)
     glBindBuffer(GL_ARRAY_BUFFER, vbo.id)
     glEnableVertexAttribArray(attributePos)
     attributeCol.foreach(glEnableVertexAttribArray)
 
     // actual drawing call
-    glDrawArrays(GL_TRIANGLES, 0, 6)
+    glDrawArrays(GL_TRIANGLES, 0, vbo.size)
   }
 
   def afterDraw(): Unit = {
@@ -113,7 +113,6 @@ class Material[TPosition <: Vertex, TColor <: Vertex](
     val vboRef = new Array[Int](1)
     glGenBuffers(1, vboRef, 0)
     val vboHandle = vboRef(0)
-    val vbo = VBO(vboHandle, vertexData.length)
 
     val vaoRef = new Array[Int](1)
     glGenVertexArrays(1, vaoRef, 0)
@@ -134,7 +133,7 @@ class Material[TPosition <: Vertex, TColor <: Vertex](
 
     glBindBuffer(GL_ARRAY_BUFFER, 0)
 
-    vbo
+    VBO(vboHandle, vertexData.length, vao)
   }
 
 
