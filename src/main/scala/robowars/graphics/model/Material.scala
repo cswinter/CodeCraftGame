@@ -24,7 +24,8 @@ class Material[TPosition <: Vertex, TColor <: Vertex](
   vsPath: String,
   fsPath: String,
   attributeNamePos: String,
-  attributeNameCol: Option[String])
+  attributeNameCol: Option[String],
+  enableCaps: Int*)
 (implicit val posVM: VertexManifest[TPosition], val colVM: VertexManifest[TColor]) {
 
   /******************
@@ -60,6 +61,8 @@ class Material[TPosition <: Vertex, TColor <: Vertex](
       true /* transpose? */,
       projection.data,
       0 /* offset */)
+
+    enableCaps.foreach(glEnable)
   }
 
   def draw(vbo: VBO, modelview: Matrix4x4): Unit = {
@@ -69,6 +72,7 @@ class Material[TPosition <: Vertex, TColor <: Vertex](
     // bind vbo and enable attributes
     gl.glBindVertexArray(vbo.vao)
     glBindBuffer(GL_ARRAY_BUFFER, vbo.id)
+
     glEnableVertexAttribArray(attributePos)
     attributeCol.foreach(glEnableVertexAttribArray)
 
@@ -77,6 +81,8 @@ class Material[TPosition <: Vertex, TColor <: Vertex](
   }
 
   def afterDraw(): Unit = {
+    enableCaps.foreach(glDisable)
+
     // disable attributes
     glDisableVertexAttribArray(attributePos)
     attributeCol.foreach(glDisableVertexAttribArray)

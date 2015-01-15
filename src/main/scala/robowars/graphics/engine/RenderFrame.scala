@@ -3,6 +3,8 @@ package robowars.graphics.engine
 import java.awt.BorderLayout
 import java.awt.event.{KeyEvent, KeyListener}
 import javax.media.opengl._
+import javax.media.opengl.GL._
+import javax.media.opengl.GL2ES3._
 import javax.media.opengl.awt.GLCanvas
 
 import com.jogamp.opengl.util.FPSAnimator
@@ -32,13 +34,15 @@ object RenderFrame extends MainFrame with GLEventListener {
   canvas.transferFocus()
 
 
-
   var gl: GL4 = null
   var simpleMaterial: SimpleMaterial = null
   var materialXYRGB: MaterialXYRGB = null
+  var textureToScreen: RenderToScreen = null
   var triangle: DrawableModel = null
+  var quad: DrawableModel = null
   var models = List.empty[DrawableModel]
   var camera = new Camera2D()
+  var fbo: FramebufferObject = null
 
 
   canvas.addKeyListener(new KeyListener {
@@ -52,7 +56,7 @@ object RenderFrame extends MainFrame with GLEventListener {
       case 33 /* PAGE UP */ => camera.zoom += 0.2f
       case 34 /* PAGE DOWN */ => camera.zoom -= 0.2f
       case _ =>
-    }//println(s"keyPressed($keyEvent)")
+    } //println(s"keyPressed($keyEvent)")
 
     override def keyReleased(keyEvent: KeyEvent): Unit = println(s"keyReleased($keyEvent)")
   })
@@ -67,9 +71,12 @@ object RenderFrame extends MainFrame with GLEventListener {
     import gl._
 
 
-    // set background color
+    // draw to texture
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo.fbo)
+    glViewport(0, 0, camera.screenWidth, camera.screenHeight)
+
     glClearColor(0.1f, 0, 0.1f, 0.0f)
-    glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
 
     for (material <- Seq(simpleMaterial, materialXYRGB)) {
@@ -80,9 +87,28 @@ object RenderFrame extends MainFrame with GLEventListener {
 
       material.afterDraw()
     }
+
+
+    // draw texture to screen
+    glViewport(0, 0, camera.screenWidth, camera.screenHeight)
+    glBindFramebuffer(GL_FRAMEBUFFER, 0)
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f)
+    glClear(GL_COLOR_BUFFER_BIT)
+
+    textureToScreen.beforeDraw(camera.projection)
+
+    glDisable(GL_DEPTH_TEST)
+    glBindTexture(GL_TEXTURE_2D, fbo.texture0)
+
+    quad.draw()
+
+    textureToScreen.afterDraw()
+    glBindTexture(GL_TEXTURE_2D, 0)
+
   }
 
   var time = 0.0f
+
   private def update(): Unit = {
     time += 0.05f
     val t = time + 0.5 * math.sin(1.41 * time).toFloat
@@ -113,6 +139,7 @@ object RenderFrame extends MainFrame with GLEventListener {
 
     simpleMaterial = new SimpleMaterial(gl)
     materialXYRGB = new MaterialXYRGB(gl)
+    textureToScreen = new RenderToScreen(gl)
 
     var modelBuilder: Model = new ModelBuilder[VertexXY, EmptyVertex.type](
       simpleMaterial,
@@ -162,10 +189,38 @@ object RenderFrame extends MainFrame with GLEventListener {
         .scale(50)
         .translate(-200, -200)
         .init()
+
+    quad =
+      new Primitive2D[VertexXY](
+        Array(
+          VertexXY( 1.0f,  1.0f),
+          VertexXY( 1.0f, -1.0f),
+          VertexXY(-1.0f, -1.0f),
+
+          VertexXY( 1.0f,  1.0f),
+          VertexXY(-1.0f, -1.0f),
+          VertexXY(-1.0f,  1.0f)
+        ),
+        textureToScreen
+      ).color(
+          Array(
+            VertexXY(1.0f, 1.0f),
+            VertexXY(1.0f, 0.0f),
+            VertexXY(0.0f, 0.0f),
+
+            VertexXY(1.0f, 1.0f),
+            VertexXY(0.0f, 0.0f),
+            VertexXY(0.0f, 1.0f)
+          )
+        ).init()
   }
 
   def reshape(drawable: GLAutoDrawable, x: Int, y: Int, width: Int, height: Int): Unit = {
     camera.screenDims = (width, height)
+
+    if (fbo != null) fbo.delete()
+    fbo = new FramebufferObject(width, height, getGL(drawable))
+
     println(s"reshape($x, $y, $width, $height)")
   }
 
