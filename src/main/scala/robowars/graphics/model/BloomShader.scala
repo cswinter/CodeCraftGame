@@ -167,7 +167,7 @@ extends Material[VertexXYZ, ColorRGB](
     override def beforeDraw(projection: Matrix4x4): Unit = {
       super.beforeDraw(projection)
 
-      glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_ONE)
+      glBlendFunc(GL_ONE, GL_ONE)
 
       // - set texture0 as _destination_ texture
       glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, RenderFrame.fbo.texture0, 0)

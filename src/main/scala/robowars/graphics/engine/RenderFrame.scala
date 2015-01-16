@@ -45,6 +45,8 @@ object RenderFrame extends MainFrame with GLEventListener {
   var camera = new Camera2D()
   var fbo: FramebufferObject = null
 
+  var cullFaceToggle = false
+
 
   canvas.addKeyListener(new KeyListener {
     val moveSpeed = 100
@@ -74,6 +76,10 @@ object RenderFrame extends MainFrame with GLEventListener {
     val gl = getGL(drawable)
     import gl._
 
+    if (cullFaceToggle) glEnable(GL_CULL_FACE)
+    else glDisable(GL_CULL_FACE)
+    cullFaceToggle = !cullFaceToggle
+
 
     // draw to texture
     glBindFramebuffer(GL_FRAMEBUFFER, fbo.fbo)
@@ -82,6 +88,7 @@ object RenderFrame extends MainFrame with GLEventListener {
     glClearColor(0.1f, 0, 0.1f, 0.0f)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
+    glDisable(GL_CULL_FACE)
 
     for (material <- Seq(simpleMaterial, materialXYRGB, bloomShader)) {
       material.beforeDraw(camera.projection)
@@ -180,10 +187,16 @@ object RenderFrame extends MainFrame with GLEventListener {
 
 
     models ::=
-      new Polygon[ColorRGB](7, materialXYRGB)
-        .color(ColorRGB(0, 0.1f, 0))
-        .zPos(0.5f)
-        .scale(100)
+      new Polygon[ColorRGB](5, materialXYRGB)
+        .color(ColorRGB(0.02f, 0.02f, 0.02f))
+        .scale(40)
+        .translate(-500, -200)
+        .init()
+
+    models ::= new PolygonOutline(bloomShader)(5, 40, 47)
+        .colorInside(ColorRGB(0.0f, 0.0f, 1f))
+        .colorOutside(ColorRGB(0.15f, 0.15f, 1f))
+        .translate(-500, -200)
         .init()
 
     models ::=
