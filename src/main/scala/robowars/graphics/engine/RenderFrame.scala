@@ -4,14 +4,12 @@ import java.awt.BorderLayout
 import java.awt.event.{KeyEvent, KeyListener}
 import javax.media.opengl._
 import javax.media.opengl.GL._
-import javax.media.opengl.GL2ES3._
 import javax.media.opengl.awt.GLCanvas
 
 import com.jogamp.opengl.util.FPSAnimator
 
-import robowars.graphics.matrices._
 import robowars.graphics.model._
-import robowars.graphics.primitives._
+import robowars.simulation.GameWorldSimulator
 
 import scala.swing.MainFrame
 
@@ -41,11 +39,12 @@ object RenderFrame extends MainFrame with GLEventListener {
   var bloomShader: BloomShader = null
   var triangle: DrawableModel = null
   var quad: DrawableModel = null
-  var models = List.empty[DrawableModel]
   var camera = new Camera2D()
   var fbo: FramebufferObject = null
 
   var cullFaceToggle = false
+
+  val visualizer = new Visualizer()
 
 
   canvas.addKeyListener(new KeyListener {
@@ -90,6 +89,8 @@ object RenderFrame extends MainFrame with GLEventListener {
 
     glDisable(GL_CULL_FACE)
 
+    val models = visualizer.computeModels(GameWorldSimulator.worldState)
+
     for (material <- Seq(simpleMaterial, materialXYRGB, bloomShader)) {
       material.beforeDraw(camera.projection)
 
@@ -121,12 +122,9 @@ object RenderFrame extends MainFrame with GLEventListener {
   var time = 0.0f
 
   private def update(): Unit = {
-    time += 0.05f
-    val t = time + 0.5 * math.sin(1.41 * time).toFloat
-    val t2 = time + 1.5 * math.cos(1.73 * time).toFloat
-    val translation = new TranslationXYMatrix4x4(300 * math.sin(t2).toFloat, 300 * math.cos(t).toFloat)
-    val rotation = new RotationZMatrix4x4(3 * t2)
-    triangle.setModelview(rotation * translation)
+
+    GameWorldSimulator.worldState
+
   }
 
   def dispose(arg0: GLAutoDrawable): Unit = {
@@ -148,84 +146,26 @@ object RenderFrame extends MainFrame with GLEventListener {
     // seems to work with Ubuntu + i3, but might not be portable
     setSwapInterval(1)
 
+
     simpleMaterial = new SimpleMaterial(gl)
     materialXYRGB = new MaterialXYZRGB(gl)
     textureToScreen = new RenderToScreen(gl)
     bloomShader = new BloomShader(gl)
 
-    var modelBuilder: Model = new ConcreteModelBuilder(
-      simpleMaterial,
-      Array(
-        (VertexXY(0, 100), EmptyVertex),
-        (VertexXY(100, 0), EmptyVertex),
-        (VertexXY(0, -100), EmptyVertex)
-      )
-    )
-
-    modelBuilder += new ConcreteModelBuilder(
-      simpleMaterial,
-      Array(
-        (VertexXY(0, 100), EmptyVertex),
-        (VertexXY(0, -100), EmptyVertex),
-        (VertexXY(-100, 0), EmptyVertex)
-      )
-    )
-
-    triangle = modelBuilder.init()
-    models ::= triangle
-
-    val coloredModel = new ConcreteModelBuilder(
-      materialXYRGB,
-      Array(
-        (VertexXYZ(0, 100, 0), ColorRGB(1, 0, 0)),
-        (VertexXYZ(100, 0, 0), ColorRGB(0, 1, 0)),
-        (VertexXYZ(0, -100, 0), ColorRGB(0, 0, 1))
-      )
-    )
-
-    models ::= coloredModel.init()
-
-
-    models ::=
-      new Polygon[ColorRGB](5, materialXYRGB)
-        .color(ColorRGB(0.02f, 0.02f, 0.02f))
-        .scale(40)
-        .translate(-500, -200)
-        .init()
-
-    models ::= new PolygonOutline(bloomShader)(5, 40, 47)
-        .colorInside(ColorRGB(0.0f, 0.0f, 1f))
-        .colorOutside(ColorRGB(0.15f, 0.15f, 1f))
-        .translate(-500, -200)
-        .init()
-
-    models ::=
-      new Polygon[ColorRGB](5, materialXYRGB)
-        .colorMidpoint(ColorRGB(0, 0.7f, 0))
-        .colorOutside(ColorRGB(0, 0.3f, 0))
-        .scale(50)
-        .translate(-200, -200)
-        .init()
-
-    models ::= new Polygon(5, bloomShader)
-        .scale(330)
-        .color(ColorRGB(0.95f, 0.95f, 0.95f))
-        .zPos(-1.5f)
-        .init()
-
     quad =
       new ConcreteModelBuilder[VertexXY, VertexXY](
         textureToScreen,
         Array(
-          (VertexXY( 1.0f,  1.0f), VertexXY(1.0f, 1.0f)),
-          (VertexXY( 1.0f, -1.0f), VertexXY(1.0f, 0.0f)),
+          (VertexXY(1.0f, 1.0f), VertexXY(1.0f, 1.0f)),
+          (VertexXY(1.0f, -1.0f), VertexXY(1.0f, 0.0f)),
           (VertexXY(-1.0f, -1.0f), VertexXY(0.0f, 0.0f)),
 
-          (VertexXY( 1.0f,  1.0f), VertexXY(1.0f, 1.0f)),
+          (VertexXY(1.0f, 1.0f), VertexXY(1.0f, 1.0f)),
           (VertexXY(-1.0f, -1.0f), VertexXY(0.0f, 0.0f)),
-          (VertexXY(-1.0f,  1.0f), VertexXY(0.0f, 1.0f))
+          (VertexXY(-1.0f, 1.0f), VertexXY(0.0f, 1.0f))
         )
-        ).init()
+      ).init()
+
   }
 
   def reshape(drawable: GLAutoDrawable, x: Int, y: Int, width: Int, height: Int): Unit = {
