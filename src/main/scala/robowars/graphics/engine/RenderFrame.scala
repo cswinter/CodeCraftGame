@@ -53,12 +53,12 @@ object RenderFrame extends MainFrame with GLEventListener {
     override def keyTyped(keyEvent: KeyEvent): Unit = println(s"keyTyped($keyEvent)")
 
     override def keyPressed(keyEvent: KeyEvent): Unit = keyEvent.getKeyCode match {
-      case 37 /* LEFT */ => camera.x -= moveSpeed
-      case 39 /* RIGHT */ => camera.x += moveSpeed
-      case 38 /* UP */ => camera.y += moveSpeed
-      case 40 /* DOWN */ => camera.y -= moveSpeed
-      case 33 /* PAGE UP */ => camera.zoom += zoomSpeed
-      case 34 /* PAGE DOWN */ => camera.zoom -= zoomSpeed
+      case 37 /* LEFT */ => camera.x -= moveSpeed * camera.zoomFactor
+      case 39 /* RIGHT */ => camera.x += moveSpeed * camera.zoomFactor
+      case 38 /* UP */ => camera.y += moveSpeed * camera.zoomFactor
+      case 40 /* DOWN */ => camera.y -= moveSpeed * camera.zoomFactor
+      case 33 /* PAGE UP */ => camera.zoom -= zoomSpeed
+      case 34 /* PAGE DOWN */ => camera.zoom += zoomSpeed
       case _ =>
     } //println(s"keyPressed($keyEvent)")
 
@@ -184,7 +184,6 @@ object RenderFrame extends MainFrame with GLEventListener {
         .color(ColorRGB(0, 0.1f, 0))
         .zPos(0.5f)
         .scale(100)
-        .translate(-500, 100)
         .init()
 
     models ::=
@@ -218,7 +217,6 @@ object RenderFrame extends MainFrame with GLEventListener {
 
   def reshape(drawable: GLAutoDrawable, x: Int, y: Int, width: Int, height: Int): Unit = {
     camera.screenDims = (width, height)
-    camera.position = (-width / 2, -height / 2)
 
     if (fbo != null) fbo.delete()
     fbo = new FramebufferObject(width, height, getGL(drawable))

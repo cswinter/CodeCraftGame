@@ -10,19 +10,26 @@ class Camera2D {
   private[this] var _x: Float = 0
   private[this] var _y: Float = 0
   private[this] var _zoom: Float = 0
+  private[this] var _zoomFactor: Float = 1
 
 
   def projection = _projection
 
   private def recomputeProjection() = {
     _projection =
-      new TranslationXYMatrix4x4(-x, -y) *
-      new DilationXYMatrix4x4(math.exp(zoom).toFloat) *
-      new OrthographicProjectionMatrix4x4(_screenWidth, _screenHeight, -2.0f, 2.0f)
+      new OrthographicProjectionMatrix4x4(
+        x + screenWidth * 0.5f * zoomFactor,
+        x - screenWidth * 0.5f * zoomFactor,
+        y + screenHeight * 0.5f * zoomFactor,
+        y - screenHeight * 0.5f * zoomFactor,
+        -2,
+        2
+      )
   }
 
 
   def screenDims = (_screenWidth, _screenHeight)
+
   def screenDims_=(dims: (Int, Int)) = {
     _screenWidth = dims._1
     _screenHeight = dims._2
@@ -31,6 +38,7 @@ class Camera2D {
   }
 
   def screenWidth = _screenWidth
+
   def screenWidth_=(width: Int) = {
     _screenWidth = width
 
@@ -38,6 +46,7 @@ class Camera2D {
   }
 
   def screenHeight = _screenHeight
+
   def screenHeight_=(height: Int) = {
     _screenHeight = height
 
@@ -45,6 +54,7 @@ class Camera2D {
   }
 
   def position = (_x, _y)
+
   def position_=(xy: (Int, Int)) = {
     _x = xy._1
     _y = xy._2
@@ -53,6 +63,7 @@ class Camera2D {
   }
 
   def x = _x
+
   def x_=(x: Float) = {
     _x = x
 
@@ -60,6 +71,7 @@ class Camera2D {
   }
 
   def y = _y
+
   def y_=(y: Float) = {
     _y = y
 
@@ -67,9 +79,13 @@ class Camera2D {
   }
 
   def zoom = _zoom
+
   def zoom_=(zoom: Float) = {
     _zoom = zoom
+    _zoomFactor = math.exp(zoom).toFloat
 
     recomputeProjection()
   }
+
+  def zoomFactor: Float = _zoomFactor
 }
