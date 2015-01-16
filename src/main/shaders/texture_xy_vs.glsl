@@ -1,7 +1,7 @@
 #version 400
 
-layout (location = 0) in vec2 vertexPos;
-layout (location = 1) in vec2 texCoords;
+in vec2 vertexPos;
+in vec2 texCoords;
 
 out vec2 TexCoords;
 

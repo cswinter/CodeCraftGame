@@ -20,14 +20,17 @@ class FramebufferObject(width: Int, height: Int, gl: GL4) {
   val texture0 = genTexture(width, height)
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture0, 0)
 
+  val texture1 = genTexture(width, height)
+  val texture2 = genTexture(width, height)
+
   // create and attach depth + stencil renderbuffer
   glGenRenderbuffers(1, intRef, 0)
   val rbo = intRef(0)
   glBindRenderbuffer(GL_RENDERBUFFER, rbo)
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height)
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32F, width, height)
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo)
   glBindRenderbuffer(GL_RENDERBUFFER, 0)
 
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo)
 
 
   assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Incomplete Framebuffer")

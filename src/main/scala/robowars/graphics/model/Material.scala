@@ -94,7 +94,6 @@ class Material[TPosition <: Vertex, TColor <: Vertex](
   }
 
 
-  var vao: Int = 0
   /**
    * Allocates a VBO handle, loads vertex data into GPU and defines attribute pointers.
    * @param vertexData The data for the VBO.
@@ -122,7 +121,7 @@ class Material[TPosition <: Vertex, TColor <: Vertex](
 
     val vaoRef = new Array[Int](1)
     glGenVertexArrays(1, vaoRef, 0)
-    vao = vaoRef(0)
+    val vao = vaoRef(0)
 
     glBindVertexArray(vao)
 

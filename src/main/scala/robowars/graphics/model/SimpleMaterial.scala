@@ -1,6 +1,7 @@
 package robowars.graphics.model
 
 import javax.media.opengl.GL4
+import javax.media.opengl.GL._
 
 
 class SimpleMaterial(gl: GL4)
@@ -9,5 +10,6 @@ extends Material[VertexXY, EmptyVertex.type](
   vsPath = "src/main/shaders/basic_vs.glsl",
   fsPath = "src/main/shaders/basic_fs.glsl",
   "vertexPos",
-  None
+  None,
+  GL_DEPTH_TEST
 )

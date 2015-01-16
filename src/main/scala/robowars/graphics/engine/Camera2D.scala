@@ -16,9 +16,9 @@ class Camera2D {
 
   private def recomputeProjection() = {
     _projection =
-      new OrthographicProjectionMatrix4x4(_screenWidth, _screenHeight) *
-        new DilationXYMatrix4x4(math.exp(zoom).toFloat) *
-        new TranslationXYMatrix4x4(-x, -y)
+      new TranslationXYMatrix4x4(-x, -y) *
+      new DilationXYMatrix4x4(math.exp(zoom).toFloat) *
+      new OrthographicProjectionMatrix4x4(_screenWidth, _screenHeight, -2.0f, 2.0f)
   }
 
 

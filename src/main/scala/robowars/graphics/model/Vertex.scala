@@ -13,6 +13,14 @@ case class VertexXY(x: Float, y: Float) extends Vertex {
   }
 }
 
+case class VertexUV(u: Float, y: Float) extends Vertex {
+  def apply(i: Int) = i match {
+    case 0 => u
+    case 1 => y
+    case _ => throw new IndexOutOfBoundsException("VertexUV only has 2 components.")
+  }
+}
+
 case class VertexXYZ(x: Float, y: Float, z: Float) extends Vertex {
   def apply(i: Int) = i match {
     case 0 => x
@@ -44,7 +52,15 @@ trait VertexManifest[TVertex <: Vertex] {
 
 
 object VertexManifest {
+  implicit object VertexXYZ extends VertexManifest[VertexXYZ] {
+    val nComponents = 3
+  }
+
   implicit object VertexXY extends VertexManifest[VertexXY] {
+    val nComponents = 2
+  }
+
+  implicit object VertexUV extends VertexManifest[VertexUV] {
     val nComponents = 2
   }
 

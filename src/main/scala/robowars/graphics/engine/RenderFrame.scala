@@ -36,8 +36,9 @@ object RenderFrame extends MainFrame with GLEventListener {
 
   var gl: GL4 = null
   var simpleMaterial: SimpleMaterial = null
-  var materialXYRGB: MaterialXYRGB = null
+  var materialXYRGB: MaterialXYZRGB = null
   var textureToScreen: RenderToScreen = null
+  var bloomShader: BloomShader = null
   var triangle: DrawableModel = null
   var quad: DrawableModel = null
   var models = List.empty[DrawableModel]
@@ -46,15 +47,18 @@ object RenderFrame extends MainFrame with GLEventListener {
 
 
   canvas.addKeyListener(new KeyListener {
+    val moveSpeed = 100
+    val zoomSpeed = 0.2f
+
     override def keyTyped(keyEvent: KeyEvent): Unit = println(s"keyTyped($keyEvent)")
 
     override def keyPressed(keyEvent: KeyEvent): Unit = keyEvent.getKeyCode match {
-      case 37 /* LEFT */ => camera.x -= 0.4f
-      case 39 /* RIGHT */ => camera.x += 0.4f
-      case 38 /* UP */ => camera.y += 0.4f
-      case 40 /* DOWN */ => camera.y -= 0.4f
-      case 33 /* PAGE UP */ => camera.zoom += 0.2f
-      case 34 /* PAGE DOWN */ => camera.zoom -= 0.2f
+      case 37 /* LEFT */ => camera.x -= moveSpeed
+      case 39 /* RIGHT */ => camera.x += moveSpeed
+      case 38 /* UP */ => camera.y += moveSpeed
+      case 40 /* DOWN */ => camera.y -= moveSpeed
+      case 33 /* PAGE UP */ => camera.zoom += zoomSpeed
+      case 34 /* PAGE DOWN */ => camera.zoom -= zoomSpeed
       case _ =>
     } //println(s"keyPressed($keyEvent)")
 
@@ -79,7 +83,7 @@ object RenderFrame extends MainFrame with GLEventListener {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
 
-    for (material <- Seq(simpleMaterial, materialXYRGB)) {
+    for (material <- Seq(simpleMaterial, materialXYRGB, bloomShader)) {
       material.beforeDraw(camera.projection)
 
       for (model <- models if model.hasMaterial(material))
@@ -138,10 +142,11 @@ object RenderFrame extends MainFrame with GLEventListener {
     setSwapInterval(1)
 
     simpleMaterial = new SimpleMaterial(gl)
-    materialXYRGB = new MaterialXYRGB(gl)
+    materialXYRGB = new MaterialXYZRGB(gl)
     textureToScreen = new RenderToScreen(gl)
+    bloomShader = new BloomShader(gl)
 
-    var modelBuilder: Model = new ModelBuilder[VertexXY, EmptyVertex.type](
+    var modelBuilder: Model = new ConcreteModelBuilder(
       simpleMaterial,
       Array(
         (VertexXY(0, 100), EmptyVertex),
@@ -150,7 +155,7 @@ object RenderFrame extends MainFrame with GLEventListener {
       )
     )
 
-    modelBuilder += new ModelBuilder(
+    modelBuilder += new ConcreteModelBuilder(
       simpleMaterial,
       Array(
         (VertexXY(0, 100), EmptyVertex),
@@ -162,12 +167,12 @@ object RenderFrame extends MainFrame with GLEventListener {
     triangle = modelBuilder.init()
     models ::= triangle
 
-    val coloredModel = new ModelBuilder(
+    val coloredModel = new ConcreteModelBuilder(
       materialXYRGB,
       Array(
-        (VertexXY(0, 100), ColorRGB(1, 0, 0)),
-        (VertexXY(100, 0), ColorRGB(0, 1, 0)),
-        (VertexXY(0, -100), ColorRGB(0, 0, 1))
+        (VertexXYZ(0, 100, 0), ColorRGB(1, 0, 0)),
+        (VertexXYZ(100, 0, 0), ColorRGB(0, 1, 0)),
+        (VertexXYZ(0, -100, 0), ColorRGB(0, 0, 1))
       )
     )
 
@@ -190,33 +195,30 @@ object RenderFrame extends MainFrame with GLEventListener {
         .translate(-200, -200)
         .init()
 
+    models ::= new Polygon(5, bloomShader)
+        .scale(330)
+        .color(ColorRGB(0.95f, 0.95f, 0.95f))
+        .zPos(-1.5f)
+        .init()
+
     quad =
-      new Primitive2D[VertexXY](
+      new ConcreteModelBuilder[VertexXY, VertexXY](
+        textureToScreen,
         Array(
-          VertexXY( 1.0f,  1.0f),
-          VertexXY( 1.0f, -1.0f),
-          VertexXY(-1.0f, -1.0f),
+          (VertexXY( 1.0f,  1.0f), VertexXY(1.0f, 1.0f)),
+          (VertexXY( 1.0f, -1.0f), VertexXY(1.0f, 0.0f)),
+          (VertexXY(-1.0f, -1.0f), VertexXY(0.0f, 0.0f)),
 
-          VertexXY( 1.0f,  1.0f),
-          VertexXY(-1.0f, -1.0f),
-          VertexXY(-1.0f,  1.0f)
-        ),
-        textureToScreen
-      ).color(
-          Array(
-            VertexXY(1.0f, 1.0f),
-            VertexXY(1.0f, 0.0f),
-            VertexXY(0.0f, 0.0f),
-
-            VertexXY(1.0f, 1.0f),
-            VertexXY(0.0f, 0.0f),
-            VertexXY(0.0f, 1.0f)
-          )
+          (VertexXY( 1.0f,  1.0f), VertexXY(1.0f, 1.0f)),
+          (VertexXY(-1.0f, -1.0f), VertexXY(0.0f, 0.0f)),
+          (VertexXY(-1.0f,  1.0f), VertexXY(0.0f, 1.0f))
+        )
         ).init()
   }
 
   def reshape(drawable: GLAutoDrawable, x: Int, y: Int, width: Int, height: Int): Unit = {
     camera.screenDims = (width, height)
+    camera.position = (-width / 2, -height / 2)
 
     if (fbo != null) fbo.delete()
     fbo = new FramebufferObject(width, height, getGL(drawable))

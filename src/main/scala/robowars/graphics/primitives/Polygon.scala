@@ -7,7 +7,7 @@ import scala.reflect.ClassTag
 
 
 class Polygon[TColor <: Vertex : ClassTag]
-(val corners: Int, material: Material[VertexXY, TColor])
+(val corners: Int, material: Material[VertexXYZ, TColor])
   extends Primitive2D[TColor](Polygon.computeVertices(corners), material) {
 
   def colorOutside(color: TColor): Polygon[TColor] = {

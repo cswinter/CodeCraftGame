@@ -7,16 +7,16 @@ import scala.reflect.ClassTag
 
 
 class Primitive2D[TColor <: Vertex : ClassTag] private
-(val positions: Array[VertexXY], val colors: Array[TColor], material: Material[VertexXY, TColor])
-  extends ModelBuilder[VertexXY, TColor](material, positions.view zip colors) {
+(val positions: Array[VertexXY], val colors: Array[TColor], material: Material[VertexXYZ, TColor])
+  extends ModelBuilder[VertexXYZ, TColor](material) {
 
-  def this(positions: Array[VertexXY], material: Material[VertexXY, TColor]) =
+  def this(positions: Array[VertexXY], material: Material[VertexXYZ, TColor]) =
     this(positions, new Array[TColor](positions.length), material)
 
   private[this] var _zPos: Float = 1
 
   def zPos(z: Float): Primitive2D[TColor] = {
-    _zPos = 1
+    _zPos = z
     this
   }
 
@@ -53,6 +53,9 @@ class Primitive2D[TColor <: Vertex : ClassTag] private
   def scaleY(y: Float): Primitive2D[TColor] =
     scale(1, y)
 
+
+  def vertexData =
+    positions.map {case VertexXY(x, y) => VertexXYZ(x, y, _zPos) } zip colors
 
   @inline
   protected def mapPos(f: VertexXY => VertexXY): Primitive2D[TColor] = {
