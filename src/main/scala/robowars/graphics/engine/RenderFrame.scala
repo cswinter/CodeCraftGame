@@ -1,9 +1,11 @@
 package robowars.graphics.engine
 
 import java.awt.TextField
+
 import javax.media.opengl._
 import javax.media.opengl.GL._
 
+import org.joda.time.DateTime
 
 import robowars.graphics.model._
 import robowars.simulation.GameWorldSimulator
@@ -13,6 +15,8 @@ import robowars.simulation.GameWorldSimulator
 object RenderFrame extends GLEventListener {
   val Debug = false
 
+  val FrametimeSamples = 100
+  var frameTimes = scala.collection.mutable.Queue.fill(FrametimeSamples - 1)(new DateTime().getMillis)
 
   var textField: TextField = null
   var gl: GL4 = null
@@ -28,7 +32,6 @@ object RenderFrame extends GLEventListener {
   var cullFaceToggle = false
 
   val visualizer = new Visualizer()
-
 
 
   override def display(drawable: GLAutoDrawable): Unit = {
@@ -86,6 +89,13 @@ object RenderFrame extends GLEventListener {
     textureToScreen.afterDraw()
     glBindTexture(GL_TEXTURE_2D, 0)
 
+
+    // update fps
+    val now = new DateTime().getMillis
+    frameTimes.enqueue(now)
+    val then = frameTimes.dequeue()
+    val fps = FrametimeSamples * 1000 / (now - then)
+    textField.setText(s"FPS: $fps")
   }
 
   var time = 0.0f
