@@ -1,37 +1,20 @@
 package robowars.graphics.engine
 
-import java.awt.BorderLayout
-import java.awt.event.{KeyEvent, KeyListener}
+import java.awt.TextField
 import javax.media.opengl._
 import javax.media.opengl.GL._
-import javax.media.opengl.awt.GLCanvas
 
-import com.jogamp.opengl.util.FPSAnimator
 
 import robowars.graphics.model._
 import robowars.simulation.GameWorldSimulator
 
-import scala.swing.MainFrame
 
 
-object RenderFrame extends MainFrame with GLEventListener {
+object RenderFrame extends GLEventListener {
   val Debug = false
 
 
-  // Setup code
-  GLProfile.initSingleton()
-  val glp = GLProfile.getDefault
-  val caps = new GLCapabilities(glp)
-  val canvas = new GLCanvas(caps)
-  canvas.addGLEventListener(this)
-  resizable = true
-  peer.setSize(1920, 1080)
-  peer.add(canvas, BorderLayout.CENTER)
-  peer.setVisible(true)
-  new FPSAnimator(canvas, 60).start()
-  canvas.transferFocus()
-
-
+  var textField: TextField = null
   var gl: GL4 = null
   var simpleMaterial: SimpleMaterial = null
   var materialXYRGB: MaterialXYZRGB = null
@@ -47,24 +30,6 @@ object RenderFrame extends MainFrame with GLEventListener {
   val visualizer = new Visualizer()
 
 
-  canvas.addKeyListener(new KeyListener {
-    val moveSpeed = 100
-    val zoomSpeed = 0.2f
-
-    override def keyTyped(keyEvent: KeyEvent): Unit = println(s"keyTyped($keyEvent)")
-
-    override def keyPressed(keyEvent: KeyEvent): Unit = keyEvent.getKeyCode match {
-      case 37 /* LEFT */ => camera.x -= moveSpeed * camera.zoomFactor
-      case 39 /* RIGHT */ => camera.x += moveSpeed * camera.zoomFactor
-      case 38 /* UP */ => camera.y += moveSpeed * camera.zoomFactor
-      case 40 /* DOWN */ => camera.y -= moveSpeed * camera.zoomFactor
-      case 33 /* PAGE UP */ => camera.zoom -= zoomSpeed
-      case 34 /* PAGE DOWN */ => camera.zoom += zoomSpeed
-      case _ =>
-    } //println(s"keyPressed($keyEvent)")
-
-    override def keyReleased(keyEvent: KeyEvent): Unit = println(s"keyReleased($keyEvent)")
-  })
 
   override def display(drawable: GLAutoDrawable): Unit = {
     update()
@@ -74,6 +39,10 @@ object RenderFrame extends MainFrame with GLEventListener {
   private def render(drawable: GLAutoDrawable): Unit = {
     val gl = getGL(drawable)
     import gl._
+
+    //textfield.setText("asdf;lkjadsf")
+
+
 
     if (cullFaceToggle) glEnable(GL_CULL_FACE)
     else glDisable(GL_CULL_FACE)
