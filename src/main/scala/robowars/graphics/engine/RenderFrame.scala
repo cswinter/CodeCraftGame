@@ -15,7 +15,7 @@ object RenderFrame extends GLEventListener {
   val Debug = false
 
   var gl: GL4 = null
-  var fbo: FramebufferObject = null
+  implicit var fbo: FramebufferObject = null
   implicit var renderStack: RenderStack = null
   var visualizer: Visualizer = null
   var camera = new Camera2D
@@ -24,8 +24,6 @@ object RenderFrame extends GLEventListener {
   val FrametimeSamples = 100
   var frameTimes = scala.collection.mutable.Queue.fill(FrametimeSamples - 1)(new DateTime().getMillis)
   var textField: TextField = null
-
-
 
 
   override def display(drawable: GLAutoDrawable): Unit = {
@@ -63,7 +61,7 @@ object RenderFrame extends GLEventListener {
     }
 
     // draw to screen
-    renderStack.postDraw(camera, fbo)
+    renderStack.postDraw(camera)
 
 
     // update fps
@@ -97,6 +95,7 @@ object RenderFrame extends GLEventListener {
     // seems to work with Ubuntu + i3, but might not be portable
     setSwapInterval(1)
 
+    fbo = new FramebufferObject
     renderStack = new RenderStack
     visualizer = new Visualizer
   }
@@ -104,8 +103,7 @@ object RenderFrame extends GLEventListener {
   def reshape(drawable: GLAutoDrawable, x: Int, y: Int, width: Int, height: Int): Unit = {
     camera.screenDims = (width, height)
 
-    if (fbo != null) fbo.delete()
-    fbo = new FramebufferObject(width, height, getGL(drawable))
+    fbo.resize(width, height)(gl)
 
     println(s"reshape($x, $y, $width, $height)")
   }

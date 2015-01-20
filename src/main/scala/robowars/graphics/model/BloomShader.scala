@@ -4,7 +4,7 @@ import javax.media.opengl.GL4
 import javax.media.opengl.GL._
 import javax.media.opengl._
 
-import robowars.graphics.engine.RenderFrame
+import robowars.graphics.engine.{FramebufferObject, RenderFrame}
 import robowars.graphics.matrices.{IdentityMatrix4x4, Matrix4x4}
 
 
@@ -36,16 +36,18 @@ The rendering stages (as it concerns glow/opaque materials) are as follows:
 5. texture2 is interpolated (to full size, happens automatically) and added back to texture0
 
  */
-class BloomShader(implicit gl: GL4)
-extends Material[VertexXYZ, ColorRGB](
-  gl = gl,
-  vsPath = "src/main/shaders/xyz_rgb_vs.glsl",
-  fsPath = "src/main/shaders/rgb1_fs.glsl",
-  "vertexPos",
-  Some("vertexCol"),
-  GL_DEPTH_TEST
-) {
-  import gl._   // can ignore error, is just IDEA bug
+class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
+  extends Material[VertexXYZ, ColorRGB](
+    gl = gl,
+    vsPath = "src/main/shaders/xyz_rgb_vs.glsl",
+    fsPath = "src/main/shaders/rgb1_fs.glsl",
+    "vertexPos",
+    Some("vertexCol"),
+    GL_DEPTH_TEST
+  ) {
+  import gl._ // can ignore error, is just IDEA bug
+  import fbo.{texture0 => mainTexture, texture1 => tmpTexture1, texture2 => tmpTexture2}
+
 
   override def beforeDraw(projection: Matrix4x4): Unit = {
 
@@ -56,78 +58,41 @@ extends Material[VertexXYZ, ColorRGB](
   }
 
 
-  val quad =
-    new ConcreteModelBuilder[VertexXY, VertexUV](
-      Convolution,
-      Array(
-        (VertexXY( 1.0f,  1.0f), VertexUV(1.0f, 1.0f)),
-        (VertexXY( 1.0f, -1.0f), VertexUV(1.0f, 0.0f)),
-        (VertexXY(-1.0f, -1.0f), VertexUV(0.0f, 0.0f)),
-
-        (VertexXY( 1.0f,  1.0f), VertexUV(1.0f, 1.0f)),
-        (VertexXY(-1.0f, -1.0f), VertexUV(0.0f, 0.0f)),
-        (VertexXY(-1.0f,  1.0f), VertexUV(0.0f, 1.0f))
-      )
-    ).init()
-  val quad2 =
-    new ConcreteModelBuilder[VertexXY, VertexUV](
-      Addition,
-      Array(
-        (VertexXY( 1.0f,  1.0f), VertexUV(1.0f, 1.0f)),
-        (VertexXY( 1.0f, -1.0f), VertexUV(1.0f, 0.0f)),
-        (VertexXY(-1.0f, -1.0f), VertexUV(0.0f, 0.0f)),
-
-        (VertexXY( 1.0f,  1.0f), VertexUV(1.0f, 1.0f)),
-        (VertexXY(-1.0f, -1.0f), VertexUV(0.0f, 0.0f)),
-        (VertexXY(-1.0f,  1.0f), VertexUV(0.0f, 1.0f))
-      )
-    ).init()
-
   override def afterDraw(): Unit = {
     super.afterDraw()
 
 
     // Horizontal Convolution
-    Convolution.orientation = 0
-    Convolution.sourceTexture = RenderFrame.fbo.texture0
-    Convolution.destTexture = RenderFrame.fbo.texture1
-    Convolution.beforeDraw(IdentityMatrix4x4)
+    HConvolution.beforeDraw(IdentityMatrix4x4)
     quad.draw()
-    Convolution.afterDraw()
+    HConvolution.afterDraw()
 
     // Vertical Convolution
-    Convolution.orientation = 1
-    Convolution.sourceTexture = RenderFrame.fbo.texture1
-    Convolution.destTexture = RenderFrame.fbo.texture2
-    Convolution.beforeDraw(IdentityMatrix4x4)
-    quad.draw()
-    Convolution.afterDraw()
+    VConvolution.beforeDraw(IdentityMatrix4x4)
+    quad1.draw()
+    VConvolution.afterDraw()
 
     // Addition
     Addition.beforeDraw(IdentityMatrix4x4)
     quad2.draw()
-    Convolution.afterDraw()
+    Addition.afterDraw()
 
-
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, mainTexture, 0)
     glDisable(GL_BLEND)
   }
 
 
-  object Convolution extends Material[VertexXY, VertexUV](
-    gl = gl,
-    vsPath = "src/main/shaders/texture_xy_vs.glsl",
-    fsPath = "src/main/shaders/convolution_fs.glsl",
-    "vertexPos",
-    Some("texCoords")
-  ) {
+  abstract class Convolution(val orientation: Int, val sourceTexture: () => Int, val destTexture: () => Int)
+    extends Material[VertexXY, VertexUV](
+      gl = gl,
+      vsPath = "src/main/shaders/texture_xy_vs.glsl",
+      fsPath = "src/main/shaders/convolution_fs.glsl",
+      "vertexPos",
+      Some("texCoords")) {
+
     val uniformTexelSize = glGetUniformLocation(programID, "texelSize")
     val uniformOrientation = glGetUniformLocation(programID, "orientation")
-
-    var orientation = 0
-    var texelSize = VertexXY(1.0f / 1910, 1.0f / 1050)
-
-    var sourceTexture = 0
-    var destTexture = 0
+    val texelSize = VertexXY(1.0f / 1910, 1.0f / 1050)
 
 
     override def beforeDraw(projection: Matrix4x4): Unit = {
@@ -139,21 +104,20 @@ extends Material[VertexXYZ, ColorRGB](
       glUniform2f(uniformTexelSize, texelSize.x, texelSize.y)
 
       // - set texture1 as _destination_ texture
-      glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, destTexture, 0)
+      glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, destTexture(), 0)
 
       glClearColor(0, 0, 0, 0)
       glClear(GL_COLOR_BUFFER_BIT)
 
       // - set texture0 as _source_ texture
       glActiveTexture(GL_TEXTURE0)
-      glBindTexture(GL_TEXTURE_2D, sourceTexture)
-    }
-
-    override def afterDraw(): Unit = {
-      super.afterDraw()
-      glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, RenderFrame.fbo.texture0, 0)
+      glBindTexture(GL_TEXTURE_2D, sourceTexture())
     }
   }
+
+  object HConvolution extends Convolution(0, () => mainTexture, () => tmpTexture1)
+  object VConvolution extends Convolution(1, () => tmpTexture1, () => tmpTexture2)
+
 
   object Addition extends Material[VertexXY, VertexUV](
     gl = gl,
@@ -182,4 +146,45 @@ extends Material[VertexXYZ, ColorRGB](
       glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, RenderFrame.fbo.texture0, 0)
     }
   }
+
+  val quad =
+    new ConcreteModelBuilder[VertexXY, VertexUV](
+      HConvolution,
+      Array(
+        (VertexXY(1.0f, 1.0f), VertexUV(1.0f, 1.0f)),
+        (VertexXY(1.0f, -1.0f), VertexUV(1.0f, 0.0f)),
+        (VertexXY(-1.0f, -1.0f), VertexUV(0.0f, 0.0f)),
+
+        (VertexXY(1.0f, 1.0f), VertexUV(1.0f, 1.0f)),
+        (VertexXY(-1.0f, -1.0f), VertexUV(0.0f, 0.0f)),
+        (VertexXY(-1.0f, 1.0f), VertexUV(0.0f, 1.0f))
+      )
+    ).init()
+  val quad1 =
+    new ConcreteModelBuilder[VertexXY, VertexUV](
+      VConvolution,
+      Array(
+        (VertexXY(1.0f, 1.0f), VertexUV(1.0f, 1.0f)),
+        (VertexXY(1.0f, -1.0f), VertexUV(1.0f, 0.0f)),
+        (VertexXY(-1.0f, -1.0f), VertexUV(0.0f, 0.0f)),
+
+        (VertexXY(1.0f, 1.0f), VertexUV(1.0f, 1.0f)),
+        (VertexXY(-1.0f, -1.0f), VertexUV(0.0f, 0.0f)),
+        (VertexXY(-1.0f, 1.0f), VertexUV(0.0f, 1.0f))
+      )
+    ).init()
+  val quad2 =
+    new ConcreteModelBuilder[VertexXY, VertexUV](
+      Addition,
+      Array(
+        (VertexXY(1.0f, 1.0f), VertexUV(1.0f, 1.0f)),
+        (VertexXY(1.0f, -1.0f), VertexUV(1.0f, 0.0f)),
+        (VertexXY(-1.0f, -1.0f), VertexUV(0.0f, 0.0f)),
+
+        (VertexXY(1.0f, 1.0f), VertexUV(1.0f, 1.0f)),
+        (VertexXY(-1.0f, -1.0f), VertexUV(0.0f, 0.0f)),
+        (VertexXY(-1.0f, 1.0f), VertexUV(0.0f, 1.0f))
+      )
+    ).init()
+
 }

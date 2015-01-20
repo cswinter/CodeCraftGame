@@ -6,7 +6,7 @@ import javax.media.opengl.GL4
 import robowars.graphics.model._
 
 
-class RenderStack(implicit val gl: GL4) {
+class RenderStack(implicit val gl: GL4, implicit val fbo: FramebufferObject) {
   import gl._
 
   // materials
@@ -33,7 +33,7 @@ class RenderStack(implicit val gl: GL4) {
     ).init()
 
 
-  def postDraw(camera: Camera2D, fbo: FramebufferObject): Unit = {
+  def postDraw(camera: Camera2D): Unit = {
     // draw texture to screen
     glViewport(0, 0, camera.screenWidth, camera.screenHeight)
     glBindFramebuffer(GL_FRAMEBUFFER, 0)

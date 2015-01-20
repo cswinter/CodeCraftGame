@@ -5,40 +5,52 @@ import javax.media.opengl.GL2ES3._
 import javax.media.opengl.GL4
 
 
-class FramebufferObject(width: Int, height: Int, gl: GL4) {
+class FramebufferObject(implicit val gl: GL4) {
   import gl._
   private[this] val intRef = new Array[Int](1)
 
-
-
   // generate and bind fbo
-  glGenFramebuffers(1, intRef, 0)
-  val fbo = intRef(0)
-  glBindFramebuffer(GL_FRAMEBUFFER, fbo)
+  var fbo: Int = 0
 
-  // generate and attach texture
-  val texture0 = genTexture(width, height)
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture0, 0)
+  var texture0: Int = -42
+  var texture1: Int = 0
+  var texture2: Int = 0
+  var depthBuffer: Int = 0
 
-  val texture1 = genTexture(width, height)
-  val texture2 = genTexture(width, height)
+  def resize(width: Int, height: Int)(gl: GL4) {
+    //if (texture0 != -42) disposeTextures()
+    glGenFramebuffers(1, intRef, 0)
+    fbo = intRef(0)
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo)
 
-  // create and attach depth + stencil renderbuffer
-  glGenRenderbuffers(1, intRef, 0)
-  val rbo = intRef(0)
-  glBindRenderbuffer(GL_RENDERBUFFER, rbo)
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32F, width, height)
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo)
-  glBindRenderbuffer(GL_RENDERBUFFER, 0)
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo)
+
+    // generate and attach texture
+    texture0 = genTexture(width, height)
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture0, 0)
+
+    texture1 = genTexture(width, height)
+    texture2 = genTexture(width, height)
+
+    // create and attach depth + stencil renderbuffer
+    glGenRenderbuffers(1, intRef, 0)
+    depthBuffer = intRef(0)
+    glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer)
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32F, width, height)
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuffer)
+    glBindRenderbuffer(GL_RENDERBUFFER, 0)
 
 
+    assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Incomplete Framebuffer")
+    glBindFramebuffer(GL_FRAMEBUFFER, 0)
+  }
 
-  assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Incomplete Framebuffer")
-  glBindFramebuffer(GL_FRAMEBUFFER, 0)
+  private def disposeTextures(): Unit = {
+    glDeleteTextures(4, Array(texture0, texture1, texture2, depthBuffer), 0)
+  }
 
 
-
-  def delete(): Unit = {
+  def dispose(): Unit = {
     glDeleteFramebuffers(1, Array(fbo), 0)
   }
 
