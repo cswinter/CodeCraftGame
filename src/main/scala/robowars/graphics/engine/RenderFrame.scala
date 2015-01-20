@@ -7,7 +7,6 @@ import javax.media.opengl.GL._
 
 import org.joda.time.DateTime
 
-import robowars.graphics.model._
 import robowars.simulation.GameWorldSimulator
 
 
@@ -15,23 +14,18 @@ import robowars.simulation.GameWorldSimulator
 object RenderFrame extends GLEventListener {
   val Debug = false
 
-  val FrametimeSamples = 100
-  var frameTimes = scala.collection.mutable.Queue.fill(FrametimeSamples - 1)(new DateTime().getMillis)
-
-  var textField: TextField = null
   var gl: GL4 = null
-  var simpleMaterial: SimpleMaterial = null
-  var materialXYRGB: MaterialXYZRGB = null
-  var textureToScreen: RenderToScreen = null
-  var bloomShader: BloomShader = null
-  var triangle: DrawableModel = null
-  var quad: DrawableModel = null
-  var camera = new Camera2D()
   var fbo: FramebufferObject = null
+  implicit var renderStack: RenderStack = null
+  var visualizer: Visualizer = null
+  var camera = new Camera2D
 
   var cullFaceToggle = false
+  val FrametimeSamples = 100
+  var frameTimes = scala.collection.mutable.Queue.fill(FrametimeSamples - 1)(new DateTime().getMillis)
+  var textField: TextField = null
 
-  val visualizer = new Visualizer()
+
 
 
   override def display(drawable: GLAutoDrawable): Unit = {
@@ -42,10 +36,6 @@ object RenderFrame extends GLEventListener {
   private def render(drawable: GLAutoDrawable): Unit = {
     val gl = getGL(drawable)
     import gl._
-
-    //textfield.setText("asdf;lkjadsf")
-
-
 
     if (cullFaceToggle) glEnable(GL_CULL_FACE)
     else glDisable(GL_CULL_FACE)
@@ -63,7 +53,7 @@ object RenderFrame extends GLEventListener {
 
     val models = visualizer.computeModels(GameWorldSimulator.worldState)
 
-    for (material <- Seq(simpleMaterial, materialXYRGB, bloomShader)) {
+    for (material <- renderStack.materials) {
       material.beforeDraw(camera.projection)
 
       for (model <- models if model.hasMaterial(material))
@@ -72,22 +62,8 @@ object RenderFrame extends GLEventListener {
       material.afterDraw()
     }
 
-
-    // draw texture to screen
-    glViewport(0, 0, camera.screenWidth, camera.screenHeight)
-    glBindFramebuffer(GL_FRAMEBUFFER, 0)
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f)
-    glClear(GL_COLOR_BUFFER_BIT)
-
-    textureToScreen.beforeDraw(camera.projection)
-
-    glDisable(GL_DEPTH_TEST)
-    glBindTexture(GL_TEXTURE_2D, fbo.texture0)
-
-    quad.draw()
-
-    textureToScreen.afterDraw()
-    glBindTexture(GL_TEXTURE_2D, 0)
+    // draw to screen
+    renderStack.postDraw(camera, fbo)
 
 
     // update fps
@@ -98,12 +74,8 @@ object RenderFrame extends GLEventListener {
     textField.setText(s"FPS: $fps")
   }
 
-  var time = 0.0f
-
   private def update(): Unit = {
-
     GameWorldSimulator.worldState
-
   }
 
   def dispose(arg0: GLAutoDrawable): Unit = {
@@ -112,7 +84,7 @@ object RenderFrame extends GLEventListener {
 
 
   def init(drawable: GLAutoDrawable): Unit = {
-    val gl = getGL(drawable)
+    implicit val gl = getGL(drawable)
     import gl._
 
     println("Chosen GLCapabilities: " + drawable.getChosenGLCapabilities)
@@ -125,26 +97,8 @@ object RenderFrame extends GLEventListener {
     // seems to work with Ubuntu + i3, but might not be portable
     setSwapInterval(1)
 
-
-    simpleMaterial = new SimpleMaterial(gl)
-    materialXYRGB = new MaterialXYZRGB(gl)
-    textureToScreen = new RenderToScreen(gl)
-    bloomShader = new BloomShader(gl)
-
-    quad =
-      new ConcreteModelBuilder[VertexXY, VertexXY](
-        textureToScreen,
-        Array(
-          (VertexXY(1.0f, 1.0f), VertexXY(1.0f, 1.0f)),
-          (VertexXY(1.0f, -1.0f), VertexXY(1.0f, 0.0f)),
-          (VertexXY(-1.0f, -1.0f), VertexXY(0.0f, 0.0f)),
-
-          (VertexXY(1.0f, 1.0f), VertexXY(1.0f, 1.0f)),
-          (VertexXY(-1.0f, -1.0f), VertexXY(0.0f, 0.0f)),
-          (VertexXY(-1.0f, 1.0f), VertexXY(0.0f, 1.0f))
-        )
-      ).init()
-
+    renderStack = new RenderStack
+    visualizer = new Visualizer
   }
 
   def reshape(drawable: GLAutoDrawable, x: Int, y: Int, width: Int, height: Int): Unit = {

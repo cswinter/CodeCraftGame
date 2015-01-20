@@ -4,7 +4,7 @@ import javax.media.opengl.GL4
 import javax.media.opengl.GL._
 
 
-class SimpleMaterial(gl: GL4)
+class SimpleMaterial(implicit gl: GL4)
 extends Material[VertexXY, EmptyVertex.type](
   gl = gl,
   vsPath = "src/main/shaders/basic_vs.glsl",

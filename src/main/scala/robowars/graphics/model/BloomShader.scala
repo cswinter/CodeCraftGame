@@ -36,7 +36,7 @@ The rendering stages (as it concerns glow/opaque materials) are as follows:
 5. texture2 is interpolated (to full size, happens automatically) and added back to texture0
 
  */
-class BloomShader(gl: GL4)
+class BloomShader(implicit gl: GL4)
 extends Material[VertexXYZ, ColorRGB](
   gl = gl,
   vsPath = "src/main/shaders/xyz_rgb_vs.glsl",

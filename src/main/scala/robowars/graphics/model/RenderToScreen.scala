@@ -6,7 +6,7 @@ import javax.media.opengl.GL._
 import robowars.graphics.matrices.Matrix4x4
 
 
-class RenderToScreen(gl: GL4)
+class RenderToScreen(implicit gl: GL4)
 extends Material[VertexXY, VertexXY](
   gl = gl,
   vsPath = "src/main/shaders/texture_xy_vs.glsl",
