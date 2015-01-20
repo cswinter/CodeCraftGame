@@ -64,17 +64,17 @@ class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
 
     // Horizontal Convolution
     HConvolution.beforeDraw(IdentityMatrix4x4)
-    quad.draw()
+    hconvQuad.draw()
     HConvolution.afterDraw()
 
     // Vertical Convolution
     VConvolution.beforeDraw(IdentityMatrix4x4)
-    quad1.draw()
+    vconvQuad.draw()
     VConvolution.afterDraw()
 
     // Addition
     Addition.beforeDraw(IdentityMatrix4x4)
-    quad2.draw()
+    addQuad.draw()
     Addition.afterDraw()
 
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, mainTexture, 0)
@@ -147,9 +147,9 @@ class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
     }
   }
 
-  val quad = genFullsizeQuad(HConvolution)
-  val quad1 = genFullsizeQuad(VConvolution)
-  val quad2 = genFullsizeQuad(Addition)
+  val hconvQuad = genFullsizeQuad(HConvolution)
+  val vconvQuad = genFullsizeQuad(VConvolution)
+  val addQuad = genFullsizeQuad(Addition)
 
   def genFullsizeQuad(material: Material[VertexXY, VertexUV]): ConcreteModel[VertexXY, VertexUV] =
     new ConcreteModelBuilder[VertexXY, VertexUV](
