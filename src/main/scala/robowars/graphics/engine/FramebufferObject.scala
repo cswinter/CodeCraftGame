@@ -10,7 +10,8 @@ class FramebufferObject(implicit val gl: GL4) {
   private[this] val intRef = new Array[Int](1)
 
   // generate and bind fbo
-  var fbo: Int = 0
+  glGenFramebuffers(1, intRef, 0)
+  val fbo: Int = intRef(0)
 
   var texture0: Int = -42
   var texture1: Int = 0
@@ -18,10 +19,7 @@ class FramebufferObject(implicit val gl: GL4) {
   var depthBuffer: Int = 0
 
   def resize(width: Int, height: Int)(gl: GL4) {
-    //if (texture0 != -42) disposeTextures()
-    glGenFramebuffers(1, intRef, 0)
-    fbo = intRef(0)
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo)
+    if (texture0 != -42) disposeTextures()
 
     glBindFramebuffer(GL_FRAMEBUFFER, fbo)
 
