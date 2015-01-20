@@ -147,9 +147,13 @@ class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
     }
   }
 
-  val quad =
+  val quad = genFullsizeQuad(HConvolution)
+  val quad1 = genFullsizeQuad(VConvolution)
+  val quad2 = genFullsizeQuad(Addition)
+
+  def genFullsizeQuad(material: Material[VertexXY, VertexUV]): ConcreteModel[VertexXY, VertexUV] =
     new ConcreteModelBuilder[VertexXY, VertexUV](
-      HConvolution,
+      material,
       Array(
         (VertexXY(1.0f, 1.0f), VertexUV(1.0f, 1.0f)),
         (VertexXY(1.0f, -1.0f), VertexUV(1.0f, 0.0f)),
@@ -160,31 +164,4 @@ class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
         (VertexXY(-1.0f, 1.0f), VertexUV(0.0f, 1.0f))
       )
     ).init()
-  val quad1 =
-    new ConcreteModelBuilder[VertexXY, VertexUV](
-      VConvolution,
-      Array(
-        (VertexXY(1.0f, 1.0f), VertexUV(1.0f, 1.0f)),
-        (VertexXY(1.0f, -1.0f), VertexUV(1.0f, 0.0f)),
-        (VertexXY(-1.0f, -1.0f), VertexUV(0.0f, 0.0f)),
-
-        (VertexXY(1.0f, 1.0f), VertexUV(1.0f, 1.0f)),
-        (VertexXY(-1.0f, -1.0f), VertexUV(0.0f, 0.0f)),
-        (VertexXY(-1.0f, 1.0f), VertexUV(0.0f, 1.0f))
-      )
-    ).init()
-  val quad2 =
-    new ConcreteModelBuilder[VertexXY, VertexUV](
-      Addition,
-      Array(
-        (VertexXY(1.0f, 1.0f), VertexUV(1.0f, 1.0f)),
-        (VertexXY(1.0f, -1.0f), VertexUV(1.0f, 0.0f)),
-        (VertexXY(-1.0f, -1.0f), VertexUV(0.0f, 0.0f)),
-
-        (VertexXY(1.0f, 1.0f), VertexUV(1.0f, 1.0f)),
-        (VertexXY(-1.0f, -1.0f), VertexUV(0.0f, 0.0f)),
-        (VertexXY(-1.0f, 1.0f), VertexUV(0.0f, 1.0f))
-      )
-    ).init()
-
 }
