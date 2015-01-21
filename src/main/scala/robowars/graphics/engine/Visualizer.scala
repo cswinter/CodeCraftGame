@@ -1,8 +1,8 @@
 package robowars.graphics.engine
 
 import robowars.graphics.model.{ColorRGB, DrawableModel}
-import robowars.graphics.primitives.Polygon
-import robowars.worldstate.{MineralObject, WorldObject}
+import robowars.graphics.primitives.{PolygonOutline, Polygon}
+import robowars.worldstate.{RobotObject, MineralObject, WorldObject}
 import robowars.graphics.matrices.{RotationZMatrix4x4, TranslationXYMatrix4x4}
 
 
@@ -25,6 +25,7 @@ class Visualizer(implicit val renderStack: RenderStack) {
 object ModelFactory {
   def generateModel(worldObject: WorldObject)(implicit renderStack: RenderStack): WorldObjectModel = worldObject match {
     case mineral: MineralObject => new MineralObjectModel(mineral)
+    case robot: RobotObject => new RobotObjectModel(robot)
   }
 }
 
@@ -64,5 +65,19 @@ class MineralObjectModel(mineral: MineralObject)(implicit val rs: RenderStack)
       .colorMidpoint(ColorRGB(0.03f, 0.6f, 0.03f))
       .colorOutside(ColorRGB(0.0f, 0.1f, 0.0f))
       .scale(math.sqrt(size).toFloat * 20)
+      .zPos(-1)
+      .init()
+}
+
+
+class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
+  extends WorldObjectModel(robot) {
+  
+  val size = robot.size
+
+  val model =
+    new PolygonOutline(renderStack.BloomShader)(5, 40, 47)
+      .colorInside(ColorRGB(0.0f, 0.0f, 1f))
+      .colorOutside(ColorRGB(0.15f, 0.15f, 1f))
       .init()
 }
