@@ -10,6 +10,10 @@ class Visualizer(implicit val renderStack: RenderStack) {
   var models = Map.empty[Int, WorldObjectModel]
 
   def computeModels(worldState: Iterable[WorldObject]): Iterable[DrawableModel] = {
+    assert(
+      worldState.groupBy(_.identifier).forall(_._2.size == 1),
+      "All identifiers must be unique")
+
     models = worldState.map { worldObject =>
       if (models.contains(worldObject.identifier))
         (worldObject.identifier, models(worldObject.identifier).update(worldObject))
