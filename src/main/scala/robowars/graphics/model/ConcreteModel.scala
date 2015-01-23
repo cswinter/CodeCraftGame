@@ -2,13 +2,7 @@ package robowars.graphics.model
 
 import robowars.graphics.matrices._
 
-class ConcreteModel[TPosition <: Vertex, TColor <: Vertex]
-(material: Material[TPosition, TColor], vertices: Seq[(TPosition, TColor)])
-  extends DrawableModel {
-
-  val vbo = material.createVBO(vertices)
-  var modelview: Matrix4x4 = IdentityMatrix4x4
-
+class ConcreteModel(val vbo: VBO, var modelview: Matrix4x4, val material: Material[_, _]) extends DrawableModel {
   def draw(): Unit = {
     material.draw(vbo, modelview)
   }
@@ -29,4 +23,10 @@ class ConcreteModel[TPosition <: Vertex, TColor <: Vertex]
 
   def hasMaterial(material: Material[_, _]): Boolean =
     material == this.material
+}
+
+
+object ConcreteModel {
+  def apply[TPos <: Vertex, TCol <: Vertex](material: Material[TPos, TCol], vertices: Seq[(TPos, TCol)]) =
+    new ConcreteModel(material.createVBO(vertices), IdentityMatrix4x4, material)
 }

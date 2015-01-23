@@ -151,7 +151,7 @@ class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
   val vconvQuad = genFullsizeQuad(VConvolution)
   val addQuad = genFullsizeQuad(Addition)
 
-  def genFullsizeQuad(material: Material[VertexXY, VertexUV]): ConcreteModel[VertexXY, VertexUV] =
+  def genFullsizeQuad(material: Material[VertexXY, VertexUV]): ConcreteModel =
     new ConcreteModelBuilder[VertexXY, VertexUV](
       material,
       Array(
