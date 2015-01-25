@@ -7,9 +7,9 @@ class CompositeModelBuilder(val models: Map[GenericMaterial, GenericModelBuilder
   extends Model {
   self =>
 
-  def init(): DrawableModel = ???
-
-  //new ConcreteModel[TPosition, TColor](material, vertexData)
+  def init(): DrawableModel = {
+    new ConcreteCompositeModel(models.map { case (material, model) => material -> model.init()})
+  }
 
   def +(other: Model): Model = {
     other match {
@@ -32,28 +32,8 @@ class CompositeModelBuilder(val models: Map[GenericMaterial, GenericModelBuilder
             }
           }
         new CompositeModelBuilder(mergedModels.toMap)
-
-
-
-      //new CompositeModelBuilder({
-
-      // for (mat <- models.keySet | cmb.models.keySet) yield {
-      //  val a: (Material[_, _], ModelBuilder[_, _]) =
-      //   mat -> models(mat)
-      //            if (hasMaterial(mat) && cmb.hasMaterial(mat)) {
-      //              mat -> (models(mat) + cmb.models(mat)).asInstanceOf[ModelBuilder[_, _]]
-      //            } else if (hasMaterial(mat)) {
-      //              mat -> models(mat)
-      //            } else {
-      //              mat -> cmb.models(mat)
-      //            }
-      //     a
-      //    }
-      //  }.toMap)
     }
   }
-
-  //def makeTuple[T1, T2](x: T1, y: T2): Unit = x -> y
 
 
   def project(material: Material[_, _]): Model = models.get(material.asInstanceOf[GenericMaterial]) match {

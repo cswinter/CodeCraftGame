@@ -3,6 +3,7 @@ package robowars.graphics.model
 import robowars.graphics.matrices._
 
 class ConcreteModel(val vbo: VBO, var modelview: Matrix4x4, val material: Material[_, _]) extends DrawableModel {
+
   def draw(): Unit = {
     material.draw(vbo, modelview)
   }

@@ -7,7 +7,6 @@ import robowars.graphics.matrices._
 class ConcreteCompositeModel(val models: Map[GenericMaterial, ConcreteModel])
   extends DrawableModel {
 
-
   def draw(): Unit =
     throw new UnsupportedOperationException("Cannot draw composite model (project onto material first)")
 

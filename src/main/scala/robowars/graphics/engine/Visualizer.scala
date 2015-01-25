@@ -1,9 +1,9 @@
 package robowars.graphics.engine
 
-import robowars.graphics.model.{ColorRGB, DrawableModel}
+import robowars.graphics.matrices.{TranslationXYMatrix4x4, RotationZMatrix4x4}
+import robowars.graphics.model._
 import robowars.graphics.primitives.{PolygonOutline, Polygon}
 import robowars.worldstate.{RobotObject, MineralObject, WorldObject}
-import robowars.graphics.matrices.{RotationZMatrix4x4, TranslationXYMatrix4x4}
 
 
 class Visualizer(implicit val renderStack: RenderStack) {
@@ -79,9 +79,14 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
   
   val size = robot.size
 
-  val model =
+  val hull =
     new PolygonOutline(renderStack.BloomShader)(5, 40, 47)
       .colorInside(ColorRGB(0.0f, 0.0f, 1f))
       .colorOutside(ColorRGB(0.15f, 0.15f, 1f))
-      .init()
+
+  val body = new Polygon(5, renderStack.MaterialXYRGB)
+      .scale(40)
+      .color(ColorRGB(0, 0, 0))
+
+  val model = (hull + body).init()
 }

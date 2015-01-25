@@ -15,6 +15,10 @@ abstract class ModelBuilder[TPosition <: Vertex, TColor <: Vertex]
         new ModelBuilder[TPosition, TColor](material) {
           def vertexData = self.vertexData ++ mb.vertexData
         }
+      case mb: ModelBuilder[_, _] =>
+        new CompositeModelBuilder(
+          Map(material.asInstanceOf[GenericMaterial] -> this.asInstanceOf[GenericModelBuilder],
+            mb.material.asInstanceOf[GenericMaterial] -> mb.asInstanceOf[GenericModelBuilder]))
       case _ => other + this
     }
   }
