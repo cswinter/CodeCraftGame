@@ -42,7 +42,7 @@ object RenderFrame extends GLEventListener {
 
     // draw to texture
     glBindFramebuffer(GL_FRAMEBUFFER, fbo.fbo)
-    glViewport(0, 0, camera.screenWidth, camera.screenHeight)
+    glViewport(0, 0, camera.screenWidth * 2, camera.screenHeight * 2)
 
     glClearColor(0.1f, 0, 0.1f, 0.0f)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)

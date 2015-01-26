@@ -9,6 +9,11 @@ class FramebufferObject(implicit val gl: GL4) {
   import gl._
   private[this] val intRef = new Array[Int](1)
 
+  private[this] var _width: Int = 0
+  private[this] var _height: Int = 0
+  def width = _width
+  def height = _height
+
   // generate and bind fbo
   glGenFramebuffers(1, intRef, 0)
   val fbo: Int = intRef(0)
@@ -19,12 +24,15 @@ class FramebufferObject(implicit val gl: GL4) {
   var depthBuffer: Int = 0
 
   def resize(width: Int, height: Int)(gl: GL4) {
+    _width = width
+    _height = height
+
     if (texture0 != -42) disposeTextures()
 
     glBindFramebuffer(GL_FRAMEBUFFER, fbo)
 
     // generate and attach texture
-    texture0 = genTexture(width, height)
+    texture0 = genTexture(2 * width, 2 * height)
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture0, 0)
 
     texture1 = genTexture(width, height)
@@ -34,7 +42,7 @@ class FramebufferObject(implicit val gl: GL4) {
     glGenRenderbuffers(1, intRef, 0)
     depthBuffer = intRef(0)
     glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer)
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32F, width, height)
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32F, 2 * width, 2 * height)
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuffer)
     glBindRenderbuffer(GL_RENDERBUFFER, 0)
 

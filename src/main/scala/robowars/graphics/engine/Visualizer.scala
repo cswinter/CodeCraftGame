@@ -81,12 +81,12 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
   val size = robot.size
 
   val hull =
-    new PolygonOutline(renderStack.BloomShader)(5, 40, 47)
-      .colorInside(ColorRGB(0.0f, 0.0f, 1f))
-      .colorOutside(ColorRGB(0.15f, 0.15f, 1f))
+    new PolygonOutline(renderStack.BloomShader)(5, 30, 36)
+      .colorInside(ColorRGB(0.15f, 0.15f, 1f))
+      .colorOutside(ColorRGB(0.0f, 0.0f, 1f))
 
   val body = new Polygon(5, renderStack.MaterialXYRGB)
-      .scale(40)
+      .scale(30)
       .color(ColorRGB(0, 0, 0))
 
   val model = (hull + body).init()

@@ -49,20 +49,11 @@ class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
   import gl._
 
 
-  override def beforeDraw(projection: Matrix4x4): Unit = {
-
-    // TODO: recompute texel size
-
-
-    super.beforeDraw(projection)
-  }
-
-
   override def afterDraw(): Unit = {
     super.afterDraw()
 
-
     // Horizontal Convolution
+    glViewport(0, 0, fbo.width, fbo.height)
     HConvolution.beforeDraw(IdentityMatrix4x4)
     hconvQuad.draw()
     HConvolution.afterDraw()
@@ -73,6 +64,7 @@ class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
     VConvolution.afterDraw()
 
     // Addition
+    glViewport(0, 0, 2 * fbo.width, 2 * fbo.height)
     Addition.beforeDraw(IdentityMatrix4x4)
     addQuad.draw()
     Addition.afterDraw()
@@ -91,14 +83,12 @@ class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
 
     val uniformTexelSize = glGetUniformLocation(programID, "texelSize")
     val uniformOrientation = glGetUniformLocation(programID, "orientation")
-    val texelSize = VertexXY(1.0f / 1910, 1.0f / 1050)
 
 
     override def beforeDraw(projection: Matrix4x4): Unit = {
       super.beforeDraw(projection)
 
-      //glBlendFunc(GL_ONE, GL_ONE)
-
+      val texelSize = VertexXY(1.0f / fbo.width, 1.0f / fbo.height)
       glUniform1i(uniformOrientation, orientation)
       glUniform2f(uniformTexelSize, texelSize.x, texelSize.y)
 
