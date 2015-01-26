@@ -12,7 +12,12 @@ import robowars.simulation.GameWorldSimulator
 
 
 object RenderFrame extends GLEventListener {
+
+
   val Debug = false
+
+  private[this] var paused = false
+  def togglePause(): Unit = paused = !paused
 
   var gl: GL4 = null
   implicit var fbo: FramebufferObject = null
@@ -73,7 +78,8 @@ object RenderFrame extends GLEventListener {
   }
 
   private def update(): Unit = {
-    GameWorldSimulator.worldState
+    if (!paused)
+      GameWorldSimulator.update()
   }
 
   def dispose(arg0: GLAutoDrawable): Unit = {

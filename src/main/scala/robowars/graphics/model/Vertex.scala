@@ -9,8 +9,15 @@ case class VertexXY(x: Float, y: Float) extends Vertex {
   def apply(i: Int) = i match {
     case 0 => x
     case 1 => y
-    case _ => throw new IndexOutOfBoundsException("VerteXY only has 2 components.")
+    case _ => throw new IndexOutOfBoundsException("VertexXY only has 2 components.")
   }
+
+  def +(other: VertexXY): VertexXY = VertexXY(x + other.x, y + other.y)
+  def -(other: VertexXY): VertexXY = VertexXY(x - other.x, y - other.y)
+
+  def dot(other: VertexXY): Float = x * other.x + y * other.y
+
+  def size: Float = math.sqrt(x * x + y * y).toFloat
 }
 
 case class VertexUV(u: Float, y: Float) extends Vertex {

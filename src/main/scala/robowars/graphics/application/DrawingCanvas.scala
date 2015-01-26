@@ -54,6 +54,7 @@ object DrawingCanvas {
         case 40 /* DOWN */ => camera.y -= moveSpeed * camera.zoomFactor
         case 33 /* PAGE UP */ => camera.zoom -= zoomSpeed
         case 34 /* PAGE DOWN */ => camera.zoom += zoomSpeed
+        case 32 /* SPACEBAR */ => RenderFrame.togglePause()
         case _ =>
       } //println(s"keyPressed($keyEvent)")
 

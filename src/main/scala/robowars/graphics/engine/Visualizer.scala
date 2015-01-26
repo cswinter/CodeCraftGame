@@ -2,7 +2,7 @@ package robowars.graphics.engine
 
 import robowars.graphics.matrices.{TranslationXYMatrix4x4, RotationZMatrix4x4}
 import robowars.graphics.model._
-import robowars.graphics.primitives.{Square, PolygonOutline, Polygon}
+import robowars.graphics.primitives.{CircleSegment, Square, PolygonOutline, Polygon}
 import robowars.worldstate.{RobotObject, MineralObject, WorldObject}
 
 
@@ -93,16 +93,55 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
   val sideLength = 2 * (radius + 6) * math.sin(math.Pi / 5).toFloat
   val innerRadius = (radius + 6) * math.cos(math.Pi / 5).toFloat
 
-  val booster1 = new Square(renderStack.BloomShader)
+  val booster1 = new CircleSegment(6, 0.7f, renderStack.BloomShader)
     .color(ColorRGB(0.95f, 0.95f, 0.95f))
-    .scaleX(4)
-    .scaleY(sideLength / 2 - 5)
-    .translate(-innerRadius - 2, sideLength / 4)
-  val booster2 = new Square(renderStack.BloomShader)
-    .color(ColorRGB(0.95f, 0.95f, 0.95f))
-    .scaleX(4)
-    .scaleY(sideLength / 2 - 5)
-    .translate(-innerRadius - 2, -sideLength / 4)
+    .scaleX(6)
+    .scaleY(sideLength / 5)
+    .translate(-innerRadius, sideLength / 4)
 
-  val model = (hull + body + booster1 + booster2).init()
+  val booster2 = new CircleSegment(6, 0.7f, renderStack.BloomShader)
+    .color(ColorRGB(0.95f, 0.95f, 0.95f))
+    .scaleX(6)
+    .scaleY(sideLength / 5)
+    .translate(-innerRadius, -sideLength / 4)
+
+  val module1Hull = new PolygonOutline(renderStack.BloomShader)(6, 6, 10)
+    .color(ColorRGB(0.0f, 0.0f, 1f))
+    //.rotate(2 * math.Pi.toFloat / 10)
+    .translate(innerRadius - 3, 0)
+    .rotate(2 * math.Pi.toFloat / 10)
+    .zPos(-1)
+
+  val weapon1 = new Polygon(6, renderStack.MaterialXYRGB)
+    .colorMidpoint(ColorRGB(0.5f, 0.5f, 1))
+    .colorOutside(ColorRGB(0, 0, 0))
+    //.rotate(2 * math.Pi.toFloat / 10)
+    .scale(6)
+    .translate(innerRadius - 3, 0)
+    .rotate(2 * math.Pi.toFloat / 10)
+    .zPos(1)
+
+
+  val module2Hull = new PolygonOutline(renderStack.BloomShader)(6, 6, 10)
+    .color(ColorRGB(0.0f, 0.0f, 1f))
+    //.rotate(2 * math.Pi.toFloat / 10)
+    .translate(innerRadius - 3, 0)
+    .rotate(-2 * math.Pi.toFloat / 10)
+    .zPos(-1)
+
+  val weapon2 = new Polygon(6, renderStack.MaterialXYRGB)
+    .colorMidpoint(ColorRGB(1, 0.5f, 0))
+    .colorOutside(ColorRGB(0.5f, 0, 0))
+    //.rotate(2 * math.Pi.toFloat / 10)
+    .scale(6)
+    .translate(innerRadius - 3, 0)
+    .rotate(-2 * math.Pi.toFloat / 10)
+    .zPos(1)
+
+  /*val blah = new CircleSegment(6, 10, 1, renderStack.BloomShader)
+    .color(ColorRGB(1, 1, 1))
+    .scale(100)
+    .zPos(1)*/
+
+  val model = (hull + body + booster1 + booster2 + module1Hull + weapon1 + module2Hull + weapon2).init()
 }

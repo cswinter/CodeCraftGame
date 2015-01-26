@@ -29,8 +29,10 @@ object GameWorldSimulator extends GameWorld {
 
 
   def worldState: Iterable[WorldObject] = {
-    objects.foreach(_.update())
-
     objects.map(_.state())
+  }
+
+  def update(): Unit = {
+    objects.foreach(_.update())
   }
 }
