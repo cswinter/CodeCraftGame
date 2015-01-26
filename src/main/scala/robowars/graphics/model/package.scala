@@ -1,5 +1,7 @@
 package robowars.graphics
 
+import robowars.graphics.materials.Material
+
 import language.existentials
 
 package object model {

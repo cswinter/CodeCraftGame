@@ -1,4 +1,4 @@
-package robowars.graphics.model
+package robowars.graphics.materials
 
 import javax.media.opengl.GL._
 import javax.media.opengl.GL2ES2._
@@ -6,6 +6,7 @@ import javax.media.opengl._
 
 import com.jogamp.common.nio.Buffers
 import robowars.graphics.matrices.Matrix4x4
+import robowars.graphics.model.{VBO, Vertex, VertexManifest}
 
 import scala.io.Source
 

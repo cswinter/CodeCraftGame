@@ -3,6 +3,7 @@ package robowars.graphics.engine
 import javax.media.opengl.GL._
 import javax.media.opengl.GL4
 
+import robowars.graphics.materials.{RenderToScreen, SimpleMaterial, MaterialXYZRGB, BloomShader}
 import robowars.graphics.model._
 
 

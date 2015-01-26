@@ -1,5 +1,6 @@
 package robowars.graphics.primitives
 
+import robowars.graphics.materials.Material
 import robowars.graphics.matrices.Matrix2x2
 import robowars.graphics.model._
 

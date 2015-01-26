@@ -1,9 +1,8 @@
-package robowars.graphics.model
+package robowars.graphics.materials
 
 import javax.media.opengl.GL4
-import javax.media.opengl.GL._
 
-import robowars.graphics.matrices.Matrix4x4
+import robowars.graphics.model.VertexXY
 
 
 class RenderToScreen(implicit gl: GL4)

@@ -1,7 +1,9 @@
-package robowars.graphics.model
+package robowars.graphics.materials
 
-import javax.media.opengl.GL4
 import javax.media.opengl.GL._
+import javax.media.opengl.GL4
+
+import robowars.graphics.model.{ColorRGB, VertexXYZ}
 
 
 class MaterialXYZRGB(implicit gl: GL4)

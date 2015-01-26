@@ -1,5 +1,7 @@
 package robowars.graphics.model
 
+import robowars.graphics.materials.Material
+
 abstract class ModelBuilder[TPosition <: Vertex, TColor <: Vertex]
 (val material: Material[TPosition, TColor])
   extends Model {

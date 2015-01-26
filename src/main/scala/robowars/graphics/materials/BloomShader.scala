@@ -1,11 +1,11 @@
-package robowars.graphics.model
+package robowars.graphics.materials
 
-import javax.media.opengl.GL4
 import javax.media.opengl.GL._
-import javax.media.opengl._
+import javax.media.opengl.GL4
 
 import robowars.graphics.engine.{FramebufferObject, RenderFrame}
 import robowars.graphics.matrices.{IdentityMatrix4x4, Matrix4x4}
+import robowars.graphics.model._
 
 
 /*
@@ -45,8 +45,8 @@ class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
     Some("vertexCol"),
     GL_DEPTH_TEST
   ) {
-  import gl._ // can ignore error, is just IDEA bug
   import fbo.{texture0 => mainTexture, texture1 => tmpTexture1, texture2 => tmpTexture2}
+  import gl._
 
 
   override def beforeDraw(projection: Matrix4x4): Unit = {

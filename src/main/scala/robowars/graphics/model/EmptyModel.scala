@@ -1,5 +1,6 @@
 package robowars.graphics.model
 
+import robowars.graphics.materials.Material
 import robowars.graphics.matrices.Matrix4x4
 
 object EmptyModel extends DrawableModel {

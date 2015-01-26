@@ -1,5 +1,7 @@
 package robowars.graphics.model
 
+import robowars.graphics.materials.Material
+
 /**
   * Plan for model hierachy:
   * Base trait:
