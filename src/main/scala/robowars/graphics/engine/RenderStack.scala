@@ -3,7 +3,7 @@ package robowars.graphics.engine
 import javax.media.opengl.GL._
 import javax.media.opengl.GL4
 
-import robowars.graphics.materials.{RenderToScreen, SimpleMaterial, MaterialXYZRGB, BloomShader}
+import robowars.graphics.materials._
 import robowars.graphics.model._
 
 
@@ -14,7 +14,8 @@ class RenderStack(implicit val gl: GL4, implicit val fbo: FramebufferObject) {
   val SimpleMaterial: SimpleMaterial = new SimpleMaterial
   val MaterialXYRGB: MaterialXYZRGB = new MaterialXYZRGB
   val BloomShader: BloomShader = new BloomShader
-  val materials = List(SimpleMaterial, MaterialXYRGB, BloomShader)
+  val GaussianGlow: GaussianGlow = new GaussianGlow
+  val materials = List(SimpleMaterial, MaterialXYRGB, BloomShader, GaussianGlow)
 
 
   // texture to screen rendering code

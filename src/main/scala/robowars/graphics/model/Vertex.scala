@@ -35,7 +35,17 @@ case class ColorRGB(r: Float, g: Float, b: Float) extends Vertex {
     case 0 => r
     case 1 => g
     case 2 => b
-    case _ => throw new IndexOutOfBoundsException("ColorRGB only has 2 components.")
+    case _ => throw new IndexOutOfBoundsException("ColorRGB only has 3 components.")
+  }
+}
+
+case class ColorRGBA(r: Float, g: Float, b: Float, a: Float) extends Vertex {
+  def apply(i: Int) = i match {
+    case 0 => r
+    case 1 => g
+    case 2 => b
+    case 3 => a
+    case _ => throw new IndexOutOfBoundsException(s"Index $i is invalid. ColorRGBA has only 4 components.")
   }
 }
 
@@ -66,6 +76,10 @@ object VertexManifest {
 
   implicit object ColorRGB extends VertexManifest[ColorRGB] {
     val nComponents = 3
+  }
+
+  implicit object ColorRGBA extends VertexManifest[ColorRGBA] {
+    val nComponents = 4
   }
 
   implicit object EmptyVertexManifest extends VertexManifest[EmptyVertex.type] {

@@ -12,7 +12,7 @@ class PolygonOutline[TColor <: Vertex : ClassTag]
 (val nCorners: Int, val innerRadius: Float, val outerRadius: Float)
   extends Primitive2D[TColor](PolygonOutline.computeVertices(nCorners, innerRadius, outerRadius), material) {
 
-  assert(innerRadius < outerRadius)
+  assert(innerRadius < outerRadius, s"Inner radius ($innerRadius) must be smaller than outer radius ($outerRadius)")
 
   def colorOutside(color: TColor): PolygonOutline[TColor] = {
     for (i <- 0 until nCorners) {

@@ -15,7 +15,7 @@ object GameWorldSimulator extends GameWorld {
         2000 * rnd() - 1000,
         1000 * rnd() - 500,
         2 * math.Pi.toFloat * rnd(),
-        rni(4))
+        rni(3) + 1)
 
   val robots =
     for (i <- 0 to 5) yield

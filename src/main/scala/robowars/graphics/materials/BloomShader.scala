@@ -78,7 +78,6 @@ class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
     Addition.afterDraw()
 
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, mainTexture, 0)
-    glDisable(GL_BLEND)
   }
 
 
