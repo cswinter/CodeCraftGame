@@ -2,7 +2,7 @@ package robowars.graphics.engine
 
 import robowars.graphics.matrices.{TranslationXYMatrix4x4, RotationZMatrix4x4}
 import robowars.graphics.model._
-import robowars.graphics.primitives.{PolygonOutline, Polygon}
+import robowars.graphics.primitives.{Square, PolygonOutline, Polygon}
 import robowars.worldstate.{RobotObject, MineralObject, WorldObject}
 
 
@@ -80,14 +80,29 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
   
   val size = robot.size
 
+  val radius = 30
   val hull =
-    new PolygonOutline(renderStack.BloomShader)(5, 30, 36)
+    new PolygonOutline(renderStack.BloomShader)(5, radius, radius + 6)
       .colorInside(ColorRGB(0.15f, 0.15f, 1f))
       .colorOutside(ColorRGB(0.0f, 0.0f, 1f))
 
   val body = new Polygon(5, renderStack.MaterialXYRGB)
-      .scale(30)
+      .scale(radius)
       .color(ColorRGB(0, 0, 0))
 
-  val model = (hull + body).init()
+  val sideLength = 2 * (radius + 6) * math.sin(math.Pi / 5).toFloat
+  val innerRadius = (radius + 6) * math.cos(math.Pi / 5).toFloat
+
+  val booster1 = new Square(renderStack.BloomShader)
+    .color(ColorRGB(0.95f, 0.95f, 0.95f))
+    .scaleX(4)
+    .scaleY(sideLength / 2 - 5)
+    .translate(-innerRadius - 2, sideLength / 4)
+  val booster2 = new Square(renderStack.BloomShader)
+    .color(ColorRGB(0.95f, 0.95f, 0.95f))
+    .scaleX(4)
+    .scaleY(sideLength / 2 - 5)
+    .translate(-innerRadius - 2, -sideLength / 4)
+
+  val model = (hull + body + booster1 + booster2).init()
 }
