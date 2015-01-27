@@ -15,7 +15,8 @@ class RenderStack(implicit val gl: GL4, implicit val fbo: FramebufferObject) {
   val MaterialXYRGB: MaterialXYZRGB = new MaterialXYZRGB
   val BloomShader: BloomShader = new BloomShader
   val GaussianGlow: GaussianGlow = new GaussianGlow
-  val materials = List(SimpleMaterial, MaterialXYRGB, BloomShader, GaussianGlow)
+  val GaussianGlowPIntensity: GaussianGlowPIntensity = new GaussianGlowPIntensity
+  val materials = List(SimpleMaterial, MaterialXYRGB, BloomShader, GaussianGlow, GaussianGlowPIntensity)
 
 
   // texture to screen rendering code

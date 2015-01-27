@@ -26,3 +26,14 @@ case class MineralObject(
 
   size: Int
 ) extends WorldObject
+
+
+case class LightFlash(
+  identifier: Int,
+  xPos: Float,
+  yPos: Float,
+
+  stage: Float
+) extends WorldObject {
+  val orientation = 0.0f
+}

@@ -6,6 +6,10 @@ import scala.util.Random
 
 object GameWorldSimulator extends GameWorld {
   def rnd() = Random.nextDouble().toFloat
+  def rnd(min: Float, max: Float): Float = {
+    assert(min < max, "Cannot have min >= max.")
+    rnd() * (max - min) + min
+  }
 
   def rni(n: Int) = Random.nextInt(n)
 
@@ -25,7 +29,7 @@ object GameWorldSimulator extends GameWorld {
         2 * math.Pi.toFloat * rnd(),
         1)
 
-  val objects = minerals ++ robots
+  var objects = collection.mutable.Set(minerals ++ robots:_*)
 
 
   def worldState: Iterable[WorldObject] = {
@@ -34,5 +38,9 @@ object GameWorldSimulator extends GameWorld {
 
   def update(): Unit = {
     objects.foreach(_.update())
+    objects.retain(!_.dead)
+    if (rnd() < 0.01) {
+      objects.add(new MockLightFlash(rnd(-500, 500), rnd(-200, 200)))
+    }
   }
 }

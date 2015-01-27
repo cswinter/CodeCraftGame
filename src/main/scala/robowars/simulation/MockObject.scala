@@ -8,6 +8,7 @@ trait MockObject {
 
   def update(): Unit
   def state(): WorldObject
+  def dead: Boolean
 }
 
 object MockObject {

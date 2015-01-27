@@ -50,4 +50,7 @@ class MockRobot(
 
 
   def rnd() = Random.nextDouble().toFloat
+
+
+  def dead = false
 }

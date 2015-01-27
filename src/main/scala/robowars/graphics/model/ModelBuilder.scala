@@ -10,6 +10,8 @@ abstract class ModelBuilder[TPosition <: Vertex, TColor <: Vertex]
   def init(): ConcreteModel =
     ConcreteModel[TPosition, TColor](material, vertexData)
 
+  def initParameterized[TParams](params: Parameterized[TParams]): ConcreteModel with Parameterized[TParams] =
+    ConcreteModel[TPosition, TColor, TParams](material, vertexData, params)
 
   def +(other: Model): Model = {
     other match {

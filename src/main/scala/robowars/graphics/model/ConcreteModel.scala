@@ -31,4 +31,14 @@ class ConcreteModel(val vbo: VBO, var modelview: Matrix4x4, val material: Materi
 object ConcreteModel {
   def apply[TPos <: Vertex, TCol <: Vertex](material: Material[TPos, TCol], vertices: Seq[(TPos, TCol)]) =
     new ConcreteModel(material.createVBO(vertices), IdentityMatrix4x4, material)
+
+  def apply[TPos <: Vertex, TCol <: Vertex, TParams](
+    material: Material[TPos, TCol],
+    vertices: Seq[(TPos, TCol)],
+    parameters: Parameterized[TParams]
+  ) = {
+    new ConcreteModel(material.createVBO(vertices), IdentityMatrix4x4, material) with ParameterizedConcreteModel[TParams] {
+      val parameterSink: Parameterized[TParams] = parameters
+    }
+  }
 }

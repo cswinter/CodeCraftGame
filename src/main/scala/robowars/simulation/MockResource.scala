@@ -14,4 +14,6 @@ class MockResource(
 
   override def state(): WorldObject =
     MineralObject(identifier, xPos, yPos, orientation, size)
+
+  def dead = false
 }

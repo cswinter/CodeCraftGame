@@ -14,7 +14,7 @@ class Primitive2D[TColor <: Vertex : ClassTag] private
   def this(positions: Array[VertexXY], material: Material[VertexXYZ, TColor]) =
     this(positions, new Array[TColor](positions.length), material)
 
-  private[this] var _zPos: Float = 1
+  private[this] var _zPos: Float = 0
 
   def zPos(z: Float): Primitive2D[TColor] = {
     _zPos = z

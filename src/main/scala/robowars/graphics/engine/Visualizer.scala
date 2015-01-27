@@ -1,9 +1,10 @@
 package robowars.graphics.engine
 
-import robowars.graphics.matrices.{TranslationXYMatrix4x4, RotationZMatrix4x4}
+import robowars.graphics.materials.Intensity
+import robowars.graphics.matrices.{DilationXYMatrix4x4, DilationMatrix4x4, TranslationXYMatrix4x4, RotationZMatrix4x4}
 import robowars.graphics.model._
 import robowars.graphics.primitives.{CircleSegment, Square, PolygonOutline, Polygon}
-import robowars.worldstate.{RobotObject, MineralObject, WorldObject}
+import robowars.worldstate.{LightFlash, RobotObject, MineralObject, WorldObject}
 
 
 class Visualizer(implicit val renderStack: RenderStack) {
@@ -17,8 +18,11 @@ class Visualizer(implicit val renderStack: RenderStack) {
     models = worldState.map { worldObject =>
       if (models.contains(worldObject.identifier))
         (worldObject.identifier, models(worldObject.identifier).update(worldObject))
-      else
-        (worldObject.identifier, ModelFactory.generateModel(worldObject))
+      else {
+        val newModel = ModelFactory.generateModel(worldObject)
+        newModel.update(worldObject)
+        (worldObject.identifier, newModel)
+      }
     }.toMap
 
     models.values.map(_.model)
@@ -30,6 +34,7 @@ object ModelFactory {
   def generateModel(worldObject: WorldObject)(implicit renderStack: RenderStack): WorldObjectModel = worldObject match {
     case mineral: MineralObject => new MineralObjectModel(mineral)
     case robot: RobotObject => new RobotObjectModel(robot)
+    case lightFlash: LightFlash => new LightFlashObjectModel(lightFlash)
   }
 }
 
@@ -129,14 +134,14 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
     .rotate(-2 * math.Pi.toFloat / 10)
     .zPos(-1)
 
-  val weapon2 = new Polygon(6, renderStack.MaterialXYRGB)
+  val weapon2 = new Polygon(6, renderStack.BloomShader)
     .colorMidpoint(ColorRGB(1, 0.5f, 0))
     .colorOutside(ColorRGB(0.5f, 0, 0))
     //.rotate(2 * math.Pi.toFloat / 10)
     .scale(6)
     .translate(innerRadius - 3, 0)
     .rotate(-2 * math.Pi.toFloat / 10)
-    .zPos(1)
+    .zPos(2)
 
   /*val blah = new CircleSegment(6, 10, 1, renderStack.BloomShader)
     .color(ColorRGB(1, 1, 1))
@@ -144,4 +149,32 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
     .zPos(1)*/
 
   val model = (hull + body + booster1 + booster2 + module1Hull + weapon1 + module2Hull + weapon2).init()
+}
+
+
+class LightFlashObjectModel(mineral: LightFlash)(implicit val rs: RenderStack)
+  extends WorldObjectModel(mineral) {
+
+  val lightFlashModel =
+    new Polygon(25, renderStack.GaussianGlowPIntensity)
+      .colorMidpoint(ColorRGBA(1, 1, 1, 0))
+      .colorOutside(ColorRGBA(1, 1, 1, 1))
+      .scale(1)
+      .zPos(-1)
+      .initParameterized(renderStack.GaussianGlowPIntensity)
+
+  val model = lightFlashModel
+
+  override def update(worldObject: WorldObject): this.type = {
+    super.update(worldObject)
+
+    val lightFlash = worldObject.asInstanceOf[LightFlash]
+
+    val modelview = new DilationXYMatrix4x4(60 * lightFlash.stage + 5) * model.modelview
+    model.setModelview(modelview)
+
+    lightFlashModel.params = Intensity(1 - lightFlash.stage)
+
+    this
+  }
 }
