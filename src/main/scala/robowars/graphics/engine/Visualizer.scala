@@ -3,7 +3,7 @@ package robowars.graphics.engine
 import robowars.graphics.materials.Intensity
 import robowars.graphics.matrices.{DilationXYMatrix4x4, DilationMatrix4x4, TranslationXYMatrix4x4, RotationZMatrix4x4}
 import robowars.graphics.model._
-import robowars.graphics.primitives.{CircleSegment, Square, PolygonOutline, Polygon}
+import robowars.graphics.primitives._
 import robowars.worldstate.{LightFlash, RobotObject, MineralObject, WorldObject}
 
 
@@ -143,12 +143,16 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
     .rotate(-2 * math.Pi.toFloat / 10)
     .zPos(2)
 
+  val blah = new QuadStrip(10, Seq(VertexXY(50, 50), VertexXY(50, -50), VertexXY(-50, -50), VertexXY(-50, 50)))(renderStack.MaterialXYRGB)
+    .color(ColorRGB(1, 0, 1))
+    .zPos(2)
+
   /*val blah = new CircleSegment(6, 10, 1, renderStack.BloomShader)
     .color(ColorRGB(1, 1, 1))
     .scale(100)
     .zPos(1)*/
 
-  val model = (hull + body + booster1 + booster2 + module1Hull + weapon1 + module2Hull + weapon2).init()
+  val model = (hull + body + booster1 + booster2 + module1Hull + weapon1 + module2Hull + weapon2 + blah).init()
 }
 
 

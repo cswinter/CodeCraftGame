@@ -44,7 +44,6 @@ object RenderFrame extends GLEventListener {
     else glDisable(GL_CULL_FACE)
     cullFaceToggle = !cullFaceToggle
 
-
     // draw to texture
     glBindFramebuffer(GL_FRAMEBUFFER, fbo.fbo)
     glViewport(0, 0, camera.screenWidth * 2, camera.screenHeight * 2)
