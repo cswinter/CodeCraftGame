@@ -143,8 +143,8 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
     .rotate(-2 * math.Pi.toFloat / 10)
     .zPos(2)
 
-  val blah = new QuadStrip(10, Seq(VertexXY(50, 50), VertexXY(50, -50), VertexXY(-50, -50), VertexXY(-50, 50)))(renderStack.MaterialXYRGB)
-    .color(ColorRGB(1, 0, 1))
+  val blah = new QuadStrip(10, Seq(VertexXY(50, 50), VertexXY(50, -50), VertexXY(-50, -50), VertexXY(-50, 50)))(renderStack.TranslucentAdditive)
+    .color(ColorRGBA(1, 0, 1, 0.5f))
     .zPos(2)
 
   /*val blah = new CircleSegment(6, 10, 1, renderStack.BloomShader)
