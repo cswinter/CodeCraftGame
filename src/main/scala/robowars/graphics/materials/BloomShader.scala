@@ -145,12 +145,12 @@ class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
       material,
       Array(
         (VertexXY(1.0f, 1.0f), VertexUV(1.0f, 1.0f)),
-        (VertexXY(1.0f, -1.0f), VertexUV(1.0f, 0.0f)),
         (VertexXY(-1.0f, -1.0f), VertexUV(0.0f, 0.0f)),
+        (VertexXY(1.0f, -1.0f), VertexUV(1.0f, 0.0f)),
 
         (VertexXY(1.0f, 1.0f), VertexUV(1.0f, 1.0f)),
-        (VertexXY(-1.0f, -1.0f), VertexUV(0.0f, 0.0f)),
-        (VertexXY(-1.0f, 1.0f), VertexUV(0.0f, 1.0f))
+        (VertexXY(-1.0f, 1.0f), VertexUV(0.0f, 1.0f)),
+          (VertexXY(-1.0f, -1.0f), VertexUV(0.0f, 0.0f))
       )
     ).init()
 }

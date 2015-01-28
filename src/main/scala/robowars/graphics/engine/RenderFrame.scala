@@ -51,8 +51,6 @@ object RenderFrame extends GLEventListener {
     glClearColor(0.1f, 0, 0.1f, 0.0f)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-    glDisable(GL_CULL_FACE)
-
     val models = visualizer.computeModels(GameWorldSimulator.worldState)
 
     for (material <- renderStack.materials) {

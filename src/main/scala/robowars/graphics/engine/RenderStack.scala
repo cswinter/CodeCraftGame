@@ -26,12 +26,12 @@ class RenderStack(implicit val gl: GL4, implicit val fbo: FramebufferObject) {
       RenderToScreen,
       Array(
         (VertexXY(1.0f, 1.0f), VertexXY(1.0f, 1.0f)),
-        (VertexXY(1.0f, -1.0f), VertexXY(1.0f, 0.0f)),
         (VertexXY(-1.0f, -1.0f), VertexXY(0.0f, 0.0f)),
+        (VertexXY(1.0f, -1.0f), VertexXY(1.0f, 0.0f)),
 
         (VertexXY(1.0f, 1.0f), VertexXY(1.0f, 1.0f)),
-        (VertexXY(-1.0f, -1.0f), VertexXY(0.0f, 0.0f)),
-        (VertexXY(-1.0f, 1.0f), VertexXY(0.0f, 1.0f))
+        (VertexXY(-1.0f, 1.0f), VertexXY(0.0f, 1.0f)),
+        (VertexXY(-1.0f, -1.0f), VertexXY(0.0f, 0.0f))
       )
     ).init()
 
