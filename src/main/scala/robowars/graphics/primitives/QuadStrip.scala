@@ -67,7 +67,7 @@ object QuadStrip {
           leftEnd(i - 1) = connector(i)
         } else {
           rightStart(i) = connector(i)
-          rightEnd(i) = connector(i)
+          rightEnd(i - 1) = connector(i)
         }
       }
     }
