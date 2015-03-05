@@ -37,3 +37,13 @@ case class LightFlash(
 ) extends WorldObject {
   val orientation = 0.0f
 }
+
+
+case class LaserMissile(
+  identifier: Int,
+  positions: Seq[(Float, Float)]
+) extends WorldObject {
+  val orientation = 0.0f
+  val xPos = 0.0f
+  val yPos = 0.0f
+}

@@ -4,7 +4,7 @@ import robowars.graphics.materials.Intensity
 import robowars.graphics.matrices.{DilationXYMatrix4x4, DilationMatrix4x4, TranslationXYMatrix4x4, RotationZMatrix4x4}
 import robowars.graphics.model._
 import robowars.graphics.primitives._
-import robowars.worldstate.{LightFlash, RobotObject, MineralObject, WorldObject}
+import robowars.worldstate._
 
 
 class Visualizer(implicit val renderStack: RenderStack) {
@@ -35,6 +35,7 @@ object ModelFactory {
     case mineral: MineralObject => new MineralObjectModel(mineral)
     case robot: RobotObject => new RobotObjectModel(robot)
     case lightFlash: LightFlash => new LightFlashObjectModel(lightFlash)
+    case laserMissile: LaserMissile => new LaserMissileObjectModel(laserMissile)
   }
 }
 
@@ -147,8 +148,8 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
 }
 
 
-class LightFlashObjectModel(mineral: LightFlash)(implicit val rs: RenderStack)
-  extends WorldObjectModel(mineral) {
+class LightFlashObjectModel(lightFlash: LightFlash)(implicit val rs: RenderStack)
+  extends WorldObjectModel(lightFlash) {
 
   val lightFlashModel =
     new Polygon(25, renderStack.GaussianGlowPIntensity)
@@ -173,3 +174,22 @@ class LightFlashObjectModel(mineral: LightFlash)(implicit val rs: RenderStack)
     this
   }
 }
+
+
+class LaserMissileObjectModel(laserMissile: LaserMissile)(implicit val rs: RenderStack)
+  extends WorldObjectModel(laserMissile) {
+
+  var model: DrawableModel = null
+  update(laserMissile)
+
+  override def update(worldObject: WorldObject): this.type = {
+    model =
+      new QuadStrip(3, laserMissile.positions.map {case (x, y) => VertexXY(x, y)})(renderStack.MaterialXYRGB)
+        .color(ColorRGB(0.8f, 0.8f, 1.0f))
+        .init()
+    super.update(worldObject)
+
+    this
+  }
+}
+

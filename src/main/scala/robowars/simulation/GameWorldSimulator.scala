@@ -41,6 +41,7 @@ object GameWorldSimulator extends GameWorld {
     objects.retain(!_.dead)
     if (rnd() < 0.01) {
       objects.add(new MockLightFlash(rnd(-500, 500), rnd(-200, 200)))
+      objects.add(new MockLaserMissile(rnd(-250, 250), rnd(-250, 250), rnd(0, 2 * math.Pi.toFloat)))
     }
   }
 }
