@@ -1,2 +1,0 @@
-[   9219]   WARN - .ExternalResourceManagerExImpl - Cannot find standard resource. filename:/META-INF/tapestry_5_0_0.xsd class=class com.intellij.javaee.ResourceRegistrarImpl, classLoader:null 
-[   9994]   WARN - openapi.wm.impl.ToolWindowImpl - ToolWindow icons should be 13x13. Please fix ToolWindow (ID:  SBT) or icon jar:file:/home/clemens/.IntelliJIdea14/config/plugins/Scala/lib/scala-plugin.jar!/sbt.png 
