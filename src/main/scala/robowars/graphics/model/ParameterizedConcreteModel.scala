@@ -1,7 +1,5 @@
 package robowars.graphics.model
 
-import robowars.graphics.materials.Material
-import robowars.graphics.matrices._
 
 trait ParameterizedConcreteModel[TParams] extends ConcreteModel with Parameterized[TParams] {
 
