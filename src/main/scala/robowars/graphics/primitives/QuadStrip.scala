@@ -64,10 +64,10 @@ object QuadStrip {
       direction(i) = (midpoint(i + 1) - midpoint(i)).normalized
       normal(i) = VertexXY(-direction(i).y, direction(i).x)
 
-      leftStart(i) = midpoint(i) + normal(i) * width * 0.5f
-      rightStart(i) = midpoint(i) - normal(i) * width * 0.5f
-      leftEnd(i) = midpoint(i + 1) + normal(i) * width * 0.5f
-      rightEnd(i) = midpoint(i + 1) - normal(i) * width * 0.5f
+      leftStart(i) = midpoint(i) + 0.5f * width * normal(i)
+      rightStart(i) = midpoint(i) - 0.5f * width * normal(i)
+      leftEnd(i) = midpoint(i + 1) + 0.5f * width * normal(i)
+      rightEnd(i) = midpoint(i + 1) - 0.5f * width * normal(i)
 
       if (i > 0) {
         // diagram for connector: https://www.dropbox.com/sc/teodl7o29d5z9kg/AADRaqm_Vd4CSfUzI4HFdCmSa

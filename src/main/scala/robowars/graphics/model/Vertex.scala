@@ -24,6 +24,14 @@ case class VertexXY(x: Float, y: Float) extends Vertex {
   def normalized: VertexXY = this * (1 / size)
 }
 
+
+object VertexXY {
+  implicit class Scalar(val value: Float) extends AnyVal {
+    def *(vertex: VertexXY) = vertex * value
+  }
+}
+
+
 case class VertexUV(u: Float, y: Float) extends Vertex {
   def apply(i: Int) = i match {
     case 0 => u
