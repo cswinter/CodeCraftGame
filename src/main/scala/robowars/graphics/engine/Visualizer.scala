@@ -183,9 +183,15 @@ class LaserMissileObjectModel(laserMissile: LaserMissile)(implicit val rs: Rende
   update(laserMissile)
 
   override def update(worldObject: WorldObject): this.type = {
+    val midpoints = laserMissile.positions.map {case (x, y) => VertexXY(x, y)}
+    val n = laserMissile.positions.length
+    val colors = laserMissile.positions.zipWithIndex.map {
+      case (_, index) => ColorRGBA(1, 1, 1, index / n.toFloat)
+    }
+
     model =
-      new QuadStrip(3, laserMissile.positions.map {case (x, y) => VertexXY(x, y)})(renderStack.MaterialXYRGB)
-        .color(ColorRGB(0.8f, 0.8f, 1.0f))
+      new QuadStrip(2, midpoints)(renderStack.TranslucentAdditive)
+        .colorMidpoints(colors)
         .init()
     super.update(worldObject)
 

@@ -29,7 +29,7 @@ object GameWorldSimulator extends GameWorld {
         2 * math.Pi.toFloat * rnd(),
         1)
 
-  var objects = collection.mutable.Set(minerals ++ robots:_*)
+  val objects = collection.mutable.Set(minerals ++ robots:_*)
 
 
   def worldState: Iterable[WorldObject] = {
@@ -38,10 +38,18 @@ object GameWorldSimulator extends GameWorld {
 
   def update(): Unit = {
     objects.foreach(_.update())
+
+    val missileExplosions = for {
+      obj <- objects
+      if obj.isInstanceOf[MockLaserMissile] && obj.dead
+      missile = obj.asInstanceOf[MockLaserMissile]
+    } yield new MockLightFlash(missile.xPos, missile.yPos)
+    objects ++= missileExplosions
+
     objects.retain(!_.dead)
-    if (rnd() < 0.01) {
-      objects.add(new MockLightFlash(rnd(-500, 500), rnd(-200, 200)))
-      objects.add(new MockLaserMissile(rnd(-250, 250), rnd(-250, 250), rnd(0, 2 * math.Pi.toFloat)))
+
+    if (rnd() < 0.1) {
+      objects.add(new MockLaserMissile(rnd(-500, 500), rnd(-250, 250), rnd(0, 2 * math.Pi.toFloat)))
     }
   }
 }

@@ -15,10 +15,14 @@ class MockLaserMissile(
   val positions = 15
   val oldPositions = mutable.Queue((xPos, yPos), (xPos, yPos))
   var age = 0
+  var rotationSpeed = 0.0f
 
   override def update(): Unit = {
     age += 1
-    orientation += 0.1f - 0.2f * rnd()
+    if (rnd() < 0.1) {
+      rotationSpeed = 0.1f - 0.2f * rnd()
+    }
+    orientation += rotationSpeed
     xPos += vx
     yPos += vy
     oldPositions.enqueue((xPos, yPos))
@@ -36,5 +40,5 @@ class MockLaserMissile(
 
   def rnd() = Random.nextDouble().toFloat
 
-  def dead = age > 5000
+  def dead = age > 90
 }
