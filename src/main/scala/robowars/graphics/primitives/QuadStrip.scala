@@ -12,6 +12,30 @@ class QuadStrip[TColor <: Vertex : ClassTag](
   points: Seq[VertexXY]
 )(material: Material[VertexXYZ, TColor])
   extends Primitive2D[TColor](QuadStrip.computePositions(width, points), material) {
+
+  val n = points.length
+
+
+  def colorMidpoints(color: Seq[TColor]): this.type = {
+    assert(color.length == n)
+    // data layout: start, start, end; start, end, end; connector, connector, connector
+    for (i <- 0 until n - 1) {
+      colors(9 * i + 0) = color(i)
+      colors(9 * i + 1) = color(i)
+      colors(9 * i + 2) = color(i + 1)
+
+      colors(9 * i + 3) = color(i)
+      colors(9 * i + 4) = color(i + 1)
+      colors(9 * i + 5) = color(i + 1)
+
+      if (i < n - 2) {
+        colors(9 * i + 6) = color(i + 1)
+        colors(9 * i + 7) = color(i + 1)
+        colors(9 * i + 8) = color(i + 1)
+      }
+    }
+    this
+  }
 }
 
 
@@ -76,6 +100,20 @@ object QuadStrip {
     val data = new ArrayBuffer[VertexXY]((n - 1) * 3 * 3 - 3)
     for (i <- 0 until n -1)
     {
+      // fill-in at point i
+      if (i > 0) {
+        if (leftStart(i) == leftEnd(i - 1)) {
+          data += leftStart(i)
+          data += rightEnd(i - 1)
+          data += rightStart(i)
+          // enabling check increases efficiency, but makes midpoint coloring awkward
+        } else { // if (rightStart(i) == rightEnd(i - 1)) {
+          data += rightStart(i)
+          data += leftStart(i)
+          data += leftEnd(i - 1)
+        }
+      }
+
       // quad from point i to point i + 1
       data += leftStart(i)
       data += rightStart(i)
@@ -85,18 +123,6 @@ object QuadStrip {
       data += rightEnd(i)
       data += leftEnd(i)
 
-      // fill-in at point i
-      if (i > 0) {
-        if (leftStart(i) == leftEnd(i - 1)) {
-          data += leftStart(i)
-          data += rightEnd(i - 1)
-          data += rightStart(i)
-        } else if (rightStart(i) == rightEnd(i - 1)) {
-          data += rightStart(i)
-          data += leftStart(i)
-          data += leftEnd(i - 1)
-        }
-      }
     }
 
     data.toArray
