@@ -4,13 +4,12 @@ import robowars.graphics.materials.Material
 
 import language.existentials
 
-
 class CompositeModelBuilder(val models: Map[GenericMaterial, GenericModelBuilder])
   extends Model {
   self =>
 
   def init(): DrawableModel = {
-    new ConcreteCompositeModel(models.map { case (material, model) => material -> model.init()})
+    new ConcreteCompositeModel(models.map { case (material, model) => material -> model.init()}.asInstanceOf[Map[GenericMaterial, ConcreteModel]])
   }
 
   def +(other: Model): Model = {
@@ -36,7 +35,6 @@ class CompositeModelBuilder(val models: Map[GenericMaterial, GenericModelBuilder
         new CompositeModelBuilder(mergedModels.toMap)
     }
   }
-
 
   def project(material: Material[_, _]): Model = models.get(material.asInstanceOf[GenericMaterial]) match {
     case Some(modelBuilder) => modelBuilder
