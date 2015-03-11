@@ -21,6 +21,8 @@ case class VertexXY(x: Float, y: Float) extends Vertex {
 
   def size: Float = math.sqrt(x * x + y * y).toFloat
 
+  def perpendicular = VertexXY(-y, x)
+
   def normalized: VertexXY = this * (1 / size)
 }
 
