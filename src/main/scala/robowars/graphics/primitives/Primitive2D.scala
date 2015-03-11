@@ -36,6 +36,9 @@ class Primitive2D[TColor <: Vertex : ClassTag] private
   def translate(x: Float, y: Float): this.type =
     mapPos(pos => VertexXY(pos.x + x, pos.y + y))
 
+  def translate(amount: VertexXY): this.type =
+    translate(amount.x, amount.y)
+
   def rotate(a: Float): this.type = {
     val rotationMat = Matrix2x2.rotation(a)
     mapPos(rotationMat * _)

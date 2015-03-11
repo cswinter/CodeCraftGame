@@ -2,7 +2,7 @@ package robowars.graphics.models
 
 import robowars.graphics.engine.RenderStack
 import robowars.graphics.model.{EmptyModel, Model, ColorRGB}
-import robowars.graphics.primitives.Polygon
+import robowars.graphics.primitives.{Primitive2D, PolygonOutline, Polygon}
 import robowars.worldstate.MineralObject
 
 
@@ -29,10 +29,10 @@ class TestModel(implicit val rs: RenderStack) extends WorldObjectModel(MineralOb
   val m2 = models2.foldLeft[Model](m1)((x, y) => x + y)
   val model = m2.init()
 
-  def regularPolygon(n: Int, f: Float): Polygon[ColorRGB] = {
-    new Polygon(n, renderStack.MaterialXYRGB)
+  def regularPolygon(n: Int, f: Float): Primitive2D[ColorRGB] = {
+    new PolygonOutline(renderStack.MaterialXYRGB)(n, f, f + 5)
       .color(ColorRGB(0, 1, 0))
-      .scale(f)
+      //.scale(f)
   }
 
   def circumradius(n: Int) = (sideLength * 0.5 / math.sin(math.Pi / n)).toFloat

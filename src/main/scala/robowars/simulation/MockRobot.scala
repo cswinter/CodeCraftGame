@@ -12,7 +12,7 @@ class MockRobot(
   val size: Int
 ) extends MockObject {
   var targetOrientation = orientation
-  val speed = 0.5f
+  val speed = 2f
   val turnSpeed = 0.01f
 
   override def update(): Unit = {

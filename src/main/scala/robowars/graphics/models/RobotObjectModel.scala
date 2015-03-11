@@ -1,79 +1,90 @@
 package robowars.graphics.models
 
 import robowars.graphics.engine.RenderStack
-import robowars.graphics.model.ColorRGB
-import robowars.graphics.primitives.{RichCircleSegment, Polygon, PolygonOutline}
+import robowars.graphics.model._
+import robowars.graphics.primitives._
 import robowars.worldstate.RobotObject
 
 
 class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
   extends WorldObjectModel(robot) {
 
-  val size = robot.size
+  import math._
 
-  val radius = 30
-  val hull =
-    new PolygonOutline(renderStack.MaterialXYRGB)(5, radius, radius + 6)
-      .colorInside(ColorRGB(0.15f, 0.15f, 1f))
-      .colorOutside(ColorRGB(0.0f, 0.0f, 1f))
-
-  val body = new Polygon(5, renderStack.MaterialXYRGB)
-    .scale(radius)
-    .color(ColorRGB(0, 0, 0))
-
-  val sideLength = 2 * (radius + 6) * math.sin(math.Pi / 5).toFloat
-  val innerRadius = (radius + 6) * math.cos(math.Pi / 5).toFloat
-
-  val booster1 = new RichCircleSegment(6, 0.7f, renderStack.BloomShader)
-    .colorOutside(ColorRGB(0.15f, 0.15f, 1f))
-    .colorMidpoint(ColorRGB(0.95f, 0.95f, 0.95f))
-    .scaleX(7)
-    .scaleY(sideLength / 4.5f)
-    .rotate(math.Pi.toFloat)
-    .translate(-innerRadius, sideLength / 4)
-    .zPos(1)
-
-  val booster2 = new RichCircleSegment(6, 0.7f, renderStack.BloomShader)
-    .colorOutside(ColorRGB(0.15f, 0.15f, 1f))
-    .colorMidpoint(ColorRGB(0.95f, 0.95f, 0.95f))
-    .scaleX(7)
-    .scaleY(sideLength / 4.5f)
-    .rotate(math.Pi.toFloat)
-    .translate(-innerRadius, -sideLength / 4)
-    .zPos(1)
-
-  val module1Hull = new PolygonOutline(renderStack.BloomShader)(6, 6, 10)
-    .color(ColorRGB(0.0f, 0.0f, 1f))
-    //.rotate(2 * math.Pi.toFloat / 10)
-    .translate(innerRadius - 3, 0)
-    .rotate(2 * math.Pi.toFloat / 10)
-    .zPos(-1)
-
-  val weapon1 = new Polygon(6, renderStack.MaterialXYRGB)
-    .colorMidpoint(ColorRGB(0.5f, 0.5f, 1))
-    .colorOutside(ColorRGB(0, 0, 0))
-    .rotate(2 * math.Pi.toFloat / 10)
-    .scale(6)
-    .translate(innerRadius - 3, 0)
-    .rotate(2 * math.Pi.toFloat / 10)
-    .zPos(1)
+  val sides = robot.size
+  val sideLength = 40
+  val radiusBody = 0.5f * sideLength / sin(Pi / sides).toFloat
+  val radiusHull = radiusBody + circumradius(4)
 
 
-  val module2Hull = new PolygonOutline(renderStack.BloomShader)(6, 6, 10)
-    .color(ColorRGB(0.0f, 0.0f, 1f))
-    .rotate(2 * math.Pi.toFloat / 10)
-    .translate(innerRadius - 3, 0)
-    .rotate(-2 * math.Pi.toFloat / 10)
-    .zPos(-1)
+  val HullColor = ColorRGB(0.95f, 0.95f, 0.95f)
+  val ThrusterColor = ColorRGB(0, 0, 1)
 
-  val weapon2 = new Polygon(6, renderStack.BloomShader)
-    .colorMidpoint(ColorRGB(1, 0.5f, 0))
-    .colorOutside(ColorRGB(0.5f, 0, 0))
-    //.rotate(2 * math.Pi.toFloat / 10)
-    .scale(6)
-    .translate(innerRadius - 3, 0)
-    .rotate(-2 * math.Pi.toFloat / 10)
-    .zPos(2)
 
-  val model = (hull + body + booster1 + booster2 + module1Hull + weapon1 + module2Hull + weapon2).init()
+  val modelComponents = Seq(
+    /* body */
+    new Polygon(sides, renderStack.MaterialXYRGB)
+      .scale(radiusBody)
+      .color(ColorRGB(0.05f, 0.05f, 0.05f)),
+
+    /* hull */
+    new PolygonOutline(renderStack.MaterialXYRGB)(sides, radiusBody, radiusHull)
+      .color(HullColor),
+
+    /* thrusters */
+    thruster(1),
+    thruster(-1)
+  )
+
+
+  def thruster(side: Int) = {
+    val perp = outerModulePerpendicular(0)
+    new RichCircleSegment(8, 0.7f, renderStack.MaterialXYRGB)
+      .scaleX(5)
+      .scaleY(sideLength * 0.25f)
+      .rotate(Pi.toFloat)
+      .translate(outerModulePosition(0))
+      .translate(side * sideLength * 0.3f * perp)
+      .colorMidpoint(ThrusterColor)
+      .colorOutside(HullColor)
+      .zPos(1)
+  }
+
+  val model = modelComponents.reduce((x: Model, y: Model) => x + y).init()
+
+
+  def outerModulePosition(n: Int): VertexXY = {
+    assert(sides > n)
+    assert(n >= 0)
+    val r = inradius(radiusHull)
+    r * outerModuleNormal(n)
+  }
+
+
+  def outerModuleNormal(n: Int): VertexXY = {
+    val angle = Pi + (2 * n * Pi / sides)
+    VertexXY(angle)
+  }
+
+  def outerModulePerpendicular(n: Int): VertexXY = {
+    outerModuleNormal(n).perpendicular
+  }
+
+
+  /**
+   * Computes the inradius of a regular polygon given the radius.
+   * @param radius The radius.
+   */
+  def inradius(radius: Float): Float =
+    radius * cos(Pi / sides).toFloat
+
+  /**
+   * Computes the circumradius of a regular polygon given the inradius.
+   * @param n The number of sides.
+   * @param inradius The inradius.
+   */
+  def circumradius(inradius: Float): Float =
+    inradius / cos(Pi / sides).toFloat
+
+
 }
