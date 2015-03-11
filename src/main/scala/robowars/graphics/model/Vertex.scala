@@ -29,6 +29,9 @@ object VertexXY {
   implicit class Scalar(val value: Float) extends AnyVal {
     def *(vertex: VertexXY) = vertex * value
   }
+
+  def apply(angle: Double): VertexXY =
+    VertexXY(math.cos(angle).toFloat, math.sin(angle).toFloat)
 }
 
 
@@ -66,6 +69,11 @@ case class ColorRGBA(r: Float, g: Float, b: Float, a: Float) extends Vertex {
     case 3 => a
     case _ => throw new IndexOutOfBoundsException(s"Index $i is invalid. ColorRGBA has only 4 components.")
   }
+}
+
+object ColorRGBA {
+  def apply(baseColor: ColorRGB, alpha: Float): ColorRGBA =
+    ColorRGBA(baseColor.r, baseColor.g, baseColor.b, alpha)
 }
 
 
