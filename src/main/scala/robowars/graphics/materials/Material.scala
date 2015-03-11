@@ -110,6 +110,7 @@ class Material[TPosition <: Vertex, TColor <: Vertex](
         data(i * nComponents + j) = pos(j)
       }
       for (j <- 0 until nCompCol) {
+        assert(col != null)
         data(i * nComponents + j + nCompPos) = col(j)
       }
     }

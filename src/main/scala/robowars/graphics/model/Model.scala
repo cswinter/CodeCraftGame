@@ -32,9 +32,6 @@ trait Model {
   def init(): DrawableModel
   def +(model: Model): Model
 
-  def *(model: Model): Model =
-    new ProductModel(this, model)
-
   def project(material: Material[_, _]): Model
   def hasMaterial(material: Material[_ , _]): Boolean
 }

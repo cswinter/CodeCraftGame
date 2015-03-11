@@ -3,7 +3,9 @@ package robowars.graphics.models
 import robowars.graphics.engine.RenderStack
 import robowars.graphics.model._
 import robowars.graphics.primitives._
-import robowars.worldstate.RobotObject
+import robowars.worldstate.{WorldObject, RobotObject}
+
+import scala.util.Random
 
 
 class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
@@ -50,8 +52,21 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
       .zPos(1)
   }
 
-  val model = modelComponents.reduce((x: Model, y: Model) => x + y).init()
+  def generateArtifact =
+    new Polygon(Random.nextInt(5) + 3, renderStack.MaterialXYRGB)
+      .scale(25)
+      .color(ColorRGB(0, 1, 1))
+      .zPos(2)
 
+  val animated = new MutableWrapperModel(generateArtifact.init())
+
+  val model = modelComponents.reduce((x: Model, y: Model) => x + y).init() * animated
+
+
+  override def update(worldObject: WorldObject): this.type = {
+    animated.replaceModel(generateArtifact.init())
+    super.update(worldObject)
+  }
 
   def outerModulePosition(n: Int): VertexXY = {
     assert(sides > n)

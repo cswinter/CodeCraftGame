@@ -7,4 +7,6 @@ trait DrawableModel extends Model {
   def draw(): Unit
   def setModelview(modelview: Matrix4x4)
   def project(material: Material[_, _]): DrawableModel
+  def *(model: DrawableModel): DrawableModel =
+    new DrawableProductModel(this, model)
 }
