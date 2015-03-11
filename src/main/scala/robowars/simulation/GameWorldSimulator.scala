@@ -22,12 +22,12 @@ object GameWorldSimulator extends GameWorld {
         rni(3) + 1)
 
   val robots =
-    for (i <- 0 to 5) yield
+    for (i <- 0 to 10) yield
       new MockRobot(
         2000 * rnd() - 1000,
         1000 * rnd() - 500,
         2 * math.Pi.toFloat * rnd(),
-        1)
+        i % 5 + 3)
 
   val objects = collection.mutable.Set(minerals ++ robots:_*)
 
