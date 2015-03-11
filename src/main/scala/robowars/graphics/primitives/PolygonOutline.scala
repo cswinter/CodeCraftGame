@@ -38,8 +38,9 @@ object PolygonOutline {
     val angle = (2 * math.Pi / nCorners).toFloat
     val rotation = Matrix2x2.rotation(angle)
 
-    var outerLast = new VertexXY(outerRadius, 0)
-    var innerLast = new VertexXY(innerRadius, 0)
+    val initialRotation = Matrix2x2.rotation(angle / 2)
+    var outerLast = initialRotation * new VertexXY(-outerRadius, 0)
+    var innerLast = initialRotation * new VertexXY(-innerRadius, 0)
 
     val positions = new Array[VertexXY](2 * 3 * nCorners)
 
