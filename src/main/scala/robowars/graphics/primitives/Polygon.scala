@@ -33,7 +33,7 @@ object Polygon {
     val rotation = Matrix2x2.rotation(angle)
     val midpoint = new VertexXY(0, 0)
 
-    var last = new VertexXY(1, 0)
+    var last = Matrix2x2.rotation(angle / 2) * new VertexXY(-1, 0)
 
     val positions = new Array[VertexXY](3 * corners)
 
