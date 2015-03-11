@@ -48,12 +48,12 @@ object DrawingCanvas {
       override def keyTyped(keyEvent: KeyEvent): Unit = println(s"keyTyped($keyEvent)")
 
       override def keyPressed(keyEvent: KeyEvent): Unit = keyEvent.getKeyCode match {
-        case 37 /* LEFT */ => camera.x -= moveSpeed * camera.zoomFactor
-        case 39 /* RIGHT */ => camera.x += moveSpeed * camera.zoomFactor
-        case 38 /* UP */ => camera.y += moveSpeed * camera.zoomFactor
-        case 40 /* DOWN */ => camera.y -= moveSpeed * camera.zoomFactor
-        case 33 /* PAGE UP */ => camera.zoom -= zoomSpeed
-        case 34 /* PAGE DOWN */ => camera.zoom += zoomSpeed
+        case 37 | 65 /* LEFT, A */ => camera.x -= moveSpeed * camera.zoomFactor
+        case 39 | 68 /* RIGHT, D */ => camera.x += moveSpeed * camera.zoomFactor
+        case 38 | 87 /* UP, W */ => camera.y += moveSpeed * camera.zoomFactor
+        case 40 | 83 /* DOWN, S */ => camera.y -= moveSpeed * camera.zoomFactor
+        case 33 | 81 /* PAGE UP, Q */ => camera.zoom -= zoomSpeed
+        case 34 | 69 /* PAGE DOWN, E */ => camera.zoom += zoomSpeed
         case 32 /* SPACEBAR */ => RenderFrame.togglePause()
         case _ =>
       } //println(s"keyPressed($keyEvent)")
