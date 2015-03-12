@@ -15,6 +15,9 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
   import math._
 
 
+  val hexRad = 27.0f
+  val hexInRad = 11.0f
+  val hexagonVertices = Geometry.polygonVertices(6, Pi.toFloat / 6, hexRad)
   val ModulePosition = Map[(Int, Int), VertexXY](
     (3, 0) -> VertexXY(0, 0),
 
@@ -27,7 +30,18 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
     (5, 2) -> VertexXY(6, 20),
     (5, 3) -> VertexXY(0, 0),
     (5, 4) -> VertexXY(6, -20),
-    (5, 5) -> VertexXY(20, 0)
+    (5, 5) -> VertexXY(20, 0),
+
+    (6, 0) -> hexagonVertices(0),
+    (6, 1) -> hexagonVertices(1),
+    (6, 2) -> hexagonVertices(2),
+    (6, 3) -> hexagonVertices(3),
+    (6, 4) -> hexagonVertices(4),
+    (6, 5) -> hexagonVertices(5),
+
+    (6, 6) -> hexInRad * VertexXY(0 * 2 * Pi.toFloat / 3),
+    (6, 7) -> hexInRad * VertexXY(1 * 2 * Pi.toFloat / 3),
+    (6, 8) -> hexInRad * VertexXY(2 * 2 * Pi.toFloat / 3)
   )
 
   val ModuleCount: Map[Int, Int] = {
@@ -119,9 +133,21 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
          yield storageModule(ModulePosition((sides, i)))
     } else Seq()
 
+  val energy =
+    if (sides == 3 || sides == 5) {
+      for (pos <- Geometry.polygonVertices(6, radius = 4.5f) ++ Seq(VertexXY(0, 0)))
+        yield new Polygon(7, renderStack.BloomShader)
+          .scale(2)
+          .translate(pos)
+          .color(ColorRGB(0, 1, 0))
+          .colorMidpoint(ColorRGB(1, 1, 1))
+          .zPos(2)
+    } else Seq()
+
   val thrusterTrails = new MutableWrapperModel(generateThrusterTrails(robot.positions).init())
 
-  val model = (modelComponents ++ modules).reduce[ComposableModel]((x, y) => x + y).init() * thrusterTrails
+  val staticModels = (modelComponents ++ modules ++ energy).reduce[ComposableModel]((x, y) => x + y)
+  val model = staticModels.init() * thrusterTrails
 
 
   override def update(worldObject: WorldObject): this.type = {

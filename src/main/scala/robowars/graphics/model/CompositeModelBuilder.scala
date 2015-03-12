@@ -9,7 +9,16 @@ class CompositeModelBuilder(val models: Map[GenericMaterial, GenericModelBuilder
   self =>
 
   def init(): DrawableModel = {
-    new ConcreteCompositeModel(models.map { case (material, model) => material -> model.init()}.asInstanceOf[Map[GenericMaterial, ConcreteModel]])
+    // need to do all of this because scala type system sucks
+    val initModelIter: Iterable[(GenericMaterial, ConcreteModel)] =
+      for (model <- models.values)
+      yield (model.material, model.init())
+
+    var initModelMap = Map.empty[GenericMaterial, ConcreteModel]
+
+    for ((mat, mod) <- initModelIter) initModelMap += mat -> mod
+
+    new ConcreteCompositeModel(initModelMap)
   }
 
   def +(other: ComposableModel): ComposableModel = {
