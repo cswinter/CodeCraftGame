@@ -14,6 +14,26 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
 
   import math._
 
+
+  val ModulePosition = Map[(Int, Int), VertexXY](
+    (3, 0) -> VertexXY(0, 0),
+
+    (4, 0) -> VertexXY(9, 4),
+    (4, 1) -> VertexXY(-9, 9),
+    (4, 2) -> VertexXY(-4, -9),
+
+    (5, 0) -> VertexXY(-17, 11),
+    (5, 1) -> VertexXY(-17, -11),
+    (5, 2) -> VertexXY(6, 20),
+    (5, 3) -> VertexXY(0, 0),
+    (5, 4) -> VertexXY(6, -20),
+    (5, 5) -> VertexXY(20, 0)
+  )
+
+  val ModuleCount: Map[Int, Int] = {
+    for ((size, _) <- ModulePosition.keys) yield size -> ModulePosition.count(_._1._1 == size)
+  }.toMap
+
   val sides = robot.size
   val sideLength = 40
   val radiusBody = 0.5f * sideLength / sin(Pi / sides).toFloat
@@ -27,14 +47,18 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
   val Black = ColorRGB(0, 0, 0)
 
 
-  def storageModule(): ComposableModel = {
+  def storageModule(position: VertexXY = VertexXY(0, 0)): ComposableModel = {
+    val radius = 8
+    val outlineWidth = 1
     new Polygon(20, renderStack.MaterialXYRGB)
-      .scale(8)
+      .scale(radius - outlineWidth)
       .color(ColorBackplane)
-      .zPos(1) +
-    new PolygonOutline(renderStack.MaterialXYRGB)(20, 8, 9)
+      .zPos(1)
+      .translate(position) +
+    new PolygonOutline(renderStack.MaterialXYRGB)(20, radius - outlineWidth, radius)
       .color(ColorHull)
       .zPos(1)
+      .translate(position)
   }
 
   def thruster(side: Int) = {
@@ -86,15 +110,18 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
 
     /* thrusters */
     thruster(1),
-    thruster(-1),
-
-    /* storage module */
-    storageModule()
+    thruster(-1)
   )
+
+  val modules =
+    if (ModuleCount.contains(sides)) {
+        for (i <- 0 until ModuleCount(sides))
+         yield storageModule(ModulePosition((sides, i)))
+    } else Seq()
 
   val thrusterTrails = new MutableWrapperModel(generateThrusterTrails(robot.positions).init())
 
-  val model = modelComponents.reduce[ComposableModel]((x, y) => x + y).init() * thrusterTrails
+  val model = (modelComponents ++ modules).reduce[ComposableModel]((x, y) => x + y).init() * thrusterTrails
 
 
   override def update(worldObject: WorldObject): this.type = {
