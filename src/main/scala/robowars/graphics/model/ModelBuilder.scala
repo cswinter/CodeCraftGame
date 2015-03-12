@@ -4,7 +4,7 @@ import robowars.graphics.materials.Material
 
 abstract class ModelBuilder[TPosition <: Vertex, TColor <: Vertex]
 (val material: Material[TPosition, TColor])
-  extends Model {
+  extends ComposableModel {
   self =>
 
   def init(): ConcreteModel =
@@ -13,7 +13,7 @@ abstract class ModelBuilder[TPosition <: Vertex, TColor <: Vertex]
   def initParameterized[TParams](params: Parameterized[TParams]): ConcreteModel with Parameterized[TParams] =
     ConcreteModel[TPosition, TColor, TParams](material, vertexData, params)
 
-  def +(other: Model): Model = {
+  def +(other: ComposableModel): ComposableModel = {
     other match {
       case mb: ModelBuilder[TPosition, TColor] if mb.material == material =>
         new ModelBuilder[TPosition, TColor](material) {

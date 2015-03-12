@@ -1,7 +1,7 @@
 package robowars.graphics.models
 
 import robowars.graphics.engine.RenderStack
-import robowars.graphics.model.{EmptyModel, Model, ColorRGB}
+import robowars.graphics.model.{ComposableModel, EmptyModel, Model, ColorRGB}
 import robowars.graphics.primitives.{Primitive2D, PolygonOutline, Polygon}
 import robowars.worldstate.MineralObject
 
@@ -25,8 +25,8 @@ class TestModel(implicit val rs: RenderStack) extends WorldObjectModel(MineralOb
   val models2 = polygonSeries(_ * 10, 250, ColorRGB(0, 0, 0.5f))
 
 
-  val m1 = models.foldLeft[Model](EmptyModel)((x, y) => x + y)
-  val m2 = models2.foldLeft[Model](m1)((x, y) => x + y)
+  val m1 = models.foldLeft[ComposableModel](EmptyModel)((x, y) => x + y)
+  val m2 = models2.foldLeft[ComposableModel](m1)((x, y) => x + y)
   val model = m2.init()
 
   def regularPolygon(n: Int, f: Float): Primitive2D[ColorRGB] = {

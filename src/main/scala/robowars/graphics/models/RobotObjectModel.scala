@@ -60,7 +60,7 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
 
   val animated = new MutableWrapperModel(generateArtifact.init())
 
-  val model = modelComponents.reduce((x: Model, y: Model) => x + y).init() * animated
+  val model = modelComponents.reduce[ComposableModel]((x, y) => x + y).init() * animated
 
 
   override def update(worldObject: WorldObject): this.type = {

@@ -29,9 +29,6 @@ import robowars.graphics.materials.Material
 
 
 trait Model {
-  def init(): DrawableModel
-  def +(model: Model): Model
-
   def project(material: Material[_, _]): Model
   def hasMaterial(material: Material[_ , _]): Boolean
 }

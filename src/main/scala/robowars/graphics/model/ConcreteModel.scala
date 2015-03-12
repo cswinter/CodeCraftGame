@@ -13,11 +13,6 @@ class ConcreteModel(val vbo: VBO, var modelview: Matrix4x4, val material: Materi
     this.modelview = modelview
   }
 
-  def init() = this
-
-  def +(model: Model): Model = throw new UnsupportedOperationException(
-    "Cannot sum initialised models.")
-
   def project(material: Material[_, _]): DrawableModel = material match {
     case this.material => this
     case _ => EmptyModel

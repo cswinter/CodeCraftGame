@@ -10,6 +10,3 @@ trait ParameterizedConcreteModel[TParams] extends ConcreteModel with Parameteriz
     super.draw()
   }
 }
-
-
-

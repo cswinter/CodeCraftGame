@@ -5,14 +5,14 @@ import robowars.graphics.materials.Material
 import language.existentials
 
 class CompositeModelBuilder(val models: Map[GenericMaterial, GenericModelBuilder])
-  extends Model {
+  extends ComposableModel {
   self =>
 
   def init(): DrawableModel = {
     new ConcreteCompositeModel(models.map { case (material, model) => material -> model.init()}.asInstanceOf[Map[GenericMaterial, ConcreteModel]])
   }
 
-  def +(other: Model): Model = {
+  def +(other: ComposableModel): ComposableModel = {
     other match {
       case mb: GenericModelBuilder =>
         if (models.contains(mb.material)) {

@@ -24,10 +24,6 @@ class DrawableProductModel(model1: DrawableModel, model2: DrawableModel) extends
     }
   }
 
-  override def init(): DrawableModel = this
-
-  override def +(model: Model): Model = throw new UnsupportedOperationException()
-
   override def hasMaterial(material: Material[_, _]): Boolean =
     model1.hasMaterial(material) || model2.hasMaterial(material)
 }

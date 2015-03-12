@@ -17,11 +17,6 @@ class ConcreteCompositeModel(val models: Map[GenericMaterial, ConcreteModel])
       model.setModelview(modelview)
   }
 
-  def init() = this
-
-  def +(model: Model): Model = throw new UnsupportedOperationException(
-    "Cannot sum initialised models.")
-
   def project(material: Material[_, _]): DrawableModel = models.get(material.asInstanceOf[GenericMaterial]) match {
     case Some(model) => model
     case None => EmptyModel
