@@ -1,6 +1,7 @@
 package robowars.graphics.models
 
 import robowars.graphics.engine.RenderStack
+import robowars.graphics.matrices.IdentityMatrix4x4
 import robowars.graphics.model._
 import robowars.graphics.primitives._
 import robowars.worldstate.{WorldObject, RobotObject}
@@ -19,37 +20,46 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
   val radiusHull = radiusBody + circumradius(4)
 
 
-  val HullColor = ColorRGB(0.95f, 0.95f, 0.95f)
-  val ThrusterColor = ColorRGB(0, 0, 1)
-
-
-  val modelComponents = Seq(
-    /* body */
-    new Polygon(sides, renderStack.MaterialXYRGB)
-      .scale(radiusBody)
-      .color(ColorRGB(0.05f, 0.05f, 0.05f)),
-
-    /* hull */
-    new PolygonOutline(renderStack.MaterialXYRGB)(sides, radiusBody, radiusHull)
-      .color(HullColor),
-
-    /* thrusters */
-    thruster(1),
-    thruster(-1)
-  )
+  val ColorBody = ColorRGB(0.05f, 0.05f, 0.05f)
+  val ColorHull = ColorRGB(0.95f, 0.95f, 0.95f)
+  val ColorThrusters = if (robot.identifier % 2 == 0) ColorRGB(0, 0, 1) else ColorRGB(1, 0, 0)
+  val ColorBackplane = ColorRGB(0.1f, 0.1f, 0.1f)
+  val Black = ColorRGB(0, 0, 0)
 
 
   def thruster(side: Int) = {
-    val perp = outerModulePerpendicular(0)
     new RichCircleSegment(8, 0.7f, renderStack.MaterialXYRGB)
       .scaleX(5)
       .scaleY(sideLength * 0.25f)
       .rotate(Pi.toFloat)
-      .translate(outerModulePosition(0))
-      .translate(side * sideLength * 0.3f * perp)
-      .colorMidpoint(ThrusterColor)
-      .colorOutside(HullColor)
+      .translate(computeThrusterPos(side))
+      .colorMidpoint(ColorThrusters)
+      .colorOutside(ColorBackplane)
       .zPos(1)
+  }
+
+  def generateThrusterTrails(positions: Seq[(Float, Float, Float)]): ComposableModel = {
+    val n = positions.length
+    val trailPositions =
+      for (((x, y, a), t) <- positions.zipWithIndex)
+      yield {
+        val drift = -VertexXY(a) * (n - t - 1) * 2.0f
+        val offset = VertexXY(x, y) + drift
+        (computeThrusterPos(1, a) + offset, computeThrusterPos(-1, a) + offset)
+      }
+
+    val (trail1, trail2) = trailPositions.unzip
+    val colors = trail1.indices.map(index => ColorRGBA(ColorThrusters, index / n.toFloat))
+
+    new QuadStrip(sideLength * 0.3f, trail1)(renderStack.TranslucentAdditive)
+      .colorMidpoints(colors) +
+      new QuadStrip(sideLength * 0.3f, trail2)(renderStack.TranslucentAdditive)
+        .colorMidpoints(colors)
+  }
+
+  def computeThrusterPos(side: Int, angle: Float = 0): VertexXY = {
+    val perp = outerModulePerpendicular(0, angle)
+    outerModulePosition(0, angle) + side * sideLength * 0.3f * perp
   }
 
   def generateArtifact =
@@ -58,31 +68,51 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
       .color(ColorRGB(0, 1, 1))
       .zPos(2)
 
-  val animated = new MutableWrapperModel(generateArtifact.init())
 
-  val model = modelComponents.reduce[ComposableModel]((x, y) => x + y).init() * animated
+  val modelComponents = Seq(
+    /* body */
+    new Polygon(sides, renderStack.MaterialXYRGB)
+      .scale(radiusBody)
+      .color(ColorBody),
+
+    /* hull */
+    new PolygonOutline(renderStack.MaterialXYRGB)(sides, radiusBody, radiusHull)
+      .color(ColorHull)
+      .colorSide(ColorBackplane, sides - 1),
+
+    /* thrusters */
+    thruster(1),
+    thruster(-1)
+  )
+
+  val thrusterTrails = new MutableWrapperModel(generateArtifact.init())
+
+  val model = modelComponents.reduce[ComposableModel]((x, y) => x + y).init() * thrusterTrails
 
 
   override def update(worldObject: WorldObject): this.type = {
-    animated.replaceModel(generateArtifact.init())
+    val robotObject = worldObject.asInstanceOf[RobotObject]
+
+    thrusterTrails.replaceModel(generateThrusterTrails(robotObject.positions).init())
     super.update(worldObject)
+    thrusterTrails.setModelview(IdentityMatrix4x4)
+    this
   }
 
-  def outerModulePosition(n: Int): VertexXY = {
+  def outerModulePosition(n: Int, orientationOffset: Float = 0): VertexXY = {
     assert(sides > n)
     assert(n >= 0)
     val r = inradius(radiusHull)
-    r * outerModuleNormal(n)
+    r * outerModuleNormal(n, orientationOffset)
   }
 
-
-  def outerModuleNormal(n: Int): VertexXY = {
-    val angle = Pi + (2 * n * Pi / sides)
+  def outerModuleNormal(n: Int, orientationOffset: Float = 0): VertexXY = {
+    val angle = Pi + (2 * n * Pi / sides) + orientationOffset
     VertexXY(angle)
   }
 
-  def outerModulePerpendicular(n: Int): VertexXY = {
-    outerModuleNormal(n).perpendicular
+  def outerModulePerpendicular(n: Int, orientationOffset: Float = 0): VertexXY = {
+    outerModuleNormal(n, orientationOffset).perpendicular
   }
 
 
@@ -95,7 +125,6 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
 
   /**
    * Computes the circumradius of a regular polygon given the inradius.
-   * @param n The number of sides.
    * @param inradius The inradius.
    */
   def circumradius(inradius: Float): Float =

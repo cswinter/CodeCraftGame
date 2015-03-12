@@ -13,6 +13,7 @@ case class RobotObject(
   xPos: Float,
   yPos: Float,
   orientation: Float,
+  positions: Seq[(Float, Float, Float)],
 
   size: Int
 ) extends WorldObject

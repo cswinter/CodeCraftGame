@@ -1,6 +1,7 @@
 package robowars.graphics.model
 
 import robowars.graphics.materials.Material
+import robowars.graphics.matrices.{IdentityMatrix4x4, Matrix4x4}
 
 abstract class ModelBuilder[TPosition <: Vertex, TColor <: Vertex]
 (val material: Material[TPosition, TColor])

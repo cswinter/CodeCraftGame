@@ -14,7 +14,7 @@ class PolygonOutline[TColor <: Vertex : ClassTag]
 
   assert(innerRadius < outerRadius, s"Inner radius ($innerRadius) must be smaller than outer radius ($outerRadius)")
 
-  def colorOutside(color: TColor): PolygonOutline[TColor] = {
+  def colorOutside(color: TColor): this.type = {
     for (i <- 0 until nCorners) {
       colors(2 * 3 * i + 1) = color
       colors(2 * 3 * i + 2) = color
@@ -23,12 +23,18 @@ class PolygonOutline[TColor <: Vertex : ClassTag]
     this
   }
 
-  def colorInside(color: TColor): PolygonOutline[TColor] = {
+  def colorInside(color: TColor): this.type = {
     for (i <- 0 until nCorners) {
       colors(2 * 3 * i + 0) = color
       colors(2 * 3 * i + 3) = color
       colors(2 * 3 * i + 5) = color
     }
+    this
+  }
+
+  def colorSide(color: TColor, side: Int): this.type = {
+    for (i <- 0 until 6)
+      colors(2 * 3 * side + i) = color
     this
   }
 }

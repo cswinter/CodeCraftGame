@@ -17,6 +17,8 @@ case class VertexXY(x: Float, y: Float) extends Vertex {
   def /(a: Float): VertexXY = VertexXY(x / a, y / a)
   def *(a: Float): VertexXY = VertexXY(x * a, y * a)
 
+  def unary_- = VertexXY(-x, -y)
+
   def dot(other: VertexXY): Float = x * other.x + y * other.y
 
   def size: Float = math.sqrt(x * x + y * y).toFloat
