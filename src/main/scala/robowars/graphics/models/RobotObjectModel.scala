@@ -27,6 +27,16 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
   val Black = ColorRGB(0, 0, 0)
 
 
+  def storageModule(): ComposableModel = {
+    new Polygon(20, renderStack.MaterialXYRGB)
+      .scale(8)
+      .color(ColorBackplane)
+      .zPos(1) +
+    new PolygonOutline(renderStack.MaterialXYRGB)(20, 8, 9)
+      .color(ColorHull)
+      .zPos(1)
+  }
+
   def thruster(side: Int) = {
     new RichCircleSegment(8, 0.7f, renderStack.MaterialXYRGB)
       .scaleX(5)
@@ -76,7 +86,10 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
 
     /* thrusters */
     thruster(1),
-    thruster(-1)
+    thruster(-1),
+
+    /* storage module */
+    storageModule()
   )
 
   val thrusterTrails = new MutableWrapperModel(generateThrusterTrails(robot.positions).init())
