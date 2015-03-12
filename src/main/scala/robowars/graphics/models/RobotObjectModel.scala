@@ -62,12 +62,6 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
     outerModulePosition(0, angle) + side * sideLength * 0.3f * perp
   }
 
-  def generateArtifact =
-    new Polygon(Random.nextInt(5) + 3, renderStack.MaterialXYRGB)
-      .scale(25)
-      .color(ColorRGB(0, 1, 1))
-      .zPos(2)
-
 
   val modelComponents = Seq(
     /* body */
@@ -85,7 +79,7 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
     thruster(-1)
   )
 
-  val thrusterTrails = new MutableWrapperModel(generateArtifact.init())
+  val thrusterTrails = new MutableWrapperModel(generateThrusterTrails(robot.positions).init())
 
   val model = modelComponents.reduce[ComposableModel]((x, y) => x + y).init() * thrusterTrails
 
