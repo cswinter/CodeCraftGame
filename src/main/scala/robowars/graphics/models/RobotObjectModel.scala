@@ -157,6 +157,14 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
     thruster(-1)
   )
 
+  val shield =
+    if (util.Random.nextInt(1) == 4) {
+      new Polygon(50, renderStack.TranslucentAdditive)
+        .scale(radiusHull + 5)
+        .colorOutside(ColorRGBA(White, 0.5f))
+        .colorMidpoint(ColorRGBA(ColorThrusters, 0.1f))
+    } else EmptyModel
+
   val modules =
     if (ModuleCount.contains(sides)) {
       for {
@@ -171,7 +179,7 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
 
   val thrusterTrails = new MutableWrapperModel(generateThrusterTrails(robot.positions).init())
 
-  val staticModels = (modelComponents ++ modules).reduce[ComposableModel]((x, y) => x + y)
+  val staticModels = (modelComponents ++ modules :+ shield).reduce[ComposableModel]((x, y) => x + y)
   val model = staticModels.init() * thrusterTrails
 
 
