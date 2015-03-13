@@ -4,7 +4,7 @@ import robowars.graphics.engine.RenderStack
 import robowars.graphics.matrices.IdentityMatrix4x4
 import robowars.graphics.model._
 import robowars.graphics.primitives._
-import robowars.worldstate.{StorageModule, WorldObject, RobotObject}
+import robowars.worldstate.{Engines, StorageModule, WorldObject, RobotObject}
 
 import scala.util.Random
 
@@ -59,6 +59,7 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
   val ColorThrusters = if (robot.identifier % 2 == 0) ColorRGB(0, 0, 1) else ColorRGB(1, 0, 0)
   val ColorBackplane = ColorRGB(0.1f, 0.1f, 0.1f)
   val Black = ColorRGB(0, 0, 0)
+  val White = ColorRGB(1, 1, 1)
 
 
   def storageModule(position: VertexXY, nEnergy: Int = 0): ComposableModel = {
@@ -87,6 +88,21 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
         .zPos(2)
 
     (container ++ energyGlobes).reduce[ComposableModel](_ + _)
+  }
+
+  def engineModule(position: VertexXY): ComposableModel = {
+    val enginePositions = Geometry.polygonVertices(3, radius = 5, orientation = 0.4f)
+    val engines =
+      for ((offset, i) <- enginePositions.zipWithIndex)
+        yield new Polygon(5, renderStack.MaterialXYRGB)
+          .scale(4)
+          .colorMidpoint(ColorThrusters)
+          .colorOutside(ColorHull)
+          .zPos(1)
+          .rotate(0.3f * i)
+          .translate(position + offset)
+
+    engines.reduce[ComposableModel](_ + _)
   }
 
   def thruster(side: Int) = {
@@ -143,8 +159,12 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
 
   val modules =
     if (ModuleCount.contains(sides)) {
-      for ((m, i) <- robot.modules.zipWithIndex) yield m match {
-        case StorageModule(r) => storageModule(ModulePosition((sides, i)), r)
+      for {
+        (m, i) <- robot.modules.zipWithIndex
+        pos = ModulePosition((sides, i))
+      }yield m match {
+        case StorageModule(r) => storageModule(pos, r)
+        case Engines => engineModule(pos)
       }
     } else Seq()
 

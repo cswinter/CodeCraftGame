@@ -42,6 +42,7 @@ class CompositeModelBuilder(val models: Map[GenericMaterial, GenericModelBuilder
             }
           }
         new CompositeModelBuilder(mergedModels.toMap)
+      case EmptyModel => this
     }
   }
 

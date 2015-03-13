@@ -25,6 +25,8 @@ case class StorageModule(resourceCount: Int) extends RobotModule {
   assert(resourceCount <= 6)
 }
 
+case object Engines extends RobotModule
+
 
 case class MineralObject(
   identifier: Int,
