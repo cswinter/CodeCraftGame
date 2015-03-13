@@ -7,7 +7,7 @@ import javax.media.opengl.GL._
 
 import org.joda.time.DateTime
 
-import robowars.simulation.GameWorldSimulator
+import robowars.simulation.TheGameWorldSimulator
 
 
 
@@ -51,7 +51,7 @@ object RenderFrame extends GLEventListener {
     glClearColor(0.1f, 0, 0.1f, 0.0f)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-    val models = visualizer.computeModels(GameWorldSimulator.worldState)
+    val models = visualizer.computeModels(TheGameWorldSimulator.worldState)
 
     for (material <- renderStack.materials) {
       material.beforeDraw(camera.projection)
@@ -69,14 +69,14 @@ object RenderFrame extends GLEventListener {
     // update fps
     val now = new DateTime().getMillis
     frameTimes.enqueue(now)
-    val then = frameTimes.dequeue()
-    val fps = FrametimeSamples * 1000 / (now - then)
+    val tThen = frameTimes.dequeue()
+    val fps = FrametimeSamples * 1000 / (now - tThen)
     textField.setText(s"FPS: $fps")
   }
 
   private def update(): Unit = {
     if (!paused)
-      GameWorldSimulator.update()
+      TheGameWorldSimulator.update()
   }
 
   def dispose(arg0: GLAutoDrawable): Unit = {

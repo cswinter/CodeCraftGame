@@ -14,9 +14,16 @@ case class RobotObject(
   yPos: Float,
   orientation: Float,
   positions: Seq[(Float, Float, Float)],
-
+  modules: Seq[RobotModule],
   size: Int
 ) extends WorldObject
+
+sealed trait RobotModule
+
+case class StorageModule(resourceCount: Int) extends RobotModule {
+  assert(resourceCount >= 0)
+  assert(resourceCount <= 6)
+}
 
 
 case class MineralObject(

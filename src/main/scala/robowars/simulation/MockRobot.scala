@@ -1,6 +1,6 @@
 package robowars.simulation
 
-import robowars.worldstate.{RobotObject, WorldObject}
+import robowars.worldstate.{RobotModule, RobotObject, WorldObject}
 
 import scala.collection.mutable
 import scala.util.Random
@@ -10,7 +10,8 @@ class MockRobot(
   var xPos: Float,
   var yPos: Float,
   var orientation: Float,
-  val size: Int
+  val size: Int,
+  val modules: Seq[RobotModule]
 ) extends MockObject {
   private[this] var targetOrientation = orientation
   private[this] var stationary = false
@@ -59,7 +60,7 @@ class MockRobot(
   }
 
   override def state(): WorldObject =
-    RobotObject(identifier, xPos, yPos, orientation, oldPositions, size)
+    RobotObject(identifier, xPos, yPos, orientation, oldPositions, modules, size)
 
 
   def vx = math.cos(orientation).toFloat * speed

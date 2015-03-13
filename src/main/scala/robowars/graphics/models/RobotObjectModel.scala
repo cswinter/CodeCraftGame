@@ -4,7 +4,7 @@ import robowars.graphics.engine.RenderStack
 import robowars.graphics.matrices.IdentityMatrix4x4
 import robowars.graphics.model._
 import robowars.graphics.primitives._
-import robowars.worldstate.{WorldObject, RobotObject}
+import robowars.worldstate.{StorageModule, WorldObject, RobotObject}
 
 import scala.util.Random
 
@@ -61,18 +61,32 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
   val Black = ColorRGB(0, 0, 0)
 
 
-  def storageModule(position: VertexXY = VertexXY(0, 0)): ComposableModel = {
+  def storageModule(position: VertexXY, nEnergy: Int = 0): ComposableModel = {
     val radius = 8
     val outlineWidth = 1
-    new Polygon(20, renderStack.MaterialXYRGB)
-      .scale(radius - outlineWidth)
-      .color(ColorBackplane)
-      .zPos(1)
-      .translate(position) +
-    new PolygonOutline(renderStack.MaterialXYRGB)(20, radius - outlineWidth, radius)
-      .color(ColorHull)
-      .zPos(1)
-      .translate(position)
+    val container = Seq(
+      new Polygon(20, renderStack.MaterialXYRGB)
+        .scale(radius - outlineWidth)
+        .color(ColorBackplane)
+        .zPos(1)
+        .translate(position),
+      new PolygonOutline(renderStack.MaterialXYRGB)(20, radius - outlineWidth, radius)
+        .color(ColorHull)
+        .zPos(1)
+        .translate(position)
+    )
+
+    val energyPositions = Seq(VertexXY(0, 0)) ++ Geometry.polygonVertices(6, radius = 4.5f)
+    val energyGlobes =
+      for (i <- 0 until nEnergy)
+      yield new Polygon(7, renderStack.BloomShader)
+        .scale(2)
+        .translate(energyPositions(i) + position)
+        .color(ColorRGB(0, 1, 0))
+        .colorMidpoint(ColorRGB(1, 1, 1))
+        .zPos(2)
+
+    (container ++ energyGlobes).reduce[ComposableModel](_ + _)
   }
 
   def thruster(side: Int) = {
@@ -129,24 +143,15 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
 
   val modules =
     if (ModuleCount.contains(sides)) {
-        for (i <- 0 until ModuleCount(sides))
-         yield storageModule(ModulePosition((sides, i)))
+      for ((m, i) <- robot.modules.zipWithIndex) yield m match {
+        case StorageModule(r) => storageModule(ModulePosition((sides, i)), r)
+      }
     } else Seq()
 
-  val energy =
-    if (sides == 3 || sides == 5) {
-      for (pos <- Geometry.polygonVertices(6, radius = 4.5f) ++ Seq(VertexXY(0, 0)))
-        yield new Polygon(7, renderStack.BloomShader)
-          .scale(2)
-          .translate(pos)
-          .color(ColorRGB(0, 1, 0))
-          .colorMidpoint(ColorRGB(1, 1, 1))
-          .zPos(2)
-    } else Seq()
 
   val thrusterTrails = new MutableWrapperModel(generateThrusterTrails(robot.positions).init())
 
-  val staticModels = (modelComponents ++ modules ++ energy).reduce[ComposableModel]((x, y) => x + y)
+  val staticModels = (modelComponents ++ modules).reduce[ComposableModel]((x, y) => x + y)
   val model = staticModels.init() * thrusterTrails
 
 
