@@ -26,7 +26,19 @@ class MockRobot(
   override def update(): Unit = {
     // randomly choose new target orientation
     if (rnd() < 0.003) {
-      targetOrientation = (2 * math.Pi * rnd()).toFloat
+      val LimitX = 1500
+      val LimitY = 1000
+      if (xPos > LimitX) {
+        targetOrientation = math.Pi.toFloat
+      } else if (xPos < -LimitX) {
+        targetOrientation = 0
+      } else if (yPos > LimitY) {
+        targetOrientation = 3 * math.Pi.toFloat / 2
+      } else if (yPos < -LimitY) {
+        targetOrientation = math.Pi.toFloat / 2
+      } else {
+        targetOrientation = (2 * math.Pi * rnd()).toFloat
+      }
     }
 
     // adjust orientation towards target orientation
