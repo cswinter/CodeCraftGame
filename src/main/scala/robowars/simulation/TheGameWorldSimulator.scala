@@ -1,6 +1,6 @@
 package robowars.simulation
 
-import robowars.worldstate.{Engines, StorageModule, WorldObject, GameWorld}
+import robowars.worldstate._
 import scala.util.Random
 
 
@@ -12,9 +12,24 @@ object TheGameWorldSimulator extends GameWorld {
   }
 
   def rni(n: Int) = if (n <= 0) 0 else Random.nextInt(n)
-  def bernoulli[T](a: T, b: T, p: Float) = if (p > rnd()) a else b
 
-  def randomModule = bernoulli(StorageModule(rni(7)), Engines, 0.8f)
+  def rnd[T](elems: (Int, T)*): T = {
+    val totalWeight = elems.map(_._1).sum
+    val r = rni(totalWeight)
+    var cumulativeWeight = 0
+    var i = -1
+    do {
+      i += 1
+      cumulativeWeight += elems(i)._1
+    } while (cumulativeWeight < r)
+    elems(i)._2
+  }
+
+  def randomModule = rnd(
+    10 -> StorageModule(rni(7)),
+    2 -> Engines,
+    2 -> ShieldGenerator
+  )
 
   val ModuleCount = Map(3 -> 1, 4 -> 3, 5 -> 6, 6 -> 9).withDefaultValue(0)
   def randomModules(n: Int) = {

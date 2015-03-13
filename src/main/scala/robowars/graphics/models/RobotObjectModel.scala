@@ -4,7 +4,7 @@ import robowars.graphics.engine.RenderStack
 import robowars.graphics.matrices.IdentityMatrix4x4
 import robowars.graphics.model._
 import robowars.graphics.primitives._
-import robowars.worldstate.{Engines, StorageModule, WorldObject, RobotObject}
+import robowars.worldstate._
 
 import scala.util.Random
 
@@ -105,6 +105,28 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
     engines.reduce[ComposableModel](_ + _)
   }
 
+  def shieldGeneratorModule(position: VertexXY): ComposableModel = {
+    val radius = 3
+    val gridpointRadius = 2 * inradius(radius, 6)
+    val gridpoints = VertexXY(0, 0) +: Geometry.polygonVertices(6, radius = gridpointRadius)
+    val hexagons =
+      for (pos <- gridpoints)
+        yield new PolygonOutline(renderStack.MaterialXYRGB)(6, radius - 0.5f, radius)
+          .translate(pos + position)
+          .color(White)
+          .zPos(1)
+
+    val filling =
+      for (pos <- gridpoints)
+        yield new Polygon(6, renderStack.MaterialXYRGB)
+          .scale(radius - 0.5f)
+          .translate(pos + position)
+          .color(ColorThrusters)
+          .zPos(1)
+
+    (hexagons ++ filling).reduce[ComposableModel](_ + _)
+  }
+
   def thruster(side: Int) = {
     new RichCircleSegment(8, 0.7f, renderStack.MaterialXYRGB)
       .scaleX(5)
@@ -158,7 +180,7 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
   )
 
   val shield =
-    if (util.Random.nextInt(1) == 4) {
+    if (robot.modules.contains(ShieldGenerator)) {
       new Polygon(50, renderStack.TranslucentAdditive)
         .scale(radiusHull + 5)
         .colorOutside(ColorRGBA(White, 0.5f))
@@ -170,9 +192,10 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
       for {
         (m, i) <- robot.modules.zipWithIndex
         pos = ModulePosition((sides, i))
-      }yield m match {
+      } yield m match {
         case StorageModule(r) => storageModule(pos, r)
         case Engines => engineModule(pos)
+        case ShieldGenerator => shieldGeneratorModule(pos)
       }
     } else Seq()
 
@@ -213,15 +236,15 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
    * Computes the inradius of a regular polygon given the radius.
    * @param radius The radius.
    */
-  def inradius(radius: Float): Float =
-    radius * cos(Pi / sides).toFloat
+  def inradius(radius: Float, n: Int = sides): Float =
+    radius * cos(Pi / n).toFloat
 
   /**
    * Computes the circumradius of a regular polygon given the inradius.
    * @param inradius The inradius.
    */
-  def circumradius(inradius: Float): Float =
-    inradius / cos(Pi / sides).toFloat
+  def circumradius(inradius: Float, n: Int = sides): Float =
+    inradius / cos(Pi / n).toFloat
 
 
 }

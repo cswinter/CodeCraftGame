@@ -18,14 +18,15 @@ case class RobotObject(
   size: Int
 ) extends WorldObject
 
+
 sealed trait RobotModule
 
 case class StorageModule(resourceCount: Int) extends RobotModule {
   assert(resourceCount >= 0)
   assert(resourceCount <= 6)
 }
-
 case object Engines extends RobotModule
+case object ShieldGenerator extends RobotModule
 
 
 case class MineralObject(
