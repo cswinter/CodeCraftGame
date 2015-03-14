@@ -12,7 +12,6 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
   extends WorldObjectModel(robot) {
 
 
-
   val hexRad = 27.0f
   val hexInRad = 11.0f
   val hexagonVertices = Geometry.polygonVertices(6, Pi.toFloat / 6, hexRad)
@@ -58,35 +57,6 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
   val ColorBackplane = ColorRGB(0.1f, 0.1f, 0.1f)
   val Black = ColorRGB(0, 0, 0)
   val White = ColorRGB(1, 1, 1)
-
-
-  def storageModule(position: VertexXY, nEnergy: Int = 0): ComposableModel = {
-    val radius = 8
-    val outlineWidth = 1
-    val container = Seq(
-      new PolygonOld(20, renderStack.MaterialXYRGB)
-        .scale(radius - outlineWidth)
-        .color(ColorBackplane)
-        .zPos(1)
-        .translate(position),
-      new NewPolygonOutline(renderStack.MaterialXYRGB)(20, radius - outlineWidth, radius)
-        .color(ColorHull)
-        .zPos(1)
-        .translate(position)
-    )
-
-    val energyPositions = Seq(VertexXY(0, 0)) ++ Geometry.polygonVertices(6, radius = 4.5f)
-    val energyGlobes =
-      for (i <- 0 until nEnergy)
-      yield new PolygonOld(7, renderStack.BloomShader)
-        .scale(2)
-        .translate(energyPositions(i) + position)
-        .color(ColorRGB(0, 1, 0))
-        .colorMidpoint(ColorRGB(1, 1, 1))
-        .zPos(2)
-
-    (container ++ energyGlobes).reduce[ComposableModel](_ + _)
-  }
 
 
   def shieldGeneratorModule(position: VertexXY): ComposableModel = {
@@ -177,7 +147,7 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
         (m, i) <- robot.modules.zipWithIndex
         pos = ModulePosition((sides, i))
       } yield m match {
-        case StorageModule(r) => storageModule(pos, r)
+        case StorageModule(r) => shieldGeneratorModule(pos)
         case ShieldGenerator | Engines => shieldGeneratorModule(pos)
       }
     } else Seq()
@@ -241,18 +211,22 @@ object RobotColors {
 }
 
 
-
 case class RobotSignature(
   size: Int,
-  engines: Seq[(Engines.type, Int)])
+  engines: Seq[(Engines.type, Int)],
+  storageModules: Seq[(StorageModule, Int)])
 
 object RobotSignature {
   def apply(robotObject: RobotObject): RobotSignature = {
     val engines =
-    for ((Engines, index) <- robotObject.modules.zipWithIndex)
+      for ((Engines, index) <- robotObject.modules.zipWithIndex)
       yield (Engines, index)
 
-    RobotSignature(robotObject.size, engines)
+    val storageModules =
+      for ((storage: StorageModule, index) <- robotObject.modules.zipWithIndex)
+      yield (storage, index)
+
+    RobotSignature(robotObject.size, engines, storageModules)
   }
 }
 
@@ -286,7 +260,6 @@ object RobotModulePositions {
     (6, 8) -> hexInRad * VertexXY(2 * 2 * Pi.toFloat / 3)
   )
 }
-
 
 
 // TODO: get better signature
@@ -329,9 +302,13 @@ class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
 
     val engines =
       for ((Engines, index) <- signature.engines)
-        yield RobotEngines(ModulePosition((sides, index))).getModel
+      yield RobotEngines(ModulePosition((sides, index))).getModel
 
-    new RobotModel(body, hull, engines)
+    val storageModules =
+      for ((StorageModule(count), index) <- signature.storageModules)
+      yield RobotStorageModule(ModulePosition((sides, index)), count).getModel
+
+    new RobotModel(body, hull, engines, storageModules)
   }
 
 
@@ -341,15 +318,15 @@ class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
 case class RobotModel(
   body: Model[Unit],
   hull: Model[Unit],
-  engines: Seq[Model[Unit]]
+  engines: Seq[Model[Unit]],
+  storageModules: Seq[Model[Unit]]
 ) extends CompositeModel[RobotObject] {
-  val models = Seq(body, hull) ++ engines
+  val models = Seq(body, hull) ++ engines ++ storageModules
 
   override def update(a: RobotObject): Unit = {
 
   }
 }
-
 
 
 case class RobotEngines(position: VertexXY)(implicit rs: RenderStack)
@@ -375,4 +352,57 @@ case class RobotEngines(position: VertexXY)(implicit rs: RenderStack)
 
     new StaticCompositeModel(engines)
   }
+}
+
+case class RobotStorageModule(position: VertexXY, nEnergyGlobes: Int)(implicit rs: RenderStack)
+  extends ModelBuilder[RobotStorageModule, Unit] {
+
+  import robowars.graphics.models.RobotColors._
+
+  def signature = this
+
+  protected def buildModel: Model[Unit] = {
+    val radius = 8
+    val outlineWidth = 1
+    val body =
+      Polygon(
+        material = rs.MaterialXYRGB,
+        n = 20,
+        colorMidpoint = ColorBackplane,
+        colorOutside = ColorBackplane,
+        radius = radius - outlineWidth,
+        position = position,
+        zPos = 1
+      ).getModel
+
+    val hull =
+      PolygonOutline(
+        material = rs.MaterialXYRGB,
+        n = 20,
+        colorInside = ColorHull,
+        colorOutside = ColorHull,
+        innerRadius = radius - outlineWidth,
+        outerRadius = radius,
+        position = position,
+        zPos = 1
+      ).getModel
+
+    val energyPositions = Seq(VertexXY(0, 0)) ++ Geometry.polygonVertices2(6, radius = 4.5f)
+    val energyGlobes =
+      for (i <- 0 until nEnergyGlobes)
+      yield
+        Polygon(
+          material = rs.BloomShader,
+          n = 7,
+          colorMidpoint = ColorRGB(1, 1, 1),
+          colorOutside = ColorRGB(0, 1, 0),
+          radius = 2,
+          position = energyPositions(i) + position,
+          zPos = 2
+        ).getModel
+
+    new StaticCompositeModel(body +: hull +: energyGlobes)
+  }
+
+
 }
