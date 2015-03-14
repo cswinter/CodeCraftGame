@@ -103,18 +103,9 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
     thruster(-1)
   )
 
-  val shield =
-    if (robot.modules.contains(ShieldGenerator)) {
-      new PolygonOld(50, renderStack.TranslucentAdditive)
-        .scale(radiusHull + 5)
-        .colorOutside(ColorRGBA(White, 0.5f))
-        .colorMidpoint(ColorRGBA(ColorThrusters, 0.1f))
-    } else EmptyModel
-
-
   val thrusterTrails = new MutableWrapperModel(generateThrusterTrails(robot.positions).init())
 
-  val staticModels = (modelComponents :+ shield).reduce[ComposableModel]((x, y) => x + y)
+  val staticModels = (modelComponents).reduce[ComposableModel]((x, y) => x + y)
   val model = staticModels.init() * thrusterTrails
 
 
@@ -174,7 +165,8 @@ case class RobotSignature(
   size: Int,
   engines: Seq[(Engines.type, Int)],
   storageModules: Seq[(StorageModule, Int)],
-  shieldGeneratorModels: Seq[(ShieldGenerator.type, Int)]
+  shieldGeneratorModels: Seq[(ShieldGenerator.type, Int)],
+  hasShields: Boolean
 )
 
 object RobotSignature {
@@ -191,7 +183,7 @@ object RobotSignature {
       for ((ShieldGenerator, index) <- robotObject.modules.zipWithIndex)
       yield (ShieldGenerator, index)
 
-    RobotSignature(robotObject.size, engines, storageModules, shieldGeneratorModels)
+    RobotSignature(robotObject.size, engines, storageModules, shieldGeneratorModels, shieldGeneratorModels.nonEmpty)
   }
 }
 
@@ -263,6 +255,18 @@ class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
         radiusHull
       ).getModel
 
+    val shields =
+      if (signature.hasShields)
+        Some(Polygon(
+          material = rs.TranslucentAdditive,
+          n = 50,
+          colorMidpoint = ColorRGBA(ColorThrusters, 0.1f),
+          colorOutside = ColorRGBA(White, 0.5f),
+          radius = radiusHull + 5
+        ).getModel)
+      else None
+
+
     val engines =
       for ((Engines, index) <- signature.engines)
       yield RobotEngines(ModulePosition((sides, index))).getModel
@@ -275,7 +279,7 @@ class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
       for ((ShieldGenerator, index) <- signature.shieldGeneratorModels)
       yield ShieldGeneratorModel(ModulePosition((sides, index))).getModel
 
-    new RobotModel(body, hull, engines, storageModules, shieldGeneratorModules)
+    new RobotModel(body, hull, engines, storageModules, shieldGeneratorModules, shields)
   }
 
 
@@ -287,10 +291,13 @@ case class RobotModel(
   hull: Model[Unit],
   engines: Seq[Model[Unit]],
   storageModules: Seq[Model[Unit]],
-  shieldGeneratorModules: Seq[Model[Unit]]
+  shieldGeneratorModules: Seq[Model[Unit]],
+  shields: Option[Model[Unit]]
 ) extends CompositeModel[RobotObject] {
+
   // MAKE SURE TO ADD NEW COMPONENTS HERE:
-  val models = Seq(body, hull) ++ engines ++ storageModules ++ shieldGeneratorModules
+  val models: Seq[Model[Unit]] =
+    Seq(body, hull) ++ engines ++ storageModules ++ shieldGeneratorModules ++ shields.toSeq
 
   override def update(a: RobotObject): Unit = {
 
