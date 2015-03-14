@@ -1,7 +1,7 @@
 package robowars.graphics.models
 
 import robowars.graphics.engine.RenderStack
-import robowars.graphics.matrices.IdentityMatrix4x4
+import robowars.graphics.matrices.{Matrix4x4, IdentityMatrix4x4}
 import robowars.graphics.model._
 import robowars.graphics.primitives._
 import robowars.worldstate._
@@ -66,35 +66,12 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
       .scaleX(5)
       .scaleY(sideLength * 0.25f)
       .rotate(Pi.toFloat)
-      .translate(computeThrusterPos(side))
+      //.translate(computeThrusterPos(side))
       .colorMidpoint(ColorThrusters)
       .colorOutside(ColorBackplane)
       .zPos(1)
   }
 
-  def generateThrusterTrails(positions: Seq[(Float, Float, Float)]): ComposableModel = {
-    val n = positions.length
-    val trailPositions =
-      for (((x, y, a), t) <- positions.zipWithIndex)
-      yield {
-        val drift = -VertexXY(a) * (n - t - 1) * 2.0f
-        val offset = VertexXY(x, y) + drift
-        (computeThrusterPos(1, a) + offset, computeThrusterPos(-1, a) + offset)
-      }
-
-    val (trail1, trail2) = trailPositions.unzip
-    val colors = trail1.indices.map(index => ColorRGBA(ColorThrusters, index / n.toFloat))
-
-    new OldQuadStrip(sideLength * 0.3f, trail1)(renderStack.TranslucentAdditive)
-      .colorMidpoints(colors) +
-      new OldQuadStrip(sideLength * 0.3f, trail2)(renderStack.TranslucentAdditive)
-        .colorMidpoints(colors)
-  }
-
-  def computeThrusterPos(side: Int, angle: Float = 0): VertexXY = {
-    val perp = outerModulePerpendicular(0, angle)
-    outerModulePosition(0, angle) + side * sideLength * 0.3f * perp
-  }
 
 
   val modelComponents = Seq(
@@ -103,36 +80,9 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
     thruster(-1)
   )
 
-  val thrusterTrails = new MutableWrapperModel(generateThrusterTrails(robot.positions).init())
+  val staticModels = modelComponents.reduce[ComposableModel]((x, y) => x + y)
+  val model = staticModels.init()
 
-  val staticModels = (modelComponents).reduce[ComposableModel]((x, y) => x + y)
-  val model = staticModels.init() * thrusterTrails
-
-
-  override def update(worldObject: WorldObject): this.type = {
-    val robotObject = worldObject.asInstanceOf[RobotObject]
-
-    thrusterTrails.replaceModel(generateThrusterTrails(robotObject.positions).init())
-    super.update(worldObject)
-    thrusterTrails.setModelview(IdentityMatrix4x4)
-    this
-  }
-
-  def outerModulePosition(n: Int, orientationOffset: Float = 0): VertexXY = {
-    assert(sides > n)
-    assert(n >= 0)
-    val r = inradius(radiusHull)
-    r * outerModuleNormal(n, orientationOffset)
-  }
-
-  def outerModuleNormal(n: Int, orientationOffset: Float = 0): VertexXY = {
-    val angle = Pi + (2 * n * Pi / sides) + orientationOffset
-    VertexXY(angle)
-  }
-
-  def outerModulePerpendicular(n: Int, orientationOffset: Float = 0): VertexXY = {
-    outerModuleNormal(n, orientationOffset).perpendicular
-  }
 
 
   /**
@@ -266,6 +216,7 @@ class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
         ).getModel)
       else None
 
+    val thrusters = new ThrusterTrailsModel(sideLength, radiusHull, sides)
 
     val engines =
       for ((Engines, index) <- signature.engines)
@@ -279,7 +230,7 @@ class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
       for ((ShieldGenerator, index) <- signature.shieldGeneratorModels)
       yield ShieldGeneratorModel(ModulePosition((sides, index))).getModel
 
-    new RobotModel(body, hull, engines, storageModules, shieldGeneratorModules, shields)
+    new RobotModel(body, hull, engines, storageModules, shieldGeneratorModules, shields, thrusters)
   }
 
 
@@ -292,15 +243,16 @@ case class RobotModel(
   engines: Seq[Model[Unit]],
   storageModules: Seq[Model[Unit]],
   shieldGeneratorModules: Seq[Model[Unit]],
-  shields: Option[Model[Unit]]
+  shields: Option[Model[Unit]],
+  thrusterTrails: ThrusterTrailsModel
 ) extends CompositeModel[RobotObject] {
 
   // MAKE SURE TO ADD NEW COMPONENTS HERE:
-  val models: Seq[Model[Unit]] =
-    Seq(body, hull) ++ engines ++ storageModules ++ shieldGeneratorModules ++ shields.toSeq
+  val models: Seq[Model[_]] =
+    Seq(body, hull, thrusterTrails) ++ engines ++ storageModules ++ shieldGeneratorModules ++ shields.toSeq
 
   override def update(a: RobotObject): Unit = {
-
+    thrusterTrails.update(a.positions)
   }
 }
 
@@ -416,4 +368,71 @@ case class ShieldGeneratorModel(position: VertexXY)(implicit rs: RenderStack)
 
     new StaticCompositeModel(hexgrid ++ filling)
   }
+}
+
+class ThrusterTrailsModel(
+  val sideLength: Float,
+  val radiusHull: Float,
+  val sides: Int
+)(implicit rs: RenderStack)
+  extends Model[Seq[(Float, Float, Float)]] {
+
+  var model: Model[Unit] = _
+
+
+  override def update(positions: Seq[(Float, Float, Float)]): Unit = {
+    val n = positions.length
+
+
+    val trailPositions =
+      for (((x, y, a), t) <- positions.zipWithIndex)
+      yield {
+        val drift = -VertexXY(a) * (n - t - 1) * 2.0f
+        val offset = VertexXY(x, y) + drift
+        (computeThrusterPos(1, a) + offset, computeThrusterPos(-1, a) + offset)
+      }
+
+    val (trail1, trail2) = trailPositions.unzip
+    val colors = trail1.indices.map(index => ColorRGBA(ColorThrusters, index / n.toFloat))
+
+    model = new StaticCompositeModel(Seq(
+      QuadStrip(
+        rs.TranslucentAdditive,
+        trail1,
+        colors,
+        sideLength * 0.3f
+      ).getModel,
+      QuadStrip(
+        rs.TranslucentAdditive,
+        trail2,
+        colors,
+        sideLength * 0.3f
+      ).getModel
+    )).identityModelview
+  }
+
+  def computeThrusterPos(side: Int, angle: Float = 0): VertexXY = {
+    val perp = outerModulePerpendicular(0, angle)
+    outerModulePosition(0, angle) + side * sideLength * 0.3f * perp
+  }
+
+
+  override def draw(modelview: Matrix4x4, material: GenericMaterial): Unit = model.draw(modelview, material)
+
+  override def hasMaterial(material: GenericMaterial): Boolean = material == rs.TranslucentAdditive
+
+  def outerModulePosition(n: Int, orientationOffset: Float = 0): VertexXY = {
+    val r = inradius(radiusHull, sides)
+    r * outerModuleNormal(n, orientationOffset)
+  }
+
+  def outerModuleNormal(n: Int, orientationOffset: Float = 0): VertexXY = {
+    val angle = Pi + (2 * n * Pi / sides) + orientationOffset
+    VertexXY(angle)
+  }
+
+  def outerModulePerpendicular(n: Int, orientationOffset: Float = 0): VertexXY = {
+    outerModuleNormal(n, orientationOffset).perpendicular
+  }
+
 }

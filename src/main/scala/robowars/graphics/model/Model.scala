@@ -1,6 +1,6 @@
 package robowars.graphics.model
 
-import robowars.graphics.matrices.{TranslationXYMatrix4x4, RotationZMatrix4x4, DilationXYMatrix4x4, Matrix4x4}
+import robowars.graphics.matrices._
 import robowars.worldstate.WorldObject
 
 
@@ -22,6 +22,7 @@ trait Model[T] {
   def hasMaterial(material: GenericMaterial): Boolean
 
   def scalable: ScalableModel[T] = new ScalableModel(this)
+  def identityModelview: IdentityModelviewModel[T] = new IdentityModelviewModel[T](this)
 }
 
 
@@ -39,6 +40,17 @@ class ScalableModel[T](val model: Model[T]) extends Model[(T, Float)] {
   }
 
   override def hasMaterial(material: GenericMaterial): Boolean = model.hasMaterial(material)
+}
+
+class IdentityModelviewModel[T](val model: Model[T]) extends Model[T] {
+  def update(params: T): Unit =
+    model.update(params)
+
+  def draw(modelview: Matrix4x4, material: GenericMaterial): Unit =
+    model.draw(IdentityMatrix4x4, material)
+
+  def hasMaterial(material: GenericMaterial): Boolean =
+    model.hasMaterial(material)
 }
 
 
