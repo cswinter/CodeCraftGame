@@ -34,7 +34,7 @@ case class Polygon[TColor <: Vertex : ClassTag, TParams](
   val shape = this
 
   protected override def computeVertexData(): Seq[(VertexXYZ, TColor)] = {
-    val vertices = Geometry.polygonVertices(n, orientation, radius, position)
+    val vertices = Geometry.polygonVertices2(n, orientation, radius, position)
     val vertexPos = new Array[VertexXYZ](3 * n)
     for (i <- 0 until n) {
       val v1 = if (i == 0) vertices(n - 1) else vertices(i - 1)

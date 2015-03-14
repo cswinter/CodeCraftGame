@@ -20,8 +20,8 @@ case class PolygonOutline[TColor <: Vertex : ClassTag, TParams](
 
 
   protected def computeVertexData(): Seq[(VertexXYZ, TColor)] = {
-    val innerVertices = Geometry.polygonVertices(n, orientation, innerRadius, position)
-    val outerVertices = Geometry.polygonVertices(n, orientation, outerRadius, position)
+    val innerVertices = Geometry.polygonVertices2(n, orientation, innerRadius, position)
+    val outerVertices = Geometry.polygonVertices2(n, orientation, outerRadius, position)
     val vertexPos = new Array[VertexXYZ](6 * n)
 
     for (i <- 0 until n) {

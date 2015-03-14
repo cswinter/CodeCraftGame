@@ -5,14 +5,12 @@ import robowars.graphics.matrices.IdentityMatrix4x4
 import robowars.graphics.model._
 import robowars.graphics.primitives._
 import robowars.worldstate._
-
-import scala.util.Random
+import scala.math._
 
 
 class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
   extends WorldObjectModel(robot) {
 
-  import math._
 
 
   val hexRad = 27.0f
@@ -90,20 +88,6 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
     (container ++ energyGlobes).reduce[ComposableModel](_ + _)
   }
 
-  def engineModule(position: VertexXY): ComposableModel = {
-    val enginePositions = Geometry.polygonVertices(3, radius = 5, orientation = 0.4f)
-    val engines =
-      for ((offset, i) <- enginePositions.zipWithIndex)
-      yield new PolygonOld(5, renderStack.MaterialXYRGB)
-        .scale(4)
-        .colorMidpoint(ColorThrusters)
-        .colorOutside(ColorHull)
-        .zPos(1)
-        .rotate(0.3f * i)
-        .translate(position + offset)
-
-    engines.reduce[ComposableModel](_ + _)
-  }
 
   def shieldGeneratorModule(position: VertexXY): ComposableModel = {
     val radius = 3
@@ -194,8 +178,7 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
         pos = ModulePosition((sides, i))
       } yield m match {
         case StorageModule(r) => storageModule(pos, r)
-        case Engines => engineModule(pos)
-        case ShieldGenerator => shieldGeneratorModule(pos)
+        case ShieldGenerator | Engines => shieldGeneratorModule(pos)
       }
     } else Seq()
 
@@ -245,32 +228,84 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
    */
   def circumradius(inradius: Float, n: Int = sides): Float =
     inradius / cos(Pi / n).toFloat
-
-
 }
+
+
+object RobotColors {
+  val ColorBody = ColorRGB(0.05f, 0.05f, 0.05f)
+  val ColorHull = ColorRGB(0.95f, 0.95f, 0.95f)
+  val ColorThrusters = ColorRGB(0, 0, 1)
+  val ColorBackplane = ColorRGB(0.1f, 0.1f, 0.1f)
+  val Black = ColorRGB(0, 0, 0)
+  val White = ColorRGB(1, 1, 1)
+}
+
+
+
+case class RobotSignature(
+  size: Int,
+  engines: Seq[(Engines.type, Int)])
+
+object RobotSignature {
+  def apply(robotObject: RobotObject): RobotSignature = {
+    val engines =
+    for ((Engines, index) <- robotObject.modules.zipWithIndex)
+      yield (Engines, index)
+
+    RobotSignature(robotObject.size, engines)
+  }
+}
+
+object RobotModulePositions {
+  val hexRad = 27.0f
+  val hexInRad = 11.0f
+  val hexagonVertices = Geometry.polygonVertices(6, Pi.toFloat / 6, hexRad)
+  val ModulePosition = Map[(Int, Int), VertexXY](
+    (3, 0) -> VertexXY(0, 0),
+
+    (4, 0) -> VertexXY(9, 4),
+    (4, 1) -> VertexXY(-9, 9),
+    (4, 2) -> VertexXY(-4, -9),
+
+    (5, 0) -> VertexXY(-17, 11),
+    (5, 1) -> VertexXY(-17, -11),
+    (5, 2) -> VertexXY(6, 20),
+    (5, 3) -> VertexXY(0, 0),
+    (5, 4) -> VertexXY(6, -20),
+    (5, 5) -> VertexXY(20, 0),
+
+    (6, 0) -> hexagonVertices(0),
+    (6, 1) -> hexagonVertices(1),
+    (6, 2) -> hexagonVertices(2),
+    (6, 3) -> hexagonVertices(3),
+    (6, 4) -> hexagonVertices(4),
+    (6, 5) -> hexagonVertices(5),
+
+    (6, 6) -> hexInRad * VertexXY(0 * 2 * Pi.toFloat / 3),
+    (6, 7) -> hexInRad * VertexXY(1 * 2 * Pi.toFloat / 3),
+    (6, 8) -> hexInRad * VertexXY(2 * 2 * Pi.toFloat / 3)
+  )
+}
+
 
 
 // TODO: get better signature
 class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
-  extends ModelBuilder[RobotObject, RobotObject] {
-  override def signature: RobotObject = robot
+  extends ModelBuilder[RobotSignature, RobotObject] {
+  def signature: RobotSignature = RobotSignature(robot)
 
-  import math._
-  import Geometry.{inradius, circumradius}
+  import Geometry.circumradius
+  import RobotColors._
+  import RobotModulePositions.ModulePosition
 
-  override protected def buildModel: Model[RobotObject] = {
+  import scala.math._
+
+  protected def buildModel: Model[RobotObject] = {
     val sides = robot.size
     val sideLength = 40
     val radiusBody = 0.5f * sideLength / sin(Pi / sides).toFloat
     val radiusHull = radiusBody + circumradius(4, sides)
 
-
-    val ColorBody = ColorRGB(0.05f, 0.05f, 0.05f)
-    val ColorHull = ColorRGB(0.95f, 0.95f, 0.95f)
-    val ColorThrusters = if (robot.identifier % 2 == 0) ColorRGB(0, 0, 1) else ColorRGB(1, 0, 0)
-    val ColorBackplane = ColorRGB(0.1f, 0.1f, 0.1f)
-    val Black = ColorRGB(0, 0, 0)
-    val White = ColorRGB(1, 1, 1)
 
     val body =
       Polygon(
@@ -292,19 +327,52 @@ class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
         radiusHull
       ).getModel
 
-    new RobotModel(body, hull)
+    val engines =
+      for ((Engines, index) <- signature.engines)
+        yield RobotEngines(ModulePosition((sides, index))).getModel
+
+    new RobotModel(body, hull, engines)
   }
+
+
 }
 
 
 case class RobotModel(
   body: Model[Unit],
-  hull: Model[Unit]
+  hull: Model[Unit],
+  engines: Seq[Model[Unit]]
 ) extends CompositeModel[RobotObject] {
-  val models = Seq(body, hull)
+  val models = Seq(body, hull) ++ engines
 
   override def update(a: RobotObject): Unit = {
 
   }
 }
 
+
+
+case class RobotEngines(position: VertexXY)(implicit rs: RenderStack)
+  extends ModelBuilder[RobotEngines, Unit] {
+
+  import robowars.graphics.models.RobotColors._
+
+  def signature: RobotEngines = this
+
+  protected def buildModel: Model[Unit] = {
+    val enginePositions = Geometry.polygonVertices2(3, radius = 5, orientation = 0.4f)
+    val engines =
+      for ((offset, i) <- enginePositions.zipWithIndex)
+      yield new Polygon(
+        rs.MaterialXYRGB,
+        5,
+        ColorThrusters,
+        ColorHull,
+        radius = 4,
+        position = position + offset,
+        zPos = 1
+      ).getModel
+
+    new StaticCompositeModel(engines)
+  }
+}

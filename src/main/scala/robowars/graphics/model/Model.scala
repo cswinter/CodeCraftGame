@@ -68,6 +68,10 @@ trait CompositeModel[T] <: Model[T] {
     } model.draw(modelview, material)
 }
 
+class StaticCompositeModel(val models: Seq[Model[Unit]]) extends CompositeModel[Unit] {
+  def update(params: Unit): Unit = { }
+}
+
 /*
 case class MineralSize(size: Int)
 
