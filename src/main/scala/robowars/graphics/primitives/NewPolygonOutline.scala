@@ -7,10 +7,10 @@ import robowars.graphics.model._
 import scala.reflect.ClassTag
 
 
-class PolygonOutline[TColor <: Vertex : ClassTag]
+class NewPolygonOutline[TColor <: Vertex : ClassTag]
 (material: Material[VertexXYZ, TColor, _])
 (val nCorners: Int, val innerRadius: Float, val outerRadius: Float)
-  extends Primitive2D[TColor](PolygonOutline.computeVertices(nCorners, innerRadius, outerRadius), material) {
+  extends Primitive2D[TColor](NewPolygonOutline.computeVertices(nCorners, innerRadius, outerRadius), material) {
 
   assert(innerRadius < outerRadius, s"Inner radius ($innerRadius) must be smaller than outer radius ($outerRadius)")
 
@@ -39,7 +39,7 @@ class PolygonOutline[TColor <: Vertex : ClassTag]
   }
 }
 
-object PolygonOutline {
+object NewPolygonOutline {
   def computeVertices(nCorners: Int, innerRadius: Float, outerRadius: Float): Array[VertexXY] = {
     val angle = (2 * math.Pi / nCorners).toFloat
     val rotation = Matrix2x2.rotation(angle)

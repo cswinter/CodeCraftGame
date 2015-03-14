@@ -2,7 +2,7 @@ package robowars.graphics.models
 
 import robowars.graphics.engine.RenderStack
 import robowars.graphics.model._
-import robowars.graphics.primitives.{Primitive2D, PolygonOutline, PolygonOld$}
+import robowars.graphics.primitives.{Primitive2D, NewPolygonOutline$, PolygonOld$}
 import robowars.worldstate.MineralObject
 
 

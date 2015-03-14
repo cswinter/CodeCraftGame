@@ -71,7 +71,7 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
         .color(ColorBackplane)
         .zPos(1)
         .translate(position),
-      new PolygonOutline(renderStack.MaterialXYRGB)(20, radius - outlineWidth, radius)
+      new NewPolygonOutline(renderStack.MaterialXYRGB)(20, radius - outlineWidth, radius)
         .color(ColorHull)
         .zPos(1)
         .translate(position)
@@ -111,7 +111,7 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
     val gridpoints = VertexXY(0, 0) +: Geometry.polygonVertices(6, radius = gridpointRadius)
     val hexagons =
       for (pos <- gridpoints)
-      yield new PolygonOutline(renderStack.MaterialXYRGB)(6, radius - 0.5f, radius)
+      yield new NewPolygonOutline(renderStack.MaterialXYRGB)(6, radius - 0.5f, radius)
         .translate(pos + position)
         .color(White)
         .zPos(1)
@@ -170,7 +170,7 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
       .color(ColorBody),
 
     /* hull */
-    new PolygonOutline(renderStack.MaterialXYRGB)(sides, radiusBody, radiusHull)
+    new NewPolygonOutline(renderStack.MaterialXYRGB)(sides, radiusBody, radiusHull)
       .color(ColorHull)
       .colorSide(ColorBackplane, sides - 1),
 
@@ -281,23 +281,27 @@ class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
         radius = radiusBody
       ).getModel
 
-    //val hull =
-     // PolygonOutline(
-      //  rs.MaterialXYRGB,
-       // sides,
-      //)
-      //new PolygonOutline(rs.MaterialXYRGB)(sides, radiusBody, radiusHull)
-      //  .color(ColorHull)
-       // .colorSide(ColorBackplane, sides - 1)
-    new RobotModel(body)
+    // TODO: ColorBackplane for side #sides - 1
+    val hull =
+      PolygonOutline(
+        rs.MaterialXYRGB,
+        sides,
+        ColorHull,
+        ColorHull,
+        radiusBody,
+        radiusHull
+      ).getModel
+
+    new RobotModel(body, hull)
   }
 }
 
 
-class RobotModel(
-  val hull: Model[Unit]
+case class RobotModel(
+  body: Model[Unit],
+  hull: Model[Unit]
 ) extends CompositeModel[RobotObject] {
-  val models = Seq(hull)
+  val models = Seq(body, hull)
 
   override def update(a: RobotObject): Unit = {
 
