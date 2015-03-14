@@ -6,6 +6,8 @@ import robowars.graphics.model._
 import robowars.graphics.primitives._
 import robowars.worldstate._
 import scala.math._
+import robowars.graphics.models.RobotColors._
+import Geometry._
 
 
 class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
@@ -59,28 +61,6 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
   val White = ColorRGB(1, 1, 1)
 
 
-  def shieldGeneratorModule(position: VertexXY): ComposableModel = {
-    val radius = 3
-    val gridpointRadius = 2 * inradius(radius, 6)
-    val gridpoints = VertexXY(0, 0) +: Geometry.polygonVertices(6, radius = gridpointRadius)
-    val hexagons =
-      for (pos <- gridpoints)
-      yield new NewPolygonOutline(renderStack.MaterialXYRGB)(6, radius - 0.5f, radius)
-        .translate(pos + position)
-        .color(White)
-        .zPos(1)
-
-    val filling =
-      for (pos <- gridpoints)
-      yield new PolygonOld(6, renderStack.MaterialXYRGB)
-        .scale(radius - 0.5f)
-        .translate(pos + position)
-        .color(ColorThrusters)
-        .zPos(1)
-
-    (hexagons ++ filling).reduce[ComposableModel](_ + _)
-  }
-
   def thruster(side: Int) = {
     new RichCircleSegment(8, 0.7f, renderStack.MaterialXYRGB)
       .scaleX(5)
@@ -118,16 +98,6 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
 
 
   val modelComponents = Seq(
-    /* body */
-    new PolygonOld(sides, renderStack.MaterialXYRGB)
-      .scale(radiusBody)
-      .color(ColorBody),
-
-    /* hull */
-    new NewPolygonOutline(renderStack.MaterialXYRGB)(sides, radiusBody, radiusHull)
-      .color(ColorHull)
-      .colorSide(ColorBackplane, sides - 1),
-
     /* thrusters */
     thruster(1),
     thruster(-1)
@@ -141,21 +111,10 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
         .colorMidpoint(ColorRGBA(ColorThrusters, 0.1f))
     } else EmptyModel
 
-  val modules =
-    if (ModuleCount.contains(sides)) {
-      for {
-        (m, i) <- robot.modules.zipWithIndex
-        pos = ModulePosition((sides, i))
-      } yield m match {
-        case StorageModule(r) => shieldGeneratorModule(pos)
-        case ShieldGenerator | Engines => shieldGeneratorModule(pos)
-      }
-    } else Seq()
-
 
   val thrusterTrails = new MutableWrapperModel(generateThrusterTrails(robot.positions).init())
 
-  val staticModels = (modelComponents ++ modules :+ shield).reduce[ComposableModel]((x, y) => x + y)
+  val staticModels = (modelComponents :+ shield).reduce[ComposableModel]((x, y) => x + y)
   val model = staticModels.init() * thrusterTrails
 
 
@@ -214,7 +173,9 @@ object RobotColors {
 case class RobotSignature(
   size: Int,
   engines: Seq[(Engines.type, Int)],
-  storageModules: Seq[(StorageModule, Int)])
+  storageModules: Seq[(StorageModule, Int)],
+  shieldGeneratorModels: Seq[(ShieldGenerator.type, Int)]
+)
 
 object RobotSignature {
   def apply(robotObject: RobotObject): RobotSignature = {
@@ -226,7 +187,11 @@ object RobotSignature {
       for ((storage: StorageModule, index) <- robotObject.modules.zipWithIndex)
       yield (storage, index)
 
-    RobotSignature(robotObject.size, engines, storageModules)
+    val shieldGeneratorModels =
+      for ((ShieldGenerator, index) <- robotObject.modules.zipWithIndex)
+      yield (ShieldGenerator, index)
+
+    RobotSignature(robotObject.size, engines, storageModules, shieldGeneratorModels)
   }
 }
 
@@ -262,13 +227,11 @@ object RobotModulePositions {
 }
 
 
-// TODO: get better signature
 class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
   extends ModelBuilder[RobotSignature, RobotObject] {
   def signature: RobotSignature = RobotSignature(robot)
 
   import Geometry.circumradius
-  import RobotColors._
   import RobotModulePositions.ModulePosition
 
   import scala.math._
@@ -308,7 +271,11 @@ class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
       for ((StorageModule(count), index) <- signature.storageModules)
       yield RobotStorageModule(ModulePosition((sides, index)), count).getModel
 
-    new RobotModel(body, hull, engines, storageModules)
+    val shieldGeneratorModules =
+      for ((ShieldGenerator, index) <- signature.shieldGeneratorModels)
+      yield ShieldGeneratorModel(ModulePosition((sides, index))).getModel
+
+    new RobotModel(body, hull, engines, storageModules, shieldGeneratorModules)
   }
 
 
@@ -319,9 +286,11 @@ case class RobotModel(
   body: Model[Unit],
   hull: Model[Unit],
   engines: Seq[Model[Unit]],
-  storageModules: Seq[Model[Unit]]
+  storageModules: Seq[Model[Unit]],
+  shieldGeneratorModules: Seq[Model[Unit]]
 ) extends CompositeModel[RobotObject] {
-  val models = Seq(body, hull) ++ engines ++ storageModules
+  // MAKE SURE TO ADD NEW COMPONENTS HERE:
+  val models = Seq(body, hull) ++ engines ++ storageModules ++ shieldGeneratorModules
 
   override def update(a: RobotObject): Unit = {
 
@@ -331,8 +300,6 @@ case class RobotModel(
 
 case class RobotEngines(position: VertexXY)(implicit rs: RenderStack)
   extends ModelBuilder[RobotEngines, Unit] {
-
-  import robowars.graphics.models.RobotColors._
 
   def signature: RobotEngines = this
 
@@ -357,7 +324,6 @@ case class RobotEngines(position: VertexXY)(implicit rs: RenderStack)
 case class RobotStorageModule(position: VertexXY, nEnergyGlobes: Int)(implicit rs: RenderStack)
   extends ModelBuilder[RobotStorageModule, Unit] {
 
-  import robowars.graphics.models.RobotColors._
 
   def signature = this
 
@@ -403,6 +369,44 @@ case class RobotStorageModule(position: VertexXY, nEnergyGlobes: Int)(implicit r
 
     new StaticCompositeModel(body +: hull +: energyGlobes)
   }
+}
+
+case class ShieldGeneratorModel(position: VertexXY)(implicit rs: RenderStack)
+  extends ModelBuilder[ShieldGeneratorModel, Unit] {
+  def signature = this
 
 
+  protected def buildModel: Model[Unit] = {
+    val radius = 3
+    val gridpointRadius = 2 * inradius(radius, 6)
+    val gridpoints = VertexXY(0, 0) +: Geometry.polygonVertices(6, radius = gridpointRadius)
+    val hexgrid =
+      for (pos <- gridpoints)
+      yield
+        new PolygonOutline(
+          material = rs.MaterialXYRGB,
+          n = 6,
+          colorInside = White,
+          colorOutside = White,
+          innerRadius = radius - 0.5f,
+          outerRadius = radius,
+          position = pos + position,
+          zPos = 1
+        ).getModel
+
+    val filling =
+      for (pos <- gridpoints)
+      yield
+        new Polygon(
+          material = rs.MaterialXYRGB,
+          n = 6,
+          colorMidpoint = ColorThrusters,
+          colorOutside = ColorThrusters,
+          radius = radius - 0.5f,
+          position = pos + position,
+          zPos = 1
+        ).getModel
+
+    new StaticCompositeModel(hexgrid ++ filling)
+  }
 }
