@@ -26,6 +26,8 @@ case class VertexXY(x: Float, y: Float) extends Vertex {
   def perpendicular = VertexXY(-y, x)
 
   def normalized: VertexXY = this * (1 / size)
+
+  def zPos(z: Float): VertexXYZ = VertexXYZ(x, y, z)
 }
 
 
@@ -37,6 +39,8 @@ object VertexXY {
   def apply(angle: Double): VertexXY =
     VertexXY(math.cos(angle).toFloat, math.sin(angle).toFloat)
 }
+
+object NullVectorXY extends VertexXY(0, 0)
 
 
 case class VertexUV(u: Float, y: Float) extends Vertex {

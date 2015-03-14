@@ -46,11 +46,11 @@ class CompositeModelBuilder(val models: Map[GenericMaterial, GenericModelBuilder
     }
   }
 
-  def project(material: Material[_, _]): Model = models.get(material.asInstanceOf[GenericMaterial]) match {
+  def project(material: Material[_, _, _]): OldModel = models.get(material.asInstanceOf[GenericMaterial]) match {
     case Some(modelBuilder) => modelBuilder
     case None => EmptyModel
   }
 
-  def hasMaterial(material: Material[_, _]): Boolean =
+  def hasMaterial(material: Material[_, _, _]): Boolean =
     models.contains(material.asInstanceOf[GenericMaterial])
 }

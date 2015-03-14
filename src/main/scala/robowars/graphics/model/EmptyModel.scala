@@ -8,6 +8,6 @@ object EmptyModel extends DrawableModel with ComposableModel {
    def setModelview(modelview: Matrix4x4): Unit = { }
    def init(): DrawableModel = this
    def +(model: ComposableModel) = model
-   def project(material: Material[_, _]) = this
-   def hasMaterial(material: Material[_ , _]) = false
+   def project(material: Material[_, _, _]) = this
+   def hasMaterial(material: Material[_, _, _]) = false
  }

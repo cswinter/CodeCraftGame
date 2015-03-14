@@ -1,8 +1,8 @@
 package robowars.graphics.models
 
 import robowars.graphics.engine.RenderStack
-import robowars.graphics.model.{ComposableModel, EmptyModel, Model, ColorRGB}
-import robowars.graphics.primitives.{Primitive2D, PolygonOutline, Polygon}
+import robowars.graphics.model._
+import robowars.graphics.primitives.{Primitive2D, PolygonOutline, PolygonOld$}
 import robowars.worldstate.MineralObject
 
 
@@ -12,11 +12,13 @@ class TestModel(implicit val rs: RenderStack) extends WorldObjectModel(MineralOb
 
   def polygonSeries(scale: Int => Float, yPos: Float, color: ColorRGB) = {
     var pos = 1000.0f
-    for (n <- 3 to 10)
-    yield {
-      val f = scale(n)
+    for {
+      n <- 3 to 10
+      f = scale(n)
+    } yield {
       pos += 2.2f * 10 * n
-      regularPolygon(n, f).translate(pos, yPos).color(color)
+      new DrawableModelBridge(
+        Polygon(renderStack.MaterialXYRGB, n, color, color, f, VertexXY(pos, yPos)).getModel)
     }
   }
 
@@ -24,16 +26,10 @@ class TestModel(implicit val rs: RenderStack) extends WorldObjectModel(MineralOb
   val models = polygonSeries(circumradius, 0, ColorRGB(1, 1, 1))
   val models2 = polygonSeries(_ * 10, 250, ColorRGB(0, 0, 0.5f))
 
+  val m1 = models.reduce[DrawableModel](_ * _)
+  val m2 = models2.foldLeft(m1)(_ * _)
+  val model = m2
 
-  val m1 = models.foldLeft[ComposableModel](EmptyModel)((x, y) => x + y)
-  val m2 = models2.foldLeft[ComposableModel](m1)((x, y) => x + y)
-  val model = m2.init()
-
-  def regularPolygon(n: Int, f: Float): Primitive2D[ColorRGB] = {
-    new PolygonOutline(renderStack.MaterialXYRGB)(n, f, f + 5)
-      .color(ColorRGB(0, 1, 0))
-      //.scale(f)
-  }
 
   def circumradius(n: Int) = (sideLength * 0.5 / math.sin(math.Pi / n)).toFloat
 }

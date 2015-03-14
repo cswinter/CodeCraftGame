@@ -10,7 +10,7 @@ import scala.reflect.ClassTag
 class CircleSegment[TColor <: Vertex : ClassTag](
   val sides: Int,
   val width: Float,
-  material: Material[VertexXYZ, TColor])
+  material: Material[VertexXYZ, TColor, _])
   extends Primitive2D[TColor](CircleSegment.computeVertices(sides, width), material)
 
 

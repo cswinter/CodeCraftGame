@@ -1,6 +1,6 @@
 package robowars.graphics.model
 
-
+/*
 trait ParameterizedConcreteModel[TParams] extends ConcreteModel with Parameterized[TParams] {
 
   val parameterSink: Parameterized[TParams]
@@ -10,3 +10,4 @@ trait ParameterizedConcreteModel[TParams] extends ConcreteModel with Parameteriz
     super.draw()
   }
 }
+*/

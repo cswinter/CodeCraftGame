@@ -10,7 +10,7 @@ import scala.reflect.ClassTag
 class QuadStrip[TColor <: Vertex : ClassTag](
   width: Float,
   points: Seq[VertexXY]
-)(material: Material[VertexXYZ, TColor])
+)(material: Material[VertexXYZ, TColor, _])
   extends Primitive2D[TColor](QuadStrip.computePositions(width, points), material) {
 
   val n = points.length

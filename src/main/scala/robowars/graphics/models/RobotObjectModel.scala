@@ -66,7 +66,7 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
     val radius = 8
     val outlineWidth = 1
     val container = Seq(
-      new Polygon(20, renderStack.MaterialXYRGB)
+      new PolygonOld(20, renderStack.MaterialXYRGB)
         .scale(radius - outlineWidth)
         .color(ColorBackplane)
         .zPos(1)
@@ -80,7 +80,7 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
     val energyPositions = Seq(VertexXY(0, 0)) ++ Geometry.polygonVertices(6, radius = 4.5f)
     val energyGlobes =
       for (i <- 0 until nEnergy)
-      yield new Polygon(7, renderStack.BloomShader)
+      yield new PolygonOld(7, renderStack.BloomShader)
         .scale(2)
         .translate(energyPositions(i) + position)
         .color(ColorRGB(0, 1, 0))
@@ -94,7 +94,7 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
     val enginePositions = Geometry.polygonVertices(3, radius = 5, orientation = 0.4f)
     val engines =
       for ((offset, i) <- enginePositions.zipWithIndex)
-        yield new Polygon(5, renderStack.MaterialXYRGB)
+        yield new PolygonOld(5, renderStack.MaterialXYRGB)
           .scale(4)
           .colorMidpoint(ColorThrusters)
           .colorOutside(ColorHull)
@@ -118,7 +118,7 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
 
     val filling =
       for (pos <- gridpoints)
-        yield new Polygon(6, renderStack.MaterialXYRGB)
+        yield new PolygonOld(6, renderStack.MaterialXYRGB)
           .scale(radius - 0.5f)
           .translate(pos + position)
           .color(ColorThrusters)
@@ -165,7 +165,7 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
 
   val modelComponents = Seq(
     /* body */
-    new Polygon(sides, renderStack.MaterialXYRGB)
+    new PolygonOld(sides, renderStack.MaterialXYRGB)
       .scale(radiusBody)
       .color(ColorBody),
 
@@ -181,7 +181,7 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
 
   val shield =
     if (robot.modules.contains(ShieldGenerator)) {
-      new Polygon(50, renderStack.TranslucentAdditive)
+      new PolygonOld(50, renderStack.TranslucentAdditive)
         .scale(radiusHull + 5)
         .colorOutside(ColorRGBA(White, 0.5f))
         .colorMidpoint(ColorRGBA(ColorThrusters, 0.1f))

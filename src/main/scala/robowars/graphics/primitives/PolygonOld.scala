@@ -7,11 +7,11 @@ import robowars.graphics.model._
 import scala.reflect.ClassTag
 
 
-class Polygon[TColor <: Vertex : ClassTag]
-(val corners: Int, material: Material[VertexXYZ, TColor])
-  extends Primitive2D[TColor](Polygon.computeVertices(corners), material) {
+class PolygonOld[TColor <: Vertex : ClassTag]
+(val corners: Int, material: Material[VertexXYZ, TColor, _])
+  extends Primitive2D[TColor](PolygonOld.computeVertices(corners), material) {
 
-  def colorOutside(color: TColor): Polygon[TColor] = {
+  def colorOutside(color: TColor): PolygonOld[TColor] = {
     for (i <- 0 until corners) {
       colors(3 * i + 1) = color
       colors(3 * i + 2) = color
@@ -19,7 +19,7 @@ class Polygon[TColor <: Vertex : ClassTag]
     this
   }
 
-  def colorMidpoint(color: TColor): Polygon[TColor] = {
+  def colorMidpoint(color: TColor): PolygonOld[TColor] = {
     for (i <- 0 until corners) {
       colors(3 * i) = color
     }
@@ -27,7 +27,7 @@ class Polygon[TColor <: Vertex : ClassTag]
   }
 }
 
-object Polygon {
+object PolygonOld {
   def computeVertices(corners: Int): Array[VertexXY] = {
     val angle = (2 * math.Pi / corners).toFloat
     val rotation = Matrix2x2.rotation(angle)

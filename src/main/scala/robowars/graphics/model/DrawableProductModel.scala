@@ -15,7 +15,7 @@ class DrawableProductModel(model1: DrawableModel, model2: DrawableModel) extends
     model2.setModelview(modelview)
   }
 
-  override def project(material: Material[_, _]): DrawableModel = {
+  override def project(material: Material[_, _, _]): DrawableModel = {
     (model1.project(material), model2.project(material)) match {
       case (EmptyModel, EmptyModel) => EmptyModel
       case (EmptyModel, p2) => p2
@@ -24,6 +24,6 @@ class DrawableProductModel(model1: DrawableModel, model2: DrawableModel) extends
     }
   }
 
-  override def hasMaterial(material: Material[_, _]): Boolean =
+  override def hasMaterial(material: Material[_, _, _]): Boolean =
     model1.hasMaterial(material) || model2.hasMaterial(material)
 }

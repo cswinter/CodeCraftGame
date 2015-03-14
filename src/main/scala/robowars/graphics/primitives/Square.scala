@@ -7,7 +7,7 @@ import scala.reflect.ClassTag
 
 
 class Square[TColor <: Vertex : ClassTag]
-(material: Material[VertexXYZ, TColor])
+(material: Material[VertexXYZ, TColor, _])
   extends Primitive2D[TColor](Square.computePositions(1), material) {
 }
 

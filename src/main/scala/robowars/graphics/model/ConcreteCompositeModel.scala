@@ -17,11 +17,11 @@ class ConcreteCompositeModel(val models: Map[GenericMaterial, ConcreteModel])
       model.setModelview(modelview)
   }
 
-  def project(material: Material[_, _]): DrawableModel = models.get(material.asInstanceOf[GenericMaterial]) match {
+  def project(material: Material[_, _, _]): DrawableModel = models.get(material.asInstanceOf[GenericMaterial]) match {
     case Some(model) => model
     case None => EmptyModel
   }
 
-  def hasMaterial(material: Material[_, _]): Boolean =
+  def hasMaterial(material: Material[_, _, _]): Boolean =
     models.contains(material.asInstanceOf[GenericMaterial])
 }

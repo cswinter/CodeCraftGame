@@ -8,7 +8,7 @@ import scala.reflect.ClassTag
 
 
 class PolygonOutline[TColor <: Vertex : ClassTag]
-(material: Material[VertexXYZ, TColor])
+(material: Material[VertexXYZ, TColor, _])
 (val nCorners: Int, val innerRadius: Float, val outerRadius: Float)
   extends Primitive2D[TColor](PolygonOutline.computeVertices(nCorners, innerRadius, outerRadius), material) {
 

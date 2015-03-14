@@ -8,11 +8,11 @@ import scala.reflect.ClassTag
 
 
 class Primitive2D[TColor <: Vertex : ClassTag] private
-(val positions: Array[VertexXY], val colors: Array[TColor], material: Material[VertexXYZ, TColor])
-  extends ModelBuilder[VertexXYZ, TColor](material) {
+(val positions: Array[VertexXY], val colors: Array[TColor], material: Material[VertexXYZ, TColor, _])
+  extends OldModelBuilder[VertexXYZ, TColor](material) {
   assert(positions.forall(_ != null))
 
-  def this(positions: Array[VertexXY], material: Material[VertexXYZ, TColor]) =
+  def this(positions: Array[VertexXY], material: Material[VertexXYZ, TColor, _]) =
     this(positions, new Array[TColor](positions.length), material)
 
   private[this] var _zPos: Float = 0

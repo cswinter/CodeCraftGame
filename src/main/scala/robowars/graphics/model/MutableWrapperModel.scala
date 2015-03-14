@@ -9,9 +9,9 @@ class MutableWrapperModel(private var model: DrawableModel) extends DrawableMode
     this.model = model
   }
 
-  override def project(material: Material[_, _]): DrawableModel = model.project(material)
+  override def project(material: Material[_, _, _]): DrawableModel = model.project(material)
 
-  override def hasMaterial(material: Material[_, _]): Boolean = model.hasMaterial(material)
+  override def hasMaterial(material: Material[_, _, _]): Boolean = model.hasMaterial(material)
 
   override def draw(): Unit = model.draw()
 

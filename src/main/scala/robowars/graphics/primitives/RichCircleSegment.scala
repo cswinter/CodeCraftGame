@@ -10,7 +10,7 @@ import scala.reflect.ClassTag
 class RichCircleSegment[TColor <: Vertex : ClassTag](
   val sides: Int,
   val width: Float,
-  material: Material[VertexXYZ, TColor])
+  material: Material[VertexXYZ, TColor, _])
   extends Primitive2D[TColor](RichCircleSegment.computeVertices(sides, width), material) {
 
   def colorMidpoint(color: TColor): this.type = {

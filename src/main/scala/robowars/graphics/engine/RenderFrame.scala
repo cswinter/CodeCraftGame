@@ -6,6 +6,7 @@ import javax.media.opengl._
 import javax.media.opengl.GL._
 
 import org.joda.time.DateTime
+import robowars.graphics.model.TheModelCache
 
 import robowars.simulation.TheGameWorldSimulator
 
@@ -71,7 +72,7 @@ object RenderFrame extends GLEventListener {
     frameTimes.enqueue(now)
     val tThen = frameTimes.dequeue()
     val fps = FrametimeSamples * 1000 / (now - tThen)
-    textField.setText(s"FPS: $fps")
+    textField.setText(f"FPS: $fps  Cached models: ${TheModelCache.CachedModelCount}")
   }
 
   private def update(): Unit = {

@@ -4,17 +4,17 @@ import javax.media.opengl.GL._
 import javax.media.opengl.GL4
 
 import robowars.graphics.matrices.Matrix4x4
-import robowars.graphics.model.{VBO, Parameterized, ColorRGBA, VertexXYZ}
+import robowars.graphics.model.{VBO, ColorRGBA, VertexXYZ}
 
 class GaussianGlowPIntensity(implicit gl: GL4)
-  extends Material[VertexXYZ, ColorRGBA](
+  extends Material[VertexXYZ, ColorRGBA, Intensity](
     gl = gl,
     vsPath = "src/main/shaders/xyz_rgba_vs.glsl",
     fsPath = "src/main/shaders/rgba_gaussian_pint_fs.glsl",
     "vertexPos",
     Some("vertexCol"),
     GL_BLEND
-  ) with Parameterized[Intensity] {
+  ) {
   import gl._
   val uniformIntensity = glGetUniformLocation(programID, "intensity")
 

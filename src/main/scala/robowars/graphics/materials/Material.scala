@@ -20,7 +20,7 @@ import scala.io.Source
  * (Vertex) Attribute: input parameter to a shader
  * Vertex Attribute Object: maps data from robowars.graphics.model.VBO to one or more attributes
  */
-class Material[TPosition <: Vertex, TColor <: Vertex](
+class Material[TPosition <: Vertex, TColor <: Vertex, TParams](
   val gl: GL4,
   vsPath: String,
   fsPath: String,
@@ -34,6 +34,8 @@ class Material[TPosition <: Vertex, TColor <: Vertex](
    ******************/
 
   import gl._
+
+  var params: TParams = _
 
   // compile shaders and attach to program
   protected val programID = glCreateProgram()

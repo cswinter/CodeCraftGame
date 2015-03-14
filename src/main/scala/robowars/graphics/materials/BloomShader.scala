@@ -37,7 +37,7 @@ The rendering stages (as it concerns glow/opaque materials) are as follows:
 
  */
 class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
-  extends Material[VertexXYZ, ColorRGB](
+  extends Material[VertexXYZ, ColorRGB, Unit](
     gl = gl,
     vsPath = "src/main/shaders/xyz_rgb_vs.glsl",
     fsPath = "src/main/shaders/rgb1_fs.glsl",
@@ -74,7 +74,7 @@ class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
 
 
   abstract class Convolution(val orientation: Int, val sourceTexture: () => Int, val destTexture: () => Int)
-    extends Material[VertexXY, VertexUV](
+    extends Material[VertexXY, VertexUV, Unit](
       gl = gl,
       vsPath = "src/main/shaders/texture_xy_vs.glsl",
       fsPath = "src/main/shaders/convolution_fs.glsl",
@@ -107,8 +107,8 @@ class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
   object HConvolution extends Convolution(0, () => mainTexture, () => tmpTexture1)
   object VConvolution extends Convolution(1, () => tmpTexture1, () => tmpTexture2)
 
-
-  object Addition extends Material[VertexXY, VertexUV](
+  // TODO: make use of parameters?
+  object Addition extends Material[VertexXY, VertexUV, Unit](
     gl = gl,
     vsPath = "src/main/shaders/texture_xy_vs.glsl",
     fsPath = "src/main/shaders/texture_xy_fs.glsl",
@@ -140,7 +140,7 @@ class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
   val vconvQuad = genFullsizeQuad(VConvolution)
   val addQuad = genFullsizeQuad(Addition)
 
-  def genFullsizeQuad(material: Material[VertexXY, VertexUV]): ConcreteModel =
+  def genFullsizeQuad(material: Material[VertexXY, VertexUV, Unit]): ConcreteModel =
     new ConcreteModelBuilder[VertexXY, VertexUV](
       material,
       Array(
