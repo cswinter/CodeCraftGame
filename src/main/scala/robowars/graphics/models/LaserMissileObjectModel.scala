@@ -2,7 +2,7 @@ package robowars.graphics.models
 
 import robowars.graphics.engine.RenderStack
 import robowars.graphics.model.{ColorRGBA, VertexXY, DrawableModel}
-import robowars.graphics.primitives.QuadStrip
+import robowars.graphics.primitives.OldQuadStrip
 import robowars.worldstate.{WorldObject, LaserMissile}
 
 
@@ -20,7 +20,7 @@ class LaserMissileObjectModel(laserMissile: LaserMissile)(implicit val rs: Rende
     }
 
     model =
-      new QuadStrip(2, midpoints)(renderStack.TranslucentAdditive)
+      new OldQuadStrip(2, midpoints)(renderStack.TranslucentAdditive)
         .colorMidpoints(colors)
         .init()
     super.update(worldObject)

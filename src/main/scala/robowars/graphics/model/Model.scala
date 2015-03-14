@@ -24,6 +24,7 @@ trait Model[T] {
   def scalable: ScalableModel[T] = new ScalableModel(this)
 }
 
+
 class ScalableModel[T](val model: Model[T]) extends Model[(T, Float)] {
   var scale = 1.0f
 

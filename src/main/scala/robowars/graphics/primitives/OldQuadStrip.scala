@@ -7,11 +7,11 @@ import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 
-class QuadStrip[TColor <: Vertex : ClassTag](
+class OldQuadStrip[TColor <: Vertex : ClassTag](
   width: Float,
   points: Seq[VertexXY]
 )(material: Material[VertexXYZ, TColor, _])
-  extends Primitive2D[TColor](QuadStrip.computePositions(width, points), material) {
+  extends Primitive2D[TColor](OldQuadStrip.computePositions(width, points), material) {
 
   val n = points.length
 
@@ -39,7 +39,7 @@ class QuadStrip[TColor <: Vertex : ClassTag](
 }
 
 
-object QuadStrip {
+object OldQuadStrip {
   def computePositions(width: Float, midpoint: Seq[VertexXY]) = {
     // diagram: https://www.dropbox.com/sc/owb97vdjnl7bxq0/AAAg0qFJNR5lyxoB4RG7OLJ6a
 

@@ -85,9 +85,9 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
     val (trail1, trail2) = trailPositions.unzip
     val colors = trail1.indices.map(index => ColorRGBA(ColorThrusters, index / n.toFloat))
 
-    new QuadStrip(sideLength * 0.3f, trail1)(renderStack.TranslucentAdditive)
+    new OldQuadStrip(sideLength * 0.3f, trail1)(renderStack.TranslucentAdditive)
       .colorMidpoints(colors) +
-      new QuadStrip(sideLength * 0.3f, trail2)(renderStack.TranslucentAdditive)
+      new OldQuadStrip(sideLength * 0.3f, trail2)(renderStack.TranslucentAdditive)
         .colorMidpoints(colors)
   }
 
