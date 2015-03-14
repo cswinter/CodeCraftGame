@@ -9,12 +9,12 @@ class StaticModel[TPosition <: Vertex, TColor <: Vertex, TParams](
   val material: Material[TPosition, TColor, TParams]
 ) extends Model[TParams] {
 
-  override def update(params: TParams): Unit = { material.params = params }
+  def update(params: TParams): Unit = { material.params = params }
 
-  override def draw(modelview: Matrix4x4, material: GenericMaterial): Unit =
+  def draw(modelview: Matrix4x4, material: GenericMaterial): Unit =
     if (material == this.material)
       material.draw(vbo, modelview)
 
-  override def hasMaterial(material: GenericMaterial): Boolean =
+  def hasMaterial(material: GenericMaterial): Boolean =
     this.material == material
 }

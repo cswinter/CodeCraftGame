@@ -113,7 +113,7 @@ object RobotColors {
 
 case class RobotSignature(
   size: Int,
-  engines: Seq[(Engines.type, Int)],
+  engines: Seq[(Engines, Int)],
   storageModules: Seq[(StorageModule, Int)],
   shieldGeneratorModels: Seq[(ShieldGenerator.type, Int)],
   hasShields: Boolean
@@ -122,8 +122,8 @@ case class RobotSignature(
 object RobotSignature {
   def apply(robotObject: RobotObject): RobotSignature = {
     val engines =
-      for ((Engines, index) <- robotObject.modules.zipWithIndex)
-      yield (Engines, index)
+      for ((engines: Engines, index) <- robotObject.modules.zipWithIndex)
+      yield (engines, index)
 
     val storageModules =
       for ((storage: StorageModule, index) <- robotObject.modules.zipWithIndex)
@@ -219,8 +219,8 @@ class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
     val thrusters = new ThrusterTrailsModel(sideLength, radiusHull, sides)
 
     val engines =
-      for ((Engines, index) <- signature.engines)
-      yield RobotEngines(ModulePosition((sides, index))).getModel
+      for ((Engines(t), index) <- signature.engines)
+      yield EnginesModel(ModulePosition((sides, index)), t).getModel
 
     val storageModules =
       for ((StorageModule(count), index) <- signature.storageModules)
@@ -257,13 +257,13 @@ case class RobotModel(
 }
 
 
-case class RobotEngines(position: VertexXY)(implicit rs: RenderStack)
-  extends ModelBuilder[RobotEngines, Unit] {
+case class EnginesModel(position: VertexXY, t: Int)(implicit rs: RenderStack)
+  extends ModelBuilder[EnginesModel, Unit] {
 
-  def signature: RobotEngines = this
+  def signature: EnginesModel = this
 
   protected def buildModel: Model[Unit] = {
-    val enginePositions = Geometry.polygonVertices2(3, radius = 5, orientation = 0.4f)
+    val enginePositions = Geometry.polygonVertices2(3, radius = 5, orientation = 2 * Pi.toFloat * t / 250)
     val engines =
       for ((offset, i) <- enginePositions.zipWithIndex)
       yield new Polygon(
@@ -273,10 +273,23 @@ case class RobotEngines(position: VertexXY)(implicit rs: RenderStack)
         ColorHull,
         radius = 4,
         position = position + offset,
+        orientation = -2 * Pi.toFloat * t / 125,
         zPos = 1
       ).getModel
 
-    new StaticCompositeModel(engines)
+    val engineRail =
+      new PolygonOutline(
+        rs.BloomShader,
+        n = 25,
+        colorInside = ColorRGB(0.8f, 0.8f, 1f),
+        colorOutside = ColorRGB(0.8f, 0.8f, 1f),
+        innerRadius = 4.5f,
+        outerRadius = 5.5f,
+        position = position,
+        zPos = 0.5f
+      ).getModel
+
+    new StaticCompositeModel(engines :+ engineRail)
   }
 }
 
@@ -417,9 +430,9 @@ class ThrusterTrailsModel(
   }
 
 
-  override def draw(modelview: Matrix4x4, material: GenericMaterial): Unit = model.draw(modelview, material)
+  def draw(modelview: Matrix4x4, material: GenericMaterial): Unit = model.draw(modelview, material)
 
-  override def hasMaterial(material: GenericMaterial): Boolean = material == rs.TranslucentAdditive
+  def hasMaterial(material: GenericMaterial): Boolean = material == rs.TranslucentAdditive
 
   def outerModulePosition(n: Int, orientationOffset: Float = 0): VertexXY = {
     val r = inradius(radiusHull, sides)

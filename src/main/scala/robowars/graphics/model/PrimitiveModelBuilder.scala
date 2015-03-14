@@ -5,6 +5,7 @@ import robowars.graphics.materials.Material
 import scala.reflect.ClassTag
 
 
+
 trait PrimitiveModelBuilder[TShape, TColor <: Vertex, TParams] <: ModelBuilder[TShape, TParams] {
   val material: Material[VertexXYZ, TColor, TParams]
   val shape: TShape
@@ -16,7 +17,6 @@ trait PrimitiveModelBuilder[TShape, TColor <: Vertex, TParams] <: ModelBuilder[T
   }
 
   protected def computeVertexData(): Seq[(VertexXYZ, TColor)]
-
 }
 
 

@@ -1,7 +1,7 @@
 package robowars.worldstate
 
 
-trait WorldObject {
+sealed trait WorldObject {
   val identifier: Int
   val xPos: Float
   val yPos: Float
@@ -25,7 +25,7 @@ case class StorageModule(resourceCount: Int) extends RobotModule {
   assert(resourceCount >= 0)
   assert(resourceCount <= 6)
 }
-case object Engines extends RobotModule
+case class Engines(t: Int) extends RobotModule
 case object ShieldGenerator extends RobotModule
 
 

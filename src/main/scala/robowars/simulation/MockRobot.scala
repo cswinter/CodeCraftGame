@@ -1,6 +1,6 @@
 package robowars.simulation
 
-import robowars.worldstate.{RobotModule, RobotObject, WorldObject}
+import robowars.worldstate.{Engines, RobotModule, RobotObject, WorldObject}
 
 import scala.collection.mutable
 import scala.util.Random
@@ -11,7 +11,7 @@ class MockRobot(
   var yPos: Float,
   var orientation: Float,
   val size: Int,
-  val modules: Seq[RobotModule]
+  var modules: Seq[RobotModule]
 ) extends MockObject {
   private[this] var targetOrientation = orientation
   private[this] var stationary = false
@@ -59,6 +59,12 @@ class MockRobot(
 
     if (stationary && rnd() < 0.01 || !stationary && rnd() < 0.001) {
       stationary = !stationary
+    }
+
+    // update timer on engines
+    modules = modules.map {
+      case Engines(t) => Engines((t + 1) % 250)
+      case m => m
     }
 
     // update positions

@@ -5,6 +5,8 @@ import scala.util.Random
 
 
 object TheGameWorldSimulator extends GameWorld {
+  var time = 0
+
   def rnd() = Random.nextDouble().toFloat
   def rnd(min: Float, max: Float): Float = {
     assert(min < max, "Cannot have min >= max.")
@@ -27,7 +29,7 @@ object TheGameWorldSimulator extends GameWorld {
 
   def randomModule = rnd(
     10 -> StorageModule(rni(7)),
-    2 -> Engines,
+    2 -> Engines(0),
     2 -> ShieldGenerator
   )
 
@@ -63,6 +65,8 @@ object TheGameWorldSimulator extends GameWorld {
   }
 
   def update(): Unit = {
+    time += 1
+
     objects.foreach(_.update())
 
     val missileExplosions = for {

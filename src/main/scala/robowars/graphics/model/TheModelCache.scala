@@ -14,6 +14,5 @@ object TheModelCache {
     cache.getOrElseUpdate(key, {nModels += 1; generator}).asInstanceOf[Model[T]]
   }
 
-
   def CachedModelCount = nModels
 }

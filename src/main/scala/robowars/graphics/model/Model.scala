@@ -21,6 +21,7 @@ trait Model[T] {
 
   def hasMaterial(material: GenericMaterial): Boolean
 
+
   def scalable: ScalableModel[T] = new ScalableModel(this)
   def identityModelview: IdentityModelviewModel[T] = new IdentityModelviewModel[T](this)
 }
@@ -29,12 +30,12 @@ trait Model[T] {
 class ScalableModel[T](val model: Model[T]) extends Model[(T, Float)] {
   var scale = 1.0f
 
-  override def update(params: (T, Float)): Unit = {
+  def update(params: (T, Float)): Unit = {
     model.update(params._1)
     scale = params._2
   }
 
-  override def draw(modelview: Matrix4x4, material: GenericMaterial): Unit = {
+  def draw(modelview: Matrix4x4, material: GenericMaterial): Unit = {
     val scaledModelview = new DilationXYMatrix4x4(scale) * modelview
     model.draw(scaledModelview, material)
   }
