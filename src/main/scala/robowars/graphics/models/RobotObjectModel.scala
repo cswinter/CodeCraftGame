@@ -94,13 +94,13 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
     val enginePositions = Geometry.polygonVertices(3, radius = 5, orientation = 0.4f)
     val engines =
       for ((offset, i) <- enginePositions.zipWithIndex)
-        yield new PolygonOld(5, renderStack.MaterialXYRGB)
-          .scale(4)
-          .colorMidpoint(ColorThrusters)
-          .colorOutside(ColorHull)
-          .zPos(1)
-          .rotate(0.3f * i)
-          .translate(position + offset)
+      yield new PolygonOld(5, renderStack.MaterialXYRGB)
+        .scale(4)
+        .colorMidpoint(ColorThrusters)
+        .colorOutside(ColorHull)
+        .zPos(1)
+        .rotate(0.3f * i)
+        .translate(position + offset)
 
     engines.reduce[ComposableModel](_ + _)
   }
@@ -111,18 +111,18 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
     val gridpoints = VertexXY(0, 0) +: Geometry.polygonVertices(6, radius = gridpointRadius)
     val hexagons =
       for (pos <- gridpoints)
-        yield new PolygonOutline(renderStack.MaterialXYRGB)(6, radius - 0.5f, radius)
-          .translate(pos + position)
-          .color(White)
-          .zPos(1)
+      yield new PolygonOutline(renderStack.MaterialXYRGB)(6, radius - 0.5f, radius)
+        .translate(pos + position)
+        .color(White)
+        .zPos(1)
 
     val filling =
       for (pos <- gridpoints)
-        yield new PolygonOld(6, renderStack.MaterialXYRGB)
-          .scale(radius - 0.5f)
-          .translate(pos + position)
-          .color(ColorThrusters)
-          .zPos(1)
+      yield new PolygonOld(6, renderStack.MaterialXYRGB)
+        .scale(radius - 0.5f)
+        .translate(pos + position)
+        .color(ColorThrusters)
+        .zPos(1)
 
     (hexagons ++ filling).reduce[ComposableModel](_ + _)
   }
@@ -248,3 +248,59 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
 
 
 }
+
+
+// TODO: get better signature
+class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
+  extends ModelBuilder[RobotObject, RobotObject] {
+  override def signature: RobotObject = robot
+
+  import math._
+  import Geometry.{inradius, circumradius}
+
+  override protected def buildModel: Model[RobotObject] = {
+    val sides = robot.size
+    val sideLength = 40
+    val radiusBody = 0.5f * sideLength / sin(Pi / sides).toFloat
+    val radiusHull = radiusBody + circumradius(4, sides)
+
+
+    val ColorBody = ColorRGB(0.05f, 0.05f, 0.05f)
+    val ColorHull = ColorRGB(0.95f, 0.95f, 0.95f)
+    val ColorThrusters = if (robot.identifier % 2 == 0) ColorRGB(0, 0, 1) else ColorRGB(1, 0, 0)
+    val ColorBackplane = ColorRGB(0.1f, 0.1f, 0.1f)
+    val Black = ColorRGB(0, 0, 0)
+    val White = ColorRGB(1, 1, 1)
+
+    val body =
+      Polygon(
+        rs.MaterialXYRGB,
+        sides,
+        ColorBody,
+        ColorBody,
+        radius = radiusBody
+      ).getModel
+
+    //val hull =
+     // PolygonOutline(
+      //  rs.MaterialXYRGB,
+       // sides,
+      //)
+      //new PolygonOutline(rs.MaterialXYRGB)(sides, radiusBody, radiusHull)
+      //  .color(ColorHull)
+       // .colorSide(ColorBackplane, sides - 1)
+    new RobotModel(body)
+  }
+}
+
+
+class RobotModel(
+  val hull: Model[Unit]
+) extends CompositeModel[RobotObject] {
+  val models = Seq(hull)
+
+  override def update(a: RobotObject): Unit = {
+
+  }
+}
+

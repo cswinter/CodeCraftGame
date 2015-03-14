@@ -1,11 +1,24 @@
 package robowars.graphics.model
 
-import robowars.graphics.matrices.{DilationXYMatrix4x4, DilationMatrix4x4, Matrix4x4}
+import robowars.graphics.matrices.{TranslationXYMatrix4x4, RotationZMatrix4x4, DilationXYMatrix4x4, Matrix4x4}
+import robowars.worldstate.WorldObject
+
+
+class ClosedModel[T](objectState: T, model: Model[T], modelview: Matrix4x4) {
+  def draw(material: GenericMaterial): Unit = {
+    if (model.hasMaterial(material)) {
+      model.update(objectState)
+      model.draw(modelview, material)
+    }
+  }
+}
 
 
 trait Model[T] {
   def update(params: T): Unit
+
   def draw(modelview: Matrix4x4, material: GenericMaterial): Unit
+
   def hasMaterial(material: GenericMaterial): Boolean
 
   def scalable: ScalableModel[T] = new ScalableModel(this)
@@ -41,6 +54,7 @@ trait ModelBuilder[TStatic, TDynamic] {
 
 trait CompositeModel[T] <: Model[T] {
   def models: Seq[Model[_]]
+
   def update(params: T): Unit
 
   // TODO: make more efficient (keep set of all materials?)

@@ -7,6 +7,7 @@ import javax.media.opengl.GL._
 
 import org.joda.time.DateTime
 import robowars.graphics.model.TheModelCache
+import robowars.graphics.models.TheWorldObjectModelFactory
 
 import robowars.simulation.TheGameWorldSimulator
 
@@ -52,13 +53,16 @@ object RenderFrame extends GLEventListener {
     glClearColor(0.1f, 0, 0.1f, 0.0f)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-    val models = visualizer.computeModels(TheGameWorldSimulator.worldState)
+    val worldObjects = TheGameWorldSimulator.worldState
 
     for (material <- renderStack.materials) {
       material.beforeDraw(camera.projection)
 
-      for (model <- models if model.hasMaterial(material))
-        model.project(material).draw()
+      for {
+        worldObject <- worldObjects
+        model = TheWorldObjectModelFactory.generateModel(worldObject)
+      } model.draw(material)
+
 
       material.afterDraw()
     }
