@@ -1,13 +1,30 @@
 package robowars.graphics.model
 
-import robowars.graphics.matrices.Matrix4x4
-import robowars.worldstate.MineralObject
+import robowars.graphics.matrices.{DilationXYMatrix4x4, DilationMatrix4x4, Matrix4x4}
 
 
 trait Model[T] {
   def update(params: T): Unit
   def draw(modelview: Matrix4x4, material: GenericMaterial): Unit
   def hasMaterial(material: GenericMaterial): Boolean
+
+  def scalable: ScalableModel[T] = new ScalableModel(this)
+}
+
+class ScalableModel[T](val model: Model[T]) extends Model[(T, Float)] {
+  var scale = 1.0f
+
+  override def update(params: (T, Float)): Unit = {
+    model.update(params._1)
+    scale = params._2
+  }
+
+  override def draw(modelview: Matrix4x4, material: GenericMaterial): Unit = {
+    val scaledModelview = new DilationXYMatrix4x4(scale) * modelview
+    model.draw(scaledModelview, material)
+  }
+
+  override def hasMaterial(material: GenericMaterial): Boolean = model.hasMaterial(material)
 }
 
 

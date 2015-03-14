@@ -60,18 +60,21 @@ class LightFlashModelBuilder(lightFlash: LightFlash)(implicit val rs: RenderStac
       ColorRGBA(1, 1, 1, 1),
       radius = 1,
       zPos = -1
-    ).getModel
+    ).getModel.scalable
 
     new LightFlashModel(flash)
   }
 }
 
 
-class LightFlashModel(val flash: Model[Intensity]) extends CompositeModel[LightFlash] {
+class LightFlashModel(val flash: Model[(Intensity, Float)]) extends CompositeModel[LightFlash] {
   val models = Seq(flash)
 
   override def update(lightFlash: LightFlash): Unit = {
-    flash.update(Intensity(1 - lightFlash.stage))
+    val intensity = Intensity(1 - lightFlash.stage)
+    val radius = 60 * lightFlash.stage + 5
+
+    flash.update((intensity, radius))
   }
 }
 
