@@ -28,7 +28,7 @@ trait Model[T] {
 
 
 class ScalableModel[T](val model: Model[T]) extends Model[(T, Float)] {
-  var scale = 1.0f
+  private[this] var scale = 1.0f
 
   def update(params: (T, Float)): Unit = {
     model.update(params._1)
@@ -41,6 +41,27 @@ class ScalableModel[T](val model: Model[T]) extends Model[(T, Float)] {
   }
 
   override def hasMaterial(material: GenericMaterial): Boolean = model.hasMaterial(material)
+}
+
+
+case class IsHidden(value: Boolean) extends AnyVal
+
+class HideableModel[T](val model: Model[T]) extends Model[(IsHidden, T)] {
+  private[this] var show = true
+
+  def update(params: (IsHidden, T)): Unit = {
+    val (isHidden, baseParams) = params
+    show = !isHidden.value
+    if (show)
+      model.update(baseParams)
+  }
+
+  def draw(modelview: Matrix4x4, material: GenericMaterial): Unit =
+    if (show)
+      model.draw(modelview, material)
+
+  def hasMaterial(material: GenericMaterial): Boolean =
+    model.hasMaterial(material)
 }
 
 
