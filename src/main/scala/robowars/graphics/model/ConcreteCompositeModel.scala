@@ -19,7 +19,7 @@ class ConcreteCompositeModel(val models: Map[GenericMaterial, ConcreteModel])
 
   def project(material: Material[_, _, _]): DrawableModel = models.get(material.asInstanceOf[GenericMaterial]) match {
     case Some(model) => model
-    case None => EmptyModel
+    case None => OldEmptyModel
   }
 
   def hasMaterial(material: Material[_, _, _]): Boolean =

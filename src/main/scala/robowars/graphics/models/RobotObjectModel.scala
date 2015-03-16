@@ -193,14 +193,18 @@ class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
       ).getModel
 
     // TODO: ColorBackplane for side #sides - 1
+    val hullColors = ColorThrusters +: Seq.fill(sides - 1)(ColorHull)
     val hull =
       PolygonRing(
         rs.MaterialXYRGB,
         sides,
-        ColorHull,
-        ColorHull,
+        hullColors,
+        hullColors,
         radiusBody,
-        radiusHull
+        radiusHull,
+        NullVectorXY,
+        0,
+        0
       ).getModel
 
     val shields =
@@ -279,7 +283,7 @@ case class EnginesModel(position: VertexXY, t: Int)(implicit rs: RenderStack)
       ).getModel
 
     val engineRail =
-      new PolygonRing(
+      PolygonRing(
         rs.BloomShader,
         n = 25,
         colorInside = ColorRGB(0.8f, 0.8f, 1f),
@@ -356,7 +360,7 @@ case class ShieldGeneratorModel(position: VertexXY)(implicit rs: RenderStack)
     val hexgrid =
       for (pos <- gridpoints)
       yield
-        new PolygonRing(
+        PolygonRing(
           material = rs.MaterialXYRGB,
           n = 6,
           colorInside = White,

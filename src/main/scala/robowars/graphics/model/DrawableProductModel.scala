@@ -17,9 +17,9 @@ class DrawableProductModel(model1: DrawableModel, model2: DrawableModel) extends
 
   override def project(material: Material[_, _, _]): DrawableModel = {
     (model1.project(material), model2.project(material)) match {
-      case (EmptyModel, EmptyModel) => EmptyModel
-      case (EmptyModel, p2) => p2
-      case (p1, EmptyModel) => p1
+      case (OldEmptyModel, OldEmptyModel) => OldEmptyModel
+      case (OldEmptyModel, p2) => p2
+      case (p1, OldEmptyModel) => p1
       case (p1, p2) => new DrawableProductModel(p1, p2)
     }
   }

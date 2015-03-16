@@ -15,7 +15,7 @@ class ConcreteModel(val vbo: VBO, var modelview: Matrix4x4, val material: Materi
 
   def project(material: Material[_, _, _]): DrawableModel = material match {
     case this.material => this
-    case _ => EmptyModel
+    case _ => OldEmptyModel
   }
 
   def hasMaterial(material: Material[_, _, _]): Boolean =

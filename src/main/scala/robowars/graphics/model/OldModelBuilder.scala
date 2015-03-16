@@ -31,7 +31,7 @@ abstract class OldModelBuilder[TPosition <: Vertex, TColor <: Vertex]
 
   def project(material: Material[_, _, _]): OldModel =
     if (this.material == material) this
-    else EmptyModel
+    else OldEmptyModel
 
   def hasMaterial(material: Material[_, _, _]): Boolean = material == this.material
 

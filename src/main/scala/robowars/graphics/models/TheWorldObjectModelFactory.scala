@@ -30,7 +30,10 @@ object TheWorldObjectModelFactory {
         lightFlash,
         new LightFlashModelBuilder(lightFlash).getModel,
         modelview)
-      //case laserMissile: LaserMissile => new LaserMissileObjectModel(laserMissile)
+      case laserMissile: LaserMissile => new ClosedModel[Unit](
+        Unit,
+        LaserMissileModelFactory.build(laserMissile.positions),
+        modelview)
     }
   }
 }

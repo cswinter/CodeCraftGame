@@ -78,7 +78,7 @@ object TheGameWorldSimulator extends GameWorld {
 
     objects.retain(!_.dead)
 
-    if (rnd() < 0.0) {
+    if (rnd() < 0.03) {
       objects.add(new MockLaserMissile(rnd(-500, 500), rnd(-250, 250), rnd(0, 2 * math.Pi.toFloat)))
     }
   }

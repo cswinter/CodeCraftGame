@@ -3,7 +3,7 @@ package robowars.graphics.model
 import robowars.graphics.materials.Material
 import robowars.graphics.matrices.Matrix4x4
 
-object EmptyModel extends DrawableModel with ComposableModel {
+object OldEmptyModel extends DrawableModel with ComposableModel {
    def draw() = { }
    def setModelview(modelview: Matrix4x4): Unit = { }
    def init(): DrawableModel = this

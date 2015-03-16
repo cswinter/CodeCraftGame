@@ -26,6 +26,12 @@ trait Model[T] {
   def identityModelview: IdentityModelviewModel[T] = new IdentityModelviewModel[T](this)
 }
 
+object EmptyModel extends Model[Unit] {
+  def update(params: Unit) = ()
+  def draw(modelview: Matrix4x4, material: GenericMaterial) = ()
+  def hasMaterial(material: GenericMaterial) = false
+}
+
 
 class ScalableModel[T](val model: Model[T]) extends Model[(T, Float)] {
   private[this] var scale = 1.0f

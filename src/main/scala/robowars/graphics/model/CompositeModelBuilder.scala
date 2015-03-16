@@ -42,13 +42,13 @@ class CompositeModelBuilder(val models: Map[GenericMaterial, GenericModelBuilder
             }
           }
         new CompositeModelBuilder(mergedModels.toMap)
-      case EmptyModel => this
+      case OldEmptyModel => this
     }
   }
 
   def project(material: Material[_, _, _]): OldModel = models.get(material.asInstanceOf[GenericMaterial]) match {
     case Some(modelBuilder) => modelBuilder
-    case None => EmptyModel
+    case None => OldEmptyModel
   }
 
   def hasMaterial(material: Material[_, _, _]): Boolean =

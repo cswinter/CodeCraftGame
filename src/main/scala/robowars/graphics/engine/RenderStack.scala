@@ -55,3 +55,4 @@ class RenderStack(implicit val gl: GL4, implicit val fbo: FramebufferObject) {
     glBindTexture(GL_TEXTURE_2D, 0)
   }
 }
+
