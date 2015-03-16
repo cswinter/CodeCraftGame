@@ -5,7 +5,7 @@ import robowars.graphics.materials.Material
 import scala.reflect.ClassTag
 
 
-case class PolygonOutline[TColor <: Vertex : ClassTag, TParams](
+case class PolygonRing[TColor <: Vertex : ClassTag, TParams](
   material: Material[VertexXYZ, TColor, TParams],
   n: Int,
   colorInside: TColor,
@@ -15,7 +15,7 @@ case class PolygonOutline[TColor <: Vertex : ClassTag, TParams](
   position: VertexXY = NullVectorXY,
   zPos: Float = 0,
   orientation: Float = 0
-) extends PrimitiveModelBuilder[PolygonOutline[TColor, TParams], TColor, TParams] {
+) extends PrimitiveModelBuilder[PolygonRing[TColor, TParams], TColor, TParams] {
   val shape = this
 
 
