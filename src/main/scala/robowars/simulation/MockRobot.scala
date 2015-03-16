@@ -15,6 +15,9 @@ class MockRobot(
 ) extends MockObject {
   private[this] var targetOrientation = orientation
   private[this] var stationary = false
+  private[this] val hullState =
+    if (rnd() < 0.8) Seq.fill(size - 1)(2.toByte)
+    else Seq.fill(size - 1)(Random.nextInt(3).toByte)
 
   val speed = 2f
   val turnSpeed = 0.01f
@@ -78,7 +81,7 @@ class MockRobot(
   }
 
   override def state(): WorldObject =
-    RobotObject(identifier, xPos, yPos, orientation, oldPositions, modules, size)
+    RobotObject(identifier, xPos, yPos, orientation, oldPositions, modules, hullState, size)
 
 
   def vx = math.cos(orientation).toFloat * speed

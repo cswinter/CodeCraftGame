@@ -9,40 +9,16 @@ import Geometry._
 
 
 object RobotColors {
-  val ColorBody = ColorRGB(0.05f, 0.05f, 0.05f)
-  val ColorHull = ColorRGB(0.95f, 0.95f, 0.95f)
-  val ColorThrusters = ColorRGB(0, 0, 1)
-  val ColorBackplane = ColorRGB(0.1f, 0.1f, 0.1f)
   val Black = ColorRGB(0, 0, 0)
   val White = ColorRGB(1, 1, 1)
+  val ColorBody = ColorRGB(0.05f, 0.05f, 0.05f)
+  val ColorHull = ColorRGB(0.95f, 0.95f, 0.95f)
+  val ColorHullDamaged = ColorRGB(0.5f, 0.5f, 0.5f)
+  val ColorHullBroken = Black
+  val ColorThrusters = ColorRGB(0, 0, 1)
+  val ColorBackplane = ColorRGB(0.1f, 0.1f, 0.1f)
 }
 
-
-case class RobotSignature(
-  size: Int,
-  engines: Seq[(Engines, Int)],
-  storageModules: Seq[(StorageModule, Int)],
-  shieldGeneratorModels: Seq[(ShieldGenerator.type, Int)],
-  hasShields: Boolean
-)
-
-object RobotSignature {
-  def apply(robotObject: RobotObject): RobotSignature = {
-    val engines =
-      for ((engines: Engines, index) <- robotObject.modules.zipWithIndex)
-      yield (engines, index)
-
-    val storageModules =
-      for ((storage: StorageModule, index) <- robotObject.modules.zipWithIndex)
-      yield (storage, index)
-
-    val shieldGeneratorModels =
-      for ((ShieldGenerator, index) <- robotObject.modules.zipWithIndex)
-      yield (ShieldGenerator, index)
-
-    RobotSignature(robotObject.size, engines, storageModules, shieldGeneratorModels, shieldGeneratorModels.nonEmpty)
-  }
-}
 
 object RobotModulePositions {
   val hexRad = 27.0f
@@ -76,6 +52,40 @@ object RobotModulePositions {
 }
 
 
+case class RobotSignature(
+  size: Int,
+  engines: Seq[(Engines, Int)],
+  storageModules: Seq[(StorageModule, Int)],
+  shieldGeneratorModels: Seq[(ShieldGenerator.type, Int)],
+  hasShields: Boolean,
+  hullState: Seq[Byte]
+)
+
+object RobotSignature {
+  def apply(robotObject: RobotObject): RobotSignature = {
+    val engines =
+      for ((engines: Engines, index) <- robotObject.modules.zipWithIndex)
+      yield (engines, index)
+
+    val storageModules =
+      for ((storage: StorageModule, index) <- robotObject.modules.zipWithIndex)
+      yield (storage, index)
+
+    val shieldGeneratorModels =
+      for ((ShieldGenerator, index) <- robotObject.modules.zipWithIndex)
+      yield (ShieldGenerator, index)
+
+    RobotSignature(
+      robotObject.size,
+      engines,
+      storageModules,
+      shieldGeneratorModels,
+      shieldGeneratorModels.nonEmpty,
+      robotObject.hullState)
+  }
+}
+
+
 class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
   extends ModelBuilder[RobotSignature, RobotObject] {
   def signature: RobotSignature = RobotSignature(robot)
@@ -101,7 +111,11 @@ class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
         radius = radiusBody
       ).getModel
 
-    val hullColors = ColorThrusters +: Seq.fill(sides - 1)(ColorHull)
+    val hullColors = ColorThrusters +: robot.hullState.map {
+      case 2 => ColorHull
+      case 1 => ColorHullDamaged
+      case 0 => ColorHullBroken
+    }
     val hull =
       PolygonRing(
         rs.MaterialXYRGB,
