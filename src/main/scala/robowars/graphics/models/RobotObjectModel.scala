@@ -73,7 +73,6 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
   }
 
 
-
   val modelComponents = Seq(
     /* thrusters */
     thruster(1),
@@ -82,7 +81,6 @@ class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
 
   val staticModels = modelComponents.reduce[ComposableModel]((x, y) => x + y)
   val model = staticModels.init()
-
 
 
   /**
@@ -216,7 +214,10 @@ class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
         ).getModel)
       else None
 
-    val thrusters = new ThrusterTrailsModel(sideLength, radiusHull, sides)
+    val thrusters =
+      new DynamicModel(
+        new ThrusterTrailsModelFactory(
+          sideLength, radiusHull, sides).buildModel)
 
     val engines =
       for ((Engines(t), index) <- signature.engines)
@@ -244,7 +245,7 @@ case class RobotModel(
   storageModules: Seq[Model[Unit]],
   shieldGeneratorModules: Seq[Model[Unit]],
   shields: Option[Model[Unit]],
-  thrusterTrails: ThrusterTrailsModel
+  thrusterTrails: Model[Seq[(Float, Float, Float)]]
 ) extends CompositeModel[RobotObject] {
 
   // MAKE SURE TO ADD NEW COMPONENTS HERE:
@@ -383,17 +384,13 @@ case class ShieldGeneratorModel(position: VertexXY)(implicit rs: RenderStack)
   }
 }
 
-class ThrusterTrailsModel(
+
+class ThrusterTrailsModelFactory(
   val sideLength: Float,
   val radiusHull: Float,
   val sides: Int
-)(implicit rs: RenderStack)
-  extends Model[Seq[(Float, Float, Float)]] {
-
-  var model: Model[Unit] = _
-
-
-  override def update(positions: Seq[(Float, Float, Float)]): Unit = {
+)(implicit rs: RenderStack) {
+  def buildModel(positions: Seq[(Float, Float, Float)]): Model[Unit] = {
     val n = positions.length
 
 
@@ -408,19 +405,19 @@ class ThrusterTrailsModel(
     val (trail1, trail2) = trailPositions.unzip
     val colors = trail1.indices.map(index => ColorRGBA(ColorThrusters, index / n.toFloat))
 
-    model = new StaticCompositeModel(Seq(
+    new StaticCompositeModel(Seq(
       QuadStrip(
         rs.TranslucentAdditive,
         trail1,
         colors,
         sideLength * 0.3f
-      ).getModel,
+      ).noCaching.getModel,
       QuadStrip(
         rs.TranslucentAdditive,
         trail2,
         colors,
         sideLength * 0.3f
-      ).getModel
+      ).noCaching.getModel
     )).identityModelview
   }
 
@@ -428,11 +425,6 @@ class ThrusterTrailsModel(
     val perp = outerModulePerpendicular(0, angle)
     outerModulePosition(0, angle) + side * sideLength * 0.3f * perp
   }
-
-
-  def draw(modelview: Matrix4x4, material: GenericMaterial): Unit = model.draw(modelview, material)
-
-  def hasMaterial(material: GenericMaterial): Boolean = material == rs.TranslucentAdditive
 
   def outerModulePosition(n: Int, orientationOffset: Float = 0): VertexXY = {
     val r = inradius(radiusHull, sides)
@@ -447,5 +439,4 @@ class ThrusterTrailsModel(
   def outerModulePerpendicular(n: Int, orientationOffset: Float = 0): VertexXY = {
     outerModuleNormal(n, orientationOffset).perpendicular
   }
-
 }

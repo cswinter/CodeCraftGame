@@ -43,6 +43,7 @@ class ScalableModel[T](val model: Model[T]) extends Model[(T, Float)] {
   override def hasMaterial(material: GenericMaterial): Boolean = model.hasMaterial(material)
 }
 
+
 class IdentityModelviewModel[T](val model: Model[T]) extends Model[T] {
   def update(params: T): Unit =
     model.update(params)
@@ -55,14 +56,32 @@ class IdentityModelviewModel[T](val model: Model[T]) extends Model[T] {
 }
 
 
+class DynamicModel[T](val modelFactory: T => Model[Unit]) extends Model[T] {
+  private[this] var model: Model[Unit] = null
+
+  def draw(modelview: Matrix4x4, material: GenericMaterial): Unit =
+    model.draw(modelview, material)
+
+  def hasMaterial(material: GenericMaterial): Boolean =
+    model == null || model.hasMaterial(material)
+
+  def update(params: T) = {
+    model = modelFactory(params)
+  }
+}
+
+
 trait ModelBuilder[TStatic, TDynamic] {
   def signature: TStatic
 
   def getModel: Model[TDynamic] = {
-    TheModelCache.getOrElseUpdate(signature)(buildModel)
+    if (isCacheable) TheModelCache.getOrElseUpdate(signature)(buildModel)
+    else buildModel
   }
 
   protected def buildModel: Model[TDynamic]
+
+  def isCacheable: Boolean = true
 }
 
 
