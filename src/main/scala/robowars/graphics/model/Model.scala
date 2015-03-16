@@ -85,24 +85,3 @@ trait CompositeModel[T] <: Model[T] {
 class StaticCompositeModel(val models: Seq[Model[Unit]]) extends CompositeModel[Unit] {
   def update(params: Unit): Unit = { }
 }
-
-/*
-case class MineralSize(size: Int)
-
-class MineralModelBuilder(mineral: MineralObject) extends ModelBuilder[MineralSize, MineralObject] {
-  val signature = MineralSize(mineral.size)
-
-  override protected def buildModel: Model[MineralObject] = {
-    val model1 = ???
-
-    new MineralObjectModel(model1)
-  }
-}
-
-class MineralObjectModel(val model1: Model[Int]) extends CompositeModel[MineralObject] {
-  val models = Seq(model1)
-
-  override def update(params: MineralObject): Unit = {
-    model1.update(params.time)
-  }
-}*/

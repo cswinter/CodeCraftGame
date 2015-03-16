@@ -1,7 +1,7 @@
 package robowars.graphics.models
 
 import robowars.graphics.engine.RenderStack
-import robowars.graphics.matrices.{Matrix4x4, IdentityMatrix4x4}
+import robowars.graphics.matrices.Matrix4x4
 import robowars.graphics.model._
 import robowars.graphics.primitives._
 import robowars.worldstate._
@@ -350,8 +350,8 @@ case class ShieldGeneratorModel(position: VertexXY)(implicit rs: RenderStack)
 
   protected def buildModel: Model[Unit] = {
     val radius = 3
-    val gridpointRadius = 2 * inradius(radius, 6)
-    val gridpoints = VertexXY(0, 0) +: Geometry.polygonVertices(6, radius = gridpointRadius)
+    val gridposRadius = 2 * inradius(radius, 6)
+    val gridpoints = VertexXY(0, 0) +: Geometry.polygonVertices(6, radius = gridposRadius)
     val hexgrid =
       for (pos <- gridpoints)
       yield
