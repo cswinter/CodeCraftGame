@@ -34,6 +34,11 @@ object TheWorldObjectModelFactory {
         Unit,
         LaserMissileModelFactory.build(laserMissile.positions),
         modelview)
+      case TestingObject => new ClosedModel[Unit](
+        Unit,
+        new TestModelBuilder().getModel,
+        modelview
+      )
     }
   }
 }

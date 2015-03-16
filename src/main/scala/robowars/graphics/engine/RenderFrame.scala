@@ -24,7 +24,6 @@ object RenderFrame extends GLEventListener {
   var gl: GL4 = null
   implicit var fbo: FramebufferObject = null
   implicit var renderStack: RenderStack = null
-  var visualizer: Visualizer = null
   var camera = new Camera2D
 
   var cullFaceToggle = false
@@ -105,7 +104,6 @@ object RenderFrame extends GLEventListener {
 
     fbo = new FramebufferObject
     renderStack = new RenderStack
-    visualizer = new Visualizer
   }
 
   def reshape(drawable: GLAutoDrawable, x: Int, y: Int, width: Int, height: Int): Unit = {

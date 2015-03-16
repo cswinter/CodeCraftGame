@@ -6,7 +6,8 @@ import robowars.graphics.model._
 
 import scala.reflect.ClassTag
 
-
+// TODO: port to new architecture
+/*
 class RichCircleSegment[TColor <: Vertex : ClassTag](
   val sides: Int,
   val width: Float,
@@ -69,5 +70,4 @@ object RichCircleSegment {
     positions
   }
 }
-
-
+*/

@@ -45,6 +45,7 @@ class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
     Some("vertexCol"),
     GL_DEPTH_TEST
   ) {
+
   import fbo.{texture0 => mainTexture, texture1 => tmpTexture1, texture2 => tmpTexture2}
   import gl._
 
@@ -55,18 +56,18 @@ class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
     // Horizontal Convolution
     glViewport(0, 0, fbo.width, fbo.height)
     HConvolution.beforeDraw(IdentityMatrix4x4)
-    hconvQuad.draw()
+    HConvolution.draw(hconvQuad, IdentityMatrix4x4)
     HConvolution.afterDraw()
 
     // Vertical Convolution
     VConvolution.beforeDraw(IdentityMatrix4x4)
-    vconvQuad.draw()
+    HConvolution.draw(vconvQuad, IdentityMatrix4x4)
     VConvolution.afterDraw()
 
     // Addition
     glViewport(0, 0, 2 * fbo.width, 2 * fbo.height)
     Addition.beforeDraw(IdentityMatrix4x4)
-    addQuad.draw()
+    Addition.draw(addQuad, IdentityMatrix4x4)
     Addition.afterDraw()
 
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, mainTexture, 0)
@@ -105,6 +106,7 @@ class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
   }
 
   object HConvolution extends Convolution(0, () => mainTexture, () => tmpTexture1)
+
   object VConvolution extends Convolution(1, () => tmpTexture1, () => tmpTexture2)
 
   // TODO: make use of parameters?
@@ -140,9 +142,8 @@ class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
   val vconvQuad = genFullsizeQuad(VConvolution)
   val addQuad = genFullsizeQuad(Addition)
 
-  def genFullsizeQuad(material: Material[VertexXY, VertexUV, Unit]): ConcreteModel =
-    new ConcreteModelBuilder[VertexXY, VertexUV](
-      material,
+  def genFullsizeQuad(material: Material[VertexXY, VertexUV, Unit]): VBO = {
+    material.createVBO(
       Array(
         (VertexXY(1.0f, 1.0f), VertexUV(1.0f, 1.0f)),
         (VertexXY(-1.0f, -1.0f), VertexUV(0.0f, 0.0f)),
@@ -150,7 +151,8 @@ class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
 
         (VertexXY(1.0f, 1.0f), VertexUV(1.0f, 1.0f)),
         (VertexXY(-1.0f, 1.0f), VertexUV(0.0f, 1.0f)),
-          (VertexXY(-1.0f, -1.0f), VertexUV(0.0f, 0.0f))
+        (VertexXY(-1.0f, -1.0f), VertexUV(0.0f, 0.0f))
       )
-    ).init()
+    )
+  }
 }

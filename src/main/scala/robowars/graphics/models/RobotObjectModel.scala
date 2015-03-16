@@ -1,102 +1,11 @@
 package robowars.graphics.models
 
 import robowars.graphics.engine.RenderStack
-import robowars.graphics.matrices.Matrix4x4
 import robowars.graphics.model._
-import robowars.graphics.primitives._
 import robowars.worldstate._
 import scala.math._
 import robowars.graphics.models.RobotColors._
 import Geometry._
-
-
-class RobotObjectModel(robot: RobotObject)(implicit val rs: RenderStack)
-  extends WorldObjectModel(robot) {
-
-
-  val hexRad = 27.0f
-  val hexInRad = 11.0f
-  val hexagonVertices = Geometry.polygonVertices(6, Pi.toFloat / 6, hexRad)
-  val ModulePosition = Map[(Int, Int), VertexXY](
-    (3, 0) -> VertexXY(0, 0),
-
-    (4, 0) -> VertexXY(9, 4),
-    (4, 1) -> VertexXY(-9, 9),
-    (4, 2) -> VertexXY(-4, -9),
-
-    (5, 0) -> VertexXY(-17, 11),
-    (5, 1) -> VertexXY(-17, -11),
-    (5, 2) -> VertexXY(6, 20),
-    (5, 3) -> VertexXY(0, 0),
-    (5, 4) -> VertexXY(6, -20),
-    (5, 5) -> VertexXY(20, 0),
-
-    (6, 0) -> hexagonVertices(0),
-    (6, 1) -> hexagonVertices(1),
-    (6, 2) -> hexagonVertices(2),
-    (6, 3) -> hexagonVertices(3),
-    (6, 4) -> hexagonVertices(4),
-    (6, 5) -> hexagonVertices(5),
-
-    (6, 6) -> hexInRad * VertexXY(0 * 2 * Pi.toFloat / 3),
-    (6, 7) -> hexInRad * VertexXY(1 * 2 * Pi.toFloat / 3),
-    (6, 8) -> hexInRad * VertexXY(2 * 2 * Pi.toFloat / 3)
-  )
-
-  val ModuleCount: Map[Int, Int] = {
-    for ((size, _) <- ModulePosition.keys) yield size -> ModulePosition.count(_._1._1 == size)
-  }.toMap
-
-  val sides = robot.size
-  val sideLength = 40
-  val radiusBody = 0.5f * sideLength / sin(Pi / sides).toFloat
-  val radiusHull = radiusBody + circumradius(4)
-
-
-  val ColorBody = ColorRGB(0.05f, 0.05f, 0.05f)
-  val ColorHull = ColorRGB(0.95f, 0.95f, 0.95f)
-  val ColorThrusters = if (robot.identifier % 2 == 0) ColorRGB(0, 0, 1) else ColorRGB(1, 0, 0)
-  val ColorBackplane = ColorRGB(0.1f, 0.1f, 0.1f)
-  val Black = ColorRGB(0, 0, 0)
-  val White = ColorRGB(1, 1, 1)
-
-
-  def thruster(side: Int) = {
-    new RichCircleSegment(8, 0.7f, renderStack.MaterialXYRGB)
-      .scaleX(5)
-      .scaleY(sideLength * 0.25f)
-      .rotate(Pi.toFloat)
-      //.translate(computeThrusterPos(side))
-      .colorMidpoint(ColorThrusters)
-      .colorOutside(ColorBackplane)
-      .zPos(1)
-  }
-
-
-  val modelComponents = Seq(
-    /* thrusters */
-    thruster(1),
-    thruster(-1)
-  )
-
-  val staticModels = modelComponents.reduce[ComposableModel]((x, y) => x + y)
-  val model = staticModels.init()
-
-
-  /**
-   * Computes the inradius of a regular polygon given the radius.
-   * @param radius The radius.
-   */
-  def inradius(radius: Float, n: Int = sides): Float =
-    radius * cos(Pi / n).toFloat
-
-  /**
-   * Computes the circumradius of a regular polygon given the inradius.
-   * @param inradius The inradius.
-   */
-  def circumradius(inradius: Float, n: Int = sides): Float =
-    inradius / cos(Pi / n).toFloat
-}
 
 
 object RobotColors {
@@ -192,7 +101,6 @@ class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
         radius = radiusBody
       ).getModel
 
-    // TODO: ColorBackplane for side #sides - 1
     val hullColors = ColorThrusters +: Seq.fill(sides - 1)(ColorHull)
     val hull =
       PolygonRing(

@@ -58,3 +58,10 @@ case class LaserMissile(
   val xPos = 0.0f
   val yPos = 0.0f
 }
+
+case object TestingObject extends WorldObject {
+  val identifier = -1
+  val xPos = 0f
+  val yPos = 0f
+  val orientation = 0f
+}
