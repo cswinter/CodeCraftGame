@@ -67,6 +67,14 @@ case class ColorRGB(r: Float, g: Float, b: Float) extends Vertex {
     case 2 => b
     case _ => throw new IndexOutOfBoundsException("ColorRGB only has 3 components.")
   }
+
+  def +(that: ColorRGB): ColorRGB = ColorRGB(r + that.r, g + that.g, b + that.b)
+}
+
+object ColorRGB {
+  implicit class Scalar(val value: Float) extends AnyVal {
+    def *(colorRGB: ColorRGB) = ColorRGB(value * colorRGB.r, value * colorRGB.g, value * colorRGB.b)
+  }
 }
 
 case class ColorRGBA(r: Float, g: Float, b: Float, a: Float) extends Vertex {

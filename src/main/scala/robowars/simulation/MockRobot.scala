@@ -23,7 +23,7 @@ class MockRobot(
   val turnSpeed = 0.01f
 
   val oldPositions = mutable.Queue((xPos, yPos, orientation), (xPos, yPos, orientation))
-  val nPos = 20
+  val nPos = 12
 
 
   override def update(): Unit = {

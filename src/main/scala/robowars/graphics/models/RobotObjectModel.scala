@@ -329,20 +329,27 @@ class ThrusterTrailsModelFactory(
       }
 
     val (trail1, trail2) = trailPositions.unzip
-    val colors = trail1.indices.map(index => ColorRGBA(ColorThrusters, index / n.toFloat))
+    val colorsInside = trail1.indices.map(
+      index => {
+        val x = index / n.toFloat
+        ColorRGBA(x * White + (1 - x) * ColorThrusters, x)
+      })
+    val colorsOutside = trail1.indices.map(index => ColorRGBA(ColorThrusters, 0))
 
     new StaticCompositeModel(Seq(
-      QuadStrip(
+      RichQuadStrip(
         rs.TranslucentAdditive,
         trail1,
-        colors,
-        sideLength * 0.3f
+        colorsInside,
+        colorsOutside,
+        sideLength * 0.5f
       ).noCaching.getModel,
-      QuadStrip(
+      RichQuadStrip(
         rs.TranslucentAdditive,
         trail2,
-        colors,
-        sideLength * 0.3f
+        colorsInside,
+        colorsOutside,
+        sideLength * 0.5f
       ).noCaching.getModel
     )).identityModelview
   }
