@@ -71,42 +71,11 @@ case class RichQuadStrip[TColor <: Vertex : ClassTag, TParams](
 
     /** set triangle data **/
     val stride = 21
-    val vertexPos = new ArrayBuffer[VertexXYZ]((n - 1) * stride - 3)
+    val vertexPos = new ArrayBuffer[VertexXYZ]((n - 1) * stride - 9)
     for (i <- 0 until n -1)
     {
       val midpointStart = (0.5f * (leftStart(i) + rightStart(i))).zPos(zPos)
       val midpointEnd = (0.5f * (leftEnd(i) + rightEnd(i))).zPos(zPos)
-      // fill-in at point i
-      if (i > 0) {
-        val midpointEndPrev = (0.5f * (leftEnd(i - 1) + rightEnd(i - 1))).zPos(zPos)
-        if (leftStart(i) == leftEnd(i - 1)) {
-          vertexPos += leftStart(i).zPos(zPos)
-          vertexPos += midpointEndPrev
-          vertexPos += midpointStart
-
-          vertexPos += midpointStart
-          vertexPos += midpointEndPrev
-          vertexPos += rightEnd(i - 1).zPos(zPos)
-
-          vertexPos += midpointStart
-          vertexPos += rightEnd(i - 1).zPos(zPos)
-          vertexPos += rightStart(i).zPos(zPos)
-          // enabling check increases efficiency, but makes midpoint coloring awkward
-        } else { // if (rightStart(i) == rightEnd(i - 1)) {
-          vertexPos += rightStart(i).zPos(zPos)
-          vertexPos += midpointStart
-          vertexPos += midpointEndPrev
-
-          vertexPos += midpointEndPrev
-          vertexPos += midpointStart
-          vertexPos += leftEnd(i - 1).zPos(zPos)
-
-          vertexPos += midpointEndPrev
-          vertexPos += leftEnd(i - 1).zPos(zPos)
-          vertexPos += leftStart(i).zPos(zPos)
-        }
-      }
-
 
       // quad from point i to point i + 1 (left side)
       vertexPos += leftStart(i).zPos(zPos)
@@ -120,29 +89,61 @@ case class RichQuadStrip[TColor <: Vertex : ClassTag, TParams](
       // quad from point i to point i + 1 (right side)
       vertexPos += midpointStart
       vertexPos += rightStart(i).zPos(zPos)
-      vertexPos += rightEnd(i).zPos(zPos)
+      vertexPos += midpointEnd
 
-      vertexPos += midpointStart
+      vertexPos += rightStart(i).zPos(zPos)
       vertexPos += rightEnd(i).zPos(zPos)
       vertexPos += midpointEnd
+
+
+      // fill-in at point i
+      if (i < n - 2) {
+        val midpointStartNext = (0.5f * (leftStart(i + 1) + rightStart(i + 1))).zPos(zPos)
+        if (leftEnd(i) == leftStart(i + 1)) {
+          vertexPos += leftStart(i + 1).zPos(zPos)
+          vertexPos += midpointEnd
+          vertexPos += midpointStartNext
+
+          vertexPos += midpointStartNext
+          vertexPos += midpointEnd
+          vertexPos += rightEnd(i).zPos(zPos)
+
+          vertexPos += midpointStartNext
+          vertexPos += rightEnd(i).zPos(zPos)
+          vertexPos += rightStart(i + 1).zPos(zPos)
+          // enabling check increases efficiency, but makes midpoint coloring awkward
+        } else { // if (rightStart(i) == rightEnd(i - 1)) {
+          vertexPos += rightStart(i + 1).zPos(zPos)
+          vertexPos += midpointStartNext
+          vertexPos += midpointEnd
+
+          vertexPos += midpointEnd
+          vertexPos += midpointStartNext
+          vertexPos += leftEnd(i).zPos(zPos)
+
+          vertexPos += midpointStartNext
+          vertexPos += leftStart(i + 1).zPos(zPos)
+          vertexPos += leftEnd(i).zPos(zPos)
+        }
+      }
     }
 
 
-    val vertexCol = new Array[TColor](stride * (n - 1) - 3)
+    val vertexCol = new Array[TColor](stride * (n - 1) - 9)
     for (i <- 0 until n - 1) {
-      vertexCol(stride * i + 0) = colorsOutside(i)
-      vertexCol(stride * i + 1) = colorsInside(i)
-      vertexCol(stride * i + 2) = colorsInside(i + 1)
-      vertexCol(stride * i + 3) = colorsOutside(i)
-      vertexCol(stride * i + 4) = colorsInside(i + 1)
-      vertexCol(stride * i + 5) = colorsOutside(i + 1)
+      vertexCol(stride * i + 0) = colorsOutside(i)    // start
+      vertexCol(stride * i + 1) = colorsInside(i)     // midpoint start
+      vertexCol(stride * i + 2) = colorsInside(i + 1) // midpontEnd
+      vertexCol(stride * i + 3) = colorsOutside(i)    // start
+      vertexCol(stride * i + 4) = colorsInside(i + 1) // midpointEnd
+      vertexCol(stride * i + 5) = colorsOutside(i + 1)//end
 
-      vertexCol(stride * i + 6) = colorsInside(i)
-      vertexCol(stride * i + 7) = colorsOutside(i)
-      vertexCol(stride * i + 8) = colorsOutside(i + 1)
-      vertexCol(stride * i + 9) = colorsInside(i)
-      vertexCol(stride * i + 10) = colorsOutside(i + 1)
-      vertexCol(stride * i + 11) = colorsInside(i + 1)
+      vertexCol(stride * i + 6) = colorsInside(i)        // midpoint start
+      vertexCol(stride * i + 7) = colorsOutside(i)       // start
+      vertexCol(stride * i + 8) = colorsInside(i + 1)   // midpoint end
+      vertexCol(stride * i + 9) = colorsOutside(i)        // start
+      vertexCol(stride * i + 10) = colorsOutside(i + 1)  // end
+      vertexCol(stride * i + 11) = colorsInside(i + 1)   // midpointEnd
 
       if (i < n - 2) {
         vertexCol(stride * i + 12) = colorsOutside(i + 1)
@@ -159,6 +160,7 @@ case class RichQuadStrip[TColor <: Vertex : ClassTag, TParams](
       }
     }
 
+    assert(vertexPos.toArray.length == stride * (n - 1) - 9)
     vertexPos.toSeq zip vertexCol
   }
 

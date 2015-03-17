@@ -111,7 +111,7 @@ class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
         radius = radiusBody
       ).getModel
 
-    val hullColors = ColorThrusters +: robot.hullState.map {
+    val hullColors = ColorBackplane +: robot.hullState.map {
       case 2 => ColorHull
       case 1 => ColorHullDamaged
       case 0 => ColorHullBroken
@@ -321,7 +321,7 @@ class ThrusterTrailsModelFactory(
 
 
     val trailPositions =
-      for (((x, y, a), t) <- positions.zipWithIndex)
+      for (((x, y, a), t) <- positions.zipWithIndex.reverse)
       yield {
         val drift = -VertexXY(a) * (n - t - 1) * 2.0f
         val offset = VertexXY(x, y) + drift
@@ -332,7 +332,7 @@ class ThrusterTrailsModelFactory(
     val colorsInside = trail1.indices.map(
       index => {
         val x = index / n.toFloat
-        ColorRGBA(x * White + (1 - x) * ColorThrusters, x)
+        ColorRGBA(x * ColorThrusters + (1 - x) * White, 1 - x)
       })
     val colorsOutside = trail1.indices.map(index => ColorRGBA(ColorThrusters, 0))
 
