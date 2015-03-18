@@ -6,6 +6,7 @@ import javax.media.opengl._
 import javax.media.opengl.GL._
 
 import org.joda.time.DateTime
+import robowars.graphics.materials.Material
 import robowars.graphics.model.TheModelCache
 import robowars.graphics.models.TheWorldObjectModelFactory
 
@@ -41,6 +42,8 @@ object RenderFrame extends GLEventListener {
     val gl = getGL(drawable)
     import gl._
 
+    Material.resetDrawCalls()
+
     if (cullFaceToggle) glEnable(GL_CULL_FACE)
     else glDisable(GL_CULL_FACE)
     cullFaceToggle = !cullFaceToggle
@@ -75,7 +78,10 @@ object RenderFrame extends GLEventListener {
     frameTimes.enqueue(now)
     val tThen = frameTimes.dequeue()
     val fps = FrametimeSamples * 1000 / (now - tThen)
-    textField.setText(f"FPS: $fps  Cached models: ${TheModelCache.CachedModelCount}")
+    textField.setText(
+      f"FPS: $fps   " +
+      f"Draw calls: ${Material.drawCalls}   " +
+      f"Cached models: ${TheModelCache.CachedModelCount}   ")
   }
 
   private def update(): Unit = {

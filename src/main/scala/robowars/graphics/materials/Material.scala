@@ -69,6 +69,8 @@ class Material[TPosition <: Vertex, TColor <: Vertex, TParams](
   }
 
   def draw(vbo: VBO, modelview: Matrix4x4): Unit = {
+    Material._drawCalls += 1
+
     // upload modelview
     glUniformMatrix4fv(uniformModelview, 1, true, modelview.data, 0)
 
@@ -218,4 +220,12 @@ class Material[TPosition <: Vertex, TColor <: Vertex, TParams](
       println(new String(log))
     }
   }
+}
+
+
+object Material {
+  private var _drawCalls = 0
+
+  def resetDrawCalls(): Unit = _drawCalls = 0
+  def drawCalls = _drawCalls
 }
