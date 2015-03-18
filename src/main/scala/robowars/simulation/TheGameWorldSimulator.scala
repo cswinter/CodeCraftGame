@@ -31,7 +31,7 @@ object TheGameWorldSimulator extends GameWorld {
     10 -> StorageModule(rni(7)),
     2 -> Engines(0),
     2 -> ShieldGenerator,
-    2 -> ProcessingModule(0)
+    4 -> ProcessingModule(0)
   )
 
   val ModuleCount = Map(3 -> 1, 4 -> 3, 5 -> 6, 6 -> 9).withDefaultValue(0)
