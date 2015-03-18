@@ -22,10 +22,12 @@ case class TestModelBuilder(t: Int)(implicit rs: RenderStack) extends ModelBuild
       }
     }
 
+
     new StaticCompositeModel(
       polygonSeries(circumradius, 0, ColorRGB(1, 1, 1)) ++
         polygonSeries(_ * 10, 250, ColorRGB(0, 0, 0.5f)) :+
-        new FactoryModelBuilder(NullVectorXY, t % 250).getModel
+        new FactoryModelBuilder(NullVectorXY, t % 250).getModel :+
+        new RobotLaserWeaponModelBuilder(0, 3, 20).getModel
     )
   }
 

@@ -167,7 +167,16 @@ class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
       for ((ShieldGenerator, index) <- signature.shieldGeneratorModels)
       yield RobotShieldGeneratorModel(ModulePosition((sides, index))).getModel
 
-    new RobotModel(body, hull, engines, factories, storageModules, shieldGeneratorModules, shields, thrusters)
+    val weapons =
+      if (sides == 3) {
+        Seq(
+          RobotLaserWeaponModelBuilder(1, sides, inradius(radiusHull, sides)).getModel,
+          RobotLaserWeaponModelBuilder(2, sides, inradius(radiusHull, sides)).getModel
+        )
+      } else Seq()
+
+    new RobotModel(body, hull, engines, factories, storageModules, shieldGeneratorModules,
+      shields, thrusters, weapons)
   }
 
 
@@ -182,12 +191,14 @@ case class RobotModel(
   storageModules: Seq[Model[Unit]],
   shieldGeneratorModules: Seq[Model[Unit]],
   shields: Option[Model[Unit]],
-  thrusterTrails: Model[Seq[(Float, Float, Float)]]
+  thrusterTrails: Model[Seq[(Float, Float, Float)]],
+  other: Seq[Model[Unit]]
 ) extends CompositeModel[RobotObject] {
 
   // MAKE SURE TO ADD NEW COMPONENTS HERE:
   val models: Seq[Model[_]] =
-    Seq(body, hull, thrusterTrails) ++ engines ++ factories ++ storageModules ++ shieldGeneratorModules ++ shields.toSeq
+    Seq(body, hull, thrusterTrails) ++ engines ++ factories ++ storageModules ++
+      shieldGeneratorModules ++ shields.toSeq ++ other
 
   override def update(a: RobotObject): Unit = {
     thrusterTrails.update(a.positions)
