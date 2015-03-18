@@ -148,12 +148,12 @@ class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
 
     val thrusters =
       new DynamicModel(
-        new ThrusterTrailsModelFactory(
+        new RobotThrusterTrailsModelFactory(
           sideLength, radiusHull, sides).buildModel)
 
     val engines =
       for ((Engines(t), index) <- signature.engines)
-      yield EnginesModel(ModulePosition((sides, index)), t).getModel
+      yield RobotEnginesModel(ModulePosition((sides, index)), t).getModel
 
     val factories =
       for ((ProcessingModule(t), index) <- signature.factories)
@@ -165,7 +165,7 @@ class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
 
     val shieldGeneratorModules =
       for ((ShieldGenerator, index) <- signature.shieldGeneratorModels)
-      yield ShieldGeneratorModel(ModulePosition((sides, index))).getModel
+      yield RobotShieldGeneratorModel(ModulePosition((sides, index))).getModel
 
     new RobotModel(body, hull, engines, factories, storageModules, shieldGeneratorModules, shields, thrusters)
   }
@@ -195,180 +195,10 @@ case class RobotModel(
 }
 
 
-case class EnginesModel(position: VertexXY, t: Int)(implicit rs: RenderStack)
-  extends ModelBuilder[EnginesModel, Unit] {
-
-  def signature: EnginesModel = this
-
-  protected def buildModel: Model[Unit] = {
-    val enginePositions = Geometry.polygonVertices2(3, radius = 5, orientation = 2 * Pi.toFloat * t / 250)
-    val engines =
-      for ((offset, i) <- enginePositions.zipWithIndex)
-      yield new Polygon(
-        rs.MaterialXYRGB,
-        5,
-        ColorThrusters,
-        ColorHull,
-        radius = 4,
-        position = position + offset,
-        orientation = -2 * Pi.toFloat * t / 125,
-        zPos = 1
-      ).getModel
-
-    new StaticCompositeModel(engines)
-  }
-}
-
-case class RobotStorageModule(position: VertexXY, nEnergyGlobes: Int)(implicit rs: RenderStack)
-  extends ModelBuilder[RobotStorageModule, Unit] {
 
 
-  def signature = this
-
-  protected def buildModel: Model[Unit] = {
-    val radius = 8
-    val outlineWidth = 1
-    val body =
-      Polygon(
-        material = rs.MaterialXYRGB,
-        n = 20,
-        colorMidpoint = ColorBackplane,
-        colorOutside = ColorBackplane,
-        radius = radius - outlineWidth,
-        position = position,
-        zPos = 1
-      ).getModel
-
-    val hull =
-      PolygonRing(
-        material = rs.MaterialXYRGB,
-        n = 20,
-        colorInside = ColorHull,
-        colorOutside = ColorHull,
-        innerRadius = radius - outlineWidth,
-        outerRadius = radius,
-        position = position,
-        zPos = 1
-      ).getModel
-
-    val energyPositions = Seq(VertexXY(0, 0)) ++ Geometry.polygonVertices2(6, radius = 4.5f)
-    val energyGlobes =
-      for (i <- 0 until nEnergyGlobes)
-      yield
-        Polygon(
-          material = rs.BloomShader,
-          n = 7,
-          colorMidpoint = ColorRGB(1, 1, 1),
-          colorOutside = ColorRGB(0, 1, 0),
-          radius = 2,
-          position = energyPositions(i) + position,
-          zPos = 2
-        ).getModel
-
-    new StaticCompositeModel(body +: hull +: energyGlobes)
-  }
-}
-
-case class ShieldGeneratorModel(position: VertexXY)(implicit rs: RenderStack)
-  extends ModelBuilder[ShieldGeneratorModel, Unit] {
-  def signature = this
 
 
-  protected def buildModel: Model[Unit] = {
-    val radius = 3
-    val gridposRadius = 2 * inradius(radius, 6)
-    val gridpoints = VertexXY(0, 0) +: Geometry.polygonVertices(6, radius = gridposRadius)
-    val hexgrid =
-      for (pos <- gridpoints)
-      yield
-        PolygonRing(
-          material = rs.MaterialXYRGB,
-          n = 6,
-          colorInside = White,
-          colorOutside = White,
-          innerRadius = radius - 0.5f,
-          outerRadius = radius,
-          position = pos + position,
-          zPos = 1
-        ).getModel
-
-    val filling =
-      for (pos <- gridpoints)
-      yield
-        new Polygon(
-          material = rs.MaterialXYRGB,
-          n = 6,
-          colorMidpoint = ColorThrusters,
-          colorOutside = ColorThrusters,
-          radius = radius - 0.5f,
-          position = pos + position,
-          zPos = 1
-        ).getModel
-
-    new StaticCompositeModel(hexgrid ++ filling)
-  }
-}
 
 
-class ThrusterTrailsModelFactory(
-  val sideLength: Float,
-  val radiusHull: Float,
-  val sides: Int
-)(implicit rs: RenderStack) {
-  def buildModel(positions: Seq[(Float, Float, Float)]): Model[Unit] = {
-    val n = positions.length
 
-
-    val trailPositions =
-      for (((x, y, a), t) <- positions.zipWithIndex.reverse)
-      yield {
-        val drift = -VertexXY(a) * (n - t - 1) * 2.0f
-        val offset = VertexXY(x, y) + drift
-        (computeThrusterPos(1, a) + offset, computeThrusterPos(-1, a) + offset)
-      }
-
-    val (trail1, trail2) = trailPositions.unzip
-    val colorsInside = trail1.indices.map(
-      index => {
-        val x = index / n.toFloat
-        ColorRGBA(x * ColorThrusters + (1 - x) * White, 1 - x)
-      })
-    val colorsOutside = trail1.indices.map(index => ColorRGBA(ColorThrusters, 0))
-
-    new StaticCompositeModel(Seq(
-      RichQuadStrip(
-        rs.TranslucentAdditive,
-        trail1,
-        colorsInside,
-        colorsOutside,
-        sideLength * 0.5f
-      ).noCaching.getModel,
-      RichQuadStrip(
-        rs.TranslucentAdditive,
-        trail2,
-        colorsInside,
-        colorsOutside,
-        sideLength * 0.5f
-      ).noCaching.getModel
-    )).identityModelview
-  }
-
-  def computeThrusterPos(side: Int, angle: Float = 0): VertexXY = {
-    val perp = outerModulePerpendicular(0, angle)
-    outerModulePosition(0, angle) + side * sideLength * 0.3f * perp
-  }
-
-  def outerModulePosition(n: Int, orientationOffset: Float = 0): VertexXY = {
-    val r = inradius(radiusHull, sides)
-    r * outerModuleNormal(n, orientationOffset)
-  }
-
-  def outerModuleNormal(n: Int, orientationOffset: Float = 0): VertexXY = {
-    val angle = Pi + (2 * n * Pi / sides) + orientationOffset
-    VertexXY(angle)
-  }
-
-  def outerModulePerpendicular(n: Int, orientationOffset: Float = 0): VertexXY = {
-    outerModuleNormal(n, orientationOffset).perpendicular
-  }
-}
