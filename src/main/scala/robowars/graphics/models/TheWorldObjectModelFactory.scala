@@ -34,9 +34,9 @@ object TheWorldObjectModelFactory {
         Unit,
         LaserMissileModelFactory.build(laserMissile.positions),
         modelview)
-      case TestingObject => new ClosedModel[Unit](
+      case TestingObject(t) => new ClosedModel[Unit](
         Unit,
-        new TestModelBuilder().getModel,
+        new TestModelBuilder(t).getModel,
         modelview
       )
     }

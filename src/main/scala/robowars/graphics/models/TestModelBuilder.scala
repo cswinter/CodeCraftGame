@@ -4,7 +4,7 @@ import robowars.graphics.engine.RenderStack
 import robowars.graphics.model._
 
 
-case class TestModelBuilder(implicit val rs: RenderStack) extends ModelBuilder[TestModelBuilder, Unit] {
+case class TestModelBuilder(t: Int)(implicit rs: RenderStack) extends ModelBuilder[TestModelBuilder, Unit] {
   val signature = this
   val sideLength = 50
 
@@ -24,10 +24,39 @@ case class TestModelBuilder(implicit val rs: RenderStack) extends ModelBuilder[T
 
     new StaticCompositeModel(
       polygonSeries(circumradius, 0, ColorRGB(1, 1, 1)) ++
-      polygonSeries(_ * 10, 250, ColorRGB(0, 0, 0.5f))
+      polygonSeries(_ * 10, 250, ColorRGB(0, 0, 0.5f)) :+
+      new FactoryModelBuilder(NullVectorXY, t % 250).getModel
     )
   }
 
 
   def circumradius(n: Int) = (sideLength * 0.5 / math.sin(math.Pi / n)).toFloat
+}
+
+
+
+case class FactoryModelBuilder(position: VertexXY, t: Int)(implicit rs: RenderStack) extends ModelBuilder[FactoryModelBuilder, Unit] {
+  def signature: FactoryModelBuilder = this
+
+  override protected def buildModel: Model[Unit] = {
+    val Frames = 250
+    val Speed = 5
+    val Interval = Frames / Speed
+    val x = t / 5
+    val cycle = if (x < Interval / 2) 2 * x else 2 * (Interval - x)
+
+    val insideColor = ColorRGBA(1, 1, 1, 0.4f + cycle * 0.4f / Interval)
+    val outsideColor = ColorRGBA(1, 1, 1, 0.8f - cycle * 0.4f / Interval)
+    val radius = 8
+
+    Polygon(
+      rs.GaussianGlow,
+      50,
+      insideColor,
+      outsideColor,
+      radius,
+      position,
+      2
+    ).getModel
+  }
 }

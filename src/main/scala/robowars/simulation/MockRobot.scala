@@ -1,6 +1,6 @@
 package robowars.simulation
 
-import robowars.worldstate.{Engines, RobotModule, RobotObject, WorldObject}
+import robowars.worldstate._
 
 import scala.collection.mutable
 import scala.util.Random
@@ -67,6 +67,7 @@ class MockRobot(
     // update timer on engines
     modules = modules.map {
       case Engines(t) => Engines((t + 1) % 250)
+      case ProcessingModule(t) => ProcessingModule((t + 1) % 250)
       case m => m
     }
 

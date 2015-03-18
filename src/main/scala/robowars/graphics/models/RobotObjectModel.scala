@@ -55,6 +55,7 @@ object RobotModulePositions {
 case class RobotSignature(
   size: Int,
   engines: Seq[(Engines, Int)],
+  factories: Seq[(ProcessingModule, Int)],
   storageModules: Seq[(StorageModule, Int)],
   shieldGeneratorModels: Seq[(ShieldGenerator.type, Int)],
   hasShields: Boolean,
@@ -67,6 +68,10 @@ object RobotSignature {
       for ((engines: Engines, index) <- robotObject.modules.zipWithIndex)
       yield (engines, index)
 
+    val factories =
+      for ((factory: ProcessingModule, index) <- robotObject.modules.zipWithIndex)
+        yield (factory, index)
+
     val storageModules =
       for ((storage: StorageModule, index) <- robotObject.modules.zipWithIndex)
       yield (storage, index)
@@ -78,6 +83,7 @@ object RobotSignature {
     RobotSignature(
       robotObject.size,
       engines,
+      factories,
       storageModules,
       shieldGeneratorModels,
       shieldGeneratorModels.nonEmpty,
@@ -149,6 +155,10 @@ class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
       for ((Engines(t), index) <- signature.engines)
       yield EnginesModel(ModulePosition((sides, index)), t).getModel
 
+    val factories =
+      for ((ProcessingModule(t), index) <- signature.factories)
+        yield FactoryModelBuilder(ModulePosition((sides, index)), t % 250).getModel
+
     val storageModules =
       for ((StorageModule(count), index) <- signature.storageModules)
       yield RobotStorageModule(ModulePosition((sides, index)), count).getModel
@@ -157,7 +167,7 @@ class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
       for ((ShieldGenerator, index) <- signature.shieldGeneratorModels)
       yield ShieldGeneratorModel(ModulePosition((sides, index))).getModel
 
-    new RobotModel(body, hull, engines, storageModules, shieldGeneratorModules, shields, thrusters)
+    new RobotModel(body, hull, engines, factories, storageModules, shieldGeneratorModules, shields, thrusters)
   }
 
 
@@ -168,6 +178,7 @@ case class RobotModel(
   body: Model[Unit],
   hull: Model[Unit],
   engines: Seq[Model[Unit]],
+  factories: Seq[Model[Unit]],
   storageModules: Seq[Model[Unit]],
   shieldGeneratorModules: Seq[Model[Unit]],
   shields: Option[Model[Unit]],
@@ -176,7 +187,7 @@ case class RobotModel(
 
   // MAKE SURE TO ADD NEW COMPONENTS HERE:
   val models: Seq[Model[_]] =
-    Seq(body, hull, thrusterTrails) ++ engines ++ storageModules ++ shieldGeneratorModules ++ shields.toSeq
+    Seq(body, hull, thrusterTrails) ++ engines ++ factories ++ storageModules ++ shieldGeneratorModules ++ shields.toSeq
 
   override def update(a: RobotObject): Unit = {
     thrusterTrails.update(a.positions)

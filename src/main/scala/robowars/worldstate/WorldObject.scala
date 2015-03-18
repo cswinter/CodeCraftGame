@@ -27,6 +27,7 @@ case class StorageModule(resourceCount: Int) extends RobotModule {
   assert(resourceCount <= 6)
 }
 case class Engines(t: Int) extends RobotModule
+case class ProcessingModule(t: Int) extends RobotModule
 case object ShieldGenerator extends RobotModule
 
 
@@ -60,7 +61,7 @@ case class LaserMissile(
   val yPos = 0.0f
 }
 
-case object TestingObject extends WorldObject {
+case class TestingObject(time: Int) extends WorldObject {
   val identifier = -1
   val xPos = 0f
   val yPos = 0f
