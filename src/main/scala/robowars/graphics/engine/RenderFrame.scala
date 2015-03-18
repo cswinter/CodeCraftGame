@@ -81,7 +81,8 @@ object RenderFrame extends GLEventListener {
     textField.setText(
       f"FPS: $fps   " +
       f"Draw calls: ${Material.drawCalls}   " +
-      f"Cached models: ${TheModelCache.CachedModelCount}   ")
+      f"Cached models: ${TheModelCache.CachedModelCount}   " +
+      f"Last cached model: ${TheModelCache.lastCachedModel}")
   }
 
   private def update(): Unit = {
