@@ -31,6 +31,8 @@ case class TestModelBuilder(t: Int)(implicit rs: RenderStack) extends ModelBuild
 
 
   def circumradius(n: Int) = (sideLength * 0.5 / math.sin(math.Pi / n)).toFloat
+
+  override def isCacheable: Boolean = false
 }
 
 
