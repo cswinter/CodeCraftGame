@@ -215,19 +215,7 @@ case class EnginesModel(position: VertexXY, t: Int)(implicit rs: RenderStack)
         zPos = 1
       ).getModel
 
-    val engineRail =
-      PolygonRing(
-        rs.BloomShader,
-        n = 25,
-        colorInside = ColorRGB(0.8f, 0.8f, 1f),
-        colorOutside = ColorRGB(0.8f, 0.8f, 1f),
-        innerRadius = 4.5f,
-        outerRadius = 5.5f,
-        position = position,
-        zPos = 0.5f
-      ).getModel
-
-    new StaticCompositeModel(engines :+ engineRail)
+    new StaticCompositeModel(engines)
   }
 }
 
