@@ -23,7 +23,7 @@ case class RobotObject(
 sealed trait RobotModule
 
 case class StorageModule(resourceCount: Int) extends RobotModule {
-  assert(resourceCount >= 0)
+  assert(resourceCount >= -1)
   assert(resourceCount <= 6)
 }
 case class Engines(t: Int) extends RobotModule

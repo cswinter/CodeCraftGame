@@ -167,7 +167,7 @@ class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
 
     val storageModules =
       for ((StorageModule(count), index) <- signature.storageModules)
-        yield RobotStorageModule(ModulePosition((sides, index)), count).getModel
+        yield RobotStorageModelBuilder(ModulePosition((sides, index)), count).getModel
 
     val lasers =
       for ((Lasers(n), index) <- signature.laserModules)

@@ -28,7 +28,7 @@ object TheGameWorldSimulator extends GameWorld {
   }
 
   def randomModule = rnd(
-    10 -> StorageModule(rni(7)),
+    10 -> StorageModule(rni(8) - 1),
     10 -> Lasers(rni(3)),
     2 -> Engines(0),
     2 -> ShieldGenerator,
