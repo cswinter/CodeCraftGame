@@ -54,45 +54,17 @@ object RobotModulePositions {
 
 case class RobotSignature(
   size: Int,
-  engines: Seq[(Engines, Int)],
-  factories: Seq[(ProcessingModule, Int)],
-  storageModules: Seq[(StorageModule, Int)],
-  laserModules: Seq[(Lasers, Int)],
-  shieldGeneratorModels: Seq[(ShieldGenerator.type, Int)],
+  modules: Seq[RobotModule],
   hasShields: Boolean,
   hullState: Seq[Byte]
 )
 
 object RobotSignature {
   def apply(robotObject: RobotObject): RobotSignature = {
-    val engines =
-      for ((engines: Engines, index) <- robotObject.modules.zipWithIndex)
-        yield (engines, index)
-
-    val factories =
-      for ((factory: ProcessingModule, index) <- robotObject.modules.zipWithIndex)
-        yield (factory, index)
-
-    val storageModules =
-      for ((storage: StorageModule, index) <- robotObject.modules.zipWithIndex)
-        yield (storage, index)
-
-    val lasers =
-      for ((laser: Lasers, index) <- robotObject.modules.zipWithIndex)
-        yield (laser, index)
-
-    val shieldGeneratorModels =
-      for ((ShieldGenerator, index) <- robotObject.modules.zipWithIndex)
-        yield (ShieldGenerator, index)
-
     RobotSignature(
       robotObject.size,
-      engines,
-      factories,
-      storageModules,
-      lasers,
-      shieldGeneratorModels,
-      shieldGeneratorModels.nonEmpty,
+      robotObject.modules,
+      robotObject.modules.contains(ShieldGenerator),
       robotObject.hullState)
   }
 }
@@ -157,30 +129,21 @@ class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
         new RobotThrusterTrailsModelFactory(
           sideLength, radiusHull, sides).buildModel)
 
-    val engines =
-      for ((Engines(t), index) <- signature.engines)
-        yield RobotEnginesModel(ModulePosition((sides, index)), t).getModel
-
-    val factories =
-      for ((ProcessingModule(t), index) <- signature.factories)
-        yield FactoryModelBuilder(ModulePosition((sides, index)), t % 250).getModel
-
-    val storageModules =
-      for ((StorageModule(count), index) <- signature.storageModules)
-        yield RobotStorageModelBuilder(ModulePosition((sides, index)), count).getModel
-
-    val lasers =
-      for ((Lasers(n), index) <- signature.laserModules)
-        yield RobotLasersModelBuilder(ModulePosition((sides, index)), n).getModel
-
-    val shieldGeneratorModules =
-      for ((ShieldGenerator, index) <- signature.shieldGeneratorModels)
-        yield RobotShieldGeneratorModel(ModulePosition((sides, index))).getModel
+    val modules =
+      for {
+        (module, index) <- signature.modules.zipWithIndex
+        position = ModulePosition((sides, index))
+      } yield (module match {
+        case Engines(t) => RobotEnginesModel(position, t)
+        case ProcessingModule(t) => FactoryModelBuilder(position, t)
+        case StorageModule(count) => RobotStorageModelBuilder(position, count)
+        case Lasers(n) => RobotLasersModelBuilder(position, n)
+        case ShieldGenerator => RobotShieldGeneratorModel(position)
+      }).getModel
 
     val other = Seq()
 
-    new RobotModel(body, hull, engines, factories, storageModules, lasers, shieldGeneratorModules,
-      shields, thrusters, other)
+    new RobotModel(body, hull, modules, shields, thrusters, other)
   }
 }
 
@@ -188,11 +151,7 @@ class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
 case class RobotModel(
   body: Model[Unit],
   hull: Model[Unit],
-  engines: Seq[Model[Unit]],
-  factories: Seq[Model[Unit]],
-  storageModules: Seq[Model[Unit]],
-  lasers: Seq[Model[Unit]],
-  shieldGeneratorModules: Seq[Model[Unit]],
+  modules: Seq[Model[Unit]],
   shields: Option[Model[Unit]],
   thrusterTrails: Model[Seq[(Float, Float, Float)]],
   other: Seq[Model[Unit]]
@@ -200,8 +159,7 @@ case class RobotModel(
 
   // MAKE SURE TO ADD NEW COMPONENTS HERE:
   val models: Seq[Model[_]] =
-    Seq(body, hull, thrusterTrails) ++ engines ++ factories ++ storageModules ++
-      lasers ++ shieldGeneratorModules ++ shields.toSeq ++ other
+    Seq(body, hull, thrusterTrails) ++ modules ++ shields.toSeq ++ other
 
   override def update(a: RobotObject): Unit = {
     thrusterTrails.update(a.positions)
