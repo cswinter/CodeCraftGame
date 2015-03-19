@@ -29,6 +29,7 @@ case class StorageModule(resourceCount: Int) extends RobotModule {
 case class Engines(t: Int) extends RobotModule
 case class ProcessingModule(t: Int) extends RobotModule
 case object ShieldGenerator extends RobotModule
+case class Lasers(n: Int) extends RobotModule
 
 
 case class MineralObject(
