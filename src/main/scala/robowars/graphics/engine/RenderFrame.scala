@@ -7,11 +7,10 @@ import javax.media.opengl.GL._
 
 import org.joda.time.DateTime
 import robowars.graphics.materials.Material
-import robowars.graphics.model.TheModelCache
+import robowars.graphics.model.{VBO, TheModelCache}
 import robowars.graphics.models.TheWorldObjectModelFactory
 
 import robowars.simulation.TheGameWorldSimulator
-
 
 
 object RenderFrame extends GLEventListener {
@@ -20,6 +19,7 @@ object RenderFrame extends GLEventListener {
   val Debug = false
 
   private[this] var paused = false
+
   def togglePause(): Unit = paused = !paused
 
   var gl: GL4 = null
@@ -82,7 +82,9 @@ object RenderFrame extends GLEventListener {
       f"FPS: $fps   " +
       f"Draw calls: ${Material.drawCalls}   " +
       f"Cached models: ${TheModelCache.CachedModelCount}   " +
-      f"Last cached model: ${TheModelCache.lastCachedModel}")
+      f"Allocated VBOs: ${VBO.count}   " +
+      f"Last cached model: ${TheModelCache.lastCachedModel}"
+    )
   }
 
   private def update(): Unit = {
