@@ -144,6 +144,7 @@ class Material[TPosition <: Vertex, TColor <: Vertex, TParams](
 
     glBindBuffer(GL_ARRAY_BUFFER, 0)
 
+    VBO._count += 1
     VBO(vboHandle, vertexData.length, vao)
   }
 

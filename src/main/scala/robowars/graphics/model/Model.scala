@@ -3,6 +3,8 @@ package robowars.graphics.model
 import robowars.graphics.matrices._
 import robowars.worldstate.WorldObject
 
+import scala.annotation.tailrec
+
 
 class ClosedModel[T](objectState: T, model: Model[T], modelview: Matrix4x4) {
   def draw(material: GenericMaterial): Unit = {
@@ -16,20 +18,33 @@ class ClosedModel[T](objectState: T, model: Model[T], modelview: Matrix4x4) {
 
 trait Model[T] {
   def update(params: T): Unit
+  def setVertexCount(n: Int): Unit
 
   def draw(modelview: Matrix4x4, material: GenericMaterial): Unit
 
   def hasMaterial(material: GenericMaterial): Boolean
 
+  def vertexCount: Int
 
   def scalable: ScalableModel[T] = new ScalableModel(this)
   def identityModelview: IdentityModelviewModel[T] = new IdentityModelviewModel[T](this)
 }
 
-object EmptyModel extends Model[Unit] {
-  def update(params: Unit) = ()
+
+class EmptyModel[T] extends Model[T] {
+  def update(params: T) = ()
+  def setVertexCount(n: Int) = ()
   def draw(modelview: Matrix4x4, material: GenericMaterial) = ()
   def hasMaterial(material: GenericMaterial) = false
+  def vertexCount = 0
+}
+
+object EmptyModel extends Model[Unit] {
+  def update(params: Unit) = ()
+  def setVertexCount(n: Int) = ()
+  def draw(modelview: Matrix4x4, material: GenericMaterial) = ()
+  def hasMaterial(material: GenericMaterial) = false
+  def vertexCount = 0
 }
 
 
@@ -41,12 +56,16 @@ class ScalableModel[T](val model: Model[T]) extends Model[(T, Float)] {
     scale = params._2
   }
 
+  def setVertexCount(n: Int): Unit = model.setVertexCount(n)
+
   def draw(modelview: Matrix4x4, material: GenericMaterial): Unit = {
     val scaledModelview = new DilationXYMatrix4x4(scale) * modelview
     model.draw(scaledModelview, material)
   }
 
   override def hasMaterial(material: GenericMaterial): Boolean = model.hasMaterial(material)
+
+  def vertexCount = model.vertexCount
 }
 
 
@@ -62,12 +81,17 @@ class HideableModel[T](val model: Model[T]) extends Model[(IsHidden, T)] {
       model.update(baseParams)
   }
 
+  def setVertexCount(n: Int): Unit =
+    if (show) model.setVertexCount(n)
+
   def draw(modelview: Matrix4x4, material: GenericMaterial): Unit =
     if (show)
       model.draw(modelview, material)
 
   def hasMaterial(material: GenericMaterial): Boolean =
     model.hasMaterial(material)
+
+  def vertexCount = model.vertexCount
 }
 
 
@@ -75,11 +99,15 @@ class IdentityModelviewModel[T](val model: Model[T]) extends Model[T] {
   def update(params: T): Unit =
     model.update(params)
 
+  def setVertexCount(n: Int): Unit = model.setVertexCount(n)
+
   def draw(modelview: Matrix4x4, material: GenericMaterial): Unit =
     model.draw(IdentityMatrix4x4, material)
 
   def hasMaterial(material: GenericMaterial): Boolean =
     model.hasMaterial(material)
+
+  def vertexCount = model.vertexCount
 }
 
 
@@ -89,12 +117,17 @@ class DynamicModel[T](val modelFactory: T => Model[Unit]) extends Model[T] {
   def draw(modelview: Matrix4x4, material: GenericMaterial): Unit =
     model.draw(modelview, material)
 
+  def setVertexCount(n: Int): Unit =
+    model.setVertexCount(n)
+
   def hasMaterial(material: GenericMaterial): Boolean =
     model == null || model.hasMaterial(material)
 
   def update(params: T) = {
     model = modelFactory(params)
   }
+
+  def vertexCount = model.vertexCount
 }
 
 
@@ -117,6 +150,24 @@ trait CompositeModel[T] <: Model[T] {
 
   def update(params: T): Unit
 
+  def setVertexCount(n: Int): Unit = {
+    assert(n >= 0)
+
+    @tailrec
+    def _setVertexCount(remaining: Int, models: Seq[Model[_]]): Unit = {
+      models.headOption match {
+        case Some(model) =>
+          val count = model.vertexCount
+          val allocated = math.min(count, remaining)
+          model.setVertexCount(allocated)
+          _setVertexCount(remaining - allocated, models.tail)
+        case None =>
+      }
+    }
+
+    _setVertexCount(n, models)
+  }
+
   // TODO: make more efficient (keep set of all materials?)
   def hasMaterial(material: GenericMaterial): Boolean =
     models.exists(_.hasMaterial(material))
@@ -126,6 +177,8 @@ trait CompositeModel[T] <: Model[T] {
       model <- models
       if model.hasMaterial(material)
     } model.draw(modelview, material)
+
+  def vertexCount = models.map(_.vertexCount).sum
 }
 
 class StaticCompositeModel(val models: Seq[Model[Unit]]) extends CompositeModel[Unit] {

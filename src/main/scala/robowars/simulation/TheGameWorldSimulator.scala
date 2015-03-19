@@ -61,9 +61,29 @@ object TheGameWorldSimulator extends GameWorld {
 
   val objects = collection.mutable.Set(minerals ++ robots:_*)
 
+  def robotConstruction(time: Int): RobotObject = {
+    RobotObject(
+      identifier = -2,
+      xPos = 100,
+      yPos = 100,
+      orientation = 2,
+      positions = Seq(),
+      modules = Seq(
+        Engines(0),
+        Engines(0),
+        StorageModule(0),
+        ShieldGenerator,
+        StorageModule(0),
+        Lasers(3)
+      ),
+      hullState = Seq[Byte](2, 2, 2, 2),
+      size = 5,
+      constructionState = time
+    )
+  }
 
   def worldState: Iterable[WorldObject] = {
-    objects.map(_.state()) + TestingObject(time)
+    objects.map(_.state()) + TestingObject(time) + robotConstruction(time)
   }
 
   def update(): Unit = {

@@ -16,7 +16,8 @@ case class RobotObject(
   positions: Seq[(Float, Float, Float)],
   modules: Seq[RobotModule],
   hullState: Seq[Byte],
-  size: Int
+  size: Int,
+  constructionState: Int = -1
 ) extends WorldObject
 
 

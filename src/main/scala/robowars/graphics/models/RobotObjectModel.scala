@@ -56,7 +56,8 @@ case class RobotSignature(
   size: Int,
   modules: Seq[RobotModule],
   hasShields: Boolean,
-  hullState: Seq[Byte]
+  hullState: Seq[Byte],
+  constructionState: Int
 )
 
 object RobotSignature {
@@ -65,7 +66,8 @@ object RobotSignature {
       robotObject.size,
       robotObject.modules,
       robotObject.modules.contains(ShieldGenerator),
-      robotObject.hullState)
+      robotObject.hullState,
+      robotObject.constructionState)
   }
 }
 
@@ -113,6 +115,18 @@ class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
         0
       ).getModel
 
+    val modules =
+      for {
+        (module, index) <- signature.modules.zipWithIndex
+        position = ModulePosition((sides, index))
+      } yield (module match {
+        case Engines(t) => RobotEnginesModel(position, t)
+        case ProcessingModule(t) => FactoryModelBuilder(position, t)
+        case StorageModule(count) => RobotStorageModelBuilder(position, count)
+        case Lasers(n) => RobotLasersModelBuilder(position, n)
+        case ShieldGenerator => RobotShieldGeneratorModel(position)
+      }).getModel
+
     val shields =
       if (signature.hasShields)
         Some(Polygon(
@@ -125,21 +139,11 @@ class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
       else None
 
     val thrusters =
-      new DynamicModel(
-        new RobotThrusterTrailsModelFactory(
-          sideLength, radiusHull, sides).buildModel)
-
-    val modules =
-      for {
-        (module, index) <- signature.modules.zipWithIndex
-        position = ModulePosition((sides, index))
-      } yield (module match {
-        case Engines(t) => RobotEnginesModel(position, t)
-        case ProcessingModule(t) => FactoryModelBuilder(position, t)
-        case StorageModule(count) => RobotStorageModelBuilder(position, count)
-        case Lasers(n) => RobotLasersModelBuilder(position, n)
-        case ShieldGenerator => RobotShieldGeneratorModel(position)
-      }).getModel
+      if (signature.constructionState == -1) {
+        new DynamicModel(
+          new RobotThrusterTrailsModelFactory(
+            sideLength, radiusHull, sides).buildModel)
+      } else new EmptyModel[Seq[(Float, Float, Float)]]
 
     val other = Seq()
 
@@ -163,14 +167,11 @@ case class RobotModel(
 
   override def update(a: RobotObject): Unit = {
     thrusterTrails.update(a.positions)
+
+    if (a.constructionState != -1) {
+      val flicker = (a.constructionState % 5 & 1) ^ 1
+      setVertexCount((a.constructionState / 5 + flicker) * 3)
+    }
   }
 }
-
-
-
-
-
-
-
-
 
