@@ -13,7 +13,7 @@ class LightFlashModelBuilder(lightFlash: LightFlash)(implicit val rs: RenderStac
   val signature = LightFlashSign(rs)
 
   override protected def buildModel: Model[LightFlash] = {
-    val flash = new Polygon(
+    val flash = Polygon(
       rs.GaussianGlowPIntensity,
       25,
       ColorRGBA(1, 1, 1, 0),

@@ -14,7 +14,7 @@ case class RobotEnginesModel(position: VertexXY, t: Int)(implicit rs: RenderStac
     val enginePositions = Geometry.polygonVertices2(3, radius = 5, orientation = 2 * math.Pi.toFloat * t / 250)
     val engines =
       for ((offset, i) <- enginePositions.zipWithIndex)
-      yield new Polygon(
+      yield Polygon(
         rs.MaterialXYRGB,
         5,
         ColorThrusters,

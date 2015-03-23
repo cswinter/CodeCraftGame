@@ -32,7 +32,7 @@ case class RobotShieldGeneratorModel(position: VertexXY)(implicit rs: RenderStac
     val filling =
       for (pos <- gridpoints)
       yield
-        new Polygon(
+        Polygon(
           material = rs.MaterialXYRGB,
           n = 6,
           colorMidpoint = ColorThrusters,

@@ -13,11 +13,12 @@ case class RobotLasersModelBuilder(position: VertexXY, n: Int)(implicit rs: Rend
     Polygon(
       rs.MaterialXYRGB,
       3,
-      White,
-      ColorThrusters,
+      Seq.fill(n)(White) ++ Seq.fill(3 - n)(Black),
+      Seq.fill(3)(ColorThrusters),
       radius = 8,
       position = position,
-      zPos = 1
+      zPos = 1,
+      orientation = 0
     ).getModel
   }
 }
