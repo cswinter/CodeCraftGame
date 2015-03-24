@@ -18,7 +18,9 @@ case class RobotObject(
   hullState: Seq[Byte],
   size: Int,
   constructionState: Int = -1
-) extends WorldObject
+) extends WorldObject {
+  assert(hullState.size == size - 1)
+}
 
 
 sealed trait RobotModule

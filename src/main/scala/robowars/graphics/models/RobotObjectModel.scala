@@ -21,33 +21,18 @@ object RobotColors {
 
 
 object RobotModulePositions {
-  val hexRad = 27.0f
-  val hexInRad = 11.0f
-  val hexagonVertices = Geometry.polygonVertices(6, Pi.toFloat / 6, hexRad)
-  val ModulePosition = Map[(Int, Int), VertexXY](
-    (3, 0) -> VertexXY(0, 0),
+  //noinspection ZeroIndexToHead
+  val ModulePosition = Map[Int, IndexedSeq[VertexXY]](
+    3 -> IndexedSeq(VertexXY(0, 0)),
 
-    (4, 0) -> VertexXY(9, 4),
-    (4, 1) -> VertexXY(-9, 9),
-    (4, 2) -> VertexXY(-4, -9),
+    4 -> IndexedSeq(VertexXY(9, 9), VertexXY(-9, -9)),
 
-    (5, 0) -> VertexXY(-17, 11),
-    (5, 1) -> VertexXY(-17, -11),
-    (5, 2) -> VertexXY(6, 20),
-    (5, 3) -> VertexXY(0, 0),
-    (5, 4) -> VertexXY(6, -20),
-    (5, 5) -> VertexXY(20, 0),
+    5 -> Geometry.polygonVertices2(4, radius = 17),
 
-    (6, 0) -> hexagonVertices(0),
-    (6, 1) -> hexagonVertices(1),
-    (6, 2) -> hexagonVertices(2),
-    (6, 3) -> hexagonVertices(3),
-    (6, 4) -> hexagonVertices(4),
-    (6, 5) -> hexagonVertices(5),
+    6 -> (Geometry.polygonVertices2(6, radius = 27) :+ NullVectorXY),
 
-    (6, 6) -> hexInRad * VertexXY(0 * 2 * Pi.toFloat / 3),
-    (6, 7) -> hexInRad * VertexXY(1 * 2 * Pi.toFloat / 3),
-    (6, 8) -> hexInRad * VertexXY(2 * 2 * Pi.toFloat / 3)
+    7 -> (Geometry.polygonVertices2(7, radius = 33) ++
+      Geometry.polygonVertices(3, orientation = math.Pi.toFloat, radius = 13))
   )
 }
 
@@ -118,7 +103,7 @@ class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
     val modules =
       for {
         (module, index) <- signature.modules.zipWithIndex
-        position = ModulePosition((sides, index))
+        position = ModulePosition(sides)(index)
       } yield (module match {
         case Engines(t) => RobotEnginesModel(position, t)
         case ProcessingModule(t) => FactoryModelBuilder(position, t)

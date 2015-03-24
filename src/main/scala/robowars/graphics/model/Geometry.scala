@@ -9,7 +9,7 @@ object Geometry {
     orientation: Float = 0,
     radius: Float = 1,
     position: VertexXY = NullVectorXY
-  ): Seq[VertexXY] = {
+  ): IndexedSeq[VertexXY] = {
 
     assert(n >= 3)
     assert(radius > 0)
@@ -23,7 +23,7 @@ object Geometry {
     orientation: Float = 0,
     radius: Float = 1,
     position: VertexXY = NullVectorXY
-  ): Seq[VertexXY] = {
+  ): IndexedSeq[VertexXY] = {
     val angle0 = (Pi + math.Pi / n).toFloat
     polygonVertices(n, orientation + angle0, radius, position)
   }

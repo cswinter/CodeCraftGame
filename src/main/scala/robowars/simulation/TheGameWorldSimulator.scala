@@ -28,14 +28,14 @@ object TheGameWorldSimulator extends GameWorld {
   }
 
   def randomModule = rnd(
-    10 -> StorageModule(rni(8) - 1),
-    10 -> Lasers(rni(4)),
+    50 -> StorageModule(rni(8) - 1),
+    2 -> Lasers(rni(4)),
     2 -> Engines(0),
     2 -> ShieldGenerator,
-    4 -> ProcessingModule(0)
+    6 -> ProcessingModule(0)
   )
 
-  val ModuleCount = Map(3 -> 1, 4 -> 3, 5 -> 6, 6 -> 9).withDefaultValue(0)
+  val ModuleCount = Map(3 -> 1, 4 -> 2, 5 -> 4, 6 -> 7, 7 -> 10).withDefaultValue(0)
   def randomModules(n: Int) = {
     Seq.fill(ModuleCount(n))(randomModule)
   }
@@ -74,10 +74,11 @@ object TheGameWorldSimulator extends GameWorld {
         StorageModule(0),
         ShieldGenerator,
         StorageModule(0),
+        Lasers(3),
         Lasers(3)
       ),
-      hullState = Seq[Byte](2, 2, 2, 2),
-      size = 5,
+      hullState = Seq[Byte](2, 2, 2, 2, 2),
+      size = 6,
       constructionState = time
     )
   }
