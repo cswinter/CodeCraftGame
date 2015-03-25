@@ -29,11 +29,21 @@ object RobotModulePositions {
 
     5 -> Geometry.polygonVertices2(4, radius = 17),
 
-    6 -> (Geometry.polygonVertices2(6, radius = 27) :+ NullVectorXY),
+    6 -> permutation(
+      Geometry.polygonVertices2(6, radius = 27) :+ NullVectorXY,
+      IndexedSeq(1, 0, 5, 6, 4, 3, 2)
+    ),
 
-    7 -> (Geometry.polygonVertices2(7, radius = 33) ++
-      Geometry.polygonVertices(3, orientation = math.Pi.toFloat, radius = 13))
+    7 -> permutation(Geometry.polygonVertices2(7, radius = 33) ++
+      Geometry.polygonVertices(3, orientation = math.Pi.toFloat, radius = 13),
+      IndexedSeq(0, 1, 9, 2, 3, 7, 4, 5, 8, 6)
+    )
   )
+
+
+  private def permutation[T](set: IndexedSeq[T], indices: IndexedSeq[Int]): IndexedSeq[T] = {
+    IndexedSeq.tabulate(set.size)(i => set(indices(i)))
+  }
 }
 
 
@@ -50,7 +60,7 @@ object RobotSignature {
     RobotSignature(
       robotObject.size,
       robotObject.modules,
-      robotObject.modules.contains(ShieldGenerator),
+      robotObject.modules.exists(_.isInstanceOf[ShieldGenerator]),
       robotObject.hullState,
       robotObject.constructionState)
   }
@@ -100,16 +110,25 @@ class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
         0
       ).getModel
 
+
+    @inline
+    def pos(positions: Seq[Int]): VertexXY =
+      positions.map(ModulePosition(sides)(_)).reduce(_ + _) / positions.size
+
     val modules =
       for {
-        (module, index) <- signature.modules.zipWithIndex
-        position = ModulePosition(sides)(index)
+        module <- signature.modules
       } yield (module match {
-        case Engines(t) => RobotEnginesModel(position, t)
-        case ProcessingModule(t) => FactoryModelBuilder(position, t)
-        case StorageModule(count) => RobotStorageModelBuilder(position, count)
-        case Lasers(n) => RobotLasersModelBuilder(position, n)
-        case ShieldGenerator => RobotShieldGeneratorModel(position)
+        case Engines(position, t) =>
+          RobotEnginesModel(ModulePosition(sides)(position), t)
+        case Lasers(position, n) =>
+          RobotLasersModelBuilder(ModulePosition(sides)(position), n)
+        case ShieldGenerator(position) =>
+          RobotShieldGeneratorModel(ModulePosition(sides)(position))
+        case ProcessingModule(positions, t, t2) =>
+          FactoryModelBuilder(positions.map(ModulePosition(sides)(_)), t, t2, positions.size)
+        case StorageModule(positions, count) =>
+          RobotStorageModelBuilder(pos(positions), count, positions.size)
       }).getModel
 
     val shields =

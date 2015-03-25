@@ -17,7 +17,9 @@ case class RobotObject(
   modules: Seq[RobotModule],
   hullState: Seq[Byte],
   size: Int,
-  constructionState: Int = -1
+  constructionState: Int = -1,
+  processingModuleMergers: Seq[Int] = Seq(),
+  storageModuleMergers: Seq[Int] = Seq()
 ) extends WorldObject {
   assert(hullState.size == size - 1)
 }
@@ -25,14 +27,14 @@ case class RobotObject(
 
 sealed trait RobotModule
 
-case class StorageModule(resourceCount: Int) extends RobotModule {
+case class StorageModule(positions: Seq[Int], resourceCount: Int) extends RobotModule {
   assert(resourceCount >= -1)
-  assert(resourceCount <= 6)
+  assert(resourceCount <= 7)
 }
-case class Engines(t: Int) extends RobotModule
-case class ProcessingModule(t: Int) extends RobotModule
-case object ShieldGenerator extends RobotModule
-case class Lasers(n: Int) extends RobotModule
+case class Engines(position: Int, t: Int = 0) extends RobotModule
+case class ProcessingModule(positions: Seq[Int], t: Int = 0, mergingProgress: Int = 0) extends RobotModule
+case class ShieldGenerator(position: Int) extends RobotModule
+case class Lasers(position: Int, n: Int = 3) extends RobotModule
 
 
 case class MineralObject(

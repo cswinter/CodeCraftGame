@@ -6,15 +6,16 @@ import RobotColors._
 import robowars.worldstate.MineralObject
 
 
-case class RobotStorageModelBuilder(position: VertexXY, nEnergyGlobes: Int)(implicit rs: RenderStack)
+case class RobotStorageModelBuilder(position: VertexXY, nEnergyGlobes: Int, size: Int)(implicit rs: RenderStack)
   extends ModelBuilder[RobotStorageModelBuilder, Unit] {
 
 
   def signature = this
 
   protected def buildModel: Model[Unit] = {
-    val radius = 8
-    val outlineWidth = 1
+    val scale = math.sqrt(size).toFloat
+    val radius = 8 * scale
+    val outlineWidth = 1 * scale
     val body =
       Polygon(
         material = rs.MaterialXYRGB,
@@ -59,7 +60,7 @@ case class RobotStorageModelBuilder(position: VertexXY, nEnergyGlobes: Int)(impl
             n = 5,
             colorMidpoint = ColorRGB(0.1f, 0.75f, 0.1f),
             colorOutside = ColorRGB(0.0f, 0.3f, 0.0f),
-            radius = 6.5f,
+            radius = 6.5f * scale,
             zPos = 2,
             position = position
           ).getModel

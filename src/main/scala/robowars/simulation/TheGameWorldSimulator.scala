@@ -27,17 +27,17 @@ object TheGameWorldSimulator extends GameWorld {
     elems(i)._2
   }
 
-  def randomModule = rnd(
-    50 -> StorageModule(rni(8) - 1),
-    2 -> Lasers(rni(4)),
-    2 -> Engines(0),
-    2 -> ShieldGenerator,
-    6 -> ProcessingModule(0)
+  def randomModule(position: Int) = rnd(
+    50 -> StorageModule(Seq(position), rni(9) - 1),
+    2 -> Lasers(position, rni(4)),
+    2 -> Engines(position, 0),
+    2 -> ShieldGenerator(position),
+    6 -> ProcessingModule(Seq(position), 0)
   )
 
   val ModuleCount = Map(3 -> 1, 4 -> 2, 5 -> 4, 6 -> 7, 7 -> 10).withDefaultValue(0)
   def randomModules(n: Int) = {
-    Seq.fill(ModuleCount(n))(randomModule)
+    Seq.tabulate(ModuleCount(n))(i => randomModule(i))
   }
 
   val minerals =
@@ -58,8 +58,64 @@ object TheGameWorldSimulator extends GameWorld {
       modules = randomModules(size)
     } yield new MockRobot(xPos, yPos, orientation, size, modules)
 
+  val north = (math.Pi / 2).toFloat
+  val customRobots = Seq(
+    new MockRobot(
+      xPos = 100,
+      yPos = 0,
+      orientation = north,
+      modules = Seq(
+        ProcessingModule(Seq(0, 1), 0)
+      ),
+      size = 4,
+      processingModuleMergers = Seq(2)
+    ),
+    new MockRobot(
+      xPos = 200,
+      yPos = 0,
+      orientation = north,
+      modules = Seq(
+        StorageModule(Seq(0, 1, 2), -1),
+        Engines(3)
+      ),
+      size = 5
+    ),
+    new MockRobot(
+      xPos = 300,
+      yPos = 0,
+      orientation = north,
+      modules = Seq(
+        StorageModule(Seq(0, 1), 0),
+        ProcessingModule(Seq(2, 3))
+      ),
+      size = 5
+    ),
+    new MockRobot(
+      xPos = 400,
+      yPos = 0,
+      orientation = north,
+      modules = Seq(
+        StorageModule(Seq(0), 7),
+        StorageModule(Seq(1, 2, 3), -1),
+        ProcessingModule(Seq(4, 5, 6), mergingProgress = 1)
+      ),
+      size = 6
+    ),
+    new MockRobot(
+      xPos = 550,
+      yPos = 0,
+      orientation = north,
+      modules = Seq(
+        StorageModule(Seq(0, 1), -1),
+        StorageModule(Seq(2, 3, 4), -1),
+        StorageModule(Seq(5, 6, 7, 8, 9), -1)
+      ),
+      size = 7
+    )
+  )
 
-  val objects = collection.mutable.Set(minerals ++ robots:_*)
+
+  val objects = collection.mutable.Set(minerals ++ robots ++ customRobots:_*)
 
   def robotConstruction(time: Int): RobotObject = {
     RobotObject(
@@ -69,17 +125,19 @@ object TheGameWorldSimulator extends GameWorld {
       orientation = 2,
       positions = Seq(),
       modules = Seq(
-        Engines(0),
-        Engines(0),
-        StorageModule(0),
-        ShieldGenerator,
-        StorageModule(0),
-        Lasers(3),
-        Lasers(3)
+        Engines(0, 0),
+        Lasers(1, 0),
+        StorageModule(Seq(2), 0),
+        ShieldGenerator(3),
+        StorageModule(Seq(4), 0),
+        Lasers(5,3),
+        Lasers(6, 3)
       ),
       hullState = Seq[Byte](2, 2, 2, 2, 2),
       size = 6,
-      constructionState = time
+      constructionState = time,
+      processingModuleMergers = Seq(),
+      storageModuleMergers = Seq()
     )
   }
 

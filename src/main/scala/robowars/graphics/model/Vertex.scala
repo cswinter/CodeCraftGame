@@ -40,6 +40,7 @@ object VertexXY {
     VertexXY(math.cos(angle).toFloat, math.sin(angle).toFloat)
 }
 
+
 object NullVectorXY extends VertexXY(0, 0)
 
 
@@ -69,6 +70,7 @@ case class ColorRGB(r: Float, g: Float, b: Float) extends Vertex {
   }
 
   def +(that: ColorRGB): ColorRGB = ColorRGB(r + that.r, g + that.g, b + that.b)
+  def *(a: Float): ColorRGB = ColorRGB(a * r, a * g, a * b)
 }
 
 object ColorRGB {

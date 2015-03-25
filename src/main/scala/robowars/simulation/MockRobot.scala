@@ -11,7 +11,9 @@ class MockRobot(
   var yPos: Float,
   var orientation: Float,
   val size: Int,
-  var modules: Seq[RobotModule]
+  var modules: Seq[RobotModule],
+  private[this] var processingModuleMergers: Seq[Int] = Seq(),
+  private[this] var storageModuleMergers: Seq[Int] = Seq()
 ) extends MockObject {
   private[this] var targetOrientation = orientation
   private[this] var stationary = false
@@ -19,11 +21,13 @@ class MockRobot(
     if (rnd() < 0.8) Seq.fill(size - 1)(2.toByte)
     else Seq.fill(size - 1)(Random.nextInt(3).toByte)
 
+
   val speed = 2f
   val turnSpeed = 0.01f
 
   val oldPositions = mutable.Queue((xPos, yPos, orientation), (xPos, yPos, orientation))
   val nPos = 12
+
 
 
   override def update(): Unit = {
@@ -66,8 +70,11 @@ class MockRobot(
 
     // update timer on engines
     modules = modules.map {
-      case Engines(t) => Engines((t + 1) % 250)
-      case ProcessingModule(t) => ProcessingModule((t + 1) % 250)
+      case Engines(pos, t) => Engines(pos, (t + 1) % 250)
+      case ProcessingModule(pos, t, t2) =>
+        ProcessingModule(
+          pos, (t + 1) % 250,
+          if (t2 == 0) 0 else (t2 + 1) % 250)
       case m => m
     }
 
@@ -82,7 +89,17 @@ class MockRobot(
   }
 
   override def state(): WorldObject =
-    RobotObject(identifier, xPos, yPos, orientation, oldPositions, modules, hullState, size)
+    RobotObject(
+      identifier,
+      xPos, yPos,
+      orientation,
+      oldPositions,
+      modules,
+      hullState,
+      size,
+      -1,
+      processingModuleMergers,
+      storageModuleMergers)
 
 
   def vx = math.cos(orientation).toFloat * speed
