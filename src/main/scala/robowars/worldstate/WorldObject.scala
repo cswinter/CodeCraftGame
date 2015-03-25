@@ -27,7 +27,7 @@ case class RobotObject(
 
 sealed trait RobotModule
 
-case class StorageModule(positions: Seq[Int], resourceCount: Int) extends RobotModule {
+case class StorageModule(positions: Seq[Int], resourceCount: Int, mergingProgress: Int = 0) extends RobotModule {
   assert(resourceCount >= -1)
   assert(resourceCount <= 7)
 }

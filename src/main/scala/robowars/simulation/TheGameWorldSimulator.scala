@@ -75,7 +75,7 @@ object TheGameWorldSimulator extends GameWorld {
       yPos = 0,
       orientation = north,
       modules = Seq(
-        StorageModule(Seq(0, 1, 2), -1),
+        StorageModule(Seq(0, 1, 2), 0, 1),
         Engines(3)
       ),
       size = 5

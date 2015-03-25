@@ -127,8 +127,8 @@ class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
           RobotShieldGeneratorModel(ModulePosition(sides)(position))
         case ProcessingModule(positions, t, t2) =>
           FactoryModelBuilder(positions.map(ModulePosition(sides)(_)), t, t2, positions.size)
-        case StorageModule(positions, count) =>
-          RobotStorageModelBuilder(pos(positions), count, positions.size)
+        case StorageModule(positions, count, tm) =>
+          RobotStorageModelBuilder(positions.map(ModulePosition(sides)(_)), count, positions.size, tm)
       }).getModel
 
     val shields =

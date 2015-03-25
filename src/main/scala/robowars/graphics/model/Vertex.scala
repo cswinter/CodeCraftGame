@@ -28,6 +28,8 @@ case class VertexXY(x: Float, y: Float) extends Vertex {
   def normalized: VertexXY = this * (1 / size)
 
   def zPos(z: Float): VertexXYZ = VertexXYZ(x, y, z)
+
+  def direction = math.atan2(y, x).toFloat
 }
 
 

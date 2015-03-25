@@ -75,6 +75,12 @@ class MockRobot(
         ProcessingModule(
           pos, (t + 1) % 250,
           if (t2 == 0) 0 else (t2 + 1) % 250)
+      case StorageModule(positions, rc, t) =>
+        StorageModule(
+          positions,
+          rc,
+          if (t == 0) 0 else (t + 1) % 250
+        )
       case m => m
     }
 
