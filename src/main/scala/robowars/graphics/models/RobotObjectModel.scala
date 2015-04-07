@@ -1,6 +1,7 @@
 package robowars.graphics.models
 
 import robowars.graphics.engine.RenderStack
+import robowars.graphics.matrices.Matrix4x4
 import robowars.graphics.model._
 import robowars.worldstate._
 import scala.math._
@@ -164,6 +165,7 @@ case class RobotModel(
   thrusterTrails: Model[Seq[(Float, Float, Float)]],
   other: Seq[Model[Unit]]
 ) extends CompositeModel[RobotObject] {
+  private[this] var constructionState = -1
 
   // MAKE SURE TO ADD NEW COMPONENTS HERE:
   val models: Seq[Model[_]] =
@@ -172,10 +174,16 @@ case class RobotModel(
   override def update(a: RobotObject): Unit = {
     thrusterTrails.update(a.positions)
 
-    if (a.constructionState != -1) {
-      val flicker = (a.constructionState % 5 & 1) ^ 1
-      setVertexCount((a.constructionState / 5 + flicker) * 3)
+    constructionState = a.constructionState
+  }
+
+  override def draw(modelview: Matrix4x4, material: GenericMaterial): Unit = {
+    if (constructionState != -1) {
+      val flicker = (constructionState % 5 & 1) ^ 1
+      setVertexCount((constructionState / 5 + flicker) * 3)
     }
+    super.draw(modelview, material)
+    setVertexCount(Integer.MAX_VALUE)
   }
 }
 
