@@ -104,7 +104,7 @@ class Material[TPosition <: Vertex, TColor <: Vertex, TParams](
    * @param vertexData The data for the VBO.
    * @return Returns a `robowars.graphics.model.VBO` class which give the handle and number of data of the vbo.
    */
-  def createVBO(vertexData: Seq[(TPosition, TColor)]): VBO = {
+  def createVBO(vertexData: Seq[(TPosition, TColor)], dynamic: Boolean = false): VBO = {
     val nCompPos = posVM.nComponents
     val nCompCol = colVM.nComponents
     val nComponents = nCompPos + nCompCol
@@ -136,7 +136,7 @@ class Material[TPosition <: Vertex, TColor <: Vertex, TParams](
     glBindBuffer(GL_ARRAY_BUFFER, vboHandle)
     val numBytes = data.length * 4
     val verticesBuffer = Buffers.newDirectFloatBuffer(data)
-    glBufferData(GL_ARRAY_BUFFER, numBytes, verticesBuffer, GL_STATIC_DRAW)
+    glBufferData(GL_ARRAY_BUFFER, numBytes, verticesBuffer, if (dynamic) GL_DYNAMIC_DRAW else GL_STATIC_DRAW)
 
     // bind shader attributes (input parameters)
     glVertexAttribPointer(attributePos, nCompPos, GL_FLOAT, false, 4 * nComponents, 0)

@@ -61,7 +61,7 @@ object DrawingCanvas {
       override def keyReleased(keyEvent: KeyEvent): Unit = println(s"keyReleased($keyEvent)")
     })
 
-    new FPSAnimator(canvas, 25).start()
+    new FPSAnimator(canvas, 45).start()
     canvas.transferFocus()
   }
 }

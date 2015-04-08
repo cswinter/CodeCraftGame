@@ -13,7 +13,7 @@ trait PrimitiveModelBuilder[TShape, TColor <: Vertex, TParams] <: ModelBuilder[T
   def signature = shape
 
   protected def buildModel: Model[TParams] = {
-    val vbo = material.createVBO(computeVertexData())
+    val vbo = material.createVBO(computeVertexData(), !_cacheable)
     new StaticModel(vbo, material)
   }
 
