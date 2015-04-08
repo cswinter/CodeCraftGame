@@ -7,7 +7,7 @@ import javax.media.opengl.GL._
 
 import org.joda.time.DateTime
 import robowars.graphics.materials.Material
-import robowars.graphics.model.{VBO, TheModelCache}
+import robowars.graphics.model.{PrimitiveModelBuilder, VBO, TheModelCache}
 import robowars.graphics.models.TheWorldObjectModelFactory
 
 import robowars.simulation.TheGameWorldSimulator
@@ -39,7 +39,7 @@ object RenderFrame extends GLEventListener {
   }
 
   private def render(drawable: GLAutoDrawable): Unit = {
-    val gl = getGL(drawable)
+    implicit val gl = getGL(drawable)
     import gl._
 
     Material.resetDrawCalls()
@@ -72,6 +72,8 @@ object RenderFrame extends GLEventListener {
     // draw to screen
     renderStack.postDraw(camera)
 
+    // dispose one-time VBOs
+    PrimitiveModelBuilder.disposeAll()
 
     // update fps
     val now = new DateTime().getMillis

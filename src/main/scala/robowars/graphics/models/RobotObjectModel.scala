@@ -53,7 +53,7 @@ case class RobotSignature(
   modules: Seq[RobotModule],
   hasShields: Boolean,
   hullState: Seq[Byte],
-  constructionState: Int
+  isBuilding: Boolean
 )
 
 object RobotSignature {
@@ -63,7 +63,7 @@ object RobotSignature {
       robotObject.modules,
       robotObject.modules.exists(_.isInstanceOf[ShieldGenerator]),
       robotObject.hullState,
-      robotObject.constructionState)
+      robotObject.constructionState != -1)
   }
 }
 
@@ -144,7 +144,7 @@ class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
       else None
 
     val thrusters =
-      if (signature.constructionState == -1) {
+      if (!signature.isBuilding) {
         new DynamicModel(
           new RobotThrusterTrailsModelFactory(
             sideLength, radiusHull, sides).buildModel)

@@ -1,5 +1,7 @@
 package robowars.graphics.model
 
+import javax.media.opengl.GL4
+
 import robowars.graphics.materials.Material
 
 import scala.reflect.ClassTag
@@ -14,6 +16,7 @@ trait PrimitiveModelBuilder[TShape, TColor <: Vertex, TParams] <: ModelBuilder[T
 
   protected def buildModel: Model[TParams] = {
     val vbo = material.createVBO(computeVertexData(), !_cacheable)
+    if (!_cacheable) PrimitiveModelBuilder.toDispose ::= vbo
     new StaticModel(vbo, material)
   }
 
@@ -24,6 +27,15 @@ trait PrimitiveModelBuilder[TShape, TColor <: Vertex, TParams] <: ModelBuilder[T
   }
 
   protected def computeVertexData(): Seq[(VertexXYZ, TColor)]
+}
+
+object PrimitiveModelBuilder {
+  private var toDispose = List.empty[VBO]
+
+  def disposeAll()(implicit gl: GL4): Unit = {
+    toDispose.foreach(_.dispose())
+    toDispose = List.empty[VBO]
+  }
 }
 
 
