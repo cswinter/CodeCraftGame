@@ -9,10 +9,11 @@ import javax.swing.JFrame
 import com.jogamp.opengl.util.FPSAnimator
 import robowars.graphics.engine.RenderFrame
 import robowars.graphics.engine.RenderFrame._
+import robowars.worldstate.GameWorld
 
 object DrawingCanvas {
-  def main(args: Array[String]): Unit = {
-
+  def run(gameWorld: GameWorld): Unit = {
+    RenderFrame.gameWorld = gameWorld
 
     // Setup code
     GLProfile.initSingleton()

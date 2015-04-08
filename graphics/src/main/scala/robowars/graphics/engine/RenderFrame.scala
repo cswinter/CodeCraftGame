@@ -11,11 +11,10 @@ import robowars.graphics.model.{PrimitiveModelBuilder, VBO, TheModelCache}
 import robowars.graphics.models.TheWorldObjectModelFactory
 
 import robowars.simulation.TheGameWorldSimulator
+import robowars.worldstate.GameWorld
 
 
 object RenderFrame extends GLEventListener {
-
-
   val Debug = false
 
   private[this] var paused = false
@@ -31,6 +30,7 @@ object RenderFrame extends GLEventListener {
   val FrametimeSamples = 100
   var frameTimes = scala.collection.mutable.Queue.fill(FrametimeSamples - 1)(new DateTime().getMillis)
   var textField: TextField = null
+  var gameWorld: GameWorld = null
 
 
   override def display(drawable: GLAutoDrawable): Unit = {
@@ -55,7 +55,7 @@ object RenderFrame extends GLEventListener {
     glClearColor(0.1f, 0, 0.1f, 0.0f)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-    val worldObjects = TheGameWorldSimulator.worldState
+    val worldObjects = gameWorld.worldState
 
     for (material <- renderStack.materials) {
       material.beforeDraw(camera.projection)
@@ -91,7 +91,7 @@ object RenderFrame extends GLEventListener {
 
   private def update(): Unit = {
     if (!paused)
-      TheGameWorldSimulator.update()
+      gameWorld.update()
   }
 
   def dispose(arg0: GLAutoDrawable): Unit = {

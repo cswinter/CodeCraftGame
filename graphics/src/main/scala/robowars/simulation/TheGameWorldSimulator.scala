@@ -1,5 +1,6 @@
 package robowars.simulation
 
+import robowars.graphics.application.DrawingCanvas
 import robowars.worldstate._
 import scala.util.Random
 
@@ -162,5 +163,10 @@ object TheGameWorldSimulator extends GameWorld {
     if (rnd() < 0.03) {
       objects.add(new MockLaserMissile(rnd(-500, 500), rnd(-250, 250), rnd(0, 2 * math.Pi.toFloat)))
     }
+  }
+
+
+  def main(args: Array[String]): Unit = {
+    DrawingCanvas.run(this)
   }
 }
