@@ -1,5 +1,6 @@
 
-lazy val root = (project in file(".")).
+
+lazy val root = (project in file("graphics")).
   settings(
     name := "JOGLMaven",
     version := "1.0",
@@ -19,3 +20,4 @@ lazy val root = (project in file(".")).
       "org.joda" % "joda-convert" % "1.2"
     )
   )
+

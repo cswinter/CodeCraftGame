@@ -39,8 +39,8 @@ The rendering stages (as it concerns glow/opaque materials) are as follows:
 class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
   extends Material[VertexXYZ, ColorRGB, Unit](
     gl = gl,
-    vsPath = "src/main/shaders/xyz_rgb_vs.glsl",
-    fsPath = "src/main/shaders/rgb1_fs.glsl",
+    vsPath = "graphics/src/main/shaders/xyz_rgb_vs.glsl",
+    fsPath = "graphics/src/main/shaders/rgb1_fs.glsl",
     "vertexPos",
     Some("vertexCol"),
     GL_DEPTH_TEST
@@ -77,8 +77,8 @@ class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
   abstract class Convolution(val orientation: Int, val sourceTexture: () => Int, val destTexture: () => Int)
     extends Material[VertexXY, VertexUV, Unit](
       gl = gl,
-      vsPath = "src/main/shaders/texture_xy_vs.glsl",
-      fsPath = "src/main/shaders/convolution_fs.glsl",
+      vsPath = "graphics/src/main/shaders/texture_xy_vs.glsl",
+      fsPath = "graphics/src/main/shaders/convolution_fs.glsl",
       "vertexPos",
       Some("texCoords")) {
 
@@ -112,8 +112,8 @@ class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
   // TODO: make use of parameters?
   object Addition extends Material[VertexXY, VertexUV, Unit](
     gl = gl,
-    vsPath = "src/main/shaders/texture_xy_vs.glsl",
-    fsPath = "src/main/shaders/texture_xy_fs.glsl",
+    vsPath = "graphics/src/main/shaders/texture_xy_vs.glsl",
+    fsPath = "graphics/src/main/shaders/texture_xy_fs.glsl",
     "vertexPos",
     Some("texCoords"),
     GL_BLEND

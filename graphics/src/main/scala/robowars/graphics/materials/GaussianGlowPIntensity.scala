@@ -9,8 +9,8 @@ import robowars.graphics.model.{VBO, ColorRGBA, VertexXYZ}
 class GaussianGlowPIntensity(implicit gl: GL4)
   extends Material[VertexXYZ, ColorRGBA, Intensity](
     gl = gl,
-    vsPath = "src/main/shaders/xyz_rgba_vs.glsl",
-    fsPath = "src/main/shaders/rgba_gaussian_pint_fs.glsl",
+    vsPath = "graphics/src/main/shaders/xyz_rgba_vs.glsl",
+    fsPath = "graphics/src/main/shaders/rgba_gaussian_pint_fs.glsl",
     "vertexPos",
     Some("vertexCol"),
     GL_BLEND

@@ -1,20 +1,22 @@
 package robowars.graphics.materials
 
-import javax.media.opengl.GL4
 import javax.media.opengl.GL._
+import javax.media.opengl.GL4
 
 import robowars.graphics.matrices.Matrix4x4
-import robowars.graphics.model.{VertexXYZ, ColorRGBA, Vertex}
+import robowars.graphics.model.{VertexXYZ, ColorRGBA}
 
-class GaussianGlow(implicit gl: GL4)
+
+class TranslucentAdditive(implicit gl: GL4)
   extends Material[VertexXYZ, ColorRGBA, Unit](
     gl = gl,
-    vsPath = "src/main/shaders/xyz_rgba_vs.glsl",
-    fsPath = "src/main/shaders/rgba_gaussian_fs.glsl",
+    vsPath = "graphics/src/main/shaders/xyz_rgba_vs.glsl",
+    fsPath = "graphics/src/main/shaders/rgba_fs.glsl",
     "vertexPos",
     Some("vertexCol"),
     GL_BLEND
   ) {
+
   import gl._
 
   override def beforeDraw(projection: Matrix4x4): Unit = {

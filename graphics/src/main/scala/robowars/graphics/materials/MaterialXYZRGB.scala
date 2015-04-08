@@ -9,8 +9,8 @@ import robowars.graphics.model.{ColorRGB, VertexXYZ}
 class MaterialXYZRGB(implicit gl: GL4)
 extends Material[VertexXYZ, ColorRGB, Unit](
   gl = gl,
-  vsPath = "src/main/shaders/xyz_rgb_vs.glsl",
-  fsPath = "src/main/shaders/rgb0_fs.glsl",
+  vsPath = "graphics/src/main/shaders/xyz_rgb_vs.glsl",
+  fsPath = "graphics/src/main/shaders/rgb0_fs.glsl",
   "vertexPos",
   Some("vertexCol"),
   GL_DEPTH_TEST
