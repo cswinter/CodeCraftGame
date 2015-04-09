@@ -10,7 +10,6 @@ import robowars.graphics.materials.Material
 import robowars.graphics.model.{PrimitiveModelBuilder, VBO, TheModelCache}
 import robowars.graphics.models.TheWorldObjectModelFactory
 
-import robowars.simulation.TheGameWorldSimulator
 import robowars.worldstate.GameWorld
 
 
