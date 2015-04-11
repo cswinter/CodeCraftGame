@@ -165,13 +165,19 @@ object TheGameWorldSimulator extends GameWorld {
       obj <- objects
       if obj.isInstanceOf[MockLaserMissile] && obj.dead
       missile = obj.asInstanceOf[MockLaserMissile]
-    } yield new MockLightFlash(missile.xPos, missile.yPos)
+    } yield {
+        vision.remove(missile)
+        new MockLightFlash(missile.xPos, missile.yPos)
+      }
+
     objects ++= missileExplosions
 
     objects.retain(!_.dead)
 
     if (rnd() < 0.03) {
-      objects.add(new MockLaserMissile(rnd(-500, 500), rnd(-250, 250), rnd(0, 2 * math.Pi.toFloat)))
+      val missile = new MockLaserMissile(rnd(-500, 500), rnd(-250, 250), rnd(0, 2 * math.Pi.toFloat))
+      objects.add(missile)
+      vision.insert(missile)
     }
   }
 

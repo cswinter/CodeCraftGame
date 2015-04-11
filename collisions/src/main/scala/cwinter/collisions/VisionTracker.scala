@@ -36,7 +36,13 @@ class VisionTracker[T: CircleLike](
   }
 
 
-  def remove(obj: T): Unit = ???
+  def remove(obj: T): Unit = {
+    val elem = elementMap(obj)
+    for (e <- elem.inSight) e.inSight -= elem
+    val (x, y) = elem.cell
+    cells(x)(y) -= elem
+    elementMap -= obj
+  }
 
 
   def updateAll() = {
