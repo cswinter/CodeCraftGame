@@ -21,6 +21,8 @@ class MockRobot(
     if (rnd() < 0.8) Seq.fill(size - 1)(2.toByte)
     else Seq.fill(size - 1)(Random.nextInt(3).toByte)
 
+  var inSight = Set.empty[MockObject]
+
 
   val speed = 2f
   val turnSpeed = 0.01f
@@ -103,9 +105,14 @@ class MockRobot(
       modules,
       hullState,
       size,
+
       -1,
       processingModuleMergers,
-      storageModuleMergers)
+      storageModuleMergers,
+
+      Some(TheGameWorldSimulator.SightRadius),
+      Some(inSight.map(obj => (obj.xPos, obj.yPos)))
+    )
 
 
   def vx = math.cos(orientation).toFloat * speed

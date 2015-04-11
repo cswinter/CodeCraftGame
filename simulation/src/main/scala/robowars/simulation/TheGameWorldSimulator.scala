@@ -3,10 +3,13 @@ package robowars.simulation
 import robowars.graphics.application.DrawingCanvas
 import robowars.worldstate._
 import scala.util.Random
+import cwinter.collisions.VisionTracker
 
 
 object TheGameWorldSimulator extends GameWorld {
+  val SightRadius = 250
   var time = 0
+  val vision = new VisionTracker[MockObject](-4000, 4000, -4000, 4000, SightRadius)
 
   def rnd() = Random.nextDouble().toFloat
   def rnd(min: Float, max: Float): Float = {
@@ -117,6 +120,7 @@ object TheGameWorldSimulator extends GameWorld {
 
 
   val objects = collection.mutable.Set(minerals ++ robots ++ customRobots:_*)
+  objects.foreach(vision.insert)
 
   def robotConstruction(time: Int): RobotObject = {
     RobotObject(
@@ -138,7 +142,8 @@ object TheGameWorldSimulator extends GameWorld {
       size = 6,
       constructionState = time,
       processingModuleMergers = Seq(),
-      storageModuleMergers = Seq()
+      storageModuleMergers = Seq(),
+      None, None
     )
   }
 
@@ -150,6 +155,11 @@ object TheGameWorldSimulator extends GameWorld {
     time += 1
 
     objects.foreach(_.update())
+    vision.updateAll()
+    for (r <- objects) { r match {
+      case robot: MockRobot => robot.inSight = vision.getVisible(r)
+      case _ =>
+    } }
 
     val missileExplosions = for {
       obj <- objects

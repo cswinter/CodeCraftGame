@@ -150,9 +150,23 @@ class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
             sideLength, radiusHull, sides).buildModel)
       } else new EmptyModel[Seq[(Float, Float, Float)]]
 
-    val other = Seq()
 
-    new RobotModel(body, hull, modules, shields, thrusters, other)
+    val other = {
+      for (r <- robot.sightRadius)
+        yield PolygonRing(
+          material = rs.MaterialXYRGB,
+          n = 50,
+          colorInside = White,
+          colorOutside = White,
+          innerRadius = r,
+          outerRadius = r + 1,
+          zPos = 2
+        ).getModel
+    }.toSeq
+
+
+
+    new RobotModel(body, hull, modules, shields, thrusters, other, new ImmediateModeModel, rs)
   }
 }
 
@@ -163,18 +177,33 @@ case class RobotModel(
   modules: Seq[Model[Unit]],
   shields: Option[Model[Unit]],
   thrusterTrails: Model[Seq[(Float, Float, Float)]],
-  other: Seq[Model[Unit]]
+  other: Seq[Model[Unit]],
+  immediateMode: ImmediateModeModel,
+  rs: RenderStack
 ) extends CompositeModel[RobotObject] {
   private[this] var constructionState = -1
 
   // MAKE SURE TO ADD NEW COMPONENTS HERE:
   val models: Seq[Model[_]] =
-    Seq(body, hull, thrusterTrails) ++ modules ++ shields.toSeq ++ other
+    Seq(body, hull, thrusterTrails, immediateMode) ++ modules ++ shields.toSeq ++ other
 
   override def update(a: RobotObject): Unit = {
     thrusterTrails.update(a.positions)
 
     constructionState = a.constructionState
+
+    val sightLines: Iterable[Model[Unit]] =
+      for {
+        inSight <- a.inSight.toIterable
+        (x, y) <- inSight
+      } yield new QuadStrip(
+        rs.MaterialXYRGB,
+        Seq(VertexXY(x, y), VertexXY(a.xPos, a.yPos)),
+        Seq(ColorThrusters, ColorThrusters),
+        width = 1,
+        zPos = 2
+      ).noCaching.getModel.identityModelview
+    immediateMode.update(sightLines.toSeq)
   }
 
   override def draw(modelview: Matrix4x4, material: GenericMaterial): Unit = {
