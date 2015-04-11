@@ -64,6 +64,8 @@ class VisionTracker[T: CircleLike](
 
     val (x2, y2) = newCell
     cells(x2)(y2) += elem
+
+    elem.cell = newCell
   }
 
 
@@ -76,8 +78,8 @@ class VisionTracker[T: CircleLike](
   }
 
   private def computeCell(elem: Element): (Int, Int) = {
-    val cellX = (elem.position.x.toInt - xMin) / radius
-    val cellY = (elem.position.y.toInt - yMin) / radius
+    val cellX = 1 + (elem.position.x.toInt - xMin) / radius
+    val cellY = 1 + (elem.position.y.toInt - yMin) / radius
     (cellX, cellY)
   }
 
