@@ -1,3 +1,4 @@
+import cwinter.codinggame.maths.Vector2
 import org.scalatest.FlatSpec
 import cwinter.collisions._
 

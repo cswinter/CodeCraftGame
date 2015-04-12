@@ -9,7 +9,7 @@ import cwinter.collisions.VisionTracker
 object TheGameWorldSimulator extends GameWorld {
   val SightRadius = 250
   var time = 0
-  val vision = new VisionTracker[MockObject](-4000, 4000, -4000, 4000, SightRadius)
+  val vision = new VisionTracker[MockObject](-10000, 10000, -10000, 10000, SightRadius)
 
   def rnd() = Random.nextDouble().toFloat
   def rnd(min: Float, max: Float): Float = {

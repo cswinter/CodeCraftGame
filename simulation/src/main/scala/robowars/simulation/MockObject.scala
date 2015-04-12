@@ -1,6 +1,7 @@
 package robowars.simulation
 
-import cwinter.collisions.{Vector2, CircleLike}
+import cwinter.codinggame.maths.Vector2
+import cwinter.collisions.CircleLike
 import robowars.worldstate.WorldObject
 
 

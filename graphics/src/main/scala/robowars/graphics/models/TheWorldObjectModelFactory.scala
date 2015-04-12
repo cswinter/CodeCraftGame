@@ -37,8 +37,11 @@ object TheWorldObjectModelFactory {
       case TestingObject(t) => new ClosedModel[Unit](
         Unit,
         new TestModelBuilder(t).getModel,
-        modelview
-      )
+        modelview)
+      case circle: Circle => new ClosedModel[Unit](
+        Unit,
+        CircleModelBuilder(circle.radius, circle.identifier).getModel,
+        modelview)
     }
   }
 }

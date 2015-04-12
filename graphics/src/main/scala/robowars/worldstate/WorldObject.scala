@@ -55,7 +55,6 @@ case class LightFlash(
   identifier: Int,
   xPos: Float,
   yPos: Float,
-
   stage: Float
 ) extends WorldObject {
   val orientation = 0.0f
@@ -76,4 +75,13 @@ case class TestingObject(time: Int) extends WorldObject {
   val xPos = 0f
   val yPos = 0f
   val orientation = 0f
+}
+
+case class Circle(
+  identifier: Int,
+  xPos: Float,
+  yPos: Float,
+  radius: Float
+) extends WorldObject {
+  val orientation = 0.0f
 }

@@ -1,6 +1,7 @@
 package cwinter.collisions
 
 import CircleLike.CircleLikeOps
+import cwinter.codinggame.maths.Vector2
 
 
 abstract class QuadTree[T] extends SpatialIndex[T] {

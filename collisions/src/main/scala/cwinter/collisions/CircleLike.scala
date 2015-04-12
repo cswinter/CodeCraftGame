@@ -1,5 +1,7 @@
 package cwinter.collisions
 
+import cwinter.codinggame.maths.Vector2
+
 
 trait CircleLike[T] {
   def position(t: T): Vector2
