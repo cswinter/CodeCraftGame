@@ -1,9 +1,10 @@
 package cwinter.codinggame.maths
 
-case class Vector2(x: Float, y: Float) {
-  def dot(rhs: Vector2): Float = x * rhs.x + y * rhs.y
+case class Vector2(x: Double, y: Double) {
+  def dot(rhs: Vector2): Double = x * rhs.x + y * rhs.y
   def +(rhs: Vector2): Vector2 = Vector2(x + rhs.x, y + rhs.y)
   def -(rhs: Vector2): Vector2 = Vector2(x - rhs.x, y - rhs.y)
+  def *(rhs: Double): Vector2 = Vector2(x * rhs, y * rhs)
   def *(rhs: Float): Vector2 = Vector2(x * rhs, y * rhs)
   def *(rhs: Int): Vector2 = Vector2(x * rhs, y * rhs)
 
@@ -11,6 +12,10 @@ case class Vector2(x: Float, y: Float) {
 }
 
 object Vector2 {
+  implicit class ScalarD(val d: Double) extends AnyVal {
+    def *(rhs: Vector2): Vector2 = rhs * d
+  }
+
   implicit class ScalarF(val f: Float) extends AnyVal {
     def *(rhs: Vector2): Vector2 = rhs * f
   }

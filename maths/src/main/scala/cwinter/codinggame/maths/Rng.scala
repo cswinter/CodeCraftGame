@@ -2,7 +2,7 @@ package cwinter.codinggame.maths
 
 object Rng {
   private[this] val random = scala.util.Random
-  val seed = 84//scala.util.Random.nextInt(100)
+  val seed = 83//scala.util.Random.nextInt(100)
   println(s"Rng seed: $seed")
   scala.util.Random.setSeed(seed)
 

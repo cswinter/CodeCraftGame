@@ -4,9 +4,9 @@ import cwinter.codinggame.maths.{Solve, Vector2}
 
 
 trait Dynamics[Command] {
-  def calculateMovement(pos: Vector2, command: Command, timestep: Float): Vector2
-  def calculateCollisionTime(pos1: Vector2, pos2: Vector2, cmd1: Command, cmd2: Command, timestep: Float): Option[Float]
-  def calculateWallCollisionTime(pos: Vector2, cmd: Command, timestep: Float): Option[Float]
+  def calculateMovement(pos: Vector2, command: Command, timestep: Double): Vector2
+  def calculateCollisionTime(pos1: Vector2, pos2: Vector2, cmd1: Command, cmd2: Command, timestep: Double): Option[Double]
+  def calculateWallCollisionTime(pos: Vector2, cmd: Command, timestep: Double): Option[Double]
 
   // def calculateBoundingBox(pos: Vector2, command: Command, timestep: Float): Vector2
 }
@@ -20,10 +20,10 @@ object Velocity {
 }
 
 object ConstantVelocity extends Dynamics[Velocity] {
-  def calculateMovement(pos: Vector2, command: Velocity, timestep: Float): Vector2 =
+  def calculateMovement(pos: Vector2, command: Velocity, timestep: Double): Vector2 =
     pos + timestep * command.vec
 
-  def calculateCollisionTime(pos1: Vector2, pos2: Vector2, cmd1: Velocity, cmd2: Velocity, timestep: Float): Option[Float] = {
+  def calculateCollisionTime(pos1: Vector2, pos2: Vector2, cmd1: Velocity, cmd2: Velocity, timestep: Double): Option[Double] = {
     // need to calculate the intersection (if any), of two circles moving at constant speed
     // this is equivalent to a stationary circle with combined radius and a moving point
 
@@ -44,7 +44,7 @@ object ConstantVelocity extends Dynamics[Velocity] {
     ) yield t
   }
 
-  def calculateWallCollisionTime(pos: Vector2, v: Velocity, timestep: Float): Option[Float] = {
+  def calculateWallCollisionTime(pos: Vector2, v: Velocity, timestep: Double): Option[Double] = {
     val ctX =
       if (v.x > 0) Some((750 - pos.x) / v.x)
       else if (v.x < 0) Some((-750 - pos.x) / v.x)

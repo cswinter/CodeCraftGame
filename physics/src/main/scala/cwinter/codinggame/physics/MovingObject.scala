@@ -10,9 +10,9 @@ abstract class MovingObject[TCommand](
   protected[physics] var command: TCommand
 ) {
   val id = UID()
-  private var currentTime = 0f
+  private var currentTime = 0.0
 
-  def update(time: Float): Unit = {
+  def update(time: Double): Unit = {
     setCommand()
     pos = dynamics.calculateMovement(pos, command, time - currentTime)
     currentTime = time
@@ -20,13 +20,13 @@ abstract class MovingObject[TCommand](
 
   def setCommand(): Unit
 
-  def state: WorldObject = Circle(id, pos.x, pos.y, 50)
+  def state: WorldObject = Circle(id, pos.x.toFloat, pos.y.toFloat, 50)
 
-  def collisionTime(other: MovingObject[TCommand], time: Float): Option[Float] = {
+  def collisionTime(other: MovingObject[TCommand], time: Double): Option[Double] = {
     dynamics.calculateCollisionTime(pos, other.pos, command, other.command, time - currentTime)
   }
 
-  def wallCollisionTime(time: Float): Option[Float] = {
+  def wallCollisionTime(time: Double): Option[Double] = {
     dynamics.calculateWallCollisionTime(pos, command, time - currentTime)
   }
 

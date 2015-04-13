@@ -5,8 +5,8 @@ import robowars.graphics.application.DrawingCanvas
 import robowars.worldstate.{WorldObject, GameWorld}
 
 
-object P3Ordering extends Ordering[(ConstantVelocityObject, ConstantVelocityObject, Float)] {
-  override def compare(x: (ConstantVelocityObject, ConstantVelocityObject, Float), y: (ConstantVelocityObject, ConstantVelocityObject, Float)): Int = y._3 compare x._3
+object P3Ordering extends Ordering[(ConstantVelocityObject, ConstantVelocityObject, Double)] {
+  override def compare(x: (ConstantVelocityObject, ConstantVelocityObject, Double), y: (ConstantVelocityObject, ConstantVelocityObject, Double)): Int = y._3 compare x._3
 }
 
 object TheObjectManager extends GameWorld {
@@ -15,16 +15,16 @@ object TheObjectManager extends GameWorld {
     val y = i % 10
     MovingObject(Vector2(-500 + x * 125, -500 + y * 125))
   })
-  var timesteps = 0
+  var timesteps: Int = 0
 
 
   def worldState: Iterable[WorldObject] =
     objects.map(_.state)
 
   def update(): Unit = {
-    var currTime = timesteps / 30f
+    var currTime: Double = timesteps / 30.0
     timesteps += 1
-    val time = timesteps / 30f
+    val time: Double = timesteps / 30.0
 
     // determine next collision
     val collisionTimes = for {
@@ -41,8 +41,8 @@ object TheObjectManager extends GameWorld {
       } yield (obj, obj, currTime + t)
 
 
-    val ignore = collection.mutable.Set.empty[(ConstantVelocityObject, ConstantVelocityObject, Float)]
-    var events = collection.mutable.PriorityQueue[(ConstantVelocityObject, ConstantVelocityObject, Float)]()(P3Ordering)
+    val ignore = collection.mutable.Set.empty[(ConstantVelocityObject, ConstantVelocityObject, Double)]
+    var events = collection.mutable.PriorityQueue[(ConstantVelocityObject, ConstantVelocityObject, Double)]()(P3Ordering)
     events ++= collisionTimes
     events ++= wallCollisionTimes
 
