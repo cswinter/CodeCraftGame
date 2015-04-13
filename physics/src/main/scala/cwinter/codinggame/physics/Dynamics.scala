@@ -27,6 +27,13 @@ object ConstantVelocity extends Dynamics[Velocity] {
     // need to calculate the intersection (if any), of two circles moving at constant speed
     // this is equivalent to a stationary circle with combined radius and a moving point
 
+    // if the two circles are (barely) overlapping, this means they just collided
+    // in this case, return no further collision times
+    val diff = pos1 - pos2
+    if ((diff dot diff) <= 100 * 100) {
+      return None
+    }
+
     // transform to frame of reference of object 1
     val position = pos2 - pos1
     val velocity = cmd2 - cmd1
