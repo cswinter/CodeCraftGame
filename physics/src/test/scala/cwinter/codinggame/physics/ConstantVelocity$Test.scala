@@ -10,6 +10,8 @@ class ConstantVelocity$Test extends FlatSpec {
     val v1 = Vector2(50, 0)
     val p2 = Vector2(100, 0)
     val v2 = Vector2(-50, 0)
-    assertResult(Some(1))(ConstantVelocity.calculateCollisionTime(p1, p2, v1, v2, 2))
+    val obj1 = new ConstantVelocityObject(p1, v1)
+    val obj2 = new ConstantVelocityObject(p2, v2)
+    assertResult(Some(1))(obj1.computeCollisionTime(obj2, 2))
   }
 }

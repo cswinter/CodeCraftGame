@@ -10,7 +10,7 @@ class P3Ordering[T1,T2] extends Ordering[(T1, T2, Double)] {
 }
 
 object TheObjectManager extends GameWorld {
-  type TObject = MovingObject[Velocity]
+  type TObject = MovingObject[ConstantVelocityObject]
 
 
   val objects = List.tabulate[TObject](100)(i => {

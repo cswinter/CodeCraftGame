@@ -3,63 +3,82 @@ package cwinter.codinggame.physics
 import cwinter.codinggame.maths.{Solve, Vector2}
 
 
-trait Dynamics[Command] {
-  def calculateMovement(pos: Vector2, command: Command, timestep: Double): Vector2
-  def calculateCollisionTime(pos1: Vector2, pos2: Vector2, cmd1: Command, cmd2: Command, timestep: Double): Option[Double]
-  def calculateWallCollisionTime(pos: Vector2, cmd: Command, timestep: Double): Option[Double]
+abstract class DynamicObject[T](initialPos: Vector2, initialTime: Double) {
+  private[this] var _pos: Vector2 = initialPos
+  private[this] var _time: Double = initialTime
 
+  def pos: Vector2 = _pos
+
+  def collisionTime(other: T, time: Double): Option[Double] =
+    computeCollisionTime(other, time - _time)
+
+  def wallCollisionTime(time: Double): Option[Double] =
+    computeWallCollisionTime(time - _time)
+
+  @inline final def updatePosition(time: Double): Unit = {
+    val dt = time - _time
+    assert(dt > 0)
+    _pos = computeNewPosition(dt)
+    _time = time
+  }
+
+  def handleWallCollision()
+  def handleObjectCollision(other: T)
+
+  def unwrap: T
+
+  protected def computeNewPosition(timeDelta: Double): Vector2
+  protected def computeCollisionTime(other: T, timeDelta: Double): Option[Double]
+  protected def computeWallCollisionTime(timeDelta: Double): Option[Double]
   // def calculateBoundingBox(pos: Vector2, command: Command, timestep: Float): Vector2
 }
 
 
-case class Velocity(vec: Vector2) extends AnyVal
+class ConstantVelocityObject(initialPos: Vector2, initialVelocity: Vector2, initialTime: Double = 0)
+extends DynamicObject[ConstantVelocityObject](initialPos, initialTime) {
+  private var velocity: Vector2 = initialVelocity
 
-object Velocity {
-  implicit def VelocityIsVector2(vector2: Vector2): Velocity = Velocity(vector2)
-  implicit def Vector2IsVelocity(velocity: Velocity): Vector2 = velocity.vec
-}
 
-object ConstantVelocity extends Dynamics[Velocity] {
-  def calculateMovement(pos: Vector2, command: Velocity, timestep: Double): Vector2 =
-    pos + timestep * command.vec
+  protected def computeNewPosition(timeDelta: Double): Vector2 =
+    pos + timeDelta * velocity
 
-  def calculateCollisionTime(pos1: Vector2, pos2: Vector2, cmd1: Velocity, cmd2: Velocity, timestep: Double): Option[Double] = {
+  def computeCollisionTime(other: ConstantVelocityObject, timeDelta: Double): Option[Double] = {
     // need to calculate the intersection (if any), of two circles moving at constant speed
     // this is equivalent to a stationary circle with combined radius and a moving point
 
     // if the two circles are (barely) overlapping, this means they just collided
     // in this case, return no further collision times
-    val diff = pos1 - pos2
+    val diff = pos - other.pos
     if ((diff dot diff) <= 100 * 100) {
       return None
     }
 
-    // transform to frame of reference of object 1
-    val position = pos2 - pos1
-    val velocity = cmd2 - cmd1
+    // transform to frame of reference of this object
+    val position = other.pos - pos
+    val relativeVelocity = other.velocity - velocity
     val radius = 50 + 50
 
-    if (velocity.x == 0 && velocity.y == 0) return None
+    if (relativeVelocity.x == 0 && relativeVelocity.y == 0) return None
 
-    val a = velocity dot velocity
-    val b = 2 * velocity dot position
+    val a = relativeVelocity dot relativeVelocity
+    val b = 2 * relativeVelocity dot position
     val c = (position dot position) - radius * radius
 
-    for (
+    for {
       t <- Solve.quadratic(a, b, c)
-      if t <= timestep
-    ) yield t
+      if t <= timeDelta
+    } yield t
   }
 
-  def calculateWallCollisionTime(pos: Vector2, v: Velocity, timestep: Double): Option[Double] = {
+  def computeWallCollisionTime(timeDelta: Double): Option[Double] = {
     val ctX =
-      if (v.x > 0) Some((750 - pos.x) / v.x)
-      else if (v.x < 0) Some((-750 - pos.x) / v.x)
+      if (velocity.x > 0) Some((750 - pos.x) / velocity.x)
+      else if (velocity.x < 0) Some((-750 - pos.x) / velocity.x)
       else None
 
     val ctY =
-      if (v.y > 0) Some((750 - pos.y) / v.y)
-      else if (v.y < 0) Some((-750 - pos.y) / v.y)
+      if (velocity.y > 0) Some((750 - pos.y) / velocity.y)
+      else if (velocity.y < 0) Some((-750 - pos.y) / velocity.y)
       else None
 
     val x = (ctX, ctY) match {
@@ -69,8 +88,26 @@ object ConstantVelocity extends Dynamics[Velocity] {
       case (None, None) => None
     }
 
-    x.filter(_ < timestep)
+    x.filter(_ < timeDelta)
   }
+
+  def handleObjectCollision(other: ConstantVelocityObject): Unit = {
+    velocity = -velocity
+    other.velocity = -other.velocity
+  }
+
+  def handleWallCollision(): Unit = {
+    // find closest wall
+    val dx = math.min(math.abs(pos.x + 750), math.abs(pos.x - 750))
+    val dy = math.min(math.abs(pos.y + 750), math.abs(pos.y - 750))
+    if (dx < dy) {
+      velocity = velocity.copy(x = -velocity.x)
+    } else {
+      velocity = velocity.copy(y = -velocity.y)
+    }
+  }
+
+  def unwrap: ConstantVelocityObject = this
 }
 
 
