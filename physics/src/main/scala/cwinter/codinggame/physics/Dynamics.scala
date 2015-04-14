@@ -34,8 +34,13 @@ abstract class DynamicObject[T](initialPos: Vector2, initialTime: Double) {
 }
 
 
-class ConstantVelocityObject(initialPos: Vector2, initialVelocity: Vector2, initialTime: Double = 0)
-extends DynamicObject[ConstantVelocityObject](initialPos, initialTime) {
+class ConstantVelocityObject(
+  initialPos: Vector2,
+  initialVelocity: Vector2,
+  val weight: Double,
+  val radius: Double,
+  initialTime: Double = 0
+) extends DynamicObject[ConstantVelocityObject](initialPos, initialTime) {
   private var velocity: Vector2 = initialVelocity
 
 
@@ -48,15 +53,16 @@ extends DynamicObject[ConstantVelocityObject](initialPos, initialTime) {
 
     // if the two circles are (barely) overlapping, this means they just collided
     // in this case, return no further collision times
+    // TODO: make sure that overlap is within bounds of numerical error
     val diff = pos - other.pos
-    if ((diff dot diff) <= 100 * 100) {
+    if ((diff dot diff) <= (this.radius + other.radius) * (this.radius + other.radius)) {
       return None
     }
 
     // transform to frame of reference of this object
     val position = other.pos - pos
     val relativeVelocity = other.velocity - velocity
-    val radius = 50 + 50
+    val radius = this.radius + other.radius
 
     if (relativeVelocity.x == 0 && relativeVelocity.y == 0) return None
 
@@ -92,8 +98,14 @@ extends DynamicObject[ConstantVelocityObject](initialPos, initialTime) {
   }
 
   def handleObjectCollision(other: ConstantVelocityObject): Unit = {
-    velocity = -velocity
-    other.velocity = -other.velocity
+    val v1 = velocity
+    val v2 = other.velocity
+    val x1 = pos
+    val x2 = other.pos
+    val w1 = weight
+    val w2 = other.weight
+    velocity = v1 - 2 * w2 / (w1 + w2) * (v1 - v2 dot x1 - x2) / (x1 - x2).magnitudeSquared * (x1 - x2)
+    other.velocity = v2 - 2 * w1 / (w1 + w2) * (v2 - v1 dot x2 - x1) / (x2 - x1).magnitudeSquared * (x2 - x1)
   }
 
   def handleWallCollision(): Unit = {

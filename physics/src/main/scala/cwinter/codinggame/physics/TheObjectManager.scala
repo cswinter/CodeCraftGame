@@ -13,10 +13,11 @@ object TheObjectManager extends GameWorld {
   type TObject = MovingObject[ConstantVelocityObject]
 
 
-  val objects = List.tabulate[TObject](100)(i => {
-    val x = i / 10
-    val y = i % 10
-    MovingObject(Vector2(-500 + x * 125, -500 + y * 125))
+  val N = 10
+  val objects = List.tabulate[TObject](N * N)(i => {
+    val x = i / N
+    val y = i % N
+    MovingObject(Vector2(-500 + x * 1250 / N, -500 + y * 1250 / N))
   })
 
 

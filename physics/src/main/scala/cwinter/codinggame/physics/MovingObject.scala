@@ -5,11 +5,12 @@ import robowars.worldstate.{Circle, WorldObject}
 
 
 class MovingObject[TDynamics](
+  val radius: Double,
   val objectDynamics: DynamicObject[TDynamics]
 ) {
   val id = UID()
 
-  def state: WorldObject = Circle(id, objectDynamics.pos.x.toFloat, objectDynamics.pos.y.toFloat, 50)
+  def state: WorldObject = Circle(id, objectDynamics.pos.x.toFloat, objectDynamics.pos.y.toFloat, radius.toFloat)
 
   @inline def update(t: Double) =
     objectDynamics.updatePosition(t)
@@ -25,12 +26,13 @@ class MovingObject[TDynamics](
 
 
 object MovingObject {
-  def apply() = {
-    new MovingObject(new ConstantVelocityObject(Rng.vector2(-500, 500, -500, 500), Rng.vector2(200)))
-  }
+  def apply(): MovingObject[ConstantVelocityObject] =
+    MovingObject(Rng.vector2(-500, 500, -500, 500))
 
   def apply(position: Vector2) = {
-    new MovingObject(new ConstantVelocityObject(position, Rng.vector2(200)))
+    val weight = Rng.float(500, 1500)
+    val radius = math.sqrt(weight)
+    new MovingObject(radius, new ConstantVelocityObject(position, Rng.vector2(200), weight, radius))
   }
 }
 

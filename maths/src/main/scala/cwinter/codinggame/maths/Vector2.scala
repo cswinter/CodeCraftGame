@@ -7,6 +7,7 @@ case class Vector2(x: Double, y: Double) {
   def *(rhs: Double): Vector2 = Vector2(x * rhs, y * rhs)
   def *(rhs: Float): Vector2 = Vector2(x * rhs, y * rhs)
   def *(rhs: Int): Vector2 = Vector2(x * rhs, y * rhs)
+  def magnitudeSquared = x * x + y * y
 
   def unary_- = Vector2(-x, -y)
 }
