@@ -6,19 +6,22 @@ import robowars.worldstate.{WorldObject, GameWorld}
 
 
 object TheObjectManager extends GameWorld {
-  type TObject = MovingObject[ConstantVelocityObject]
+  type TObject = ConstantVelocityObject
 
 
   val N = 10
-  val objects = List.tabulate[TObject](N * N)(i => {
+  val worldObjects = List.tabulate[MovingObject[TObject]](N * N)(i => {
     val x = i / N
     val y = i % N
     MovingObject(Vector2(-500 + x * 1250 / N, -500 + y * 1250 / N))
   })
+  val objects = worldObjects.map(_.objectDynamics.unwrap)
+
+  val boundingRectangle = Rectangle(-1000, 1000, -1000, 1000)
 
 
   def worldState: Iterable[WorldObject] =
-    objects.map(_.state)
+    worldObjects.map(_.state)
 
   var time: Double = 0
   var nextTime: Double = 0
@@ -50,17 +53,17 @@ object TheObjectManager extends GameWorld {
       // TODO: only update objects affected by collision + subsequent collision checks
       if (collisionTable.contains(collision.obj) && collisionTable(collision.obj) == collision) {
         if (collision.time > time) {
-          objects.foreach(_.update(collision.time))
+          objects.foreach(_.updatePosition(collision.time))
           time = collision.time
         }
         collision match {
-          case ObjectWallCollision(obj, _) => obj.wallCollision()
+          case ObjectWallCollision(obj, _) => obj.handleWallCollision(boundingRectangle)
           case ObjectObjectCollision(obj1, obj2, _) =>
             if (collisionTable.contains(obj1) &&
               collisionTable.contains(obj2) &&
               collisionTable(obj1) == collision && // redundant
               collisionTable(obj2) == collision) {
-              obj1.collision(obj2)
+              obj1.handleObjectCollision(obj2)
             }
         }
         for (obj <- collision.involvedObjects) collisionTable -= obj
@@ -69,7 +72,7 @@ object TheObjectManager extends GameWorld {
       }
     }
 
-    objects.foreach(_.update(nextTime))
+    objects.foreach(_.updatePosition(nextTime))
     time = nextTime
   }
 
@@ -99,7 +102,7 @@ object TheObjectManager extends GameWorld {
 
     val objectWallCollisions =
       for {
-        dt <- obj.wallCollisionTime(nextTime)
+        dt <- obj.wallCollisionTime(boundingRectangle, nextTime)
       } yield ObjectWallCollision(obj, time + dt)
 
     objectObjectCollisions ++ objectWallCollisions

@@ -12,17 +12,6 @@ class MovingObject[TDynamics](
 
   def state: WorldObject = Circle(id, objectDynamics.pos.x.toFloat, objectDynamics.pos.y.toFloat, radius.toFloat)
 
-  @inline def update(t: Double) =
-    objectDynamics.updatePosition(t)
-  @inline def wallCollision() =
-    objectDynamics.handleWallCollision()
-  @inline def collision(other: MovingObject[TDynamics]) =
-    objectDynamics.handleObjectCollision(other.objectDynamics.unwrap)
-  @inline def collisionTime(other: MovingObject[TDynamics], t: Double) =
-    objectDynamics.collisionTime(other.objectDynamics.unwrap, t)
-  @inline def wallCollisionTime(t: Double) =
-    objectDynamics.wallCollisionTime(t)
-
   override def toString: String = id.toString
 }
 

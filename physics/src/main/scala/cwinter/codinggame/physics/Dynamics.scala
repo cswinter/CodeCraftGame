@@ -12,8 +12,8 @@ abstract class DynamicObject[T](initialPos: Vector2, initialTime: Double) {
   def collisionTime(other: T, time: Double): Option[Double] =
     computeCollisionTime(other, time - _time)
 
-  def wallCollisionTime(time: Double): Option[Double] =
-    computeWallCollisionTime(time - _time)
+  def wallCollisionTime(areaBounds: Rectangle, time: Double): Option[Double] =
+    computeWallCollisionTime(areaBounds, time - _time)
 
   @inline final def updatePosition(time: Double): Unit = {
     val dt = time - _time
@@ -22,14 +22,14 @@ abstract class DynamicObject[T](initialPos: Vector2, initialTime: Double) {
     _time = time
   }
 
-  def handleWallCollision()
+  def handleWallCollision(areaBounds: Rectangle)
   def handleObjectCollision(other: T)
 
   def unwrap: T
 
   protected def computeNewPosition(timeDelta: Double): Vector2
   protected def computeCollisionTime(other: T, timeDelta: Double): Option[Double]
-  protected def computeWallCollisionTime(timeDelta: Double): Option[Double]
+  protected def computeWallCollisionTime(areaBounds: Rectangle, timeDelta: Double): Option[Double]
   // def calculateBoundingBox(pos: Vector2, command: Command, timestep: Float): Vector2
 }
 
@@ -76,15 +76,15 @@ class ConstantVelocityObject(
     } yield t
   }
 
-  def computeWallCollisionTime(timeDelta: Double): Option[Double] = {
+  def computeWallCollisionTime(areaBounds: Rectangle, timeDelta: Double): Option[Double] = {
     val ctX =
-      if (velocity.x > 0) Some((750 - pos.x) / velocity.x)
-      else if (velocity.x < 0) Some((-750 - pos.x) / velocity.x)
+      if (velocity.x > 0) Some((areaBounds.xMax - pos.x) / velocity.x)
+      else if (velocity.x < 0) Some((areaBounds.xMin - pos.x) / velocity.x)
       else None
 
     val ctY =
-      if (velocity.y > 0) Some((750 - pos.y) / velocity.y)
-      else if (velocity.y < 0) Some((-750 - pos.y) / velocity.y)
+      if (velocity.y > 0) Some((areaBounds.yMax - pos.y) / velocity.y)
+      else if (velocity.y < 0) Some((areaBounds.yMin - pos.y) / velocity.y)
       else None
 
     val x = (ctX, ctY) match {
@@ -108,10 +108,10 @@ class ConstantVelocityObject(
     other.velocity = v2 - 2 * w1 / (w1 + w2) * (v2 - v1 dot x2 - x1) / (x2 - x1).magnitudeSquared * (x2 - x1)
   }
 
-  def handleWallCollision(): Unit = {
+  def handleWallCollision(areaBounds: Rectangle): Unit = {
     // find closest wall
-    val dx = math.min(math.abs(pos.x + 750), math.abs(pos.x - 750))
-    val dy = math.min(math.abs(pos.y + 750), math.abs(pos.y - 750))
+    val dx = math.min(math.abs(pos.x + areaBounds.xMax), math.abs(pos.x + areaBounds.xMin))
+    val dy = math.min(math.abs(pos.y + areaBounds.yMax), math.abs(pos.y + areaBounds.yMin))
     if (dx < dy) {
       velocity = velocity.copy(x = -velocity.x)
     } else {
@@ -123,3 +123,4 @@ class ConstantVelocityObject(
 }
 
 
+final case class Rectangle(xMin: Double, xMax: Double, yMin: Double, yMax: Double)
