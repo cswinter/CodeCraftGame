@@ -22,6 +22,8 @@ class MovingObject[TDynamics](
     objectDynamics.collisionTime(other.objectDynamics.unwrap, t)
   @inline def wallCollisionTime(t: Double) =
     objectDynamics.wallCollisionTime(t)
+
+  override def toString: String = id.toString
 }
 
 

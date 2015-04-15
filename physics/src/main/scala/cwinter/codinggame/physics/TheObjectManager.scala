@@ -28,36 +28,62 @@ object TheObjectManager extends GameWorld {
     discreteTime += 1
     nextTime = discreteTime / 30.0
 
-    var events = collection.mutable.PriorityQueue[Collision[TObject]]()
+    var collisionTable = Map.empty[TObject, Collision[TObject]]
+    val events = collection.mutable.PriorityQueue[Collision[TObject]]()
     for {
-      obji <- objects
-      collision <- computeCollisions(obji)
-    } events.enqueue(collision)
+      obj <- objects
+      collisions = computeCollisions(obj)
+      if collisions.nonEmpty
+      nextCol = collisions.minBy(_.time)
+    } nextCol match {
+      case ObjectWallCollision(_, _) =>
+        collisionTable += obj -> nextCol
+        events.enqueue(nextCol)
+      case ObjectObjectCollision(_, obj2, t) =>
+        if (!collisionTable.contains(obj2) || collisionTable(obj2).time > t) {
+          collisionTable += obj -> nextCol
+          collisionTable += obj2 -> nextCol
+          events.enqueue(nextCol)
+        }
+    }
 
     while (events.size > 0) {
       val collision = events.dequeue()
 
       println(f"collision at ts=$discreteTime: $collision")
       // TODO: only update objects affected by collision + subsequent collision checks
-      objects.foreach(_.update(collision.time))
-      time = collision.time
-
-      collision match {
-        case ObjectWallCollision(obj, _) => obj.wallCollision()
-        case ObjectObjectCollision(obj1, obj2, _) =>
-          obj1.collision(obj2)
-          // TODO: do this efficiently
-          events = events.filterNot(c =>
-            if (c.involves(obj1) || c.involves(obj2)) {
-              println(s"removed $c")
-              true
-            } else false)
+      if (collision.time > time) {
+        objects.foreach(_.update(collision.time))
+        time = collision.time
       }
+        collision match {
+          case ObjectWallCollision(obj, _) => obj.wallCollision()
+          case ObjectObjectCollision(obj1, obj2, _) =>
+            if (collisionTable.contains(obj1) &&
+              collisionTable.contains(obj2) &&
+              collisionTable(obj1) == collision &&
+              collisionTable(obj2) == collision) {
+              obj1.collision(obj2)
+            }
+        }
+        for (obj <- collision.involvedObjects) collisionTable -= obj
 
-      for {
-        obj <- collision.involvedObjects
-        c <- computeCollisions(obj, idCheck = false)
-      } events.enqueue(c)
+        for {
+          obj <- collision.involvedObjects
+          collisions = computeCollisions(obj, idCheck = false)
+          if collisions.nonEmpty
+          nextCol = collisions.minBy(_.time)
+        } {
+          collisionTable += obj -> nextCol
+          events.enqueue(nextCol)
+          nextCol match {
+            case ObjectObjectCollision(_, obj2, t) =>
+              if (!collisionTable.contains(obj2) || collisionTable(obj2).time >= t) {
+                collisionTable += obj2 -> nextCol
+              }
+            case _ =>
+          }
+        }
     }
 
     objects.foreach(_.update(nextTime))
@@ -88,17 +114,22 @@ object TheObjectManager extends GameWorld {
 
 sealed trait Collision[TObj] extends Ordered[Collision[TObj]] {
   val time: Double
+
   def involves(obj: TObj): Boolean
+
   def involvedObjects: Seq[TObj]
+
   override def compare(that: Collision[TObj]): Int = that.time compare time
 }
 
 final case class ObjectObjectCollision[TObj](obj1: TObj, obj2: TObj, time: Double) extends Collision[TObj] {
   def involves(obj: TObj): Boolean = obj == obj1 || obj == obj2
+
   def involvedObjects: Seq[TObj] = Seq(obj1, obj2)
 }
 
 final case class ObjectWallCollision[TObj](obj: TObj, time: Double) extends Collision[TObj] {
   def involves(obj: TObj): Boolean = obj == this.obj
+
   def involvedObjects: Seq[TObj] = Seq(obj)
 }

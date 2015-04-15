@@ -17,7 +17,7 @@ abstract class DynamicObject[T](initialPos: Vector2, initialTime: Double) {
 
   @inline final def updatePosition(time: Double): Unit = {
     val dt = time - _time
-    assert(dt > 0)
+    assert(dt > 0, s"dt=$dt")
     _pos = computeNewPosition(dt)
     _time = time
   }
