@@ -5,10 +5,6 @@ import robowars.graphics.application.DrawingCanvas
 import robowars.worldstate.{WorldObject, GameWorld}
 
 
-class P3Ordering[T1,T2] extends Ordering[(T1, T2, Double)] {
-  override def compare(x: (T1, T2, Double), y: (T1, T2, Double)): Int = y._3 compare x._3
-}
-
 object TheObjectManager extends GameWorld {
   type TObject = MovingObject[ConstantVelocityObject]
 
@@ -32,59 +28,54 @@ object TheObjectManager extends GameWorld {
     discreteTime += 1
     nextTime = discreteTime / 30.0
 
-    var events = collection.mutable.PriorityQueue[(TObject, TObject, Double)]()(new P3Ordering)
+    var events = collection.mutable.PriorityQueue[Collision[TObject]]()
     for {
       obji <- objects
       collision <- computeCollisions(obji)
     } events.enqueue(collision)
 
     while (events.size > 0) {
-      val (obj1, obj2, t) = events.dequeue()
+      val collision = events.dequeue()
 
-      println(f"collision at ts=$discreteTime t=$t%.3f between ${obj1.id} and ${obj2.id}")
+      println(f"collision at ts=$discreteTime: $collision")
       // TODO: only update objects affected by collision + subsequent collision checks
-      objects.foreach(_.update(t))
-      time = t
-      if (obj1 == obj2) {
-        // object <-> wall collision
-        obj1.wallCollision()
-      } else {
-        // object <-> object collision
-        obj1.collision(obj2)
-        // TODO: do this efficiently
-        events = events.filterNot(x =>
-          if (x._1 == obj1 || x._2 == obj1 || x._1 == obj2 || x._2 == obj2) {
-            println(s"removed ${x._1.id}, ${x._2.id}")
-            true
-          } else false)
+      objects.foreach(_.update(collision.time))
+      time = collision.time
+
+      collision match {
+        case ObjectWallCollision(obj, _) => obj.wallCollision()
+        case ObjectObjectCollision(obj1, obj2, _) =>
+          obj1.collision(obj2)
+          // TODO: do this efficiently
+          events = events.filterNot(c =>
+            if (c.involves(obj1) || c.involves(obj2)) {
+              println(s"removed $c")
+              true
+            } else false)
       }
 
       for {
-        c <- computeCollisions(obj1, idCheck=false)
+        obj <- collision.involvedObjects
+        c <- computeCollisions(obj, idCheck = false)
       } events.enqueue(c)
-      if (obj1 != obj2) {
-        for {
-          c <- computeCollisions(obj2, idCheck=false)
-        } events.enqueue(c)
-      }
     }
 
     objects.foreach(_.update(nextTime))
     time = nextTime
   }
 
-  def computeCollisions(obj: TObject, idCheck: Boolean = true): Iterable[(TObject, TObject, Double)] = {
+  def computeCollisions(obj: TObject, idCheck: Boolean = true): Iterable[Collision[TObject]] = {
     val objectObjectCollisions =
       for {
         obji <- objects
         if !idCheck || obj.id < obji.id
         dt <- obj.collisionTime(obji, nextTime)
-      } yield (obj, obji, time + dt)
+      } yield ObjectObjectCollision(obj, obji, time + dt)
 
     val objectWallCollisions =
       for {
         dt <- obj.wallCollisionTime(nextTime)
-      } yield (obj, obj, time + dt)
+      } yield ObjectWallCollision(obj, time + dt)
 
     objectObjectCollisions ++ objectWallCollisions
   }
@@ -93,4 +84,21 @@ object TheObjectManager extends GameWorld {
   def main(args: Array[String]): Unit = {
     DrawingCanvas.run(this)
   }
+}
+
+sealed trait Collision[TObj] extends Ordered[Collision[TObj]] {
+  val time: Double
+  def involves(obj: TObj): Boolean
+  def involvedObjects: Seq[TObj]
+  override def compare(that: Collision[TObj]): Int = that.time compare time
+}
+
+final case class ObjectObjectCollision[TObj](obj1: TObj, obj2: TObj, time: Double) extends Collision[TObj] {
+  def involves(obj: TObj): Boolean = obj == obj1 || obj == obj2
+  def involvedObjects: Seq[TObj] = Seq(obj1, obj2)
+}
+
+final case class ObjectWallCollision[TObj](obj: TObj, time: Double) extends Collision[TObj] {
+  def involves(obj: TObj): Boolean = obj == this.obj
+  def involvedObjects: Seq[TObj] = Seq(obj)
 }
