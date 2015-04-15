@@ -23,78 +23,77 @@ object TheObjectManager extends GameWorld {
   var time: Double = 0
   var nextTime: Double = 0
   var discreteTime: Int = 0
+  var collisionTable: Map[TObject, Collision[TObject]] = null
+  val events = collection.mutable.PriorityQueue[Collision[TObject]]()
 
   def update(): Unit = {
     discreteTime += 1
     nextTime = discreteTime / 30.0
 
-    var collisionTable = Map.empty[TObject, Collision[TObject]]
-    val events = collection.mutable.PriorityQueue[Collision[TObject]]()
-    for {
-      obj <- objects
-      collisions = computeCollisions(obj)
-      if collisions.nonEmpty
-      nextCol = collisions.minBy(_.time)
-    } nextCol match {
-      case ObjectWallCollision(_, _) =>
-        collisionTable += obj -> nextCol
-        events.enqueue(nextCol)
-      case ObjectObjectCollision(_, obj2, t) =>
-        if (!collisionTable.contains(obj2) || collisionTable(obj2).time > t) {
-          collisionTable += obj -> nextCol
-          collisionTable += obj2 -> nextCol
-          events.enqueue(nextCol)
-        }
-    }
+    collisionTable = Map.empty[TObject, Collision[TObject]]
+    objects.foreach(updateNextCollision)
 
     while (events.size > 0) {
       val collision = events.dequeue()
 
+      // POTENTIAL PROBLEMS in A<->B COLLISION:
+      // 1.
+      // handle A<->B => T[A]=T[B]=NULL
+      // handle B<->A => T[A] is NULL!
+      // 2.
+      // A<->B=@1 is enqueued (T[A]=T[B]=@1)
+      // B<->A=@2 is enqueued !(T[B]=@2)
+      // now, neither @1 nor @2 can be processed, leading to infinite loop.
+
+
       println(f"collision at ts=$discreteTime: $collision")
       // TODO: only update objects affected by collision + subsequent collision checks
-      if (collision.time > time) {
-        objects.foreach(_.update(collision.time))
-        time = collision.time
-      }
+      if (collisionTable.contains(collision.obj) && collisionTable(collision.obj) == collision) {
+        if (collision.time > time) {
+          objects.foreach(_.update(collision.time))
+          time = collision.time
+        }
         collision match {
           case ObjectWallCollision(obj, _) => obj.wallCollision()
           case ObjectObjectCollision(obj1, obj2, _) =>
             if (collisionTable.contains(obj1) &&
               collisionTable.contains(obj2) &&
-              collisionTable(obj1) == collision &&
+              collisionTable(obj1) == collision && // redundant
               collisionTable(obj2) == collision) {
               obj1.collision(obj2)
             }
         }
         for (obj <- collision.involvedObjects) collisionTable -= obj
 
-        for {
-          obj <- collision.involvedObjects
-          collisions = computeCollisions(obj, idCheck = false)
-          if collisions.nonEmpty
-          nextCol = collisions.minBy(_.time)
-        } {
-          collisionTable += obj -> nextCol
-          events.enqueue(nextCol)
-          nextCol match {
-            case ObjectObjectCollision(_, obj2, t) =>
-              if (!collisionTable.contains(obj2) || collisionTable(obj2).time >= t) {
-                collisionTable += obj2 -> nextCol
-              }
-            case _ =>
-          }
-        }
+        collision.involvedObjects.foreach(updateNextCollision)
+      }
     }
 
     objects.foreach(_.update(nextTime))
     time = nextTime
   }
 
-  def computeCollisions(obj: TObject, idCheck: Boolean = true): Iterable[Collision[TObject]] = {
+
+  def updateNextCollision(obj: TObject): Unit = {
+    val collisions = computeCollisions(obj)
+    if (collisions.nonEmpty) {
+      val nextCol = collisions.minBy(_.time)
+      collisionTable += obj -> nextCol
+      events.enqueue(nextCol)
+      nextCol match {
+        case ObjectObjectCollision(_, obj2, t) =>
+          if (!collisionTable.contains(obj2) || (collisionTable(obj2).isInstanceOf[ObjectObjectCollision[TObject]] && collisionTable(obj2).asInstanceOf[ObjectObjectCollision[TObject]].involvedObjects.contains(obj)) || collisionTable(obj2).time >= t) {
+            collisionTable += obj2 -> nextCol
+          }
+        case _ =>
+      }
+    }
+  }
+
+  def computeCollisions(obj: TObject): Iterable[Collision[TObject]] = {
     val objectObjectCollisions =
       for {
         obji <- objects
-        if !idCheck || obj.id < obji.id
         dt <- obj.collisionTime(obji, nextTime)
       } yield ObjectObjectCollision(obj, obji, time + dt)
 
@@ -119,11 +118,15 @@ sealed trait Collision[TObj] extends Ordered[Collision[TObj]] {
 
   def involvedObjects: Seq[TObj]
 
+  def obj: TObj
+
   override def compare(that: Collision[TObj]): Int = that.time compare time
 }
 
 final case class ObjectObjectCollision[TObj](obj1: TObj, obj2: TObj, time: Double) extends Collision[TObj] {
   def involves(obj: TObj): Boolean = obj == obj1 || obj == obj2
+
+  def obj: TObj = obj1
 
   def involvedObjects: Seq[TObj] = Seq(obj1, obj2)
 }
