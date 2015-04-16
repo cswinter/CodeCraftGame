@@ -1,9 +1,8 @@
 package cwinter.collisions
 
-import CircleLike.CircleLikeOps
+import Positionable.PositionableOps
 
-
-class VisionTracker[T: CircleLike](
+class VisionTracker[T: Positionable](
   val xMin: Int,
   val xMax: Int,
   val yMin: Int,
@@ -107,7 +106,6 @@ class VisionTracker[T: CircleLike](
     var cell = computeCell(this)
 
 
-    def radius = elem.radius
     def position = elem.position
   }
 

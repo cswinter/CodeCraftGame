@@ -1,7 +1,7 @@
 package robowars.simulation
 
 import cwinter.codinggame.maths.Vector2
-import cwinter.collisions.CircleLike
+import cwinter.collisions.Positionable
 import robowars.worldstate.WorldObject
 
 
@@ -23,8 +23,7 @@ object MockObject {
     objectCount
   }
 
-  implicit object MockObjectIsCircleLike extends CircleLike[MockObject] {
+  implicit object MockObjectIsPositionable extends Positionable[MockObject] {
     override def position(t: MockObject): Vector2 = Vector2(t.xPos, t.yPos)
-    override def radius(t: MockObject): Float = 0
   }
 }
