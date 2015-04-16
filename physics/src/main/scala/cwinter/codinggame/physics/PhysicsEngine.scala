@@ -66,7 +66,7 @@ class PhysicsEngine[T <: DynamicObject[T]](val boundingRectangle: Rectangle) {
   }
 
 
-  def updateNextCollision(obj: T): Unit = {
+  private def updateNextCollision(obj: T): Unit = {
     val collisions = computeCollisions(obj)
     if (collisions.nonEmpty) {
       val nextCol = collisions.minBy(_.time)
@@ -86,7 +86,7 @@ class PhysicsEngine[T <: DynamicObject[T]](val boundingRectangle: Rectangle) {
   }
 
 
-  def computeCollisions(obj: T): Iterable[Collision[T]] = {
+  private def computeCollisions(obj: T): Iterable[Collision[T]] = {
     val nearbyObjects = objects
     nearbyObjects.foreach(_.updatePosition(time))
     val objectObjectCollisions =
@@ -104,7 +104,7 @@ class PhysicsEngine[T <: DynamicObject[T]](val boundingRectangle: Rectangle) {
   }
 
 
-  private[PhysicsEngine] sealed trait Collision[TObj] extends Ordered[Collision[TObj]] {
+  private sealed trait Collision[TObj] extends Ordered[Collision[TObj]] {
     val time: Double
     def involves(obj: TObj): Boolean
     def involvedObjects: Seq[TObj]
@@ -112,13 +112,13 @@ class PhysicsEngine[T <: DynamicObject[T]](val boundingRectangle: Rectangle) {
     override def compare(that: Collision[TObj]): Int = that.time compare time
   }
 
-  private[PhysicsEngine] final case class ObjectObjectCollision[TObj](obj1: TObj, obj2: TObj, time: Double) extends Collision[TObj] {
+  private final case class ObjectObjectCollision[TObj](obj1: TObj, obj2: TObj, time: Double) extends Collision[TObj] {
     def involves(obj: TObj): Boolean = obj == obj1 || obj == obj2
     def obj: TObj = obj1
     def involvedObjects: Seq[TObj] = Seq(obj1, obj2)
   }
 
-  private[PhysicsEngine] final case class ObjectWallCollision[TObj](obj: TObj, time: Double) extends Collision[TObj] {
+  private final case class ObjectWallCollision[TObj](obj: TObj, time: Double) extends Collision[TObj] {
     def involves(obj: TObj): Boolean = obj == this.obj
     def involvedObjects: Seq[TObj] = Seq(obj)
   }
