@@ -1,6 +1,6 @@
 package cwinter.codinggame.physics
 
-import cwinter.codinggame.maths.{Solve, Vector2}
+import cwinter.codinggame.maths.{Solve, Vector2, Rectangle}
 
 
 abstract class DynamicObject[T](initialPos: Vector2, initialTime: Double) {
@@ -123,6 +123,3 @@ class ConstantVelocityObject(
 
   def unwrap: ConstantVelocityObject = this
 }
-
-
-final case class Rectangle(xMin: Double, xMax: Double, yMin: Double, yMax: Double)

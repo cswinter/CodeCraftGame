@@ -1,6 +1,6 @@
 package cwinter.codinggame.physics
 
-import cwinter.codinggame.maths.Vector2
+import cwinter.codinggame.maths.{Rectangle, Vector2}
 import robowars.graphics.application.DrawingCanvas
 import robowars.worldstate.{WorldObject, GameWorld}
 
