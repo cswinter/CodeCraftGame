@@ -8,8 +8,8 @@ class PhysicsEngine[T <: DynamicObject[T]](val boundingRectangle: Rectangle) {
   private[this] var time: Double = 0
   private[this] var nextTime: Double = 0
   private[this] var discreteTime: Int = 0
-  private[this] var collisionTable: Map[T, Collision[T]] = null
-  val events = collection.mutable.PriorityQueue[Collision[T]]()
+  private[this] var collisionTable: Map[T, Collision] = null
+  val events = collection.mutable.PriorityQueue[Collision]()
 
 
   def addObject(obj: T): Unit = {
@@ -23,7 +23,7 @@ class PhysicsEngine[T <: DynamicObject[T]](val boundingRectangle: Rectangle) {
     discreteTime += 1
     nextTime = discreteTime / 30.0
 
-    collisionTable = Map.empty[T, Collision[T]]
+    collisionTable = Map.empty[T, Collision]
     objects.foreach(updateNextCollision)
 
     while (events.size > 0) {
@@ -75,8 +75,8 @@ class PhysicsEngine[T <: DynamicObject[T]](val boundingRectangle: Rectangle) {
       nextCol match {
         case ObjectObjectCollision(_, obj2, t) =>
           if (!collisionTable.contains(obj2) ||
-            (collisionTable(obj2).isInstanceOf[ObjectObjectCollision[T]] &&
-              collisionTable(obj2).asInstanceOf[ObjectObjectCollision[T]].involvedObjects.contains(obj)) ||
+            (collisionTable(obj2).isInstanceOf[ObjectObjectCollision] &&
+              collisionTable(obj2).asInstanceOf[ObjectObjectCollision].involvedObjects.contains(obj)) ||
             collisionTable(obj2).time >= t) {
             collisionTable += obj2 -> nextCol
           }
@@ -86,7 +86,7 @@ class PhysicsEngine[T <: DynamicObject[T]](val boundingRectangle: Rectangle) {
   }
 
 
-  private def computeCollisions(obj: T): Iterable[Collision[T]] = {
+  private def computeCollisions(obj: T): Iterable[Collision] = {
     val nearbyObjects = objects
     nearbyObjects.foreach(_.updatePosition(time))
     val objectObjectCollisions =
@@ -104,22 +104,22 @@ class PhysicsEngine[T <: DynamicObject[T]](val boundingRectangle: Rectangle) {
   }
 
 
-  private sealed trait Collision[TObj] extends Ordered[Collision[TObj]] {
+  private sealed trait Collision extends Ordered[Collision] {
     val time: Double
-    def involves(obj: TObj): Boolean
-    def involvedObjects: Seq[TObj]
-    def obj: TObj
-    override def compare(that: Collision[TObj]): Int = that.time compare time
+    def involves(obj: T): Boolean
+    def involvedObjects: Seq[T]
+    def obj: T
+    override def compare(that: Collision): Int = that.time compare time
   }
 
-  private final case class ObjectObjectCollision[TObj](obj1: TObj, obj2: TObj, time: Double) extends Collision[TObj] {
-    def involves(obj: TObj): Boolean = obj == obj1 || obj == obj2
-    def obj: TObj = obj1
-    def involvedObjects: Seq[TObj] = Seq(obj1, obj2)
+  private final case class ObjectObjectCollision(obj1: T, obj2: T, time: Double) extends Collision {
+    def involves(obj: T): Boolean = obj == obj1 || obj == obj2
+    def obj: T = obj1
+    def involvedObjects: Seq[T] = Seq(obj1, obj2)
   }
 
-  private final case class ObjectWallCollision[TObj](obj: TObj, time: Double) extends Collision[TObj] {
-    def involves(obj: TObj): Boolean = obj == this.obj
-    def involvedObjects: Seq[TObj] = Seq(obj)
+  private final case class ObjectWallCollision(obj: T, time: Double) extends Collision {
+    def involves(obj: T): Boolean = obj == this.obj
+    def involvedObjects: Seq[T] = Seq(obj)
   }
 }
