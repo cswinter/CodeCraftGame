@@ -3,7 +3,7 @@ package cwinter.codinggame.physics
 import cwinter.codinggame.maths.Rectangle
 
 
-class PhysicsEngine[T <: DynamicObject[T]](val boundingRectangle: Rectangle) {
+class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle) {
   private[this] val objects = collection.mutable.ArrayBuffer.empty[ObjectRecord]
   private[this] var time: Double = 0
   private[this] var nextTime: Double = 0
@@ -38,21 +38,29 @@ class PhysicsEngine[T <: DynamicObject[T]](val boundingRectangle: Rectangle) {
 
 
       println(f"collision at ts=$discreteTime: $collision")
-      if (collision.obj.nextCollision == Some(collision)) {
-        if (collision.time > time) {
-          collision.involvedObjects.foreach(_.updatePosition(collision.time))
-          time = collision.time
-        }
-        collision match {
-          case ObjectWallCollision(obj, _) => obj.handleWallCollision(boundingRectangle)
-          case ObjectObjectCollision(obj1, obj2, _) =>
-            if (obj2.nextCollision == Some(collision)) {
-              obj1.handleObjectCollision(obj2)
-            }
-        }
-        for (obj <- collision.involvedObjects) obj.nextCollision = None
+      
+      collision match {
+        case ObjectWallCollision(obj, t) =>
+          if (obj.nextCollision == Some(collision)) {
+            time = t
+            obj.updatePosition(t)
 
-        collision.involvedObjects.foreach(updateNextCollision)
+            obj.handleWallCollision(worldBoundaries)
+            updateNextCollision(obj)
+          }
+        case ObjectObjectCollision(obj1, obj2, t) =>
+          if (obj1.nextCollision == Some(collision)) {
+            if (obj2.nextCollision == Some(collision)) {
+              time = t
+              obj1.updatePosition(t)
+              obj2.updatePosition(t)
+
+              obj1.handleObjectCollision(obj2)
+              updateNextCollision(obj2)
+            }
+            updateNextCollision(obj1)
+          }
+        case _ => ???
       }
     }
 
@@ -62,6 +70,7 @@ class PhysicsEngine[T <: DynamicObject[T]](val boundingRectangle: Rectangle) {
 
 
   private def updateNextCollision(obj: ObjectRecord): Unit = {
+    obj.nextCollision = None
     val collisions = computeCollisions(obj)
     if (collisions.nonEmpty) {
       val nextCol = collisions.minBy(_.time)
@@ -73,7 +82,7 @@ class PhysicsEngine[T <: DynamicObject[T]](val boundingRectangle: Rectangle) {
           // TODO: make this not horrible
           if (obj2.nextCollision == None ||
             (obj2.nextCollision.get.isInstanceOf[ObjectObjectCollision] &&
-              obj2.nextCollision.get.asInstanceOf[ObjectObjectCollision].involvedObjects.contains(obj)) ||
+              obj2.nextCollision.get.asInstanceOf[ObjectObjectCollision].obj2 == obj) ||
             obj2.nextCollision.get.time >= t) {
             obj2.nextCollision = nextColOpt
           }
@@ -91,6 +100,7 @@ class PhysicsEngine[T <: DynamicObject[T]](val boundingRectangle: Rectangle) {
     var nextTransfer: Any = null
   )
 
+  import language.implicitConversions
   private implicit def objectRecordIsT(objRec: ObjectRecord): T = objRec.obj
 
 
@@ -105,7 +115,7 @@ class PhysicsEngine[T <: DynamicObject[T]](val boundingRectangle: Rectangle) {
 
     val objectWallCollisions =
       for {
-        dt <- obj.obj.wallCollisionTime(boundingRectangle, nextTime)
+        dt <- obj.obj.wallCollisionTime(worldBoundaries, nextTime)
       } yield ObjectWallCollision(obj, time + dt)
 
     objectObjectCollisions ++ objectWallCollisions
@@ -114,9 +124,6 @@ class PhysicsEngine[T <: DynamicObject[T]](val boundingRectangle: Rectangle) {
 
   private sealed trait Collision extends Ordered[Collision] {
     val time: Double
-    def involves(obj: ObjectRecord): Boolean
-    def involvedObjects: Seq[ObjectRecord]
-    def obj: ObjectRecord
     override def compare(that: Collision): Int = that.time compare time
   }
 
@@ -124,17 +131,17 @@ class PhysicsEngine[T <: DynamicObject[T]](val boundingRectangle: Rectangle) {
     obj1: ObjectRecord,
     obj2: ObjectRecord,
     time: Double
-  ) extends Collision {
-    def involves(obj: ObjectRecord): Boolean = obj == obj1 || obj == obj2
-    def obj: ObjectRecord = obj1
-    def involvedObjects: Seq[ObjectRecord] = Seq(obj1, obj2)
-  }
+  ) extends Collision
 
   private final case class ObjectWallCollision(
     obj: ObjectRecord,
     time: Double
-  ) extends Collision {
-    def involves(obj: ObjectRecord): Boolean = obj == this.obj
-    def involvedObjects: Seq[ObjectRecord] = Seq(obj)
-  }
+  ) extends Collision
+
+  private final case class Transfer(
+    obj: ObjectRecord,
+    time: Double,
+    newCellX: Int,
+    newCellY: Int
+  ) extends Collision
 }
