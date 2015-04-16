@@ -50,10 +50,9 @@ object TheObjectManager extends GameWorld {
 
 
       println(f"collision at ts=$discreteTime: $collision")
-      // TODO: only update objects affected by collision + subsequent collision checks
       if (collisionTable.contains(collision.obj) && collisionTable(collision.obj) == collision) {
         if (collision.time > time) {
-          objects.foreach(_.updatePosition(collision.time))
+          collision.involvedObjects.foreach(_.updatePosition(collision.time))
           time = collision.time
         }
         collision match {
@@ -94,9 +93,11 @@ object TheObjectManager extends GameWorld {
   }
 
   def computeCollisions(obj: TObject): Iterable[Collision[TObject]] = {
+    val nearbyObjects = objects
+    nearbyObjects.foreach(_.updatePosition(time))
     val objectObjectCollisions =
       for {
-        obji <- objects
+        obji <- nearbyObjects
         dt <- obj.collisionTime(obji, nextTime)
       } yield ObjectObjectCollision(obj, obji, time + dt)
 

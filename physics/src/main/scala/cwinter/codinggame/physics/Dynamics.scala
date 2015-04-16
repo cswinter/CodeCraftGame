@@ -16,10 +16,12 @@ abstract class DynamicObject[T](initialPos: Vector2, initialTime: Double) {
     computeWallCollisionTime(areaBounds, time - _time)
 
   @inline final def updatePosition(time: Double): Unit = {
-    val dt = time - _time
-    assert(dt > 0, s"dt=$dt")
-    _pos = computeNewPosition(dt)
-    _time = time
+    if (time != _time) {
+      val dt = time - _time
+      assert(dt > 0, s"dt=$dt")
+      _pos = computeNewPosition(dt)
+      _time = time
+    }
   }
 
   def handleWallCollision(areaBounds: Rectangle)
