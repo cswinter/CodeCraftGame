@@ -97,7 +97,6 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
             obj.cellY = y
             updateNextCollision(obj, newlyNearbyObjects, erase=false)
 
-            obj.nextTransfer = None
             updateTransfer(obj)
           }
       }
@@ -105,27 +104,12 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
 
     objects.foreach(_.obj.updatePosition(nextTime))
     time = nextTime
-
-
-
-
-    /*for {
-      obj <- objects
-      rect = DrawRectangle(-1, grid.cellBounds(obj.cellX, obj.cellY))
-    } Debug.draw(rect)*/
-
-    for {
-      x <- 1 to grid.width
-      y <- 1 to grid.height
-      elem <- grid.nearbyObjects(x, y)//.cells(x)(y)
-      rect = DrawRectangle(-1, grid.cellBounds(x, y))
-    } Debug.draw(rect)
   }
 
-
+  // TODO: eradicate use of Iterator. how could you?
   private def updateNextCollision(obj: ObjectRecord, nearbyObjects: Iterator[ObjectRecord], erase: Boolean = true): Unit = {
     if (erase) obj.nextCollision = None
-    val collisions = computeCollisions(obj, objects.iterator)//nearbyObjects)
+    val collisions = computeCollisions(obj, nearbyObjects)
     if (collisions.nonEmpty) {
       val nextCol = collisions.minBy(_.time)
       val nextColOpt = Some(nextCol)
@@ -154,9 +138,8 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
     val objectObjectCollisions =
       for {
         obji <- nearby
-        _ = println("OTHER OBJ: " + obji)
+        if obj != obji
         dt <- obj.collisionTime(obji, nextTime)
-        _ = println("TIME TO COLLISION: " + dt)
       } yield ObjectObjectCollision(obj, obji, time + dt)
 
     val objectWallCollisions =
@@ -169,12 +152,14 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
 
 
   private def updateTransfer(obj: ObjectRecord): Unit = {
+    obj.nextTransfer = None
     val cellBounds = grid.cellBounds(obj.cellX, obj.cellY)
     for ((dt, direction) <- obj.wallCollisionTime(cellBounds, nextTime)) {
       val newX = obj.cellX + direction.x
       val newY = obj.cellY + direction.y
       val transferEvent = Transfer(obj, time + dt, newX, newY, direction)
 
+      println(s"enqueud transfer $transferEvent, dt=$dt")
       // transfers out of the world boundaries may be scheduled before the corresponding wall collision
       // therefore we check for this explicitly
       if (newX <= grid.width && newY <= grid.height && newX > 0 && newY > 0) {

@@ -9,7 +9,7 @@ object TheObjectManager extends GameWorld {
   type TObject = ConstantVelocityObject
 
 
-  val N = 2
+  val N = 10
   val worldObjects = List.tabulate[MovingObject[TObject]](N * N)(i => {
     val x = i / N
     val y = i % N
