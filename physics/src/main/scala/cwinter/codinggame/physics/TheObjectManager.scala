@@ -22,7 +22,7 @@ object TheObjectManager extends GameWorld {
 
 
   def worldState: Iterable[WorldObject] =
-    worldObjects.map(_.state) ++ physicsEngine.debugDrawings
+    worldObjects.map(_.state)
 
 
   def update(): Unit = {

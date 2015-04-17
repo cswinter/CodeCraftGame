@@ -2,6 +2,7 @@ package cwinter.codinggame.physics
 
 import cwinter.codinggame.maths.{Vector2, Rectangle}
 import cwinter.collisions.{Positionable, SquareGrid}
+import robowars.graphics.engine.Debug
 import robowars.worldstate.{WorldObject, Rectangle => DrawRectangle}
 
 
@@ -20,11 +21,7 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
     2 * maxRadius
   )(ObjectRecordHasPosition)
 
-
-  def debugDrawings: Iterable[WorldObject] =
-    objects.map(obj => DrawRectangle(-1, grid.cellBounds(obj.cellX, obj.cellY))) ++
-      Seq(DrawRectangle(-1, worldBoundaries))
-
+  Debug.drawAlways(DrawRectangle(-1, worldBoundaries))
 
   def addObject(obj: T): Unit = {
     val (x, y) = grid.computeCell(obj.pos)
@@ -37,6 +34,7 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
    * Advance simulation by one timestep.
    */
   def update(): Unit = {
+
     discreteTime += 1
     nextTime = discreteTime / 30.0
 
@@ -107,6 +105,14 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
 
     objects.foreach(_.obj.updatePosition(nextTime))
     time = nextTime
+
+
+
+
+    for {
+      obj <- objects
+      rect = DrawRectangle(-1, grid.cellBounds(obj.cellX, obj.cellY))
+    } Debug.draw(rect)
   }
 
 

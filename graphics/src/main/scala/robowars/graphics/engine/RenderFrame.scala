@@ -62,7 +62,7 @@ object RenderFrame extends GLEventListener {
       material.beforeDraw(camera.projection)
 
       for {
-        worldObject <- worldObjects
+        worldObject <- worldObjects ++ robowars.graphics.engine.Debug.debugObjects
         model = TheWorldObjectModelFactory.generateModel(worldObject)
       } model.draw(material)
 
@@ -93,6 +93,7 @@ object RenderFrame extends GLEventListener {
   private def update(): Unit = {
     if (!paused) {
       try {
+        robowars.graphics.engine.Debug.clear()
         gameWorld.update()
       } catch {
         case e: Exception =>
