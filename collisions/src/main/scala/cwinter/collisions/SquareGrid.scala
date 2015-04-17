@@ -17,7 +17,8 @@ class SquareGrid[T: Positionable](
   val width = (xMax - xMin) / cellWidth
   val height = (yMax - yMin) / cellWidth
 
-  private[this] val cells = Array.fill(width + 2 * Padding, height + 2 * Padding)(Set.empty[T])
+  //private[this]
+  val cells = Array.fill(width + 2 * Padding, height + 2 * Padding)(Set.empty[T])
 
 
   def insert(obj: T): Unit = insert(obj, computeCell(obj))

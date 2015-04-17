@@ -109,16 +109,23 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
 
 
 
-    for {
+    /*for {
       obj <- objects
       rect = DrawRectangle(-1, grid.cellBounds(obj.cellX, obj.cellY))
+    } Debug.draw(rect)*/
+
+    for {
+      x <- 1 to grid.width
+      y <- 1 to grid.height
+      elem <- grid.nearbyObjects(x, y)//.cells(x)(y)
+      rect = DrawRectangle(-1, grid.cellBounds(x, y))
     } Debug.draw(rect)
   }
 
 
   private def updateNextCollision(obj: ObjectRecord, nearbyObjects: Iterator[ObjectRecord], erase: Boolean = true): Unit = {
     if (erase) obj.nextCollision = None
-    val collisions = computeCollisions(obj, nearbyObjects)
+    val collisions = computeCollisions(obj, objects.iterator)//nearbyObjects)
     if (collisions.nonEmpty) {
       val nextCol = collisions.minBy(_.time)
       val nextColOpt = Some(nextCol)
@@ -141,17 +148,20 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
   }
 
 
-  private def computeCollisions(obj: ObjectRecord, nearbyObjects: Iterator[ObjectRecord]): Iterator[Collision] = {
-    nearbyObjects.foreach(_.obj.updatePosition(time))
+  private def computeCollisions(obj: ObjectRecord, nearbyObjects: Iterator[ObjectRecord]): Seq[Collision] = {
+    val nearby = nearbyObjects.toSeq
+    nearby.foreach(_.obj.updatePosition(time))
     val objectObjectCollisions =
       for {
-        obji <- nearbyObjects
-        dt <- obj.obj.collisionTime(obji.obj, nextTime)
+        obji <- nearby
+        _ = println("OTHER OBJ: " + obji)
+        dt <- obj.collisionTime(obji, nextTime)
+        _ = println("TIME TO COLLISION: " + dt)
       } yield ObjectObjectCollision(obj, obji, time + dt)
 
     val objectWallCollisions =
       for {
-        (dt, direction) <- obj.obj.wallCollisionTime(worldBoundaries, nextTime)
+        (dt, direction) <- obj.wallCollisionTime(worldBoundaries, nextTime)
       } yield ObjectWallCollision(obj, time + dt)
 
     objectObjectCollisions ++ objectWallCollisions
