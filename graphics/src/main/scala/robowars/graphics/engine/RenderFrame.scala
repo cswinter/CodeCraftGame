@@ -30,6 +30,7 @@ object RenderFrame extends GLEventListener {
   var frameTimes = scala.collection.mutable.Queue.fill(FrametimeSamples - 1)(new DateTime().getMillis)
   var textField: TextField = null
   var gameWorld: GameWorld = null
+  var error = false
 
 
   override def display(drawable: GLAutoDrawable): Unit = {
@@ -51,7 +52,8 @@ object RenderFrame extends GLEventListener {
     glBindFramebuffer(GL_FRAMEBUFFER, fbo.fbo)
     glViewport(0, 0, camera.screenWidth * 2, camera.screenHeight * 2)
 
-    glClearColor(0.1f, 0, 0.1f, 0.0f)
+    if (!error) glClearColor(0.1f, 0, 0.1f, 0.0f)
+    else glClearColor(0.1f, 0, 0.0f, 0.0f)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
     val worldObjects = gameWorld.worldState
@@ -89,8 +91,15 @@ object RenderFrame extends GLEventListener {
   }
 
   private def update(): Unit = {
-    if (!paused)
-      gameWorld.update()
+    if (!paused) {
+      try {
+        gameWorld.update()
+      } catch {
+        case _: Exception =>
+          paused = true
+          error = true
+      }
+    }
   }
 
   def dispose(arg0: GLAutoDrawable): Unit = {
