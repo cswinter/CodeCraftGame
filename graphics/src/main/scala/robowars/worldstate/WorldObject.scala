@@ -85,3 +85,12 @@ case class Circle(
 ) extends WorldObject {
   val orientation = 0.0f
 }
+
+case class Rectangle(
+  identifier: Int,
+  bounds: cwinter.codinggame.maths.Rectangle
+) extends WorldObject {
+  val orientation = 0.0f
+  val xPos: Float = 0
+  val yPos: Float = 0
+}

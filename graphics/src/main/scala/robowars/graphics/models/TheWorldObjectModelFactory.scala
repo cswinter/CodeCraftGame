@@ -42,6 +42,10 @@ object TheWorldObjectModelFactory {
         Unit,
         CircleModelBuilder(circle.radius, circle.identifier).getModel,
         modelview)
+      case rectangle: Rectangle => new ClosedModel[Unit](
+        Unit,
+        RectangleModelBuilder(rectangle.bounds).getModel,
+        modelview)
     }
   }
 }
