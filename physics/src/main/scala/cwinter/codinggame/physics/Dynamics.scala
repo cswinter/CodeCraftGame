@@ -12,7 +12,7 @@ abstract class DynamicObject[T](initialPos: Vector2, initialTime: Double) {
   def collisionTime(other: T, time: Double): Option[Double] =
     computeCollisionTime(other, time - _time)
 
-  def wallCollisionTime(areaBounds: Rectangle, time: Double): Option[Double] =
+  def wallCollisionTime(areaBounds: Rectangle, time: Double): Option[(Double, Direction)] =
     computeWallCollisionTime(areaBounds, time - _time)
 
   @inline final def updatePosition(time: Double): Unit = {
@@ -31,7 +31,7 @@ abstract class DynamicObject[T](initialPos: Vector2, initialTime: Double) {
 
   protected def computeNewPosition(timeDelta: Double): Vector2
   protected def computeCollisionTime(other: T, timeDelta: Double): Option[Double]
-  protected def computeWallCollisionTime(areaBounds: Rectangle, timeDelta: Double): Option[Double]
+  protected def computeWallCollisionTime(areaBounds: Rectangle, timeDelta: Double): Option[(Double, Direction)]
   // def calculateBoundingBox(pos: Vector2, command: Command, timestep: Float): Vector2
 }
 
@@ -78,25 +78,26 @@ class ConstantVelocityObject(
     } yield t
   }
 
-  def computeWallCollisionTime(areaBounds: Rectangle, timeDelta: Double): Option[Double] = {
+  def computeWallCollisionTime(areaBounds: Rectangle, timeDelta: Double): Option[(Double, Direction)] = {
     val ctX =
-      if (velocity.x > 0) Some((areaBounds.xMax - pos.x) / velocity.x)
-      else if (velocity.x < 0) Some((areaBounds.xMin - pos.x) / velocity.x)
+      if (velocity.x > 0) Some(((areaBounds.xMax - pos.x) / velocity.x, East))
+      else if (velocity.x < 0) Some(((areaBounds.xMin - pos.x) / velocity.x, West))
       else None
 
     val ctY =
-      if (velocity.y > 0) Some((areaBounds.yMax - pos.y) / velocity.y)
-      else if (velocity.y < 0) Some((areaBounds.yMin - pos.y) / velocity.y)
+      if (velocity.y > 0) Some(((areaBounds.yMax - pos.y) / velocity.y, North))
+      else if (velocity.y < 0) Some(((areaBounds.yMin - pos.y) / velocity.y, South))
       else None
 
     val x = (ctX, ctY) match {
-      case (Some(t1), Some(t2)) => Some(math.min(t1, t2))
+      case (Some((t1, _)), Some((t2, _))) =>
+        if (t1 < t2) ctX else ctY
       case (Some(t1), None) => Some(t1)
       case (None, Some(t2)) => Some(t2)
       case (None, None) => None
     }
 
-    x.filter(_ < timeDelta)
+    x.filter(_._1 < timeDelta)
   }
 
   def handleObjectCollision(other: ConstantVelocityObject): Unit = {
@@ -122,4 +123,35 @@ class ConstantVelocityObject(
   }
 
   def unwrap: ConstantVelocityObject = this
+}
+
+
+sealed trait Direction {
+  def x: Int
+  def y: Int
+  def xAxisAligned: Boolean
+}
+
+case object North extends Direction {
+  def x = 0
+  def y = 1
+  def xAxisAligned = false
+}
+
+case object South extends Direction {
+  def x = 0
+  def y = -1
+  def xAxisAligned = false
+}
+
+case object East extends Direction {
+  def x = 1
+  def y = 0
+  def xAxisAligned = true
+}
+
+case object West extends Direction {
+  def x = -1
+  def y = 0
+  def xAxisAligned = true
 }

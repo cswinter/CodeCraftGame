@@ -9,7 +9,7 @@ object TheObjectManager extends GameWorld {
   type TObject = ConstantVelocityObject
 
 
-  val N = 10
+  val N = 2
   val worldObjects = List.tabulate[MovingObject[TObject]](N * N)(i => {
     val x = i / N
     val y = i % N
@@ -17,12 +17,12 @@ object TheObjectManager extends GameWorld {
   })
 
 
-  val physicsEngine = new PhysicsEngine[ConstantVelocityObject](Rectangle(-1000, 1000, -1000, 1000))
+  val physicsEngine = new PhysicsEngine[ConstantVelocityObject](Rectangle(-1000, 1000, -1000, 1000), 50)
   worldObjects.foreach(x => physicsEngine.addObject(x.objectDynamics.unwrap))
 
 
   def worldState: Iterable[WorldObject] =
-    worldObjects.map(_.state)
+    worldObjects.map(_.state) ++ physicsEngine.debugDrawings
 
 
   def update(): Unit = {

@@ -1,6 +1,7 @@
 package cwinter.collisions
 
 import Positionable.PositionableOps
+import cwinter.codinggame.maths.Rectangle
 
 class SquareGrid[T: Positionable](
   val xMin: Int,
@@ -9,19 +10,24 @@ class SquareGrid[T: Positionable](
   val yMax: Int,
   val cellWidth: Int
 ) {
+  final val Padding = 1
   assert((xMax - xMin) % cellWidth == 0)
   assert((yMax - yMin) % cellWidth == 0)
 
   val width = (xMax - xMin) / cellWidth
   val height = (yMax - yMin) / cellWidth
 
-  private[this] val cells = Array.fill(width + 2, height + 2)(Set.empty[T])
+  private[this] val cells = Array.fill(width + 2 * Padding, height + 2 * Padding)(Set.empty[T])
 
 
   def insert(obj: T): Unit = insert(obj, computeCell(obj))
 
   def insert(obj: T, cell: (Int, Int)): Unit = {
     val (x, y) = cell
+    cells(x)(y) += obj
+  }
+
+  def insert(obj: T, x: Int, y: Int): Unit = {
     cells(x)(y) += obj
   }
 
@@ -43,7 +49,7 @@ class SquareGrid[T: Positionable](
 
     cells(x + direction)(y - 1).iterator ++
       cells(x + direction)(y).iterator ++
-      cells(x + direction)(y + 2).iterator
+      cells(x + direction)(y + 1).iterator
   }
 
 
@@ -61,10 +67,17 @@ class SquareGrid[T: Positionable](
   }
 
 
-  def computeCell(elem: T): (Int, Int) = {
-    val cellX = 1 + (elem.position.x.toInt - xMin) / cellWidth
-    val cellY = 1 + (elem.position.y.toInt - yMin) / cellWidth
+  def computeCell[T2: Positionable](elem: T2): (Int, Int) = {
+    val cellX = Padding + (elem.position.x.toInt - xMin) / cellWidth
+    val cellY = Padding + (elem.position.y.toInt - yMin) / cellWidth
     (cellX, cellY)
+  }
+
+
+  def cellBounds(x: Int, y: Int): Rectangle = {
+    Rectangle(
+      cellWidth * (x - Padding) + xMin, cellWidth * (x - Padding + 1) + xMin,
+      cellWidth * (y - Padding) + yMin, cellWidth * (y - Padding + 1) + yMin)
   }
 
 
