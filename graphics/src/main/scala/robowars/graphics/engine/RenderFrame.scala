@@ -97,7 +97,8 @@ object RenderFrame extends GLEventListener {
         gameWorld.update()
       } catch {
         case e: Exception =>
-          e.printStackTrace()
+          println(e)
+          e.getStackTrace.foreach(println)
           paused = true
           error = true
       }

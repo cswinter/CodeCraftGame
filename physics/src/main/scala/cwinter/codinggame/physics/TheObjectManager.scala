@@ -9,15 +9,15 @@ object TheObjectManager extends GameWorld {
   type TObject = ConstantVelocityObject
 
 
-  val N = 10
+  val N = 30
   val worldObjects = List.tabulate[MovingObject[TObject]](N * N)(i => {
     val x = i / N
     val y = i % N
-    MovingObject(Vector2(-500 + x * 1250 / N, -500 + y * 1250 / N))
+    MovingObject(Vector2(-1500 + x * 3000 / N, -1500 + y * 3000 / N))
   })
 
 
-  val physicsEngine = new PhysicsEngine[ConstantVelocityObject](Rectangle(-1000, 1000, -1000, 1000), 50)
+  val physicsEngine = new PhysicsEngine[ConstantVelocityObject](Rectangle(-2000, 2000, -2000, 2000), 50)
   worldObjects.foreach(x => physicsEngine.addObject(x.objectDynamics.unwrap))
 
 

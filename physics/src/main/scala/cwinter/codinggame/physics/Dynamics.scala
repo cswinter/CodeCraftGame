@@ -123,6 +123,8 @@ class ConstantVelocityObject(
   }
 
   def unwrap: ConstantVelocityObject = this
+
+  override def toString: String = s"ConstantVelocityObject(pos=$pos, velocity=$velocity)"
 }
 
 
