@@ -5,7 +5,55 @@ import cwinter.collisions.{Positionable, SquareGrid}
 import robowars.graphics.engine.Debug
 import robowars.worldstate.{WorldObject, Rectangle => DrawRectangle}
 
-
+/**
+ * Simulates movement of colliding particles.
+ *
+ * @param worldBoundaries All particles are confined inside this rectangle.
+ * @param maxRadius Bound on the radii of the particles.
+ * @tparam T Type of the particles.
+ *
+ * A good summary of the type of algorithm used is found in the first section of
+ * "Algorithms for Particle-Field Simulations with Collisions".
+ * (link: http://homepages.warwick.ac.uk/~masdr/JOURNALPUBS/stuart48.pdf)
+ *
+ * ## Main datastructures
+ * 1. `objects`: set of particles
+ * 2. `grid`: partitions the world into square cells. each object is assigned to one cell.
+ * 3. `events`: priority queue of collisions that (may) happen in the future
+ *
+ * ## A note on nomenclature
+ * 1. Distinguish between potential collisions (which have been calculated, but may become
+ * invalid because of other collisions), and true collisions (the "ground truth" values
+ * of what collision will actually take place.
+ * 2. A->B (A records a potential collision with B)
+ * 3. Write A<->B for A->B & B->A
+ *
+ * ## Important invariances:
+ * - if obj.nextCollision == Some(collision), then the time of the next true collision
+ *    of obj is greater or equal to collision.time
+ * - if `collision` is the next event in the queue, and `obj.nextCollision` == `Some(collision)`,
+ *    then `collision` is a true collision
+ *
+ * ## Gotchas/edge cases/potential bugs:
+ * - events in the queue might not be valid anymore
+ * - it is possible that the next (potential) collision of `obj1` is with `obj2`, but the
+ *    next collision of `obj2` is with `obj3`
+ * - the same event might be in the queue twice in a row:
+ *    - recomputed wall transfer (this type of duplicated can be avoided)
+ *    - objects A and B have computed a different time for their collision, this is only
+ *       reconciled after reentering the collision once
+ *       (B->C at t=9. A->B at t=10. B->C becomes invalid, B->A at t=11.
+ *        A->B is processed, computes A<->B at t=10. A->B is processed again, this time A and B agree.
+ *        (TODO: WHAT IF THIS RECOMPUTATION NOW GIVES A<->B at t=9.9??? VERY UNLIKELY TO HAPPEN,
+ *          SINCE TIME OF PREVIOUS EVENT GENERALLY << 10, BUT IF ALREADY time >9.9, WE GET ASSERTION ERROR,
+ *          NEGATIVE MOVEMENTS)
+ * - numerical issues:
+ *    - after transfer, an object might still be (just) inside the previous cell
+ *    - at and shortly after a collision, two objects may overlap
+ *    - the time for a collision may change when computed at a later time, or by a different object
+ *
+ * ## Proof of progress
+ */
 class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val maxRadius: Int) {
   private[this] val objects = collection.mutable.ArrayBuffer.empty[ObjectRecord]
   private[this] var time: Double = 0
@@ -43,66 +91,25 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
       updateTransfer(obj)
     })
 
-    var lastEvent: Collision = null
+
     while (events.size > 0) {
       val collision = events.dequeue()
 
-
-      // POTENTIAL PROBLEMS in A<->B COLLISION:
-      // 1.
-      // handle A<->B => T[A]=T[B]=NULL
-      // handle B<->A => T[A] is NULL!
-      // 2.
-      // A<->B=@1 is enqueued (T[A]=T[B]=@1)
-      // B<->A=@2 is enqueued !(T[B]=@2)
-      // now, neither @1 nor @2 can be processed, leading to infinite loop.
-      // 3. numerical problems (after collision with wall, object, there is slight overlap)
-      // 4. various erasure problems (e.g. A, B, on collision course, C collides with D collides with A, making B an orphan)
-      // 5. duplicate wall collision after transfer
-      // 6. GAHH, THE HORROR:
-      // three objects, A, B and C
-      //   1. A<->B, C->A
-      //   2. A<->B takes place. B->C (earliest now, but later than the now invalid C->A). also, A<->C (A->C is even later, but admitted because C already has collision with A!)
-      //   3. The original C->A takes place, but is ignored since C has a new event now. No recomputation.
-      //   4. B->C takes place. Ignored, since C has a different event. B->C is recomputed. This time, C's collision with A is displaced.
-      //   5. B<->C now takes place.
-      //   6. Assertion fails because identical collision is in queue twice in a row.
-      // etc. Need to think this through, think about what invariances are required, do less mutations
-
-
-      //println(f"collision at ts=$discreteTime: $collision")
-
-      /*if (collision == lastEvent) {
-        //println(">>> END HERE")
-        throw new Exception("Oh noes!")
-      }*/
-      lastEvent = collision
-
-
       collision match {
         case ObjectWallCollision(obj, t) =>
-          //println("match object wall")
           if (obj.nextCollision == Some(collision)) {
-            //println("check success")
-            //println(s"object state: ${obj.obj}")
             time = t
             obj.updatePosition(t)
-            //println(s"after position update: ${obj.obj}")
 
             obj.handleWallCollision(worldBoundaries)
             updateNextCollision(obj, grid.nearbyObjects(obj.cellX, obj.cellY))
-            //println(s"after handling wall collision: ${obj.obj}")
 
             updateTransfer(obj)
           } else {
-            //println(s"check failure: ${obj.nextCollision} != ${Some(collision)}")
           }
         case ObjectObjectCollision(obj1, obj2, t) =>
           if (obj1.nextCollision == Some(collision)) {
-            //println("Check 1 success")
-            //println(f"obj2.nextCollision=${obj2.nextCollision}")
             if (obj2.nextCollision == Some(collision)) {
-              //println("Check 2 success")
               time = t
               obj1.updatePosition(t)
               obj2.updatePosition(t)
@@ -144,7 +151,6 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
   private def updateNextCollision(obj: ObjectRecord, nearbyObjects: Iterator[ObjectRecord], erase: Boolean = true, pathUnchanged: Boolean = false): Unit = {
     // TODO: retain previous collision, unless erased
     if (erase) {
-      //println(f"erasing next collision $obj, ${obj.nextCollision}")
       obj.nextCollision = None
     }
     val collisions = computeCollisions(obj, nearbyObjects, pathUnchanged)
@@ -155,17 +161,10 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
       val nextColOpt = Some(nextCol)
       obj.nextCollision = nextColOpt
       events.enqueue(nextCol)
-      //println(f"enqueued collision: $nextCol")
       nextCol match {
         case ObjectObjectCollision(_, obj2, t) =>
-          // TODO: make this not horrible
-          if (obj2.nextCollision == None ||
-            (obj2.nextCollision.get.isInstanceOf[ObjectObjectCollision] &&
-              (obj2.nextCollision.get.asInstanceOf[ObjectObjectCollision].obj2 == obj ||
-                obj2.nextCollision.get.asInstanceOf[ObjectObjectCollision].obj1 == obj)) ||
-            obj2.nextCollision.get.time >= t) {
+          if (obj2.nextCollision.map(_.time >= t) != Some(false)) {
             obj2.nextCollision = nextColOpt
-            //println(f"augmented collision: $nextCol")
           }
         case owc: ObjectWallCollision =>
         case _ => throw new Exception("this shouldn't happen...")
@@ -207,7 +206,6 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
       if (newX <= grid.width && newY <= grid.height && newX > 0 && newY > 0) {
         obj.nextTransfer = Some(transferEvent)
         events.enqueue(transferEvent)
-        //println(s"enqueued transfer $transferEvent, dt=$dt")
       }
     }
   }
