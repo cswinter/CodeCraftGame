@@ -105,7 +105,6 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
             updateNextCollision(obj, grid.nearbyObjects(obj.cellX, obj.cellY))
 
             updateTransfer(obj)
-          } else {
           }
         case ObjectObjectCollision(obj1, obj2, t) =>
           if (obj1.nextCollision == Some(collision)) {
