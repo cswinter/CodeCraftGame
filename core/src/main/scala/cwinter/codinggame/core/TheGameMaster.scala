@@ -1,6 +1,6 @@
 package cwinter.codinggame.core
 
-import cwinter.codinggame.maths.Rectangle
+import cwinter.codinggame.maths.{Vector2, Rectangle}
 import cwinter.graphics.application.DrawingCanvas
 
 
@@ -9,7 +9,8 @@ object TheGameMaster {
 
 
   def startGame(mothership: WorldObject): Unit = {
-    val simulator = new GameSimulator(WorldSize, Seq())
+    val map = Map(WorldSize, 100)
+    val simulator = new GameSimulator(map)
     DrawingCanvas.run(simulator)
   }
 }

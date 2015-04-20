@@ -52,7 +52,7 @@ object RenderFrame extends GLEventListener {
     glBindFramebuffer(GL_FRAMEBUFFER, fbo.fbo)
     glViewport(0, 0, camera.screenWidth * 2, camera.screenHeight * 2)
 
-    if (!error) glClearColor(0.1f, 0, 0.1f, 0.0f)
+    if (!error) glClearColor(0.0f, 0, 0.0f, 0.0f)
     else glClearColor(0.1f, 0, 0.0f, 0.0f)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 

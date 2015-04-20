@@ -1,21 +1,19 @@
 package cwinter.codinggame.core
 
-import cwinter.codinggame.maths.Rectangle
 import cwinter.collisions.VisionTracker
 import cwinter.worldstate.{WorldObjectDescriptor, GameWorld}
 
 
 class GameSimulator(
-  val worldSize: Rectangle,
-  initialObjects: Seq[WorldObject]
+  val map: Map
   // initial world state: resources, drones
 ) extends GameWorld {
   final val SightRadius = 250
 
-  private val objects = collection.mutable.Set[WorldObject](initialObjects: _*)
+  private val objects = collection.mutable.Set[WorldObject](map.minerals: _*)
   private val visionTracker = new VisionTracker[WorldObject](
-    worldSize.xMin.toInt, worldSize.xMax.toInt,
-    worldSize.yMin.toInt, worldSize.yMin.toInt,
+    map.size.xMin.toInt, map.size.xMax.toInt,
+    map.size.yMin.toInt, map.size.yMin.toInt,
     SightRadius
   )
 

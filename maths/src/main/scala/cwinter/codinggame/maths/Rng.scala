@@ -6,6 +6,11 @@ object Rng {
   println(s"Rng seed: $seed")
   scala.util.Random.setSeed(seed)
 
+
+  def int(min: Int, max: Int): Int = {
+    assert(min <= max)
+    random.nextInt(max - min + 1) + min
+  }
   
   def bernoulli(p: Double): Boolean = {
     assert(p >= 0)
@@ -22,8 +27,10 @@ object Rng {
     Vector2(float(xMin, xMax), float(yMin, yMax))
   }
 
-  def float(min: Float, max: Float): Float = {
+  def float(min: Float, max: Float): Float = double(min, max).toFloat
+
+  def double(min: Double, max: Double): Double = {
     assert(min <= max)
     random.nextDouble() * (max - min) + min
-  }.toFloat
+  }
 }
