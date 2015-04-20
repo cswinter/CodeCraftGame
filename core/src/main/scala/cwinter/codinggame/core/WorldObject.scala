@@ -1,7 +1,7 @@
 package cwinter.codinggame.core
 
 import cwinter.codinggame.maths.Vector2
-import robowars.worldstate.WorldObjectDescriptor
+import cwinter.worldstate.WorldObjectDescriptor
 
 
 trait WorldObject {

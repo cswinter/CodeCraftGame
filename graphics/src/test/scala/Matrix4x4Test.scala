@@ -1,5 +1,5 @@
 import org.scalatest.FlatSpec
-import robowars.graphics.matrices._
+import cwinter.graphics.matrices._
 
 
 class Matrix4x4Test extends FlatSpec {

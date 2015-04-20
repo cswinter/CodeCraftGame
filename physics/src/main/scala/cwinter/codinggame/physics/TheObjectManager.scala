@@ -1,8 +1,8 @@
 package cwinter.codinggame.physics
 
 import cwinter.codinggame.maths.{Rectangle, Vector2}
-import robowars.graphics.application.DrawingCanvas
-import robowars.worldstate.{WorldObjectDescriptor, GameWorld}
+import cwinter.graphics.application.DrawingCanvas
+import cwinter.worldstate.{WorldObjectDescriptor, GameWorld}
 
 
 object TheObjectManager extends GameWorld {

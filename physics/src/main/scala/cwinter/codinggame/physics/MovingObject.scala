@@ -1,7 +1,7 @@
 package cwinter.codinggame.physics
 
 import cwinter.codinggame.maths.{Vector2, Rng}
-import robowars.worldstate.{Circle, WorldObjectDescriptor}
+import cwinter.worldstate.{Circle, WorldObjectDescriptor}
 
 
 class MovingObject[TDynamics](
