@@ -14,6 +14,10 @@ class RobotThrusterTrailsModelFactory(
   def buildModel(positions: Seq[(Float, Float, Float)]): Model[Unit] = {
     val n = positions.length
 
+    if (n <= 1) {
+      return new EmptyModel()
+    }
+
 
     val trailPositions =
       for (((x, y, a), t) <- positions.zipWithIndex.reverse)

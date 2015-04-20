@@ -7,7 +7,10 @@ case class Vector2(x: Double, y: Double) {
   def *(rhs: Double): Vector2 = Vector2(x * rhs, y * rhs)
   def *(rhs: Float): Vector2 = Vector2(x * rhs, y * rhs)
   def *(rhs: Int): Vector2 = Vector2(x * rhs, y * rhs)
+  def /(rhs: Double): Vector2 = this * (1.0 / rhs)
   def magnitudeSquared = x * x + y * y
+  def size: Double = math.sqrt(x * x + y * y)
+  def normalized: Vector2 = this / size
 
   def unary_- = Vector2(-x, -y)
 }
@@ -27,4 +30,6 @@ object Vector2 {
 
   def apply(angle: Double): Vector2 =
     Vector2(math.cos(angle).toFloat, math.sin(angle).toFloat)
+
+  val NullVector = Vector2(0, 0)
 }

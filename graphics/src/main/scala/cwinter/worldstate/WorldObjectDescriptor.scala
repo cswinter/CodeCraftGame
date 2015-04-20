@@ -22,8 +22,8 @@ case class DroneDescriptor(
   processingModuleMergers: Seq[Int] = Seq(),
   storageModuleMergers: Seq[Int] = Seq(),
 
-  sightRadius: Option[Int],
-  inSight: Option[Iterable[(Float, Float)]]
+  sightRadius: Option[Int] = None,
+  inSight: Option[Iterable[(Float, Float)]] = None
 ) extends WorldObjectDescriptor {
   assert(hullState.size == size - 1)
 }

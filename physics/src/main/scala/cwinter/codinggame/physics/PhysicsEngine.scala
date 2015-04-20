@@ -56,7 +56,7 @@ import cwinter.worldstate.{WorldObjectDescriptor, Rectangle => DrawRectangle}
  */
 class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val maxRadius: Int) {
   private[this] val objects = collection.mutable.ArrayBuffer.empty[ObjectRecord]
-  private[this] var time: Double = 0
+  private[this] var _time: Double = 0
   private[this] var nextTime: Double = 0
   private[this] var discreteTime: Int = 0
   private[this] val events = collection.mutable.PriorityQueue[Collision]()
@@ -69,7 +69,10 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
     2 * maxRadius
   )(ObjectRecordHasPosition)
 
+
   Debug.drawAlways(DrawRectangle(-1, worldBoundaries))
+
+  def time: Double = _time
 
   def addObject(obj: T): Unit = {
     val (x, y) = grid.computeCell(obj.pos)
@@ -98,7 +101,7 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
       collision match {
         case ObjectWallCollision(obj, t) =>
           if (obj.nextCollision == Some(collision)) {
-            time = t
+            _time = t
             obj.updatePosition(t)
 
             obj.handleWallCollision(worldBoundaries)
@@ -109,7 +112,7 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
         case ObjectObjectCollision(obj1, obj2, t) =>
           if (obj1.nextCollision == Some(collision)) {
             if (obj2.nextCollision == Some(collision)) {
-              time = t
+              _time = t
               obj1.updatePosition(t)
               obj2.updatePosition(t)
 
@@ -125,7 +128,7 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
           }
         case Transfer(obj, t, x, y, d) =>
           if (obj.nextTransfer == Some(collision)) {
-            time = t
+            _time = t
             obj.updatePosition(t)
 
             // TODO: rework Transfer to eliminate superfluous cell computations, parameters etc.
@@ -142,7 +145,7 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
     }
 
     objects.foreach(_.obj.updatePosition(nextTime))
-    time = nextTime
+    _time = nextTime
   }
 
   // TODO: return new collision, rather than assigning?
@@ -174,19 +177,19 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
 
   private def computeCollisions(obj: ObjectRecord, nearbyObjects: Iterator[ObjectRecord], pathUnchanged: Boolean): Seq[Collision] = {
     val nearby = nearbyObjects.toSeq
-    nearby.foreach(_.obj.updatePosition(time))
+    nearby.foreach(_.obj.updatePosition(_time))
     val objectObjectCollisions =
       for {
         obji <- nearby
         if obj != obji
         dt <- obj.collisionTime(obji, nextTime)
-      } yield ObjectObjectCollision(obj, obji, time + dt)
+      } yield ObjectObjectCollision(obj, obji, _time + dt)
 
     val objectWallCollisions =
       if (pathUnchanged) None
       else for {
         (dt, direction) <- obj.wallCollisionTime(worldBoundaries, nextTime)
-      } yield ObjectWallCollision(obj, time + dt)
+      } yield ObjectWallCollision(obj, _time + dt)
 
     objectObjectCollisions ++ objectWallCollisions
   }
@@ -198,7 +201,7 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
     for ((dt, direction) <- obj.wallCollisionTime(cellBounds, nextTime)) {
       val newX = obj.cellX + direction.x
       val newY = obj.cellY + direction.y
-      val transferEvent = Transfer(obj, time + dt, newX, newY, direction)
+      val transferEvent = Transfer(obj, _time + dt, newX, newY, direction)
 
       // transfers out of the world boundaries may be scheduled before the corresponding wall collision
       // therefore we check for this explicitly

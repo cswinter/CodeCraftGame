@@ -11,6 +11,8 @@ class VisionTracker[T: Positionable](
 ) {
   assert((xMax - xMin) % radius == 0)
   assert((yMax - yMin) % radius == 0)
+  assert(yMax > yMin)
+  assert(xMax > xMin)
 
   val width = (xMax - xMin) / radius
   val height = (yMax - yMin) / radius
