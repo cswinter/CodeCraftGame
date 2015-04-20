@@ -1,7 +1,7 @@
 package cwinter.codinggame.testai
 
 import cwinter.codinggame.core.{DroneController, TheGameMaster}
-import cwinter.codinggame.maths.Vector2
+import cwinter.codinggame.maths.{Rng, Vector2}
 
 object Main {
   def main(args: Array[String]): Unit = {
@@ -17,6 +17,8 @@ class Mothership extends DroneController {
   }
 
   override def onTick(): Unit = {
-
+    if (Rng.bernoulli(0.01)) {
+      moveInDirection(Vector2(Rng.double(0, 100)))
+    }
   }
 }

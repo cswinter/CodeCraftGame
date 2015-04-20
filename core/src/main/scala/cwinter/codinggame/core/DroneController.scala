@@ -15,5 +15,5 @@ abstract class DroneController {
     drone.moveInDirection(direction)
   }
 
-  private def initialise(drone: Drone): Unit = this.drone = drone
+  private[core] def initialise(drone: Drone): Unit = this.drone = drone
 }

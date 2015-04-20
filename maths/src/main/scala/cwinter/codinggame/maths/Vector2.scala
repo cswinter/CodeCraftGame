@@ -12,6 +12,8 @@ case class Vector2(x: Double, y: Double) {
   def size: Double = math.sqrt(x * x + y * y)
   def normalized: Vector2 = this / size
 
+  def orientation = math.atan2(y, x).toFloat
+
   def unary_- = Vector2(-x, -y)
 }
 

@@ -31,19 +31,25 @@ class GameSimulator(
 
   override def worldState: Iterable[WorldObjectDescriptor] = objects.map(_.descriptor)
 
-  private def spawnDrone(modules: Seq[Module], size: Int, controller: Any, initialPos: Vector2): Unit = {
+  private def spawnDrone(modules: Seq[Module], size: Int, controller: DroneController, initialPos: Vector2): Unit = {
     val drone = new Drone(modules, size, controller, initialPos, physicsEngine.time)
     objects.add(drone)
     drones.add(drone)
     visionTracker.insert(drone)
     physicsEngine.addObject(drone.dynamics.unwrap)
+    controller.initialise(drone)
   }
 
   override def update(): Unit = {
-    // ADVANCE PHYSICS SIMULATION (n times)
+    // INVOKE ALL EVENTS FROM LAST TIMESTEP, COLLECT DRONE COMMANDS
+    drones.foreach { drone =>
+      drone.processEvents()
+    }
+
+    physicsEngine.update()
+
     // COLLECT ALL EVENTS FROM PHYSICS SIMULATION
     // COLLECT ALL EVENTS FROM VISION
-    // INVOKE ALL EVENTS ON ROBOTS
   }
 }
 

@@ -11,17 +11,20 @@ class DroneDynamics(
   initialTime: Double
 ) extends DynamicObject[DroneDynamics](initialPosition, initialTime) {
   private var velocity: Vector2 = Vector2.NullVector
-  private var orientation: Vector2 = Vector2.NullVector
+  private var _orientation: Vector2 = Vector2.NullVector
 
 
 
   protected def computeNewPosition(timeDelta: Double): Vector2 =
     pos + timeDelta * velocity
 
-  def setOrientation(orientation: Vector2): Unit = {
-    this.orientation = orientation.normalized
+  def orientation_=(orientation: Vector2): Unit = {
+    this._orientation = orientation.normalized
     velocity = maxSpeed * orientation
   }
+
+  def orientation: Vector2 = _orientation
+
 
   def computeCollisionTime(other: DroneDynamics, timeDelta: Double): Option[Double] = {
     // need to calculate the intersection (if any), of two circles moving at constant speed
