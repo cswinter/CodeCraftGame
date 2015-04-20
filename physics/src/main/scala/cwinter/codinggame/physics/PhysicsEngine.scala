@@ -28,11 +28,11 @@ import robowars.worldstate.{WorldObject, Rectangle => DrawRectangle}
  * 2. A->B (A records a potential collision with B)
  * 3. Write A<->B for A->B & B->A
  *
- * ## Important invariances:
+ * ## Key invariances:
  * - if obj.nextCollision == Some(collision), then the time of the next true collision
  *    of obj is greater or equal to collision.time
- * - if `collision` is the next event in the queue, and `obj.nextCollision` == `Some(collision)`,
- *    then `collision` is a true collision
+ * - if `collision` is the next event in the queue, and for all objects `obji` that are involved
+ *     `obji.nextCollision` == `Some(collision)`, then `collision` is a true collision
  *
  * ## Gotchas/edge cases/potential bugs:
  * - events in the queue might not be valid anymore
