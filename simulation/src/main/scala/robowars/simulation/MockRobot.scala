@@ -11,7 +11,7 @@ class MockRobot(
   var yPos: Float,
   var orientation: Float,
   val size: Int,
-  var modules: Seq[RobotModule],
+  var modules: Seq[DroneModule],
   private[this] var processingModuleMergers: Seq[Int] = Seq(),
   private[this] var storageModuleMergers: Seq[Int] = Seq()
 ) extends MockObject {
@@ -96,8 +96,8 @@ class MockRobot(
     if (oldPositions.length > nPos) oldPositions.dequeue()
   }
 
-  override def state(): WorldObject =
-    RobotObject(
+  override def state(): WorldObjectDescriptor =
+    DroneDescriptor(
       identifier,
       xPos, yPos,
       orientation,

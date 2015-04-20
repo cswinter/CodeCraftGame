@@ -1,6 +1,6 @@
 package robowars.simulation
 
-import robowars.worldstate.{LaserMissile, WorldObject}
+import robowars.worldstate.{LaserMissileDescriptor, WorldObjectDescriptor}
 
 import scala.collection.mutable
 import scala.util.Random
@@ -29,8 +29,8 @@ class MockLaserMissile(
     if (oldPositions.length > positions) oldPositions.dequeue()
   }
 
-  override def state(): WorldObject =
-    LaserMissile(identifier, oldPositions.toSeq)
+  override def state(): WorldObjectDescriptor =
+    LaserMissileDescriptor(identifier, oldPositions.toSeq)
 
 
   def vx = math.cos(orientation).toFloat * speed

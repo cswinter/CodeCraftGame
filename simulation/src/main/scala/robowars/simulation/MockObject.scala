@@ -2,14 +2,14 @@ package robowars.simulation
 
 import cwinter.codinggame.maths.Vector2
 import cwinter.collisions.Positionable
-import robowars.worldstate.WorldObject
+import robowars.worldstate.WorldObjectDescriptor
 
 
 trait MockObject {
   val identifier = MockObject.genID()
 
   def update(): Unit
-  def state(): WorldObject
+  def state(): WorldObjectDescriptor
   def dead: Boolean
 
   def xPos: Float

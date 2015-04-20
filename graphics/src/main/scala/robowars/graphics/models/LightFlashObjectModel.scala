@@ -3,16 +3,16 @@ package robowars.graphics.models
 import robowars.graphics.engine.RenderStack
 import robowars.graphics.materials.Intensity
 import robowars.graphics.model._
-import robowars.worldstate.LightFlash
+import robowars.worldstate.LightFlashDescriptor
 
 
 case class LightFlashSign(rs: RenderStack)
 
-class LightFlashModelBuilder(lightFlash: LightFlash)(implicit val rs: RenderStack)
-  extends ModelBuilder[LightFlashSign, LightFlash] {
+class LightFlashModelBuilder(lightFlash: LightFlashDescriptor)(implicit val rs: RenderStack)
+  extends ModelBuilder[LightFlashSign, LightFlashDescriptor] {
   val signature = LightFlashSign(rs)
 
-  override protected def buildModel: Model[LightFlash] = {
+  override protected def buildModel: Model[LightFlashDescriptor] = {
     val flash = Polygon(
       rs.GaussianGlowPIntensity,
       25,
@@ -27,10 +27,10 @@ class LightFlashModelBuilder(lightFlash: LightFlash)(implicit val rs: RenderStac
 }
 
 
-class LightFlashModel(val flash: Model[(Intensity, Float)]) extends CompositeModel[LightFlash] {
+class LightFlashModel(val flash: Model[(Intensity, Float)]) extends CompositeModel[LightFlashDescriptor] {
   val models = Seq(flash)
 
-  override def update(lightFlash: LightFlash): Unit = {
+  override def update(lightFlash: LightFlashDescriptor): Unit = {
     val intensity = Intensity(1 - lightFlash.stage)
     val radius = 60 * lightFlash.stage + 5
 

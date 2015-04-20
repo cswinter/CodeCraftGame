@@ -1,17 +1,17 @@
 package robowars.graphics.engine
 
-import robowars.worldstate.WorldObject
+import robowars.worldstate.WorldObjectDescriptor
 
 
 object Debug {
-  private[this] var objects = List.empty[WorldObject]
-  private[this] var staticObjects = List.empty[WorldObject]
+  private[this] var objects = List.empty[WorldObjectDescriptor]
+  private[this] var staticObjects = List.empty[WorldObjectDescriptor]
 
-  def draw(worldObject: WorldObject): Unit = {
+  def draw(worldObject: WorldObjectDescriptor): Unit = {
     objects ::= worldObject
   }
 
-  def drawAlways(worldObject: WorldObject): Unit = {
+  def drawAlways(worldObject: WorldObjectDescriptor): Unit = {
     staticObjects ::= worldObject
   }
 
@@ -21,5 +21,5 @@ object Debug {
   }
 
   private[engine] def clear(): Unit =
-    objects = List.empty[WorldObject]
+    objects = List.empty[WorldObjectDescriptor]
 }

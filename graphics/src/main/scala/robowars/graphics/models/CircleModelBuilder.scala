@@ -2,7 +2,7 @@ package robowars.graphics.models
 
 import robowars.graphics.engine.RenderStack
 import robowars.graphics.model._
-import robowars.worldstate.MineralObject
+import robowars.worldstate.MineralDescriptor
 
 
 case class CircleModelBuilder(radius: Float, id: Int)(implicit val rs: RenderStack)

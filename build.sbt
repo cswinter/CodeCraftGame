@@ -38,3 +38,16 @@ lazy val simulation = (project in file("simulation")).
     libraryDependencies ++= commonDependencies
   ).dependsOn(graphics, collisions, maths)
 
+lazy val core = (project in file("core")).
+  settings(Commons.settings: _*).
+  settings(
+    name := "cg.core",
+    libraryDependencies ++= commonDependencies
+  ).dependsOn(graphics, physics, collisions, maths)
+
+lazy val testai = (project in file("testai")).
+  settings(Commons.settings: _*).
+  settings(
+    name := "cg.testai",
+    libraryDependencies ++= commonDependencies
+  ).dependsOn(core)

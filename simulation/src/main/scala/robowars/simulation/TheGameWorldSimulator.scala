@@ -122,8 +122,8 @@ object TheGameWorldSimulator extends GameWorld {
   val objects = collection.mutable.Set(minerals ++ robots ++ customRobots:_*)
   objects.foreach(vision.insert)
 
-  def robotConstruction(time: Int): RobotObject = {
-    RobotObject(
+  def robotConstruction(time: Int): DroneDescriptor = {
+    DroneDescriptor(
       identifier = -2,
       xPos = 100,
       yPos = 100,
@@ -147,7 +147,7 @@ object TheGameWorldSimulator extends GameWorld {
     )
   }
 
-  def worldState: Iterable[WorldObject] = {
+  def worldState: Iterable[WorldObjectDescriptor] = {
     objects.map(_.state()) + TestingObject(time) + robotConstruction(time)
   }
 

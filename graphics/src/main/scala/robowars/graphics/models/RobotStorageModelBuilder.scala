@@ -3,7 +3,7 @@ package robowars.graphics.models
 import robowars.graphics.engine.RenderStack
 import robowars.graphics.model._
 import RobotColors._
-import robowars.worldstate.MineralObject
+import robowars.worldstate.MineralDescriptor
 
 
 case class RobotStorageModelBuilder(positions: Seq[VertexXY], nEnergyGlobes: Int, size: Int, tMerge: Int)(implicit rs: RenderStack)

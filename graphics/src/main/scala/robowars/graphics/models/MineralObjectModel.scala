@@ -2,12 +2,12 @@ package robowars.graphics.models
 
 import robowars.graphics.engine.RenderStack
 import robowars.graphics.model._
-import robowars.worldstate.MineralObject
+import robowars.worldstate.MineralDescriptor
 
 
 case class MineralSignature(size: Int)
 
-class MineralModelBuilder(mineral: MineralObject)(implicit val rs: RenderStack)
+class MineralModelBuilder(mineral: MineralDescriptor)(implicit val rs: RenderStack)
   extends ModelBuilder[MineralSignature, Unit] {
   val signature = MineralSignature(mineral.size)
 

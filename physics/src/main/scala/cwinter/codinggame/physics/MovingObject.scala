@@ -1,7 +1,7 @@
 package cwinter.codinggame.physics
 
 import cwinter.codinggame.maths.{Vector2, Rng}
-import robowars.worldstate.{Circle, WorldObject}
+import robowars.worldstate.{Circle, WorldObjectDescriptor}
 
 
 class MovingObject[TDynamics](
@@ -10,7 +10,7 @@ class MovingObject[TDynamics](
 ) {
   val id = UID()
 
-  def state: WorldObject = Circle(id, objectDynamics.pos.x.toFloat, objectDynamics.pos.y.toFloat, radius.toFloat)
+  def state: WorldObjectDescriptor = Circle(id, objectDynamics.pos.x.toFloat, objectDynamics.pos.y.toFloat, radius.toFloat)
 
   override def toString: String = id.toString
 }

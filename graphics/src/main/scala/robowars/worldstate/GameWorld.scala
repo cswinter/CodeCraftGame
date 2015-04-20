@@ -2,6 +2,6 @@ package robowars.worldstate
 
 
 trait GameWorld {
-  def worldState: Iterable[WorldObject]
+  def worldState: Iterable[WorldObjectDescriptor]
   def update(): Unit
 }

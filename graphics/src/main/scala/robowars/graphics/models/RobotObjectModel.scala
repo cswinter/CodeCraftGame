@@ -50,14 +50,14 @@ object RobotModulePositions {
 
 case class RobotSignature(
   size: Int,
-  modules: Seq[RobotModule],
+  modules: Seq[DroneModule],
   hasShields: Boolean,
   hullState: Seq[Byte],
   isBuilding: Boolean
 )
 
 object RobotSignature {
-  def apply(robotObject: RobotObject): RobotSignature = {
+  def apply(robotObject: DroneDescriptor): RobotSignature = {
     RobotSignature(
       robotObject.size,
       robotObject.modules,
@@ -68,8 +68,8 @@ object RobotSignature {
 }
 
 
-class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
-  extends ModelBuilder[RobotSignature, RobotObject] {
+class RobotModelBuilder(robot: DroneDescriptor)(implicit val rs: RenderStack)
+  extends ModelBuilder[RobotSignature, DroneDescriptor] {
   def signature: RobotSignature = RobotSignature(robot)
 
   import Geometry.circumradius
@@ -77,7 +77,7 @@ class RobotModelBuilder(robot: RobotObject)(implicit val rs: RenderStack)
 
   import scala.math._
 
-  protected def buildModel: Model[RobotObject] = {
+  protected def buildModel: Model[DroneDescriptor] = {
     val sides = robot.size
     val sideLength = 40
     val radiusBody = 0.5f * sideLength / sin(Pi / sides).toFloat
@@ -180,14 +180,14 @@ case class RobotModel(
   other: Seq[Model[Unit]],
   immediateMode: ImmediateModeModel,
   rs: RenderStack
-) extends CompositeModel[RobotObject] {
+) extends CompositeModel[DroneDescriptor] {
   private[this] var constructionState = -1
 
   // MAKE SURE TO ADD NEW COMPONENTS HERE:
   val models: Seq[Model[_]] =
     Seq(body, hull, thrusterTrails, immediateMode) ++ modules ++ shields.toSeq ++ other
 
-  override def update(a: RobotObject): Unit = {
+  override def update(a: DroneDescriptor): Unit = {
     thrusterTrails.update(a.positions)
 
     constructionState = a.constructionState

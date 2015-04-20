@@ -3,7 +3,7 @@ package cwinter.codinggame.physics
 import cwinter.codinggame.maths.{Vector2, Rectangle}
 import cwinter.collisions.{Positionable, SquareGrid}
 import robowars.graphics.engine.Debug
-import robowars.worldstate.{WorldObject, Rectangle => DrawRectangle}
+import robowars.worldstate.{WorldObjectDescriptor, Rectangle => DrawRectangle}
 
 /**
  * Simulates movement of colliding particles.

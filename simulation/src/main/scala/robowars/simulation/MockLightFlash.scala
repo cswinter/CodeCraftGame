@@ -1,6 +1,6 @@
 package robowars.simulation
 
-import robowars.worldstate.{LightFlash, WorldObject}
+import robowars.worldstate.{LightFlashDescriptor, WorldObjectDescriptor}
 
 
 class MockLightFlash(val xPos: Float, val yPos: Float) extends MockObject {
@@ -8,7 +8,7 @@ class MockLightFlash(val xPos: Float, val yPos: Float) extends MockObject {
 
   def update(): Unit = stage += 1.0f / 24
 
-  def state(): LightFlash = LightFlash(identifier, xPos, yPos, stage)
+  def state(): LightFlashDescriptor = LightFlashDescriptor(identifier, xPos, yPos, stage)
 
   def dead: Boolean = stage > 1
 }

@@ -1,6 +1,6 @@
 package robowars.simulation
 
-import robowars.worldstate.{MineralObject, WorldObject}
+import robowars.worldstate.{MineralDescriptor, WorldObjectDescriptor}
 
 
 class MockResource(
@@ -12,8 +12,8 @@ class MockResource(
 
   override def update(): Unit = ()
 
-  override def state(): WorldObject =
-    MineralObject(identifier, xPos, yPos, orientation, size)
+  override def state(): WorldObjectDescriptor =
+    MineralDescriptor(identifier, xPos, yPos, orientation, size)
 
   def dead = false
 }

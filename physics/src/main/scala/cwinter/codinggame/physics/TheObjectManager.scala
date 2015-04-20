@@ -2,7 +2,7 @@ package cwinter.codinggame.physics
 
 import cwinter.codinggame.maths.{Rectangle, Vector2}
 import robowars.graphics.application.DrawingCanvas
-import robowars.worldstate.{WorldObject, GameWorld}
+import robowars.worldstate.{WorldObjectDescriptor, GameWorld}
 
 
 object TheObjectManager extends GameWorld {
@@ -21,7 +21,7 @@ object TheObjectManager extends GameWorld {
   worldObjects.foreach(x => physicsEngine.addObject(x.objectDynamics.unwrap))
 
 
-  def worldState: Iterable[WorldObject] =
+  def worldState: Iterable[WorldObjectDescriptor] =
     worldObjects.map(_.state)
 
 

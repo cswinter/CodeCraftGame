@@ -1,7 +1,7 @@
 package robowars.graphics.model
 
 import robowars.graphics.matrices._
-import robowars.worldstate.WorldObject
+import robowars.worldstate.WorldObjectDescriptor
 
 import scala.annotation.tailrec
 

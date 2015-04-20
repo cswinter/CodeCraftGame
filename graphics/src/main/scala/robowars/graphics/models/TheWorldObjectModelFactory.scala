@@ -7,7 +7,7 @@ import robowars.worldstate._
 
 
 object TheWorldObjectModelFactory {
-  def generateModel(worldObject: WorldObject)
+  def generateModel(worldObject: WorldObjectDescriptor)
       (implicit renderStack: RenderStack): ClosedModel[_] = {
 
     val xPos = worldObject.xPos
@@ -18,19 +18,19 @@ object TheWorldObjectModelFactory {
         new TranslationXYMatrix4x4(xPos, yPos)
 
     worldObject match {
-      case mineral: MineralObject => new ClosedModel[Unit](
+      case mineral: MineralDescriptor => new ClosedModel[Unit](
         Unit,
         new MineralModelBuilder(mineral).getModel,
         modelview)
-      case robot: RobotObject => new ClosedModel(
+      case robot: DroneDescriptor => new ClosedModel(
         robot,
         new RobotModelBuilder(robot).getModel,
         modelview)
-      case lightFlash: LightFlash => new ClosedModel(
+      case lightFlash: LightFlashDescriptor => new ClosedModel(
         lightFlash,
         new LightFlashModelBuilder(lightFlash).getModel,
         modelview)
-      case laserMissile: LaserMissile => new ClosedModel[Unit](
+      case laserMissile: LaserMissileDescriptor => new ClosedModel[Unit](
         Unit,
         LaserMissileModelFactory.build(laserMissile.positions),
         modelview)
