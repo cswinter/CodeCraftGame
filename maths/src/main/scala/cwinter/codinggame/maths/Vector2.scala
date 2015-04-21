@@ -12,7 +12,14 @@ case class Vector2(x: Double, y: Double) {
   def size: Double = math.sqrt(x * x + y * y)
   def normalized: Vector2 = this / size
 
-  def orientation = math.atan2(y, x).toFloat
+  def orientation = {
+    assert(x != 0 || y != 0)
+    math.atan2(y, x)
+  }
+
+  final val epsilon: Double = 0.00000000001
+  def ~(rhs: Vector2): Boolean =
+    math.abs(x - rhs.x) < epsilon && math.abs(y - rhs.y) < epsilon
 
   def unary_- = Vector2(-x, -y)
 }

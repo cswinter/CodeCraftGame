@@ -27,7 +27,7 @@ class GameSimulator(
   )
 
   map.minerals.foreach(spawnMineral)
-  spawnDrone(Seq(), 3, mothership, Vector2(0, -500))
+  spawnDrone(Seq(StorageModule), 3, mothership, Vector2(0, -500))
 
 
 
@@ -51,6 +51,10 @@ class GameSimulator(
     // INVOKE ALL EVENTS FROM LAST TIMESTEP, COLLECT DRONE COMMANDS
     drones.foreach { drone =>
       drone.processEvents()
+    }
+
+    drones.foreach { drone =>
+      drone.processCommands()
     }
 
     physicsEngine.update()

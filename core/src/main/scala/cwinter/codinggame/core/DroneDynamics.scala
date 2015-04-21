@@ -12,7 +12,7 @@ class DroneDynamics(
 ) extends DynamicObject[DroneDynamics](initialPosition, initialTime) {
   private var velocity: Vector2 = Vector2.NullVector
   private var _orientation: Vector2 = Vector2.NullVector
-
+  private var speed = maxSpeed
 
 
   protected def computeNewPosition(timeDelta: Double): Vector2 =
@@ -20,8 +20,15 @@ class DroneDynamics(
 
   def orientation_=(orientation: Vector2): Unit = {
     this._orientation = orientation.normalized
-    velocity = maxSpeed * orientation
+    velocity = speed * orientation
   }
+
+  def limitSpeed(limit: Double): Unit = {
+    assert(limit <= maxSpeed)
+    speed = limit
+  }
+
+  def halt(): Unit = velocity = Vector2.NullVector
 
   def orientation: Vector2 = _orientation
 

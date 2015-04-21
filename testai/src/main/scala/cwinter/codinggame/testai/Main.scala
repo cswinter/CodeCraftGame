@@ -23,6 +23,16 @@ class Mothership extends DroneController {
   }
 
   override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = {
-    moveInDirection(mineralCrystal.position - position)
+    if (mineralCrystal.size == 1) {
+      moveToPosition(mineralCrystal.position)
+      this.mineralCrystal = mineralCrystal
+    } else {
+      moveInDirection(mineralCrystal.position - position)
+    }
+  }
+
+  var mineralCrystal: MineralCrystal = null
+  override def onArrival(): Unit = {
+    harvestMineral(mineralCrystal)
   }
 }

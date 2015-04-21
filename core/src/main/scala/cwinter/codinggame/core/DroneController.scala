@@ -9,11 +9,19 @@ abstract class DroneController {
   def onSpawn(): Unit
   def onTick(): Unit
   def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit
-
+  def onArrival(): Unit
 
   // wrapper around drone properties and commands
   def moveInDirection(direction: Vector2): Unit = {
-    drone.moveInDirection(direction)
+    drone.command_=(MoveInDirection(direction))
+  }
+
+  def moveToPosition(position: Vector2): Unit = {
+    drone.command_=(MoveToPosition(position))
+  }
+
+  def harvestMineral(mineralCrystal: MineralCrystal): Unit = {
+    drone.command_=(HarvestMineralCrystal(mineralCrystal))
   }
 
   def position: Vector2 = drone.position
