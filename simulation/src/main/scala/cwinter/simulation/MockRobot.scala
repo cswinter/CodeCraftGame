@@ -11,9 +11,7 @@ class MockRobot(
   var yPos: Float,
   var orientation: Float,
   val size: Int,
-  var modules: Seq[DroneModule],
-  private[this] var processingModuleMergers: Seq[Int] = Seq(),
-  private[this] var storageModuleMergers: Seq[Int] = Seq()
+  var modules: Seq[DroneModule]
 ) extends MockObject {
   private[this] var targetOrientation = orientation
   private[this] var stationary = false
@@ -106,9 +104,7 @@ class MockRobot(
       hullState,
       size,
 
-      -1,
-      processingModuleMergers,
-      storageModuleMergers,
+      None,
 
       Some(TheGameWorldSimulator.SightRadius),
       Some(inSight.map(obj => (obj.xPos, obj.yPos)))

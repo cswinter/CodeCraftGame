@@ -18,9 +18,10 @@ case class DroneDescriptor(
   hullState: Seq[Byte],
   size: Int,
 
-  constructionState: Int = -1,
-  processingModuleMergers: Seq[Int] = Seq(),
-  storageModuleMergers: Seq[Int] = Seq(),
+  // storage module contents
+  // storage module arrangement
+  // storage module
+  constructionState: Option[Int] = None,
 
   sightRadius: Option[Int] = None,
   inSight: Option[Iterable[(Float, Float)]] = None

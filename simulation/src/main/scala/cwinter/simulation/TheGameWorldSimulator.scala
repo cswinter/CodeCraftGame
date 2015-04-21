@@ -71,8 +71,7 @@ object TheGameWorldSimulator extends GameWorld {
       modules = Seq(
         ProcessingModule(Seq(0, 1), 0)
       ),
-      size = 4,
-      processingModuleMergers = Seq(2)
+      size = 4
     ),
     new MockRobot(
       xPos = 200,
@@ -140,9 +139,7 @@ object TheGameWorldSimulator extends GameWorld {
       ),
       hullState = Seq[Byte](2, 2, 2, 2, 2),
       size = 6,
-      constructionState = time,
-      processingModuleMergers = Seq(),
-      storageModuleMergers = Seq(),
+      constructionState = Some(time),
       None, None
     )
   }

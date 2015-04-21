@@ -63,7 +63,7 @@ object RobotSignature {
       robotObject.modules,
       robotObject.modules.exists(_.isInstanceOf[ShieldGenerator]),
       robotObject.hullState,
-      robotObject.constructionState != -1)
+      robotObject.constructionState != None)
   }
 }
 
@@ -181,7 +181,7 @@ case class RobotModel(
   immediateMode: ImmediateModeModel,
   rs: RenderStack
 ) extends CompositeModel[DroneDescriptor] {
-  private[this] var constructionState = -1
+  private[this] var constructionState: Option[Int] = None
 
   // MAKE SURE TO ADD NEW COMPONENTS HERE:
   val models: Seq[Model[_]] =
@@ -207,10 +207,10 @@ case class RobotModel(
   }
 
   override def draw(modelview: Matrix4x4, material: GenericMaterial): Unit = {
-    if (constructionState != -1) {
-      val flicker = (constructionState % 5 & 1) ^ 1
-      setVertexCount((constructionState / 5 + flicker) * 3)
-    }
+    for {
+      t <- constructionState
+      flicker = (t % 5 & 1) ^ 1
+    } setVertexCount((t / 5 + flicker) * 3)
     super.draw(modelview, material)
     setVertexCount(Integer.MAX_VALUE)
   }

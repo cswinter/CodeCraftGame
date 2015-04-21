@@ -1,7 +1,6 @@
 package cwinter.codinggame.core
 
 import cwinter.codinggame.maths.Vector2
-import cwinter.codinggame.physics.DynamicObject
 import cwinter.graphics.model.Geometry
 import cwinter.worldstate.{DroneDescriptor, WorldObjectDescriptor}
 
@@ -14,10 +13,13 @@ private[core] class Drone(
   time: Double
 ) extends WorldObject {
 
-  val dynamics: DroneDynamics =
-    new DroneDynamics(100, radius, initialPos, time)
+  val dynamics: DroneDynamics = new DroneDynamics(100, radius, initialPos, time)
+  val storageCapacity = modules.count(_ == StorageModule)
 
   private[this] val eventQueue = collection.mutable.Queue[DroneEvent](Spawned)
+
+  private[this] var storedMinerals = Seq.empty[MineralCrystal]
+  private[this] var storedEnergyGlobes: Int = 0
 
 
   def processEvents(): Unit = {
@@ -41,6 +43,8 @@ private[core] class Drone(
   override def position: Vector2 = dynamics.pos
 
   override def descriptor: WorldObjectDescriptor = {
+
+
     DroneDescriptor(
       id,
       position.x.toFloat,
@@ -52,8 +56,7 @@ private[core] class Drone(
         case (Lasers, i) => cwinter.worldstate.Lasers(i)
       },
       Seq.fill[Byte](size - 1)(2),
-      size,
-      constructionState = -1
+      size
     )
   }
 
