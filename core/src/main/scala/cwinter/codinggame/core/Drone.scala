@@ -15,7 +15,7 @@ private[core] class Drone(
 ) extends WorldObject {
 
   val dynamics: DroneDynamics =
-    new DroneDynamics(50, radius, initialPos, time)
+    new DroneDynamics(100, radius, initialPos, time)
 
   private[this] val eventQueue = collection.mutable.Queue[DroneEvent](Spawned)
 
@@ -23,14 +23,19 @@ private[core] class Drone(
   def processEvents(): Unit = {
     eventQueue foreach {
       case Spawned => controller.onSpawn()
+      case MineralEntersSightRadius(mineral) => controller.onMineralEntersVision(mineral)
       case event => throw new Exception(s"Unhandled event! $event")
     }
     eventQueue.clear()
     controller.onTick()
   }
 
+  def enqueueEvent(event: DroneEvent): Unit = {
+    eventQueue.enqueue(event)
+  }
+
   def moveInDirection(direction: Vector2): Unit = {
-    dynamics.orientation = direction
+    dynamics.orientation = direction.normalized
   }
 
   override def position: Vector2 = dynamics.pos
@@ -69,3 +74,6 @@ case object Lasers extends Module
 sealed trait DroneEvent
 
 case object Spawned extends DroneEvent
+case class MineralEntersSightRadius(mineralCrystal: MineralCrystal) extends DroneEvent
+
+

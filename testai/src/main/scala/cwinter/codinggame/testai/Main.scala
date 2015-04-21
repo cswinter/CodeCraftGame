@@ -1,6 +1,6 @@
 package cwinter.codinggame.testai
 
-import cwinter.codinggame.core.{DroneController, TheGameMaster}
+import cwinter.codinggame.core.{MineralCrystal, DroneController, TheGameMaster}
 import cwinter.codinggame.maths.{Rng, Vector2}
 
 object Main {
@@ -17,8 +17,12 @@ class Mothership extends DroneController {
   }
 
   override def onTick(): Unit = {
-    if (Rng.bernoulli(0.01)) {
+    if (Rng.bernoulli(0.001)) {
       moveInDirection(Vector2(Rng.double(0, 100)))
     }
+  }
+
+  override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = {
+    moveInDirection(mineralCrystal.position - position)
   }
 }

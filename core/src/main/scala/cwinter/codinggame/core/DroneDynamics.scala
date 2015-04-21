@@ -93,8 +93,10 @@ class DroneDynamics(
     val dy = math.min(math.abs(pos.y + areaBounds.yMax), math.abs(pos.y + areaBounds.yMin))
     if (dx < dy) {
       velocity = velocity.copy(x = -velocity.x)
+      orientation = orientation.copy(x = -orientation.x)
     } else {
       velocity = velocity.copy(y = -velocity.y)
+      orientation = orientation.copy(y = -orientation.y)
     }
   }
 
