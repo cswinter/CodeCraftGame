@@ -35,9 +35,10 @@ object RobotModulePositions {
       IndexedSeq(1, 0, 5, 6, 4, 3, 2)
     ),
 
-    7 -> permutation(Geometry.polygonVertices2(7, radius = 33) ++
+    7 -> permutation(
+      Geometry.polygonVertices2(7, radius = 33) ++
       Geometry.polygonVertices(3, orientation = math.Pi.toFloat, radius = 13),
-      IndexedSeq(0, 1, 9, 2, 3, 7, 4, 5, 8, 6)
+      IndexedSeq(0, 1, 2, 8, 3, 9, 4, 5, 7, 6)
     )
   )
 
