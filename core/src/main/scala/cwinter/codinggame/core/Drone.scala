@@ -17,20 +17,21 @@ private[core] class Drone(
   val dynamics: DroneDynamics = new DroneDynamics(100, radius, initialPos, time)
   val storageCapacity = modules.count(_ == StorageModule)
   val nLasers = modules.count(_ == Lasers)
+  val factoryCapacity = modules.count(_ == NanobotFactory)
 
   private[this] val eventQueue = collection.mutable.Queue[DroneEvent](Spawned)
 
   private[this] var storedMinerals = List.empty[MineralCrystal]
   private[this] var storedEnergyGlobes: Int = startingResources
 
-  private[this] var _command: Option[DroneCommand] = None
-
+  private[this] var movementCommand: MovementCommand = HoldPosition
+  private[this] var droneConstructions = List.empty[(ConstructDrone, Int)]
 
   def processEvents(): Unit = {
-    _command match {
-      case Some(MoveToPosition(position)) =>
+    movementCommand match {
+      case MoveToPosition(position) =>
         if (position ~ this.position) {
-          _command = None
+          movementCommand = HoldPosition
           enqueueEvent(ArrivedAtPosition)
           dynamics.halt()
         }
@@ -48,11 +49,10 @@ private[core] class Drone(
   }
 
   def processCommands(): Unit = {
-    _command match {
-      case Some(MoveInDirection(direction)) =>
+    movementCommand match {
+      case MoveInDirection(direction) =>
         dynamics.orientation = direction.normalized
-        _command = None
-      case Some(MoveToPosition(position)) =>
+      case MoveToPosition(position) =>
         val dist = position - this.position
         val speed = 100 / 30 // TODO: improve this
         if ((dist dot dist) <= speed * speed) {
@@ -62,11 +62,16 @@ private[core] class Drone(
         } else {
           dynamics.orientation = dist.normalized
         }
-      case Some(HarvestMineralCrystal(mineral)) =>
+      case HarvestMineralCrystal(mineral) =>
         harvestResource(mineral)
-        _command = None
-      case None => // do nothing
+        movementCommand = HoldPosition
+      case HoldPosition =>
+        dynamics.halt()
     }
+
+    droneConstructions =
+      for ((spec, progress) <- droneConstructions)
+        yield (spec, progress + 1)
   }
 
   def enqueueEvent(event: DroneEvent): Unit = {
@@ -74,7 +79,10 @@ private[core] class Drone(
   }
 
 
-  def command_=(value: DroneCommand): Unit = _command = Some(value)
+  def giveMovementCommand(value: MovementCommand): Unit = movementCommand = value
+  def startDroneConstruction(command: ConstructDrone): Unit = {
+    droneConstructions ::= ((command, 0))
+  }
 
   def harvestResource(mineralCrystal: MineralCrystal): Unit = {
     // TODO: better error messages, add option to emit warnings and abort instead of throwing
@@ -88,6 +96,9 @@ private[core] class Drone(
 
   def availableStorage: Int =
     storageCapacity - storedMinerals.map(_.size).sum - math.ceil(storedEnergyGlobes / 7.0).toInt
+
+  def availableFactories: Int =
+    factoryCapacity - droneConstructions.map(_._1.size - 2).sum
 
 
   override def descriptor: WorldObjectDescriptor = {
@@ -114,10 +125,11 @@ private[core] class Drone(
       index += 1
     }
 
-    for (
-      f <- modules
-      if f == NanobotFactory
-    ) {
+    for ((ConstructDrone(_, size), _) <- droneConstructions) {
+      result ::= cwinter.worldstate.ProcessingModule(index until index + (size - 2), 0)
+      index += size - 2
+    }
+    for (i <- 0 until availableFactories) {
       result ::= cwinter.worldstate.ProcessingModule(Seq(index))
       index += 1
     }
@@ -162,8 +174,21 @@ case object ArrivedAtPosition extends DroneEvent
 
 sealed trait DroneCommand
 
-case class MoveInDirection(direction: Vector2) extends DroneCommand
-case class MoveToPosition(position: Vector2) extends DroneCommand
-case class HarvestMineralCrystal(mineralCrystal: MineralCrystal) extends DroneCommand
+sealed trait MovementCommand extends DroneCommand
+case class MoveInDirection(direction: Vector2) extends MovementCommand
+case class MoveToPosition(position: Vector2) extends MovementCommand
+case class HarvestMineralCrystal(mineralCrystal: MineralCrystal) extends MovementCommand
+case object HoldPosition extends MovementCommand
 
+sealed trait ConstructionCommand extends DroneCommand
+case class ConstructDrone(modules: Seq[Module], size: Int) extends ConstructionCommand {
+  // TODO: assert size ~ modules
+}
+case object ConstructTinyDrone {
+  def apply(module: Module): ConstructDrone = ConstructDrone(Seq(module), 3)
+}
+case object ConstructSmallDrone {
+  def apply(module1: Module, module2: Module): ConstructDrone =
+    ConstructDrone(Seq(module1, module2), 4)
+}
 

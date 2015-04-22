@@ -13,15 +13,19 @@ abstract class DroneController {
 
   // wrapper around drone properties and commands
   def moveInDirection(direction: Vector2): Unit = {
-    drone.command_=(MoveInDirection(direction))
+    drone.giveMovementCommand(MoveInDirection(direction))
   }
 
   def moveToPosition(position: Vector2): Unit = {
-    drone.command_=(MoveToPosition(position))
+    drone.giveMovementCommand(MoveToPosition(position))
   }
 
   def harvestMineral(mineralCrystal: MineralCrystal): Unit = {
-    drone.command_=(HarvestMineralCrystal(mineralCrystal))
+    drone.giveMovementCommand(HarvestMineralCrystal(mineralCrystal))
+  }
+
+  def buildSmallDrone(module1: Module, module2: Module): Unit = {
+    drone.startDroneConstruction(ConstructSmallDrone(module1, module2))
   }
 
   def position: Vector2 = drone.position

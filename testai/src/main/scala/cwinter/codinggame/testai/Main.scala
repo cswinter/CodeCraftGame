@@ -1,6 +1,6 @@
 package cwinter.codinggame.testai
 
-import cwinter.codinggame.core.{MineralCrystal, DroneController, TheGameMaster}
+import cwinter.codinggame.core.{StorageModule, MineralCrystal, DroneController, TheGameMaster}
 import cwinter.codinggame.maths.{Rng, Vector2}
 
 object Main {
@@ -14,6 +14,7 @@ class Mothership extends DroneController {
   // abstract methods for event handling
   override def onSpawn(): Unit = {
     moveInDirection(Vector2(0, 1))
+    buildSmallDrone(StorageModule, StorageModule)
   }
 
   override def onTick(): Unit = {
