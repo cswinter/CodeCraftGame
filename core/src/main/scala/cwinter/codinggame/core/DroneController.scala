@@ -25,6 +25,7 @@ abstract class DroneController {
   }
 
   def position: Vector2 = drone.position
+  def availableStorage: Int = drone.availableStorage
 
   private[core] def initialise(drone: Drone): Unit = this.drone = drone
 }

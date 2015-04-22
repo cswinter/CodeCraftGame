@@ -132,7 +132,6 @@ private[core] class Drone(
       result ::= cwinter.worldstate.StorageModule(Seq(index), 0)
       index += 1
     }
-
     result
   }
 

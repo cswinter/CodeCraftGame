@@ -17,13 +17,13 @@ class Mothership extends DroneController {
   }
 
   override def onTick(): Unit = {
-    if (Rng.bernoulli(0.001)) {
+    if (Rng.bernoulli(0.01)) {
       moveInDirection(Vector2(Rng.double(0, 100)))
     }
   }
 
   override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = {
-    if (mineralCrystal.size == 1) {
+    if (mineralCrystal.size <= availableStorage) {
       moveToPosition(mineralCrystal.position)
       this.mineralCrystal = mineralCrystal
     } else {
