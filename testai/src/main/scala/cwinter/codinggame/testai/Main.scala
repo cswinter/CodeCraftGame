@@ -11,14 +11,17 @@ object Main {
 
 
 class Mothership extends DroneController {
+  var t = 0
+
   // abstract methods for event handling
   override def onSpawn(): Unit = {
-    moveInDirection(Vector2(0, 1))
+    moveToPosition(Vector2(20, -500))
     buildSmallDrone(StorageModule, StorageModule, this)
   }
 
   override def onTick(): Unit = {
-    if (Rng.bernoulli(0.01)) {
+    t += 1
+    if (t > 500 && Rng.bernoulli(0.01)) {
       moveInDirection(Vector2(Rng.double(0, 100)))
     }
   }
@@ -34,6 +37,7 @@ class Mothership extends DroneController {
 
   var mineralCrystal: MineralCrystal = null
   override def onArrival(): Unit = {
-    harvestMineral(mineralCrystal)
+    if (mineralCrystal != null)
+      harvestMineral(mineralCrystal)
   }
 }

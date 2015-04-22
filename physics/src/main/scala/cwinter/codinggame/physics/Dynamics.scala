@@ -8,6 +8,7 @@ abstract class DynamicObject[T](initialPos: Vector2, initialTime: Double) {
   private[this] var _time: Double = initialTime
 
   def pos: Vector2 = _pos
+  protected def pos_=(value: Vector2): Unit = _pos = value
 
   def collisionTime(other: T, time: Double): Option[Double] =
     computeCollisionTime(other, time - _time)

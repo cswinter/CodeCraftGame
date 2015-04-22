@@ -1,7 +1,7 @@
 package cwinter.graphics.models
 
 import cwinter.graphics.engine.RenderStack
-import cwinter.graphics.matrices.Matrix4x4
+import cwinter.graphics.matrices.{TranslationMatrix4x4, DilationXYMatrix4x4, Matrix4x4}
 import cwinter.graphics.model._
 import cwinter.worldstate._
 import scala.math._
@@ -214,7 +214,13 @@ case class RobotModel(
       t <- constructionState
       flicker = (t % 5 & 1) ^ 1
     } setVertexCount((t / 5 + flicker) * 3)
-    super.draw(modelview, material)
+
+    val modelview2 =
+      if (constructionState.isDefined) {
+        new TranslationMatrix4x4(0, 0, 3) * new DilationXYMatrix4x4(0.3f) * modelview
+      } else modelview
+
+    super.draw(modelview2, material)
     setVertexCount(Integer.MAX_VALUE)
   }
 }

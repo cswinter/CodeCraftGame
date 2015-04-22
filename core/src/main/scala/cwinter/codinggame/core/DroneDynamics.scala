@@ -18,6 +18,8 @@ class DroneDynamics(
   protected def computeNewPosition(timeDelta: Double): Vector2 =
     pos + timeDelta * velocity
 
+  def setPosition(value: Vector2): Unit = pos = value
+
   def orientation_=(orientation: Vector2): Unit = {
     this._orientation = orientation.normalized
     velocity = speed * orientation

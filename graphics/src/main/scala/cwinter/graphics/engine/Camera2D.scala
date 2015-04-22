@@ -22,8 +22,8 @@ class Camera2D {
         x - screenWidth * 0.5f * zoomFactor,
         y + screenHeight * 0.5f * zoomFactor,
         y - screenHeight * 0.5f * zoomFactor,
-        -2,
-        2
+        -20,
+        20
       )
   }
 

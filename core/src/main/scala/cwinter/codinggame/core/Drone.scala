@@ -19,6 +19,8 @@ private[core] class Drone(
   val nLasers = modules.count(_ == Lasers)
   val factoryCapacity = modules.count(_ == NanobotFactory)
 
+  private var constructionProgress: Option[Int] = None
+
   private[this] val eventQueue = collection.mutable.Queue[DroneEvent](Spawned)
 
   private[this] var storedMinerals = List.empty[MineralCrystal]
@@ -26,6 +28,8 @@ private[core] class Drone(
 
   private[this] var movementCommand: MovementCommand = HoldPosition
   private[this] var droneConstructions = List.empty[(ConstructDrone, Int)]
+
+  private[this] var simulatorEvents = List.empty[SimulatorEvent]
 
   def processEvents(): Unit = {
     movementCommand match {
@@ -48,7 +52,7 @@ private[core] class Drone(
     controller.onTick()
   }
 
-  def processCommands(): Unit = {
+  def processCommands(): Seq[SimulatorEvent] = {
     movementCommand match {
       case MoveInDirection(direction) =>
         dynamics.orientation = direction.normalized
@@ -70,8 +74,19 @@ private[core] class Drone(
     }
 
     droneConstructions =
-      for ((spec, progress) <- droneConstructions)
-        yield (spec, progress + 1)
+      for ((drone, progress) <- droneConstructions)
+        yield {
+          drone.drone.dynamics.orientation = dynamics.orientation
+          drone.drone.constructionProgress = Some(progress)
+          drone.drone.dynamics.setPosition(position + 27 * Vector2(dynamics.orientation.orientation - 2.2))
+          println(drone.drone.descriptor)
+          // TODO: set position (need to know factory offset)
+          (drone, progress + 1)
+        }
+
+    val events = simulatorEvents
+    simulatorEvents = List.empty[SimulatorEvent]
+    events
   }
 
   def enqueueEvent(event: DroneEvent): Unit = {
@@ -82,6 +97,8 @@ private[core] class Drone(
   def giveMovementCommand(value: MovementCommand): Unit = movementCommand = value
   def startDroneConstruction(command: ConstructDrone): Unit = {
     droneConstructions ::= ((command, 0))
+    simulatorEvents ::= DroneConstructionStarted(command.drone)
+    command.drone.dynamics.orientation = dynamics.orientation
   }
 
   def harvestResource(mineralCrystal: MineralCrystal): Unit = {
@@ -110,7 +127,8 @@ private[core] class Drone(
       Seq(),
       moduleDescriptors,
       Seq.fill[Byte](size - 1)(2),
-      size
+      size,
+      constructionProgress
     )
   }
 

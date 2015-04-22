@@ -27,6 +27,9 @@ case class DroneDescriptor(
   inSight: Option[Iterable[(Float, Float)]] = None
 ) extends WorldObjectDescriptor {
   assert(hullState.size == size - 1)
+  assert(!xPos.toDouble.isNaN)
+  assert(!yPos.toDouble.isNaN)
+  assert(!orientation.toDouble.isNaN)
 }
 
 

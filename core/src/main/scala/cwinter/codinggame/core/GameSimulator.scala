@@ -13,7 +13,7 @@ class GameSimulator(
   final val SightRadius = 250
   final val MaxDroneRadius = 60
 
-  private val objects = collection.mutable.Set.empty[WorldObject]
+  private val visibleObjects = collection.mutable.Set.empty[WorldObject]
   private val drones = collection.mutable.Set.empty[Drone]
 
   private val visionTracker = new VisionTracker[WorldObject](
@@ -32,16 +32,16 @@ class GameSimulator(
 
 
 
-  override def worldState: Iterable[WorldObjectDescriptor] = objects.map(_.descriptor)
+  override def worldState: Iterable[WorldObjectDescriptor] = visibleObjects.map(_.descriptor)
 
   private def spawnMineral(mineralCrystal: MineralCrystal): Unit = {
-    objects.add(mineralCrystal)
+    visibleObjects.add(mineralCrystal)
     visionTracker.insert(mineralCrystal)
   }
 
   private def spawnDrone(modules: Seq[Module], size: Int, controller: DroneController, initialPos: Vector2, startingResources: Int = 0): Unit = {
     val drone = new Drone(modules, size, controller, initialPos, physicsEngine.time, startingResources)
-    objects.add(drone)
+    visibleObjects.add(drone)
     drones.add(drone)
     visionTracker.insert(drone, generateEvents=true)
     physicsEngine.addObject(drone.dynamics.unwrap)
@@ -54,8 +54,14 @@ class GameSimulator(
       drone.processEvents()
     }
 
-    drones.foreach { drone =>
-      drone.processCommands()
+    val simulatorEvents =
+      for (drone <- drones; event <- drone.processCommands())
+        yield event
+
+    simulatorEvents.foreach {
+      case MineralCrystalHarvested(mineralCrystal) => ???
+      case DroneConstructionStarted(drone) =>
+        visibleObjects.add(drone)
     }
 
     physicsEngine.update()
@@ -79,4 +85,11 @@ class GameSimulator(
 
   override def timestep = physicsEngine.timestep
 }
+
+
+sealed trait SimulatorEvent
+case class MineralCrystalHarvested(mineralCrystal: MineralCrystal) extends SimulatorEvent
+case class DroneConstructionStarted(drone: Drone) extends SimulatorEvent
+
+
 
