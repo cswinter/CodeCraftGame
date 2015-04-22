@@ -126,7 +126,7 @@ private[core] class Drone(
     }
 
     for ((ConstructDrone(_, size), _) <- droneConstructions) {
-      result ::= cwinter.worldstate.ProcessingModule(index until index + (size - 2), 0)
+      result ::= cwinter.worldstate.ProcessingModule(index until index + (size - 2))
       index += size - 2
     }
     for (i <- 0 until availableFactories) {

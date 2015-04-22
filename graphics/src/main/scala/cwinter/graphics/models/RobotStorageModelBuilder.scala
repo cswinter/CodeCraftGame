@@ -3,10 +3,9 @@ package cwinter.graphics.models
 import cwinter.graphics.engine.RenderStack
 import cwinter.graphics.model._
 import RobotColors._
-import cwinter.worldstate.MineralDescriptor
 
 
-case class RobotStorageModelBuilder(positions: Seq[VertexXY], nEnergyGlobes: Int, size: Int, tMerge: Int)(implicit rs: RenderStack)
+case class RobotStorageModelBuilder(positions: Seq[VertexXY], nEnergyGlobes: Int, size: Int, tMerge: Option[Int])(implicit rs: RenderStack)
   extends ModelBuilder[RobotStorageModelBuilder, Unit] {
 
   val scale = math.sqrt(size).toFloat
@@ -14,27 +13,28 @@ case class RobotStorageModelBuilder(positions: Seq[VertexXY], nEnergyGlobes: Int
   val outlineWidth = 1 * scale
   val center = positions.reduce(_ + _) / size
 
-  
+
   def signature = this
 
   protected def buildModel: Model[Unit] = {
-    if (tMerge == 0) assembledModel
-    else {
-      val x = tMerge / 250f
-      val scale = 1 - x + x * math.sqrt(size).toFloat
-      val xPos = if (x > 0.5f) 2 * (x - 0.5f) else 0
-      val xFrac = if (x < 0.8f) x / 0.8f else 1
+    tMerge match {
+      case None => assembledModel
+      case Some(n) =>
+        val x = n / 250f
+        val scale = 1 - x + x * math.sqrt(size).toFloat
+        val xPos = if (x > 0.5f) 2 * (x - 0.5f) else 0
+        val xFrac = if (x < 0.8f) x / 0.8f else 1
 
-      val o0 = (center - positions.head).direction
-      val components =
-        for {
-          (pos, i) <- positions.zipWithIndex
-          position = (1 - xPos) * pos + xPos * center
-          orientation = o0 + 2 * math.Pi.toFloat * i / size
-          c <- partialModel(position, scale, orientation, xFrac)
-        } yield c
+        val o0 = (center - positions.head).direction
+        val components =
+          for {
+            (pos, i) <- positions.zipWithIndex
+            position = (1 - xPos) * pos + xPos * center
+            orientation = o0 + 2 * math.Pi.toFloat * i / size
+            c <- partialModel(position, scale, orientation, xFrac)
+          } yield c
 
-      new StaticCompositeModel(components)
+        new StaticCompositeModel(components)
     }
   }
 

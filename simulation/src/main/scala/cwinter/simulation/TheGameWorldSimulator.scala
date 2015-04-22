@@ -36,7 +36,7 @@ object TheGameWorldSimulator extends GameWorld {
     2 -> Lasers(position, rni(4)),
     2 -> Engines(position),
     2 -> ShieldGenerator(position),
-    6 -> ProcessingModule(Seq(position), 0)
+    6 -> ProcessingModule(Seq(position))
   )
 
   val ModuleCount = Map(3 -> 1, 4 -> 2, 5 -> 4, 6 -> 7, 7 -> 10).withDefaultValue(0)
@@ -69,7 +69,7 @@ object TheGameWorldSimulator extends GameWorld {
       yPos = 0,
       orientation = north,
       modules = Seq(
-        ProcessingModule(Seq(0, 1), 0)
+        ProcessingModule(Seq(0, 1))
       ),
       size = 4
     ),
@@ -78,7 +78,7 @@ object TheGameWorldSimulator extends GameWorld {
       yPos = 0,
       orientation = north,
       modules = Seq(
-        StorageModule(Seq(0, 1, 2), 0, 1),
+        StorageModule(Seq(0, 1, 2), 0, Some(1)),
         Engines(3)
       ),
       size = 5
@@ -100,7 +100,7 @@ object TheGameWorldSimulator extends GameWorld {
       modules = Seq(
         StorageModule(Seq(0), 7),
         StorageModule(Seq(1, 2, 3), -1),
-        ProcessingModule(Seq(4, 5, 6), mergingProgress = 1)
+        ProcessingModule(Seq(4, 5, 6), mergingProgress = Some(1))
       ),
       size = 6
     ),

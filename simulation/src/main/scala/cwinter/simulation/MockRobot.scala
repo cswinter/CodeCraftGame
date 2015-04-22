@@ -71,12 +71,12 @@ class MockRobot(
     // update timer on engines
     modules = modules.map {
       case ProcessingModule(pos, t) =>
-        ProcessingModule(pos, if (t == 0) 0 else (t + 1) % 250)
+        ProcessingModule(pos, t.map(x => (x + 1) % 250))
       case StorageModule(positions, rc, t) =>
         StorageModule(
           positions,
           rc,
-          if (t == 0) 0 else (t + 1) % 250
+          t.map(x => (x + 1) % 250)
         )
       case m => m
     }

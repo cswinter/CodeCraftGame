@@ -26,7 +26,7 @@ case class TestModelBuilder(t: Int)(implicit rs: RenderStack) extends ModelBuild
     new StaticCompositeModel(
       polygonSeries(circumradius, 0, ColorRGB(1, 1, 1)) ++
         polygonSeries(_ * 10, 250, ColorRGB(0, 0, 0.5f)) :+
-        new FactoryModelBuilder(Seq(NullVectorXY), t % 250, 0, 1).getModel
+        new FactoryModelBuilder(Seq(NullVectorXY), t % 250, None, 1).getModel
     )
   }
 
@@ -37,7 +37,7 @@ case class TestModelBuilder(t: Int)(implicit rs: RenderStack) extends ModelBuild
 }
 
 
-case class FactoryModelBuilder(positions: Seq[VertexXY], t: Int, tMerging: Int, size: Int)(implicit rs: RenderStack) extends ModelBuilder[FactoryModelBuilder, Unit] {
+case class FactoryModelBuilder(positions: Seq[VertexXY], t: Int, tMerging: Option[Int], size: Int)(implicit rs: RenderStack) extends ModelBuilder[FactoryModelBuilder, Unit] {
   def signature: FactoryModelBuilder = this
 
   override protected def buildModel: Model[Unit] = {
@@ -52,20 +52,21 @@ case class FactoryModelBuilder(positions: Seq[VertexXY], t: Int, tMerging: Int, 
     val center = positions.reduce(_ + _) / positions.size
     val scale = math.sqrt(size).toFloat
 
-    if (tMerging == 0) {
-      new StaticCompositeModel(
-        computeModelComponents(
-          center, progress, x * math.Pi.toFloat, 1, scale, transitions))
-    } else {
-      val xM = tMerging / 250f
-      val fade = (1 - xM) * 1 + xM / size
-      val components =
-        for {
-          origin <- positions
-          pos = xM * center + (1 - xM) * origin
-          component <- computeModelComponents(pos, progress, x * math.Pi.toFloat, fade, 1 + (scale - 1) * xM, transitions)
-        } yield component
-      new StaticCompositeModel(components)
+    tMerging match {
+      case None =>
+        new StaticCompositeModel(
+          computeModelComponents(
+            center, progress, x * math.Pi.toFloat, 1, scale, transitions))
+      case Some(n) =>
+        val xM = n / 250f
+        val fade = (1 - xM) * 1 + xM / size
+        val components =
+          for {
+            origin <- positions
+            pos = xM * center + (1 - xM) * origin
+            component <- computeModelComponents(pos, progress, x * math.Pi.toFloat, fade, 1 + (scale - 1) * xM, transitions)
+          } yield component
+        new StaticCompositeModel(components)
     }
   }
 
