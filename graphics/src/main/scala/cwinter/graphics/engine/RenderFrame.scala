@@ -63,7 +63,7 @@ object RenderFrame extends GLEventListener {
 
       for {
         worldObject <- worldObjects ++ cwinter.graphics.engine.Debug.debugObjects
-        model = TheWorldObjectModelFactory.generateModel(worldObject)
+        model = TheWorldObjectModelFactory.generateModel(worldObject, gameWorld.timestep)
       } model.draw(material)
 
 

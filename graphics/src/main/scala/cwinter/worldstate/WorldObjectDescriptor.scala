@@ -36,8 +36,8 @@ case class StorageModule(positions: Seq[Int], resourceCount: Int, mergingProgres
   assert(resourceCount >= -1)
   assert(resourceCount <= 7)
 }
-case class Engines(position: Int, t: Int = 0) extends DroneModule
-case class ProcessingModule(positions: Seq[Int], t: Int = 0, mergingProgress: Int = 0) extends DroneModule
+case class Engines(position: Int) extends DroneModule
+case class ProcessingModule(positions: Seq[Int], mergingProgress: Int = 0) extends DroneModule
 case class ShieldGenerator(position: Int) extends DroneModule
 case class Lasers(position: Int, n: Int = 3) extends DroneModule
 

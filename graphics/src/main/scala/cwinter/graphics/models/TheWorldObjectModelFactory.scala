@@ -7,7 +7,7 @@ import cwinter.worldstate._
 
 
 object TheWorldObjectModelFactory {
-  def generateModel(worldObject: WorldObjectDescriptor)
+  def generateModel(worldObject: WorldObjectDescriptor, timestep: Int)
       (implicit renderStack: RenderStack): ClosedModel[_] = {
 
     val xPos = worldObject.xPos
@@ -24,7 +24,7 @@ object TheWorldObjectModelFactory {
         modelview)
       case robot: DroneDescriptor => new ClosedModel(
         robot,
-        new RobotModelBuilder(robot).getModel,
+        new RobotModelBuilder(robot, timestep).getModel,
         modelview)
       case lightFlash: LightFlashDescriptor => new ClosedModel(
         lightFlash,

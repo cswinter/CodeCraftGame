@@ -76,5 +76,7 @@ class GameSimulator(
     }
     // COLLECT ALL EVENTS FROM VISION
   }
+
+  override def timestep = physicsEngine.timestep
 }
 

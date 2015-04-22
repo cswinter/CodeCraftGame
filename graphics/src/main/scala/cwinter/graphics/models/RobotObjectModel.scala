@@ -53,24 +53,26 @@ case class RobotSignature(
   modules: Seq[DroneModule],
   hasShields: Boolean,
   hullState: Seq[Byte],
-  isBuilding: Boolean
+  isBuilding: Boolean,
+  animationTime: Int
 )
 
 object RobotSignature {
-  def apply(robotObject: DroneDescriptor): RobotSignature = {
+  def apply(robotObject: DroneDescriptor, timestep: Int): RobotSignature = {
     RobotSignature(
       robotObject.size,
       robotObject.modules,
       robotObject.modules.exists(_.isInstanceOf[ShieldGenerator]),
       robotObject.hullState,
-      robotObject.constructionState != None)
+      robotObject.constructionState != None,
+      timestep % 250)
   }
 }
 
 
-class RobotModelBuilder(robot: DroneDescriptor)(implicit val rs: RenderStack)
+class RobotModelBuilder(robot: DroneDescriptor, timestep: Int)(implicit val rs: RenderStack)
   extends ModelBuilder[RobotSignature, DroneDescriptor] {
-  def signature: RobotSignature = RobotSignature(robot)
+  def signature: RobotSignature = RobotSignature(robot, timestep)
 
   import Geometry.circumradius
   import RobotModulePositions.ModulePosition
@@ -120,14 +122,14 @@ class RobotModelBuilder(robot: DroneDescriptor)(implicit val rs: RenderStack)
       for {
         module <- signature.modules
       } yield (module match {
-        case Engines(position, t) =>
-          RobotEnginesModel(ModulePosition(sides)(position), t)
+        case Engines(position) =>
+          RobotEnginesModel(ModulePosition(sides)(position), signature.animationTime)
         case Lasers(position, n) =>
           RobotLasersModelBuilder(ModulePosition(sides)(position), n)
         case ShieldGenerator(position) =>
           RobotShieldGeneratorModel(ModulePosition(sides)(position))
-        case ProcessingModule(positions, t, t2) =>
-          FactoryModelBuilder(positions.map(ModulePosition(sides)(_)), t, t2, positions.size)
+        case ProcessingModule(positions, tMerging) =>
+          FactoryModelBuilder(positions.map(ModulePosition(sides)(_)), signature.animationTime, tMerging, positions.size)
         case StorageModule(positions, count, tm) =>
           RobotStorageModelBuilder(positions.map(ModulePosition(sides)(_)), count, positions.size, tm)
       }).getModel

@@ -74,6 +74,8 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
 
   def time: Double = _time
 
+  def timestep: Int = discreteTime
+
   def addObject(obj: T): Unit = {
     val (x, y) = grid.computeCell(obj.pos)
     val record = new ObjectRecord(obj, x, y)

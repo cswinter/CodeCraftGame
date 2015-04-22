@@ -34,4 +34,6 @@ object TheObjectManager extends GameWorld {
   def main(args: Array[String]): Unit = {
     DrawingCanvas.run(this)
   }
+
+  def timestep = 0
 }

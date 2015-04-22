@@ -34,7 +34,7 @@ object TheGameWorldSimulator extends GameWorld {
   def randomModule(position: Int) = rnd(
     50 -> StorageModule(Seq(position), rni(9) - 1),
     2 -> Lasers(position, rni(4)),
-    2 -> Engines(position, 0),
+    2 -> Engines(position),
     2 -> ShieldGenerator(position),
     6 -> ProcessingModule(Seq(position), 0)
   )
@@ -129,7 +129,7 @@ object TheGameWorldSimulator extends GameWorld {
       orientation = 2,
       positions = Seq(),
       modules = Seq(
-        Engines(0, 0),
+        Engines(0),
         Lasers(1, 0),
         StorageModule(Seq(2), 0),
         ShieldGenerator(3),
@@ -178,6 +178,7 @@ object TheGameWorldSimulator extends GameWorld {
     }
   }
 
+  override def timestep = time
 
   def main(args: Array[String]): Unit = {
     DrawingCanvas.run(this)
