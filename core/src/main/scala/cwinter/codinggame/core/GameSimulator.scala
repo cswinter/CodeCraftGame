@@ -28,7 +28,7 @@ class GameSimulator(
 
   map.minerals.foreach(spawnMineral)
   spawnDrone(Seq.fill(4)(StorageModule) ++ Seq.fill(6)(NanobotFactory),
-    7, mothership, Vector2(0, -500))
+    7, mothership, Vector2(0, -500), 28)
 
 
 
@@ -39,8 +39,8 @@ class GameSimulator(
     visionTracker.insert(mineralCrystal)
   }
 
-  private def spawnDrone(modules: Seq[Module], size: Int, controller: DroneController, initialPos: Vector2): Unit = {
-    val drone = new Drone(modules, size, controller, initialPos, physicsEngine.time)
+  private def spawnDrone(modules: Seq[Module], size: Int, controller: DroneController, initialPos: Vector2, startingResources: Int = 0): Unit = {
+    val drone = new Drone(modules, size, controller, initialPos, physicsEngine.time, startingResources)
     objects.add(drone)
     drones.add(drone)
     visionTracker.insert(drone, generateEvents=true)

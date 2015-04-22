@@ -10,7 +10,8 @@ private[core] class Drone(
   val size: Int,
   val controller: DroneController,
   initialPos: Vector2,
-  time: Double
+  time: Double,
+  startingResources: Int = 0
 ) extends WorldObject {
 
   val dynamics: DroneDynamics = new DroneDynamics(100, radius, initialPos, time)
@@ -20,7 +21,7 @@ private[core] class Drone(
   private[this] val eventQueue = collection.mutable.Queue[DroneEvent](Spawned)
 
   private[this] var storedMinerals = List.empty[MineralCrystal]
-  private[this] var storedEnergyGlobes: Int = 0
+  private[this] var storedEnergyGlobes: Int = startingResources
 
   private[this] var _command: Option[DroneCommand] = None
 
@@ -128,8 +129,11 @@ private[core] class Drone(
       index += size
       storageSum += size
     }
+    var globesRemaining = storedEnergyGlobes
     for (i <- 0 until storageCapacity - storageSum) {
-      result ::= cwinter.worldstate.StorageModule(Seq(index), 0)
+      val globes = math.min(7, globesRemaining)
+      result ::= cwinter.worldstate.StorageModule(Seq(index), globes)
+      globesRemaining -= globes
       index += 1
     }
     result
