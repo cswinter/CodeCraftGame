@@ -27,7 +27,8 @@ class GameSimulator(
   )
 
   map.minerals.foreach(spawnMineral)
-  spawnDrone(Seq(StorageModule), 3, mothership, Vector2(0, -500))
+  spawnDrone(Seq.fill(4)(StorageModule) ++ Seq.fill(6)(NanobotFactory),
+  7, mothership, Vector2(0, -500))
 
 
 

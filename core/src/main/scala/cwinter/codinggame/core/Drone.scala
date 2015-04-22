@@ -113,6 +113,14 @@ private[core] class Drone(
       index += 1
     }
 
+    for (
+      f <- modules
+      if f == NanobotFactory
+    ) {
+      result ::= cwinter.worldstate.ProcessingModule(Seq(index))
+      index += 1
+    }
+
     var storageSum = 0
     // TODO: HarvestedMineral class (no position)
     for (MineralCrystal(size, pos) <- storedMinerals.sortBy(-_.size)) {
@@ -140,6 +148,7 @@ sealed trait Module
 
 case object StorageModule extends Module
 case object Lasers extends Module
+case object NanobotFactory extends Module
 
 
 sealed trait DroneEvent
