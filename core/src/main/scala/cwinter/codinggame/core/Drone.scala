@@ -98,7 +98,7 @@ private[core] class Drone(
     storageCapacity - storedMinerals.map(_.size).sum - math.ceil(storedEnergyGlobes / 7.0).toInt
 
   def availableFactories: Int =
-    factoryCapacity - droneConstructions.map(_._1.size - 2).sum
+    factoryCapacity - droneConstructions.map(_._1.drone.size - 2).sum
 
 
   override def descriptor: WorldObjectDescriptor = {
@@ -114,6 +114,7 @@ private[core] class Drone(
     )
   }
 
+
   private def moduleDescriptors: Seq[cwinter.worldstate.DroneModule] = {
     var result = List.empty[cwinter.worldstate.DroneModule]
     var index = 0
@@ -125,9 +126,9 @@ private[core] class Drone(
       index += 1
     }
 
-    for ((ConstructDrone(_, size), _) <- droneConstructions) {
-      result ::= cwinter.worldstate.ProcessingModule(index until index + (size - 2))
-      index += size - 2
+    for ((ConstructDrone(drone), _) <- droneConstructions) {
+      result ::= cwinter.worldstate.ProcessingModule(index until index + (drone.size - 2))
+      index += drone.size - 2
     }
     for (i <- 0 until availableFactories) {
       result ::= cwinter.worldstate.ProcessingModule(Seq(index))
@@ -150,6 +151,7 @@ private[core] class Drone(
     }
     result
   }
+
 
   private def radius: Double = {
     val sideLength = 40
@@ -181,14 +183,6 @@ case class HarvestMineralCrystal(mineralCrystal: MineralCrystal) extends Movemen
 case object HoldPosition extends MovementCommand
 
 sealed trait ConstructionCommand extends DroneCommand
-case class ConstructDrone(modules: Seq[Module], size: Int) extends ConstructionCommand {
-  // TODO: assert size ~ modules
-}
-case object ConstructTinyDrone {
-  def apply(module: Module): ConstructDrone = ConstructDrone(Seq(module), 3)
-}
-case object ConstructSmallDrone {
-  def apply(module1: Module, module2: Module): ConstructDrone =
-    ConstructDrone(Seq(module1, module2), 4)
-}
+case class ConstructDrone(drone: Drone) extends ConstructionCommand
+
 

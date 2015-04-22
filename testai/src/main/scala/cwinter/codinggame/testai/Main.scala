@@ -14,7 +14,7 @@ class Mothership extends DroneController {
   // abstract methods for event handling
   override def onSpawn(): Unit = {
     moveInDirection(Vector2(0, 1))
-    buildSmallDrone(StorageModule, StorageModule)
+    buildSmallDrone(StorageModule, StorageModule, this)
   }
 
   override def onTick(): Unit = {

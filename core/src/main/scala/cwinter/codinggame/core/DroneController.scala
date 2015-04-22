@@ -24,8 +24,9 @@ abstract class DroneController {
     drone.giveMovementCommand(HarvestMineralCrystal(mineralCrystal))
   }
 
-  def buildSmallDrone(module1: Module, module2: Module): Unit = {
-    drone.startDroneConstruction(ConstructSmallDrone(module1, module2))
+  def buildSmallDrone(module1: Module, module2: Module, controller: DroneController): Unit = {
+    val newDrone = new Drone(Seq(module1, module2), 4, controller, Vector2.NullVector, -1)
+    drone.startDroneConstruction(ConstructDrone(newDrone))
   }
 
   def position: Vector2 = drone.position
