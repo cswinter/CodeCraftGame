@@ -8,7 +8,7 @@ import cwinter.worldstate.{WorldObjectDescriptor, GameWorld}
 
 class GameSimulator(
   val map: Map,
-  mothership: DroneController
+  mothershipController: DroneController
 ) extends GameWorld {
   final val SightRadius = 250
   final val MaxDroneRadius = 60
@@ -27,8 +27,7 @@ class GameSimulator(
   )
 
   map.minerals.foreach(spawnMineral)
-  spawnDrone(Seq.fill(4)(StorageModule) ++ Seq.fill(6)(NanobotFactory),
-    7, mothership, Vector2(0, -500), 28)
+  spawnDrone(mothership(mothershipController, Vector2(0, -500)))
 
 
 
@@ -39,13 +38,16 @@ class GameSimulator(
     visionTracker.insert(mineralCrystal)
   }
 
-  private def spawnDrone(modules: Seq[Module], size: Int, controller: DroneController, initialPos: Vector2, startingResources: Int = 0): Unit = {
-    val drone = new Drone(modules, size, controller, initialPos, physicsEngine.time, startingResources)
+
+  private def mothership(controller: DroneController, pos: Vector2): Drone =
+    new Drone(Seq.fill(4)(StorageModule) ++ Seq.fill(6)(NanobotFactory), 7, controller, pos, 0, 28)
+
+  private def spawnDrone(drone: Drone): Unit = {
     visibleObjects.add(drone)
     drones.add(drone)
     visionTracker.insert(drone, generateEvents=true)
     physicsEngine.addObject(drone.dynamics.unwrap)
-    controller.initialise(drone)
+    drone.initialise(physicsEngine.time)
   }
 
   override def update(): Unit = {
@@ -62,6 +64,8 @@ class GameSimulator(
       case MineralCrystalHarvested(mineralCrystal) => ???
       case DroneConstructionStarted(drone) =>
         visibleObjects.add(drone)
+      case SpawnDrone(drone) =>
+        spawnDrone(drone)
     }
 
     physicsEngine.update()
@@ -78,6 +82,8 @@ class GameSimulator(
       case visionTracker.EnteredSightRadius(mineral: MineralCrystal) =>
         drone.enqueueEvent(MineralEntersSightRadius(mineral))
       case visionTracker.LeftSightRadius(obj) => // don't care (for now)
+      case visionTracker.EnteredSightRadius(drone: Drone) =>
+        drone.enqueueEvent(DroneEntersSightRadius(drone))
       case e => throw new Exception(s"AHHHH, AN UFO!!! RUN FOR YOUR LIFE!!! $e")
     }
     // COLLECT ALL EVENTS FROM VISION
@@ -90,6 +96,7 @@ class GameSimulator(
 sealed trait SimulatorEvent
 case class MineralCrystalHarvested(mineralCrystal: MineralCrystal) extends SimulatorEvent
 case class DroneConstructionStarted(drone: Drone) extends SimulatorEvent
+case class SpawnDrone(drone: Drone) extends SimulatorEvent
 
 
 

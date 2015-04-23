@@ -31,6 +31,11 @@ private[core] class Drone(
 
   private[this] var simulatorEvents = List.empty[SimulatorEvent]
 
+  def initialise(time: Double): Unit = {
+    dynamics.setTime(time)
+    controller.initialise(this)
+  }
+
   def processEvents(): Unit = {
     movementCommand match {
       case MoveToPosition(position) =>
@@ -46,6 +51,7 @@ private[core] class Drone(
       case Spawned => controller.onSpawn()
       case MineralEntersSightRadius(mineral) => controller.onMineralEntersVision(mineral)
       case ArrivedAtPosition => controller.onArrival()
+      case DroneEntersSightRadius(drone) => // TODO: implement
       case event => throw new Exception(s"Unhandled event! $event")
     }
     eventQueue.clear()
@@ -80,9 +86,16 @@ private[core] class Drone(
           drone.drone.constructionProgress = Some(progress)
           drone.drone.dynamics.setPosition(position + 27 * Vector2(dynamics.orientation.orientation - 2.2))
           println(drone.drone.descriptor)
+          if (progress == 500) {
+            simulatorEvents ::= SpawnDrone(drone.drone)
+            drone.drone.constructionProgress = None
+            drone.drone.dynamics.setPosition(position - 150 * Vector2(dynamics.orientation.orientation - 2.2))
+          }
           // TODO: set position (need to know factory offset)
           (drone, progress + 1)
         }
+
+    droneConstructions = droneConstructions.filter(_._2 <= 500)
 
     val events = simulatorEvents
     simulatorEvents = List.empty[SimulatorEvent]
@@ -191,6 +204,8 @@ sealed trait DroneEvent
 case object Spawned extends DroneEvent
 case class MineralEntersSightRadius(mineralCrystal: MineralCrystal) extends DroneEvent
 case object ArrivedAtPosition extends DroneEvent
+case class DroneEntersSightRadius(drone: Drone) extends DroneEvent
+
 
 sealed trait DroneCommand
 

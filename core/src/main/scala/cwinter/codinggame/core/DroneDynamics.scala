@@ -11,7 +11,7 @@ class DroneDynamics(
   initialTime: Double
 ) extends DynamicObject[DroneDynamics](initialPosition, initialTime) {
   private var velocity: Vector2 = Vector2.NullVector
-  private var _orientation: Vector2 = Vector2.NullVector
+  private var _orientation: Vector2 = Vector2(1, 0)
   private var speed = maxSpeed
 
 

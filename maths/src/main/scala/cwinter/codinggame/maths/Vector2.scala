@@ -13,7 +13,7 @@ case class Vector2(x: Double, y: Double) {
   def normalized: Vector2 = this / size
 
   def orientation = {
-    assert(x != 0 || y != 0)
+    assert(x != 0 || y != 0, s"x=$x, y=$y")
     math.atan2(y, x)
   }
 
