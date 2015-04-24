@@ -24,7 +24,7 @@ object TheWorldObjectModelFactory {
         modelview)
       case robot: DroneDescriptor => new ClosedModel(
         robot,
-        new RobotModelBuilder(robot, timestep).getModel,
+        new DroneModelBuilder(robot, timestep).getModel,
         modelview)
       case lightFlash: LightFlashDescriptor => new ClosedModel(
         lightFlash,

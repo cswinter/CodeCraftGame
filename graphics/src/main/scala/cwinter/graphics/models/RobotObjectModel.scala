@@ -71,7 +71,7 @@ object RobotSignature {
 }
 
 
-class RobotModelBuilder(robot: DroneDescriptor, timestep: Int)(implicit val rs: RenderStack)
+class DroneModelBuilder(robot: DroneDescriptor, timestep: Int)(implicit val rs: RenderStack)
   extends ModelBuilder[RobotSignature, DroneDescriptor] {
   def signature: RobotSignature = RobotSignature(robot, timestep)
 
