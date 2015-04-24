@@ -1,5 +1,6 @@
 package cwinter.graphics.model
 
+import cwinter.codinggame.util.maths.Vertex
 import cwinter.graphics.materials.Material
 import cwinter.graphics.matrices.Matrix4x4
 

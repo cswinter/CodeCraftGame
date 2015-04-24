@@ -1,5 +1,6 @@
 package cwinter.graphics.models
 
+import cwinter.codinggame.util.maths.{ColorRGBA, VertexXY}
 import cwinter.graphics.engine.RenderStack
 import cwinter.graphics.model._
 

@@ -1,5 +1,6 @@
 package cwinter.graphics.models
 
+import cwinter.codinggame.util.maths.ColorRGB
 import cwinter.graphics.engine.RenderStack
 import cwinter.graphics.model._
 import cwinter.worldstate.MineralDescriptor

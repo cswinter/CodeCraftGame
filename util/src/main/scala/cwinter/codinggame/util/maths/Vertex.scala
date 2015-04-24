@@ -1,5 +1,4 @@
-package cwinter.graphics.model
-
+package cwinter.codinggame.util.maths
 
 trait Vertex extends {
   def apply(i: Int): Float

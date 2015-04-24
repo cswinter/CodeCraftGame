@@ -1,7 +1,6 @@
 package cwinter.codinggame.core
 
-import cwinter.codinggame.util.maths.{Rng, Vector2}
-import cwinter.graphics.model.Geometry
+import cwinter.codinggame.util.maths.{Geometry, Rng, Vector2}
 import cwinter.worldstate.{DroneDescriptor, WorldObjectDescriptor}
 
 

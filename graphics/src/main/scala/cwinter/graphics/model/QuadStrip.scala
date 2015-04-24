@@ -1,6 +1,7 @@
 package cwinter.graphics.model
 
 
+import cwinter.codinggame.util.maths.{VertexXYZ, VertexXY, Vertex}
 import cwinter.graphics.materials.Material
 
 import scala.collection.mutable.ArrayBuffer

@@ -2,7 +2,7 @@ package cwinter.graphics.materials
 
 import javax.media.opengl.GL4
 
-import cwinter.graphics.model.VertexXY
+import cwinter.codinggame.util.maths.VertexXY
 
 
 class RenderToScreen(implicit gl: GL4)

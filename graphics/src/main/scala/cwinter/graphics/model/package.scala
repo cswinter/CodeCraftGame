@@ -1,5 +1,6 @@
 package cwinter.graphics
 
+import cwinter.codinggame.util.maths.Vertex
 import cwinter.graphics.materials.Material
 
 import language.existentials

@@ -1,5 +1,6 @@
 package cwinter.graphics.model
 
+import cwinter.codinggame.util.maths._
 import cwinter.graphics.materials.Material
 
 import scala.reflect.ClassTag

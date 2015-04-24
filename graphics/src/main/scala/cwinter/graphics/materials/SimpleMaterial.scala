@@ -3,7 +3,7 @@ package cwinter.graphics.materials
 import javax.media.opengl.GL._
 import javax.media.opengl.GL4
 
-import cwinter.graphics.model.{EmptyVertex, VertexXY}
+import cwinter.codinggame.util.maths.{EmptyVertex, VertexXY}
 
 
 class SimpleMaterial(implicit gl: GL4)

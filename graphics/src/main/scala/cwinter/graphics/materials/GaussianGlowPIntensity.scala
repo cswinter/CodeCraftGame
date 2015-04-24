@@ -3,8 +3,9 @@ package cwinter.graphics.materials
 import javax.media.opengl.GL._
 import javax.media.opengl.GL4
 
+import cwinter.codinggame.util.maths.{ColorRGBA, VertexXYZ}
 import cwinter.graphics.matrices.Matrix4x4
-import cwinter.graphics.model.{VBO, ColorRGBA, VertexXYZ}
+import cwinter.graphics.model.VBO
 
 class GaussianGlowPIntensity(implicit gl: GL4)
   extends Material[VertexXYZ, ColorRGBA, Intensity](

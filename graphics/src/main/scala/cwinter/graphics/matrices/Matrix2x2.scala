@@ -1,6 +1,6 @@
 package cwinter.graphics.matrices
 
-import cwinter.graphics.model.VertexXY
+import cwinter.codinggame.util.maths.VertexXY
 
 
 final case class Matrix2x2(m11: Float, m12: Float, m21: Float, m22: Float) {

@@ -1,6 +1,7 @@
 package cwinter.graphics.models
 
 import cwinter.codinggame.util.maths
+import cwinter.codinggame.util.maths.ColorRGB
 import cwinter.graphics.engine.RenderStack
 import cwinter.graphics.model._
 

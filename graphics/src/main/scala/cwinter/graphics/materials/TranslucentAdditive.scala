@@ -3,8 +3,8 @@ package cwinter.graphics.materials
 import javax.media.opengl.GL._
 import javax.media.opengl.GL4
 
+import cwinter.codinggame.util.maths.{ColorRGBA, VertexXYZ}
 import cwinter.graphics.matrices.Matrix4x4
-import cwinter.graphics.model.{VertexXYZ, ColorRGBA}
 
 
 class TranslucentAdditive(implicit gl: GL4)

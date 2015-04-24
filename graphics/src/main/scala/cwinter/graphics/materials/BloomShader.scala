@@ -3,6 +3,7 @@ package cwinter.graphics.materials
 import javax.media.opengl.GL._
 import javax.media.opengl.GL4
 
+import cwinter.codinggame.util.maths.{ColorRGB, VertexXYZ, VertexUV, VertexXY}
 import cwinter.graphics.engine.{FramebufferObject, RenderFrame}
 import cwinter.graphics.matrices.{IdentityMatrix4x4, Matrix4x4}
 import cwinter.graphics.model._

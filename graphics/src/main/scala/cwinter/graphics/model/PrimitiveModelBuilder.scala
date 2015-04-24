@@ -2,6 +2,7 @@ package cwinter.graphics.model
 
 import javax.media.opengl.GL4
 
+import cwinter.codinggame.util.maths.{VertexXYZ, Vertex}
 import cwinter.graphics.materials.Material
 
 import scala.reflect.ClassTag

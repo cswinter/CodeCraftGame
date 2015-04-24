@@ -5,8 +5,9 @@ import javax.media.opengl.GL2ES2._
 import javax.media.opengl._
 
 import com.jogamp.common.nio.Buffers
+import cwinter.codinggame.util.maths.{VertexManifest, Vertex}
 import cwinter.graphics.matrices.Matrix4x4
-import cwinter.graphics.model.{VBO, Vertex, VertexManifest}
+import cwinter.graphics.model.VBO
 
 import scala.io.Source
 

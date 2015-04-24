@@ -1,12 +1,11 @@
 package cwinter.graphics.models
 
+import cwinter.codinggame.util.maths._
 import cwinter.graphics.engine.RenderStack
 import cwinter.graphics.matrices.{TranslationMatrix4x4, DilationXYMatrix4x4, Matrix4x4}
 import cwinter.graphics.model._
 import cwinter.worldstate._
-import scala.math._
 import cwinter.graphics.models.RobotColors._
-import Geometry._
 
 
 object RobotColors {
@@ -18,34 +17,6 @@ object RobotColors {
   val ColorHullBroken = Black
   val ColorThrusters = ColorRGB(0, 0, 1)
   val ColorBackplane = ColorRGB(0.1f, 0.1f, 0.1f)
-}
-
-
-object RobotModulePositions {
-  //noinspection ZeroIndexToHead
-  val ModulePosition = Map[Int, IndexedSeq[VertexXY]](
-    3 -> IndexedSeq(VertexXY(0, 0)),
-
-    4 -> IndexedSeq(VertexXY(9, 9), VertexXY(-9, -9)),
-
-    5 -> Geometry.polygonVertices2(4, radius = 17),
-
-    6 -> permutation(
-      Geometry.polygonVertices2(6, radius = 27) :+ NullVectorXY,
-      IndexedSeq(1, 0, 5, 6, 4, 3, 2)
-    ),
-
-    7 -> permutation(
-      Geometry.polygonVertices2(7, radius = 33) ++
-      Geometry.polygonVertices(3, orientation = math.Pi.toFloat, radius = 13),
-      IndexedSeq(0, 1, 2, 8, 3, 9, 4, 5, 7, 6)
-    )
-  )
-
-
-  private def permutation[T](set: IndexedSeq[T], indices: IndexedSeq[Int]): IndexedSeq[T] = {
-    IndexedSeq.tabulate(set.size)(i => set(indices(i)))
-  }
 }
 
 
@@ -76,7 +47,7 @@ class DroneModelBuilder(robot: DroneDescriptor, timestep: Int)(implicit val rs: 
   def signature: DroneSignature = DroneSignature(robot, timestep)
 
   import Geometry.circumradius
-  import RobotModulePositions.ModulePosition
+  import cwinter.codinggame.util.modules.ModulePosition
 
   import scala.math._
 
@@ -115,24 +86,20 @@ class DroneModelBuilder(robot: DroneDescriptor, timestep: Int)(implicit val rs: 
       ).getModel
 
 
-    @inline
-    def pos(positions: Seq[Int]): VertexXY =
-      positions.map(ModulePosition(sides)(_)).reduce(_ + _) / positions.size
-
     val modules =
       for {
         module <- signature.modules
       } yield (module match {
         case Engines(position) =>
-          RobotEnginesModel(ModulePosition(sides)(position), signature.animationTime)
+          RobotEnginesModel(ModulePosition(sides, position), signature.animationTime)
         case Lasers(position, n) =>
-          RobotLasersModelBuilder(ModulePosition(sides)(position), n)
+          RobotLasersModelBuilder(ModulePosition(sides, position), n)
         case ShieldGenerator(position) =>
-          RobotShieldGeneratorModel(ModulePosition(sides)(position))
+          RobotShieldGeneratorModel(ModulePosition(sides, position))
         case ProcessingModule(positions, tMerging) =>
-          FactoryModelBuilder(positions.map(ModulePosition(sides)(_)), signature.animationTime, tMerging, positions.size)
+          FactoryModelBuilder(ModulePosition(sides, positions), signature.animationTime, tMerging, positions.size)
         case StorageModule(positions, count, tm) =>
-          RobotStorageModelBuilder(positions.map(ModulePosition(sides)(_)), count, positions.size, tm)
+          RobotStorageModelBuilder(ModulePosition(sides, positions), count, positions.size, tm)
       }).getModel
 
     val shields =
