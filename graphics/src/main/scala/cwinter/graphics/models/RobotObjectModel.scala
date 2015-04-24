@@ -49,7 +49,7 @@ object RobotModulePositions {
 }
 
 
-case class RobotSignature(
+case class DroneSignature(
   size: Int,
   modules: Seq[DroneModule],
   hasShields: Boolean,
@@ -58,9 +58,9 @@ case class RobotSignature(
   animationTime: Int
 )
 
-object RobotSignature {
-  def apply(robotObject: DroneDescriptor, timestep: Int): RobotSignature = {
-    RobotSignature(
+object DroneSignature {
+  def apply(robotObject: DroneDescriptor, timestep: Int): DroneSignature = {
+    DroneSignature(
       robotObject.size,
       robotObject.modules,
       robotObject.modules.exists(_.isInstanceOf[ShieldGenerator]),
@@ -72,8 +72,8 @@ object RobotSignature {
 
 
 class DroneModelBuilder(robot: DroneDescriptor, timestep: Int)(implicit val rs: RenderStack)
-  extends ModelBuilder[RobotSignature, DroneDescriptor] {
-  def signature: RobotSignature = RobotSignature(robot, timestep)
+  extends ModelBuilder[DroneSignature, DroneDescriptor] {
+  def signature: DroneSignature = DroneSignature(robot, timestep)
 
   import Geometry.circumradius
   import RobotModulePositions.ModulePosition
