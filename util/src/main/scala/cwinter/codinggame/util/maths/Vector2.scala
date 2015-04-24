@@ -11,6 +11,11 @@ case class Vector2(x: Double, y: Double) {
   def magnitudeSquared = x * x + y * y
   def size: Double = math.sqrt(x * x + y * y)
   def normalized: Vector2 = this / size
+  def rotated(angle: Double): Vector2 = {
+    val sina = math.sin(angle)
+    val cosa = math.cos(angle)
+    Vector2(cosa * x - sina * y, sina * x + cosa * y)
+  }
 
   def orientation = {
     assert(x != 0 || y != 0, s"x=$x, y=$y")
