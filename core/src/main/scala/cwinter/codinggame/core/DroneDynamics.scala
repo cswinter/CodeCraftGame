@@ -13,6 +13,7 @@ class DroneDynamics(
   private var velocity: Vector2 = Vector2.NullVector
   private var _orientation: Vector2 = Vector2(1, 0)
   private var speed = maxSpeed
+  private var isStunned: Boolean = false
 
 
   protected def computeNewPosition(timeDelta: Double): Vector2 =
@@ -21,6 +22,7 @@ class DroneDynamics(
   def setPosition(value: Vector2): Unit = pos = value
 
   def orientation_=(orientation: Vector2): Unit = {
+    if (isStunned) return
     this._orientation = orientation.normalized
     velocity = speed * orientation
   }
@@ -94,6 +96,8 @@ class DroneDynamics(
     val normal = (pos - other.pos).normalized
     velocity = maxSpeed * normal
     other.velocity = -other.maxSpeed * normal
+    isStunned = true
+    other.isStunned = true
   }
 
   def handleWallCollision(areaBounds: Rectangle): Unit = {
@@ -102,10 +106,20 @@ class DroneDynamics(
     val dy = math.min(math.abs(pos.y + areaBounds.yMax), math.abs(pos.y + areaBounds.yMin))
     if (dx < dy) {
       velocity = velocity.copy(x = -velocity.x)
-      orientation = orientation.copy(x = -orientation.x)
+      //orientation = orientation.copy(x = -orientation.x)
     } else {
       velocity = velocity.copy(y = -velocity.y)
-      orientation = orientation.copy(y = -orientation.y)
+      //orientation = orientation.copy(y = -orientation.y)
+    }
+    isStunned = true
+  }
+
+  def update(): Unit = {
+    if (isStunned) {
+      velocity = 0.95f * velocity
+      if (velocity.size <= maxSpeed * 0.1f) {
+        isStunned = false
+      }
     }
   }
 

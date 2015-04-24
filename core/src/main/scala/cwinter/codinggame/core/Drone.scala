@@ -1,6 +1,6 @@
 package cwinter.codinggame.core
 
-import cwinter.codinggame.maths.Vector2
+import cwinter.codinggame.maths.{Rng, Vector2}
 import cwinter.graphics.model.Geometry
 import cwinter.worldstate.{DroneDescriptor, WorldObjectDescriptor}
 
@@ -89,13 +89,15 @@ private[core] class Drone(
           if (progress == 500) {
             simulatorEvents ::= SpawnDrone(drone.drone)
             drone.drone.constructionProgress = None
-            drone.drone.dynamics.setPosition(position - 150 * Vector2(dynamics.orientation.orientation - 2.2))
+            drone.drone.dynamics.setPosition(position - 150 * Rng.vector2())
           }
           // TODO: set position (need to know factory offset)
           (drone, progress + 1)
         }
 
     droneConstructions = droneConstructions.filter(_._2 <= 500)
+
+    dynamics.update()
 
     val events = simulatorEvents
     simulatorEvents = List.empty[SimulatorEvent]

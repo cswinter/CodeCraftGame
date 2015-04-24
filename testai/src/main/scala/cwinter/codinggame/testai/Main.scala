@@ -15,24 +15,16 @@ class Mothership extends DroneController {
 
   // abstract methods for event handling
   override def onSpawn(): Unit = {
-    moveToPosition(Vector2(20, -500))
     buildSmallDrone(StorageModule, StorageModule, new ScoutingDroneController())
   }
 
   override def onTick(): Unit = {
-    t += 1
-    if (t > 500 && Rng.bernoulli(0.01)) {
-      moveInDirection(Vector2(Rng.double(0, 100)))
+    if (availableFactories >= 2) {
+      buildSmallDrone(StorageModule, StorageModule, new ScoutingDroneController())
     }
   }
 
   override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = {
-    if (mineralCrystal.size <= availableStorage) {
-      moveToPosition(mineralCrystal.position)
-      this.mineralCrystal = mineralCrystal
-    } else {
-      moveInDirection(mineralCrystal.position - position)
-    }
   }
 
   var mineralCrystal: MineralCrystal = null

@@ -11,7 +11,7 @@ class SquareGrid[T: Positionable](
   val cellWidth: Int
 ) {
   final val Padding = 1
-  assert((xMax - xMin) % cellWidth == 0)
+  assert((xMax - xMin) % cellWidth == 0, s"(xMax - xMin) % cellWidth = ${(xMax - xMin) % cellWidth}")
   assert((yMax - yMin) % cellWidth == 0)
 
   val width = (xMax - xMin) / cellWidth
