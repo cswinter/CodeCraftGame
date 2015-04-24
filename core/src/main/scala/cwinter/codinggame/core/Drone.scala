@@ -84,7 +84,6 @@ private[core] class Drone(
           drone.drone.dynamics.orientation = dynamics.orientation
           drone.drone.constructionProgress = Some(progress)
           drone.drone.dynamics.setPosition(position + 27 * Vector2(dynamics.orientation.orientation - 2.2))
-          println(drone.drone.descriptor)
           if (progress == 500) {
             simulatorEvents ::= SpawnDrone(drone.drone)
             drone.drone.constructionProgress = None
