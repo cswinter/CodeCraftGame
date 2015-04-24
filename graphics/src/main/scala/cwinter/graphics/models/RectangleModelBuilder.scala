@@ -1,15 +1,16 @@
 package cwinter.graphics.models
 
+import cwinter.codinggame.util.maths
 import cwinter.graphics.engine.RenderStack
 import cwinter.graphics.model._
 
 
-case class RectangleModelBuilder(rectangle: cwinter.codinggame.maths.Rectangle)(implicit val rs: RenderStack)
+case class RectangleModelBuilder(rectangle: maths.Rectangle)(implicit val rs: RenderStack)
   extends ModelBuilder[RectangleModelBuilder, Unit] {
   val signature = this
 
   override protected def buildModel: Model[Unit] = {
-    Rectangle(
+    RectanglePrimitive(
       rs.MaterialXYRGB,
       rectangle.xMin.toFloat,
       rectangle.xMax.toFloat,

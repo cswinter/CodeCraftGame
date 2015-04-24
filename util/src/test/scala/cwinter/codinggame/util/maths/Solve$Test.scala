@@ -1,4 +1,4 @@
-package cwinter.codinggame.maths
+package cwinter.codinggame.util.maths
 
 import org.scalatest.FlatSpec
 

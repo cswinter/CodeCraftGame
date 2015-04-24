@@ -1,6 +1,6 @@
 package cwinter.collisions
 
-import cwinter.codinggame.maths.Vector2
+import cwinter.codinggame.util.maths.Vector2
 
 trait Positionable[T] {
   def position(t: T): Vector2

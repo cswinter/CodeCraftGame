@@ -1,5 +1,4 @@
-package cwinter.codinggame.maths
-
+package cwinter.codinggame.util.maths
 
 object Solve {
   /**

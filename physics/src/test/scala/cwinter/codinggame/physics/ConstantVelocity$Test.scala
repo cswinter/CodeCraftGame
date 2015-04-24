@@ -1,6 +1,6 @@
 package cwinter.codinggame.physics
 
-import cwinter.codinggame.maths.Vector2
+import cwinter.codinggame.util.maths.Vector2
 import org.scalatest.FlatSpec
 
 

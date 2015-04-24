@@ -1,6 +1,6 @@
 package cwinter.codinggame.physics
 
-import cwinter.codinggame.maths.{Rectangle, Vector2}
+import cwinter.codinggame.util.maths.{Rectangle, Vector2}
 import cwinter.graphics.application.DrawingCanvas
 import cwinter.worldstate.{WorldObjectDescriptor, GameWorld}
 

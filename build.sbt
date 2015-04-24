@@ -1,10 +1,10 @@
 import Dependencies._
 
 
-lazy val maths = (project in file("maths")).
+lazy val util = (project in file("util")).
   settings(Commons.settings: _*).
   settings(
-    name := "cg.maths",
+    name := "cg.util",
     libraryDependencies ++= commonDependencies
   )
 
@@ -15,35 +15,35 @@ lazy val graphics = (project in file("graphics")).
     name := "cg.graphics",
     libraryDependencies ++= commonDependencies,
     libraryDependencies ++= graphicsDependencies
-  ).dependsOn(maths)
+  ).dependsOn(util)
 
 
 lazy val collisions = (project in file("collisions")).
   settings(Commons.settings: _*).
   settings(
     name := "cg.collisions"
-  ).dependsOn(maths)
+  ).dependsOn(util)
 
 lazy val physics = (project in file("physics")).
   settings(Commons.settings: _*)
   .settings(
     name := "cg.physics",
     libraryDependencies ++= commonDependencies
-  ).dependsOn(graphics, maths, collisions)
+  ).dependsOn(graphics, util, collisions)
 
 lazy val simulation = (project in file("simulation")).
   settings(Commons.settings: _*).
   settings(
     name := "cg.simulator",
     libraryDependencies ++= commonDependencies
-  ).dependsOn(graphics, collisions, maths)
+  ).dependsOn(graphics, collisions, util)
 
 lazy val core = (project in file("core")).
   settings(Commons.settings: _*).
   settings(
     name := "cg.core",
     libraryDependencies ++= commonDependencies
-  ).dependsOn(graphics, physics, collisions, maths)
+  ).dependsOn(graphics, physics, collisions, util)
 
 lazy val testai = (project in file("testai")).
   settings(Commons.settings: _*).

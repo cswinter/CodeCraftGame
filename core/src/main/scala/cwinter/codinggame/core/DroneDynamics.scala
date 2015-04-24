@@ -1,7 +1,7 @@
 package cwinter.codinggame.core
 
-import cwinter.codinggame.maths.{Rectangle, Solve, Vector2}
 import cwinter.codinggame.physics._
+import cwinter.codinggame.util.maths.{Rectangle, Vector2, Solve}
 
 
 class DroneDynamics(

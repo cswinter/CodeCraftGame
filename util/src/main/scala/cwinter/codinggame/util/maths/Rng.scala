@@ -1,4 +1,4 @@
-package cwinter.codinggame.maths
+package cwinter.codinggame.util.maths
 
 object Rng {
   private[this] val random = scala.util.Random

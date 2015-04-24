@@ -1,7 +1,7 @@
 package cwinter.codinggame.physics
 
-import cwinter.codinggame.maths.{Vector2, Rng}
-import cwinter.worldstate.{Circle, WorldObjectDescriptor}
+import cwinter.codinggame.util.maths.{Rng, Vector2}
+import cwinter.worldstate.{DrawCircle, WorldObjectDescriptor}
 
 
 class MovingObject[TDynamics](
@@ -10,7 +10,7 @@ class MovingObject[TDynamics](
 ) {
   val id = UID()
 
-  def state: WorldObjectDescriptor = Circle(id, objectDynamics.pos.x.toFloat, objectDynamics.pos.y.toFloat, radius.toFloat)
+  def state: WorldObjectDescriptor = DrawCircle(id, objectDynamics.pos.x.toFloat, objectDynamics.pos.y.toFloat, radius.toFloat)
 
   override def toString: String = id.toString
 }

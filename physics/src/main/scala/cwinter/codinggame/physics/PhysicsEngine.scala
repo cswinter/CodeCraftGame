@@ -1,9 +1,9 @@
 package cwinter.codinggame.physics
 
-import cwinter.codinggame.maths.{Vector2, Rectangle}
+import cwinter.codinggame.util.maths.{Rectangle, Vector2}
 import cwinter.collisions.{Positionable, SquareGrid}
 import cwinter.graphics.engine.Debug
-import cwinter.worldstate.{WorldObjectDescriptor, Rectangle => DrawRectangle}
+import cwinter.worldstate.{WorldObjectDescriptor, DrawRectangle => DrawRectangle}
 
 /**
  * Simulates movement of colliding particles.

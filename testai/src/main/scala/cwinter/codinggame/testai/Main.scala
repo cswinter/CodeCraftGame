@@ -1,7 +1,7 @@
 package cwinter.codinggame.testai
 
 import cwinter.codinggame.core.{StorageModule, MineralCrystal, DroneController, TheGameMaster}
-import cwinter.codinggame.maths.{Rng, Vector2}
+import cwinter.codinggame.util.maths.{Rng, Vector2}
 
 object Main {
   def main(args: Array[String]): Unit = {

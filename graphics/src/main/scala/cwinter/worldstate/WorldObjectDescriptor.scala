@@ -1,5 +1,7 @@
 package cwinter.worldstate
 
+import cwinter.codinggame.util.maths
+
 
 sealed trait WorldObjectDescriptor {
   val identifier: Int
@@ -81,7 +83,7 @@ case class TestingObject(time: Int) extends WorldObjectDescriptor {
   val orientation = 0f
 }
 
-case class Circle(
+case class DrawCircle(
   identifier: Int,
   xPos: Float,
   yPos: Float,
@@ -90,9 +92,9 @@ case class Circle(
   val orientation = 0.0f
 }
 
-case class Rectangle(
+case class DrawRectangle(
   identifier: Int,
-  bounds: cwinter.codinggame.maths.Rectangle
+  bounds: maths.Rectangle
 ) extends WorldObjectDescriptor {
   val orientation = 0.0f
   val xPos: Float = 0

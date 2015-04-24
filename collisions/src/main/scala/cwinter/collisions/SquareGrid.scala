@@ -1,7 +1,7 @@
 package cwinter.collisions
 
 import Positionable.PositionableOps
-import cwinter.codinggame.maths.Rectangle
+import cwinter.codinggame.util.maths.Rectangle
 
 class SquareGrid[T: Positionable](
   val xMin: Int,

@@ -1,6 +1,6 @@
 package cwinter.codinggame.core
 
-import cwinter.codinggame.maths.{Vector2, Rng, Rectangle}
+import cwinter.codinggame.util.maths.{Rng, Rectangle, Vector2}
 
 case class Map(
   size: Rectangle,

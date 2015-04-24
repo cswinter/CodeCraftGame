@@ -38,11 +38,11 @@ object TheWorldObjectModelFactory {
         Unit,
         new TestModelBuilder(t).getModel,
         modelview)
-      case circle: Circle => new ClosedModel[Unit](
+      case circle: DrawCircle => new ClosedModel[Unit](
         Unit,
         CircleModelBuilder(circle.radius, circle.identifier).getModel,
         modelview)
-      case rectangle: Rectangle => new ClosedModel[Unit](
+      case rectangle: DrawRectangle => new ClosedModel[Unit](
         Unit,
         RectangleModelBuilder(rectangle.bounds).getModel,
         modelview)

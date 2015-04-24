@@ -1,4 +1,4 @@
-package cwinter.codinggame.maths
+package cwinter.codinggame.util.maths
 
 case class Vector2(x: Double, y: Double) {
   def dot(rhs: Vector2): Double = x * rhs.x + y * rhs.y

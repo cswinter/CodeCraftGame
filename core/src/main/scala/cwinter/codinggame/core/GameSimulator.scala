@@ -1,7 +1,7 @@
 package cwinter.codinggame.core
 
-import cwinter.codinggame.maths.Vector2
 import cwinter.codinggame.physics.PhysicsEngine
+import cwinter.codinggame.util.maths.Vector2
 import cwinter.collisions.VisionTracker
 import cwinter.worldstate.{WorldObjectDescriptor, GameWorld}
 

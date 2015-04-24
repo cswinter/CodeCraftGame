@@ -1,6 +1,6 @@
 package cwinter.codinggame.physics
 
-import cwinter.codinggame.maths.{Solve, Vector2, Rectangle}
+import cwinter.codinggame.util.maths.{Rectangle, Vector2, Solve}
 
 
 abstract class DynamicObject[T](initialPos: Vector2, initialTime: Double) {

@@ -1,6 +1,6 @@
 package cwinter.codinggame.core
 
-import cwinter.codinggame.maths.{Vector2, Rectangle}
+import cwinter.codinggame.util.maths.Rectangle
 import cwinter.graphics.application.DrawingCanvas
 
 

@@ -5,7 +5,7 @@ import cwinter.graphics.materials.Material
 import scala.reflect.ClassTag
 
 
-case class Rectangle[TColor <: Vertex : ClassTag, TParams](
+case class RectanglePrimitive[TColor <: Vertex : ClassTag, TParams](
   material: Material[VertexXYZ, TColor, TParams],
   xMin: Float,
   xMax: Float,
@@ -14,7 +14,7 @@ case class Rectangle[TColor <: Vertex : ClassTag, TParams](
   width: Float,
   color: TColor,
   zPos: Float
-) extends PrimitiveModelBuilder[Rectangle[TColor, TParams], TColor, TParams] {
+) extends PrimitiveModelBuilder[RectanglePrimitive[TColor, TParams], TColor, TParams] {
   val shape = this
 
   protected override def computeVertexData(): Seq[(VertexXYZ, TColor)] = {
