@@ -58,6 +58,7 @@ private[core] class Drone(
     controller.onTick()
   }
 
+  val droneSize = Map(3 -> 2, 4 -> 4)
   def processCommands(): Seq[SimulatorEvent] = {
     movementCommand match {
       case MoveInDirection(direction) =>
@@ -83,10 +84,11 @@ private[core] class Drone(
     droneConstructions =
       for ((drone, progress) <- droneConstructions)
         yield {
+          val requiredFactories = droneSize(drone.drone.size)
           drone.drone.dynamics.orientation = dynamics.orientation
           drone.drone.constructionProgress = Some(progress)
-          val positions = index until index + 2
-          index += 2
+          val positions = index until index + requiredFactories
+          index += requiredFactories
           val moduleOffset = ModulePosition.center(size, positions)
           val rotation = dynamics.orientation.orientation
           val moduleOffsetVector2 = Vector2(moduleOffset.x, moduleOffset.y).rotated(rotation)
@@ -135,7 +137,7 @@ private[core] class Drone(
     storageCapacity - storedMinerals.map(_.size).sum - math.ceil(storedEnergyGlobes / 7.0).toInt
 
   def availableFactories: Int =
-    factoryCapacity - droneConstructions.map(_._1.drone.size - 2).sum
+    factoryCapacity - droneConstructions.map(d => droneSize(d._1.drone.size)).sum
 
 
   override def descriptor: WorldObjectDescriptor = {
@@ -165,8 +167,9 @@ private[core] class Drone(
     }
 
     for ((ConstructDrone(drone), _) <- droneConstructions) {
-      result ::= cwinter.worldstate.ProcessingModule(index until index + (drone.size - 2))
-      index += drone.size - 2
+      val n = droneSize(drone.size)
+      result ::= cwinter.worldstate.ProcessingModule(index until index + n)
+      index += n
     }
     for (i <- 0 until availableFactories) {
       result ::= cwinter.worldstate.ProcessingModule(Seq(index))

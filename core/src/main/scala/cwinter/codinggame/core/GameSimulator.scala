@@ -7,7 +7,7 @@ import cwinter.worldstate.{WorldObjectDescriptor, GameWorld}
 
 
 class GameSimulator(
-  val map: Map,
+  val map: WorldMap,
   mothershipController: DroneController
 ) extends GameWorld {
   final val SightRadius = 250

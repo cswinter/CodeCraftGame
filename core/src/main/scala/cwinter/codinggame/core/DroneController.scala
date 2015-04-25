@@ -29,6 +29,11 @@ abstract class DroneController {
     drone.startDroneConstruction(ConstructDrone(newDrone))
   }
 
+  def buildTinyDrone(module: Module, controller: DroneController): Unit = {
+    val newDrone = new Drone(Seq(module), 3, controller, Vector2.NullVector, -1)
+    drone.startDroneConstruction(ConstructDrone(newDrone))
+  }
+
   def position: Vector2 = drone.position
   def availableStorage: Int = drone.availableStorage
   def availableFactories: Int = drone.availableFactories

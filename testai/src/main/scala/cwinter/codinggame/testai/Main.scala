@@ -19,8 +19,10 @@ class Mothership extends DroneController {
   }
 
   override def onTick(): Unit = {
-    if (availableFactories >= 2) {
-      buildSmallDrone(StorageModule, StorageModule, new ScoutingDroneController())
+    if (availableFactories >= 4) {
+     buildSmallDrone(StorageModule, StorageModule, new ScoutingDroneController())
+    } else if (availableFactories >= 2) {
+     buildTinyDrone(StorageModule, new ScoutingDroneController())
     }
   }
 

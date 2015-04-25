@@ -9,7 +9,7 @@ object TheGameMaster {
 
 
   def startGame(mothership: DroneController): Unit = {
-    val map = Map(WorldSize, 100)
+    val map = WorldMap(WorldSize, 100)
     val simulator = new GameSimulator(map, mothership)
     DrawingCanvas.run(simulator)
   }
