@@ -16,12 +16,23 @@ abstract class DroneController {
     drone.giveMovementCommand(MoveInDirection(direction))
   }
 
+  def moveToDrone(otherDrone: DroneController): Unit = {
+    val other = otherDrone.drone
+    val targetDirection = (other.position - position).normalized
+    val targetPos = other.position - (other.radius + drone.radius + 10) * targetDirection
+    moveToPosition(targetPos)
+  }
+
   def moveToPosition(position: Vector2): Unit = {
     drone.giveMovementCommand(MoveToPosition(position))
   }
 
   def harvestMineral(mineralCrystal: MineralCrystal): Unit = {
     drone.giveMovementCommand(HarvestMineralCrystal(mineralCrystal))
+  }
+
+  def depositMineralCrystals(otherDrone: DroneController): Unit = {
+    drone.giveMovementCommand(DepositMineralCrystals(otherDrone.drone))
   }
 
   def buildSmallDrone(module1: Module, module2: Module, controller: DroneController): Unit = {

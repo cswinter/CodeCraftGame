@@ -27,7 +27,7 @@ private[core] class Drone(
 
   private[this] val eventQueue = collection.mutable.Queue[DroneEvent](Spawned)
 
-  private[this] var storedMinerals = List.empty[MineralCrystal]
+  private var storedMinerals = List.empty[MineralCrystal]
   private[this] var storedEnergyGlobes: Int = startingResources
 
   private[this] var movementCommand: MovementCommand = HoldPosition
@@ -69,7 +69,9 @@ private[core] class Drone(
       case MoveToPosition(position) =>
         val dist = position - this.position
         val speed = 100 / 30 // TODO: improve this
-        if ((dist dot dist) <= speed * speed) {
+        if (dist ~ Vector2.NullVector) {
+          // do nothing
+        } else if ((dist dot dist) <= speed * speed) {
           dynamics.limitSpeed(dist.size * 30)
           dynamics.orientation = dist.normalized
           dynamics.limitSpeed(100)
@@ -79,6 +81,10 @@ private[core] class Drone(
       case HarvestMineralCrystal(mineral) =>
         harvestResource(mineral)
         movementCommand = HoldPosition
+      case DepositMineralCrystals(depositee) =>
+        // TODO: check storage etc
+        depositee.storedMinerals :::= storedMinerals
+        storedMinerals = List.empty[MineralCrystal]
       case HoldPosition =>
         dynamics.halt()
     }
@@ -145,6 +151,7 @@ private[core] class Drone(
     assert(mineralCrystal.size <= availableStorage, s"Crystal size is ${mineralCrystal.size} and storage is only $availableStorage")
     assert(this.position ~ mineralCrystal.position)
     storedMinerals ::= mineralCrystal
+    simulatorEvents ::= MineralCrystalHarvested(mineralCrystal)
   }
 
   override def position: Vector2 = dynamics.pos
@@ -231,7 +238,7 @@ private[core] class Drone(
   }
 
 
-  private def radius: Double = {
+  def radius: Double = {
     val sideLength = 40
     val radiusBody = 0.5f * sideLength / math.sin(math.Pi / size).toFloat
     radiusBody + 0.5f * Geometry.circumradius(4, size)
@@ -240,39 +247,28 @@ private[core] class Drone(
 
 
 sealed trait Module
-
 case object StorageModule extends Module
-
 case object Lasers extends Module
-
 case object NanobotFactory extends Module
 
 
 sealed trait DroneEvent
-
 case object Spawned extends DroneEvent
-
 case class MineralEntersSightRadius(mineralCrystal: MineralCrystal) extends DroneEvent
-
 case object ArrivedAtPosition extends DroneEvent
-
 case class DroneEntersSightRadius(drone: Drone) extends DroneEvent
 
 
 sealed trait DroneCommand
 
 sealed trait MovementCommand extends DroneCommand
-
 case class MoveInDirection(direction: Vector2) extends MovementCommand
-
 case class MoveToPosition(position: Vector2) extends MovementCommand
-
 case class HarvestMineralCrystal(mineralCrystal: MineralCrystal) extends MovementCommand
-
 case object HoldPosition extends MovementCommand
+case class DepositMineralCrystals(drone: Drone) extends MovementCommand
 
 sealed trait ConstructionCommand extends DroneCommand
-
 case class ConstructDrone(drone: Drone) extends ConstructionCommand
 
 

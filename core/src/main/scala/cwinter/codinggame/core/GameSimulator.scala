@@ -61,7 +61,9 @@ class GameSimulator(
         yield event
 
     simulatorEvents.foreach {
-      case MineralCrystalHarvested(mineralCrystal) => ???
+      case MineralCrystalHarvested(mineralCrystal) =>
+        visibleObjects.remove(mineralCrystal)
+        visionTracker.remove(mineralCrystal)
       case DroneConstructionStarted(drone) =>
         visibleObjects.add(drone)
       case SpawnDrone(drone) =>

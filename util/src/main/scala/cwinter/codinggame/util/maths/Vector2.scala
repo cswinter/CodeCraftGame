@@ -1,6 +1,8 @@
 package cwinter.codinggame.util.maths
 
 case class Vector2(x: Double, y: Double) {
+  assert(isValid)
+
   def dot(rhs: Vector2): Double = x * rhs.x + y * rhs.y
   def +(rhs: Vector2): Vector2 = Vector2(x + rhs.x, y + rhs.y)
   def -(rhs: Vector2): Vector2 = Vector2(x - rhs.x, y - rhs.y)
@@ -20,6 +22,10 @@ case class Vector2(x: Double, y: Double) {
   def orientation = {
     assert(x != 0 || y != 0, s"x=$x, y=$y")
     math.atan2(y, x)
+  }
+
+  def isValid: Boolean = {
+    !x.isNaN && !y.isNaN && !x.isInfinity && !y.isInfinity
   }
 
   final val epsilon: Double = 0.00000000001

@@ -14,7 +14,7 @@ class MineralModelBuilder(mineral: MineralDescriptor)(implicit val rs: RenderSta
 
   override protected def buildModel: Model[Unit] = {
     val size = mineral.size
-    val radius = math.sqrt(size).toFloat * 15
+    val radius = math.sqrt(size).toFloat * 8
 
     Polygon(
       rs.BloomShader,
