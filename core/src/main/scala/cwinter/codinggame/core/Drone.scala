@@ -234,7 +234,7 @@ private[core] class Drone(
   private def radius: Double = {
     val sideLength = 40
     val radiusBody = 0.5f * sideLength / math.sin(math.Pi / size).toFloat
-    radiusBody + Geometry.circumradius(4, size)
+    radiusBody + 0.5f * Geometry.circumradius(4, size)
   }
 }
 
