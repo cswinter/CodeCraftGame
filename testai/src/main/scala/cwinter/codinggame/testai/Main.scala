@@ -26,14 +26,8 @@ class Mothership extends DroneController {
     }
   }
 
-  override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = {
-  }
-
-  var mineralCrystal: MineralCrystal = null
-  override def onArrival(): Unit = {
-    if (mineralCrystal != null)
-      harvestMineral(mineralCrystal)
-  }
+  override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = ()
+  override def onArrival(): Unit = ()
 }
 
 class ScoutingDroneController extends DroneController {

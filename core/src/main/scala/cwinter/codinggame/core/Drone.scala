@@ -14,6 +14,10 @@ private[core] class Drone(
   startingResources: Int = 0
 ) extends WorldObject {
 
+  // constants for drone construction
+  final val ConstructionPeriod = 175
+  final val ResourceCost = 5
+
   val dynamics: DroneDynamics = new DroneDynamics(100, radius, initialPos, time)
   val storageCapacity = modules.count(_ == StorageModule)
   val nLasers = modules.count(_ == Lasers)
@@ -58,7 +62,6 @@ private[core] class Drone(
     controller.onTick()
   }
 
-  val droneSize = Map(3 -> 2, 4 -> 4)
   def processCommands(): Seq[SimulatorEvent] = {
     movementCommand match {
       case MoveInDirection(direction) =>
@@ -84,7 +87,7 @@ private[core] class Drone(
     droneConstructions =
       for ((drone, progress) <- droneConstructions)
         yield {
-          val requiredFactories = droneSize(drone.drone.size)
+          val requiredFactories = drone.drone.requiredFactories
           drone.drone.dynamics.orientation = dynamics.orientation
           drone.drone.constructionProgress = Some(progress)
           val positions = index until index + requiredFactories
@@ -93,16 +96,27 @@ private[core] class Drone(
           val rotation = dynamics.orientation.orientation
           val moduleOffsetVector2 = Vector2(moduleOffset.x, moduleOffset.y).rotated(rotation)
           drone.drone.dynamics.setPosition(position + moduleOffsetVector2)
-          if (progress == 500) {
+          if (progress == drone.drone.buildTime) {
             simulatorEvents ::= SpawnDrone(drone.drone)
             drone.drone.constructionProgress = None
             drone.drone.dynamics.setPosition(position - 150 * Rng.vector2())
           }
-          // TODO: set position (need to know factory offset)
-          (drone, progress + 1)
+          if (progress % drone.drone.resourceDepletionPeriod == 0) {
+            if (storedEnergyGlobes > 0) {
+              storedEnergyGlobes -= 1
+              (drone, progress + 1)
+            } else {
+              (drone, progress)
+            }
+          } else {
+            (drone, progress + 1)
+          }
         }
 
-    droneConstructions = droneConstructions.filter(_._2 <= 500)
+    droneConstructions = droneConstructions.filter {
+      case (drone, progress) =>
+        drone.drone.buildTime >= progress
+    }
 
     dynamics.update()
 
@@ -117,8 +131,10 @@ private[core] class Drone(
 
 
   def giveMovementCommand(value: MovementCommand): Unit = movementCommand = value
+
   def startDroneConstruction(command: ConstructDrone): Unit = {
     droneConstructions ::= ((command, 0))
+    droneConstructions = droneConstructions.sortBy { case (c, p) => c.drone.requiredFactories }
     simulatorEvents ::= DroneConstructionStarted(command.drone)
     command.drone.dynamics.orientation = dynamics.orientation
   }
@@ -137,7 +153,28 @@ private[core] class Drone(
     storageCapacity - storedMinerals.map(_.size).sum - math.ceil(storedEnergyGlobes / 7.0).toInt
 
   def availableFactories: Int =
-    factoryCapacity - droneConstructions.map(d => droneSize(d._1.drone.size)).sum
+    factoryCapacity - droneConstructions.map(d => d._1.drone.requiredFactories).sum
+
+  def resourceCost: Int = {
+    requiredFactories * ResourceCost
+  }
+
+  def requiredFactories: Int = {
+    size match {
+      case 3 => 2
+      case 4 => 4
+      case x => throw new Exception(s"Drone of size $x!")
+    }
+  }
+
+  def buildTime: Int = {
+    ConstructionPeriod * (size - 1)
+  }
+
+  def resourceDepletionPeriod: Int = {
+    // TODO: this is not always accurate bc integer division
+    buildTime / resourceCost
+  }
 
 
   override def descriptor: WorldObjectDescriptor = {
@@ -167,7 +204,7 @@ private[core] class Drone(
     }
 
     for ((ConstructDrone(drone), _) <- droneConstructions) {
-      val n = droneSize(drone.size)
+      val n = drone.requiredFactories
       result ::= cwinter.worldstate.ProcessingModule(index until index + n)
       index += n
     }
@@ -205,27 +242,37 @@ private[core] class Drone(
 sealed trait Module
 
 case object StorageModule extends Module
+
 case object Lasers extends Module
+
 case object NanobotFactory extends Module
 
 
 sealed trait DroneEvent
 
 case object Spawned extends DroneEvent
+
 case class MineralEntersSightRadius(mineralCrystal: MineralCrystal) extends DroneEvent
+
 case object ArrivedAtPosition extends DroneEvent
+
 case class DroneEntersSightRadius(drone: Drone) extends DroneEvent
 
 
 sealed trait DroneCommand
 
 sealed trait MovementCommand extends DroneCommand
+
 case class MoveInDirection(direction: Vector2) extends MovementCommand
+
 case class MoveToPosition(position: Vector2) extends MovementCommand
+
 case class HarvestMineralCrystal(mineralCrystal: MineralCrystal) extends MovementCommand
+
 case object HoldPosition extends MovementCommand
 
 sealed trait ConstructionCommand extends DroneCommand
+
 case class ConstructDrone(drone: Drone) extends ConstructionCommand
 
 
