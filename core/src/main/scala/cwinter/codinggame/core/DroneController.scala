@@ -45,9 +45,14 @@ abstract class DroneController {
     drone.startDroneConstruction(ConstructDrone(newDrone))
   }
 
+  def processMineral(mineralCrystal: MineralCrystal): Unit = {
+    drone.startMineralProcessing(mineralCrystal)
+  }
+
   def position: Vector2 = drone.position
   def availableStorage: Int = drone.availableStorage
   def availableFactories: Int = drone.availableFactories
+  def storedMinerals: Seq[MineralCrystal] = drone.storedMinerals
 
   private[core] def initialise(drone: Drone): Unit = this.drone = drone
 }

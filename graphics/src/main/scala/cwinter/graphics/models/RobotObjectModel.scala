@@ -85,7 +85,6 @@ class DroneModelBuilder(robot: DroneDescriptor, timestep: Int)(implicit val rs: 
         0
       ).getModel
 
-
     val modules =
       for {
         module <- signature.modules

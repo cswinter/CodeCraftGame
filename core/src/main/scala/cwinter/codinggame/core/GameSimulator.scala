@@ -60,10 +60,15 @@ class GameSimulator(
       for (drone <- drones; event <- drone.processCommands())
         yield event
 
+    simulatorEvents.foreach(println)
     simulatorEvents.foreach {
       case MineralCrystalHarvested(mineralCrystal) =>
         visibleObjects.remove(mineralCrystal)
         visionTracker.remove(mineralCrystal)
+      case MineralCrystalDestroyed(mineralCrystal) =>
+        visibleObjects.remove(mineralCrystal)
+      case MineralCrystalActivated(mineralCrystal) =>
+        visibleObjects.add(mineralCrystal)
       case DroneConstructionStarted(drone) =>
         visibleObjects.add(drone)
       case SpawnDrone(drone) =>
@@ -99,6 +104,6 @@ sealed trait SimulatorEvent
 case class MineralCrystalHarvested(mineralCrystal: MineralCrystal) extends SimulatorEvent
 case class DroneConstructionStarted(drone: Drone) extends SimulatorEvent
 case class SpawnDrone(drone: Drone) extends SimulatorEvent
-
-
+case class MineralCrystalActivated(mineralCrystal: MineralCrystal) extends SimulatorEvent
+case class MineralCrystalDestroyed(mineralCrystal: MineralCrystal) extends SimulatorEvent
 

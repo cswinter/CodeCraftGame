@@ -27,11 +27,15 @@ private[core] class Drone(
 
   private[this] val eventQueue = collection.mutable.Queue[DroneEvent](Spawned)
 
-  private var storedMinerals = List.empty[MineralCrystal]
+  private var _storedMinerals = List.empty[MineralCrystal]
+  def storedMinerals: List[MineralCrystal] = _storedMinerals
+  private def storedMinerals_=(value: List[MineralCrystal]): Unit = _storedMinerals = value
+
   private[this] var storedEnergyGlobes: Int = startingResources
 
   private[this] var movementCommand: MovementCommand = HoldPosition
   private[this] var droneConstructions = List.empty[(ConstructDrone, Int)]
+  private[this] var mineralProcessing = List.empty[(MineralCrystal, Int)]
 
   private[this] var simulatorEvents = List.empty[SimulatorEvent]
 
@@ -119,9 +123,29 @@ private[core] class Drone(
           }
         }
 
+    mineralProcessing =
+      for ((mineral, progress) <- mineralProcessing)
+        yield {
+          val positions = index until index + mineral.size
+          val moduleOffset = ModulePosition.center(size, positions)
+          index += mineral.size
+          mineral.position = position + Vector2(moduleOffset.x, moduleOffset.y)
+
+          if (progress % 25 == 0) {
+            storedEnergyGlobes += 1
+          }
+          (mineral, progress - 1)
+        }
+
     droneConstructions = droneConstructions.filter {
       case (drone, progress) =>
         drone.drone.buildTime >= progress
+    }
+
+    mineralProcessing = mineralProcessing.filter {
+      case (mineral, remaining) =>
+        if (remaining <= 0) simulatorEvents ::= MineralCrystalDestroyed(mineral)
+        remaining > 0
     }
 
     dynamics.update()
@@ -145,6 +169,13 @@ private[core] class Drone(
     command.drone.dynamics.orientation = dynamics.orientation
   }
 
+  def startMineralProcessing(mineral: MineralCrystal): Unit = {
+    mineralProcessing ::= (mineral, mineral.size * 7 * 25)
+    storedMinerals = storedMinerals.filter(_ != mineral)
+    simulatorEvents ::= MineralCrystalActivated(mineral)
+    mineral.harvested = true
+  }
+
   def harvestResource(mineralCrystal: MineralCrystal): Unit = {
     // TODO: better error messages, add option to emit warnings and abort instead of throwing
     // TODO: harvesting takes some time to complete
@@ -160,7 +191,9 @@ private[core] class Drone(
     storageCapacity - storedMinerals.map(_.size).sum - math.ceil(storedEnergyGlobes / 7.0).toInt
 
   def availableFactories: Int =
-    factoryCapacity - droneConstructions.map(d => d._1.drone.requiredFactories).sum
+    factoryCapacity -
+      droneConstructions.map(d => d._1.drone.requiredFactories).sum -
+      mineralProcessing.map(d => d._1.size).sum
 
   def resourceCost: Int = {
     requiredFactories * ResourceCost
@@ -210,8 +243,12 @@ private[core] class Drone(
       index += 1
     }
 
-    for ((ConstructDrone(drone), _) <- droneConstructions) {
-      val n = drone.requiredFactories
+    val factoryContents = (
+      droneConstructions.map(_._1.drone.requiredFactories) ++
+      mineralProcessing.map(_._1.size)
+      ).sorted.reverse
+
+    for (n <- factoryContents) {
       result ::= cwinter.worldstate.ProcessingModule(index until index + n)
       index += n
     }

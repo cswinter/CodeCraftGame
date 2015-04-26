@@ -21,8 +21,12 @@ class Mothership extends DroneController {
   override def onTick(): Unit = {
     if (availableFactories >= 4) {
      buildSmallDrone(StorageModule, StorageModule, new ScoutingDroneController(this))
-    } else if (availableFactories >= 2) {
-     buildTinyDrone(StorageModule, new ScoutingDroneController(this))
+    } else {
+      for (mineralCrystal <- storedMinerals) {
+        if (availableFactories >= mineralCrystal.size) {
+          processMineral(mineralCrystal)
+        }
+      }
     }
   }
 

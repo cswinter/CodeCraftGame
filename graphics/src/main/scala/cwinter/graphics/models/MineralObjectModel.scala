@@ -6,11 +6,11 @@ import cwinter.graphics.model._
 import cwinter.worldstate.MineralDescriptor
 
 
-case class MineralSignature(size: Int)
+case class MineralSignature(size: Int, harvested: Boolean)
 
 class MineralModelBuilder(mineral: MineralDescriptor)(implicit val rs: RenderStack)
   extends ModelBuilder[MineralSignature, Unit] {
-  val signature = MineralSignature(mineral.size)
+  val signature = MineralSignature(mineral.size, mineral.harvested)
 
   override protected def buildModel: Model[Unit] = {
     val size = mineral.size
@@ -22,7 +22,7 @@ class MineralModelBuilder(mineral: MineralDescriptor)(implicit val rs: RenderSta
       colorMidpoint = ColorRGB(0.03f, 0.6f, 0.03f),
       colorOutside = ColorRGB(0.0f, 0.1f, 0.0f),
       radius = radius,
-      zPos = -1
+      zPos = if (signature.harvested) 2 else -1
     ).getModel
   }
 }
