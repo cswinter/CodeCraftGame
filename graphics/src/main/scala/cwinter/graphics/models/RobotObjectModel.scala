@@ -26,7 +26,8 @@ case class DroneSignature(
   hasShields: Boolean,
   hullState: Seq[Byte],
   isBuilding: Boolean,
-  animationTime: Int
+  animationTime: Int,
+  player: Player
 )
 
 object DroneSignature {
@@ -37,7 +38,8 @@ object DroneSignature {
       robotObject.modules.exists(_.isInstanceOf[ShieldGenerator]),
       robotObject.hullState,
       robotObject.constructionState != None,
-      timestep % 250)
+      timestep % 250,
+      robotObject.player)
   }
 }
 
@@ -67,7 +69,7 @@ class DroneModelBuilder(robot: DroneDescriptor, timestep: Int)(implicit val rs: 
         radius = radiusBody
       ).getModel
 
-    val hullColors = ColorBackplane +: robot.hullState.map {
+    val hullColors = robot.hullState.map {
       case 2 => ColorHull
       case 1 => ColorHullDamaged
       case 0 => ColorHullBroken
@@ -76,8 +78,8 @@ class DroneModelBuilder(robot: DroneDescriptor, timestep: Int)(implicit val rs: 
       PolygonRing(
         rs.MaterialXYRGB,
         sides,
-        hullColors,
-        hullColors,
+        signature.player.color +: hullColors,
+        signature.player.color +: hullColors,
         radiusBody,
         radiusHull,
         NullVectorXY,
