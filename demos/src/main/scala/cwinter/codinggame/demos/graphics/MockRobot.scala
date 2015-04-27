@@ -1,4 +1,4 @@
-package cwinter.codinggame.demos.simulation
+package cwinter.codinggame.demos.graphics
 
 import cwinter.worldstate._
 

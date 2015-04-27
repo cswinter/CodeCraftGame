@@ -1,4 +1,4 @@
-package cwinter.codinggame.demos.simulation
+package cwinter.codinggame.demos.graphics
 
 import cwinter.codinggame.util.maths.Rng
 import cwinter.worldstate.{RedPlayer, BluePlayer, LaserMissileDescriptor, WorldObjectDescriptor}
