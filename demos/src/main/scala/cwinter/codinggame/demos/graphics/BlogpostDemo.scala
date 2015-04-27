@@ -48,7 +48,8 @@ object BlogpostDemo {
     StorageModule(Seq(0), -1),
     Engines(0),
     ShieldGenerator(0),
-    ProcessingModule(Seq(0))
+    ProcessingModule(Seq(0)),
+    Lasers(0)
   ).zipWithIndex.map {
     case (module, i) =>
       new MockRobot(
@@ -58,6 +59,7 @@ object BlogpostDemo {
         size = 3,
         modules = Seq[DroneModule](module),
         sightRadius = None,
+        undamaged = true,
         dontMove = true
       )
   }

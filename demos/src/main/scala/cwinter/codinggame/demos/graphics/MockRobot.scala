@@ -13,12 +13,13 @@ class MockRobot(
   val size: Int,
   var modules: Seq[DroneModule],
   val sightRadius: Option[Int],
+  val undamaged: Boolean = false,
   val dontMove: Boolean = false
 ) extends MockObject {
   private[this] var targetOrientation = orientation
   private[this] var stationary = false
   private[this] val hullState =
-    if (rnd() < 0.8) Seq.fill(size - 1)(2.toByte)
+    if (rnd() < 0.8 || undamaged) Seq.fill(size - 1)(2.toByte)
     else Seq.fill(size - 1)(Random.nextInt(3).toByte)
 
   var inSight = Set.empty[MockObject]

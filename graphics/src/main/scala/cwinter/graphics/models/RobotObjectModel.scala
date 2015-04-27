@@ -14,7 +14,7 @@ object RobotColors {
   val ColorBody = ColorRGB(0.05f, 0.05f, 0.05f)
   val ColorHull = ColorRGB(0.95f, 0.95f, 0.95f)
   val ColorHullDamaged = ColorRGB(0.5f, 0.5f, 0.5f)
-  val ColorHullBroken = Black
+  val ColorHullBroken = ColorRGB(1, 0, 0)
   val ColorThrusters = ColorRGB(0, 0, 1)
   val ColorBackplane = ColorRGB(0.1f, 0.1f, 0.1f)
 }
@@ -105,12 +105,13 @@ class DroneModelBuilder(robot: DroneDescriptor, timestep: Int)(implicit val rs: 
 
     val shields =
       if (signature.hasShields)
-        Some(Polygon(
+        Some(PolygonRing(
           material = rs.TranslucentAdditive,
           n = 50,
-          colorMidpoint = ColorRGBA(ColorThrusters, 0.1f),
-          colorOutside = ColorRGBA(White, 0.5f),
-          radius = radiusHull + 5
+          colorInside = ColorRGBA(ColorThrusters, 0f),
+          colorOutside = ColorRGBA(White, 0.7f),
+          outerRadius = radiusHull + 2,
+          innerRadius = Geometry.inradius(radiusHull, sides) * 0.85f
         ).getModel)
       else None
 

@@ -14,7 +14,8 @@ case class Polygon[TColor <: Vertex : ClassTag, TParams](
   radius: Float,
   position: VertexXY,
   zPos: Float,
-  orientation: Float
+  orientation: Float,
+  colorEdges: Boolean
 ) extends PrimitiveModelBuilder[Polygon[TColor, TParams], TColor, TParams] {
   val shape = this
 
@@ -32,10 +33,18 @@ case class Polygon[TColor <: Vertex : ClassTag, TParams](
 
 
     val colors = new Array[TColor](vertexPos.length)
-    for (i <- 0 until n) {
-      colors(3 * i + 1) = colorOutside(i)
-      colors(3 * i + 2) = colorOutside(i)
-      colors(3 * i) = colorMidpoint(i)
+    if (colorEdges) {
+      for (i <- 0 until n) {
+        colors(3 * i + 1) = colorOutside(i)
+        colors(3 * i + 2) = colorOutside(i)
+        colors(3 * i) = colorMidpoint(i)
+      }
+    } else { // color vertices
+      for (i <- 0 until n) {
+        colors(3 * i + 1) = colorOutside(i)
+        colors(3 * i + 2) = colorOutside((i + 1) % n)
+        colors(3 * i) = colorMidpoint(i)
+      }
     }
 
     vertexPos zip colors
@@ -51,7 +60,9 @@ object Polygon {
     radius: Float = 1,
     position: VertexXY = NullVectorXY,
     zPos: Float = 0,
-    orientation: Float = 0
+    orientation: Float = 0,
+    colorEdges: Boolean = true
   ): Polygon[TColor, TParams] =
-    Polygon(material, n, Seq.fill(n)(colorMidpoint), Seq.fill(n)(colorOutside), radius, position, zPos, orientation)
+    Polygon(material, n, Seq.fill(n)(colorMidpoint), Seq.fill(n)(colorOutside),
+      radius, position, zPos, orientation, colorEdges = colorEdges)
 }
