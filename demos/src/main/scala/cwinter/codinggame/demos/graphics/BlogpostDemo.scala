@@ -42,6 +42,19 @@ object BlogpostDemo {
     }
   }
 
+  def minerals = {
+    Seq(
+      MineralDescriptor(0, 100, -500, 1, 1),
+      MineralDescriptor(1, 130, -520, 2, 1),
+      MineralDescriptor(2, 80, -525, 3, 1),
+      MineralDescriptor(3, 140, -490, 5, 1),
+      MineralDescriptor(4, 95, -550, 4, 1),
+      MineralDescriptor(5, 105, -530, 9, 2),
+      MineralDescriptor(6, 150, -550, 7, 2),
+      MineralDescriptor(7, 180, -500, 8, 4)
+    )
+  }
+
   def modules = Seq[DroneModule](
     StorageModule(Seq(0), 0),
     StorageModule(Seq(0), 7),
@@ -65,6 +78,6 @@ object BlogpostDemo {
   }
 
   def generateObjects(t: Int): Seq[WorldObjectDescriptor] = {
-    hulls
+    hulls ++ minerals
   }
 }
