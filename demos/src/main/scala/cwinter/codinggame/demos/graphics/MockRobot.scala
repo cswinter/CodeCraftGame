@@ -11,7 +11,8 @@ class MockRobot(
   var yPos: Float,
   var orientation: Float,
   val size: Int,
-  var modules: Seq[DroneModule]
+  var modules: Seq[DroneModule],
+  val sightRadius: Option[Int]
 ) extends MockObject {
   private[this] var targetOrientation = orientation
   private[this] var stationary = false
@@ -104,7 +105,7 @@ class MockRobot(
       BluePlayer,
       None,
 
-      Some(TheGameWorldSimulator.SightRadius),
+      sightRadius,
       Some(inSight.map(obj => (obj.xPos, obj.yPos)))
     )
 
