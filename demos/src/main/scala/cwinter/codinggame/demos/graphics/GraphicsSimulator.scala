@@ -6,11 +6,12 @@ import cwinter.worldstate._
 
 
 class GraphicsSimulator(
-  val sightRadius: Option[Int],
-  nRandomDrones: Int,
-  nRandomMinerals: Int,
   customObjects: Seq[MockObject],
-  customChangingObjects: Int => Seq[WorldObjectDescriptor]
+  customChangingObjects: Int => Seq[WorldObjectDescriptor],
+  val sightRadius: Option[Int] = None,
+  nRandomDrones: Int = 0,
+  nRandomMinerals: Int = 0,
+  spawnProjectiles: Boolean = false
 ) extends GameWorld {
   var time = 0
   val vision = new VisionTracker[MockObject](-10000, 10000, -10000, 10000, sightRadius.getOrElse(250))
@@ -18,7 +19,7 @@ class GraphicsSimulator(
 
   import Generators._
   val minerals =
-    for (i <- 0 to nRandomMinerals) yield
+    for (i <- 0 until nRandomMinerals) yield
       new MockResource(
         2000 * rnd() - 1000,
         1000 * rnd() - 500,
@@ -27,7 +28,7 @@ class GraphicsSimulator(
 
   val drones =
     for {
-      i <- 0 to nRandomDrones
+      i <- 0 until nRandomDrones
       xPos = 2000 * rnd() - 1000
       yPos = 1000 * rnd() - 500
       orientation = 2 * math.Pi.toFloat * rnd()
@@ -67,7 +68,7 @@ class GraphicsSimulator(
 
     objects.retain(!_.dead)
 
-    if (rnd() < 0.03) {
+    if (spawnProjectiles && rnd() < 0.03) {
       val missile = new MockLaserMissile(rnd(-500, 500), rnd(-250, 250), rnd(0, 2 * math.Pi.toFloat))
       objects.add(missile)
       vision.insert(missile)

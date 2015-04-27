@@ -91,11 +91,12 @@ object Chaos {
 
   def main(args: Array[String]): Unit = {
     val s = new GraphicsSimulator(
+      customRobots,
+      t => Seq(robotConstruction(t)),
       sightRadius = sightRadius,
       nRandomDrones = 10,
       nRandomMinerals = 20,
-      customRobots,
-      t => Seq(robotConstruction(t))
+      spawnProjectiles = true
     )
     s.run()
   }
