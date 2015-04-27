@@ -1,12 +1,12 @@
 package cwinter.codinggame.demos.graphics
 
 import cwinter.codinggame.util.maths.{VertexXY, Geometry}
-import cwinter.worldstate.{BluePlayer, DroneDescriptor, WorldObjectDescriptor}
+import cwinter.worldstate._
 
 object BlogpostDemo {
   def main(args: Array[String]): Unit = {
     val s = new GraphicsSimulator(
-      customObjects = Seq.empty,
+      customObjects = modules,
       customChangingObjects = generateObjects
     )
     s.run()
@@ -40,6 +40,26 @@ object BlogpostDemo {
         player = BluePlayer
       )
     }
+  }
+
+  def modules = Seq[DroneModule](
+    StorageModule(Seq(0), 0),
+    StorageModule(Seq(0), 7),
+    StorageModule(Seq(0), -1),
+    Engines(0),
+    ShieldGenerator(0),
+    ProcessingModule(Seq(0))
+  ).zipWithIndex.map {
+    case (module, i) =>
+      new MockRobot(
+        xPos = -250,
+        yPos = 100 * i - 200,
+        orientation = 0,
+        size = 3,
+        modules = Seq[DroneModule](module),
+        sightRadius = None,
+        dontMove = true
+      )
   }
 
   def generateObjects(t: Int): Seq[WorldObjectDescriptor] = {

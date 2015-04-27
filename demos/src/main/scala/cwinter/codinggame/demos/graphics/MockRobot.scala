@@ -12,7 +12,8 @@ class MockRobot(
   var orientation: Float,
   val size: Int,
   var modules: Seq[DroneModule],
-  val sightRadius: Option[Int]
+  val sightRadius: Option[Int],
+  val dontMove: Boolean = false
 ) extends MockObject {
   private[this] var targetOrientation = orientation
   private[this] var stationary = false
@@ -26,12 +27,29 @@ class MockRobot(
   val speed = 2f
   val turnSpeed = 0.01f
 
-  val oldPositions = mutable.Queue((xPos, yPos, orientation), (xPos, yPos, orientation))
+  val oldPositions = mutable.Queue.empty[(Float, Float, Float)]
   val nPos = 12
 
 
 
   override def update(): Unit = {
+    // update timer on engines
+    modules = modules.map {
+      case ProcessingModule(pos, t) =>
+        ProcessingModule(pos, t.map(x => (x + 1) % 250))
+      case StorageModule(positions, rc, t) =>
+        StorageModule(
+          positions,
+          rc,
+          t.map(x => (x + 1) % 250)
+        )
+      case m => m
+    }
+
+    if (!dontMove) handleMovement()
+  }
+
+  private def handleMovement(): Unit = {
     // randomly choose new target orientation
     if (rnd() < 0.003) {
       val LimitX = 1500
@@ -69,24 +87,12 @@ class MockRobot(
       stationary = !stationary
     }
 
-    // update timer on engines
-    modules = modules.map {
-      case ProcessingModule(pos, t) =>
-        ProcessingModule(pos, t.map(x => (x + 1) % 250))
-      case StorageModule(positions, rc, t) =>
-        StorageModule(
-          positions,
-          rc,
-          t.map(x => (x + 1) % 250)
-        )
-      case m => m
-    }
-
     // update positions
     if (!stationary) {
       xPos += vx
       yPos += vy
     }
+
 
     oldPositions.enqueue((xPos, yPos, orientation))
     if (oldPositions.length > nPos) oldPositions.dequeue()
@@ -106,7 +112,7 @@ class MockRobot(
       None,
 
       sightRadius,
-      Some(inSight.map(obj => (obj.xPos, obj.yPos)))
+      sightRadius.map(_ => inSight.map(obj => (obj.xPos, obj.yPos)))
     )
 
 
