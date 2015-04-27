@@ -24,6 +24,8 @@ case class QuadStrip[TColor <: Vertex : ClassTag, TParams](
   protected def computeVertexData(): Seq[(VertexXYZ, TColor)] = {
     // diagram: https://www.dropbox.com/sc/owb97vdjnl7bxq0/AAAg0qFJNR5lyxoB4RG7OLJ6a
 
+
+
     /** compute directions, normals and left/right points and connector points **/
     val direction = new Array[VertexXY](n - 1)
     val normal = new Array[VertexXY](n - 1)

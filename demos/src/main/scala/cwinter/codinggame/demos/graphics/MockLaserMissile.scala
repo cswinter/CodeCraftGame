@@ -15,7 +15,7 @@ class MockLaserMissile(
   val player = if (Rng.bernoulli(0.5f)) BluePlayer else RedPlayer
   val speed = 5.0f
   val positions = 15
-  val oldPositions = mutable.Queue((xPos, yPos), (xPos, yPos))
+  val oldPositions = mutable.Queue((xPos, yPos))
   var age = 0
   var rotationSpeed = 0.0f
 
