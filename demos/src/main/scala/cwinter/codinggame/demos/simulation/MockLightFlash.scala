@@ -1,6 +1,6 @@
-package cwinter.simulation
+package cwinter.codinggame.demos.simulation
 
-import cwinter.worldstate.{LightFlashDescriptor, WorldObjectDescriptor}
+import cwinter.worldstate.LightFlashDescriptor
 
 
 class MockLightFlash(val xPos: Float, val yPos: Float) extends MockObject {

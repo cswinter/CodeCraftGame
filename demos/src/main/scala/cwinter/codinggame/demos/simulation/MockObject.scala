@@ -1,4 +1,4 @@
-package cwinter.simulation
+package cwinter.codinggame.demos.simulation
 
 import cwinter.codinggame.util.maths.Vector2
 import cwinter.collisions.Positionable

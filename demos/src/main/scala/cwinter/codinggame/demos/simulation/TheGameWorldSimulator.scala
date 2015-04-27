@@ -1,9 +1,10 @@
-package cwinter.simulation
+package cwinter.codinggame.demos.simulation
 
+import cwinter.collisions.VisionTracker
 import cwinter.graphics.application.DrawingCanvas
 import cwinter.worldstate._
+
 import scala.util.Random
-import cwinter.collisions.VisionTracker
 
 
 object TheGameWorldSimulator extends GameWorld {

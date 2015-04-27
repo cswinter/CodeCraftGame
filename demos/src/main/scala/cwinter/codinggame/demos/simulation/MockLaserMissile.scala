@@ -1,4 +1,4 @@
-package cwinter.simulation
+package cwinter.codinggame.demos.simulation
 
 import cwinter.worldstate.{LaserMissileDescriptor, WorldObjectDescriptor}
 
