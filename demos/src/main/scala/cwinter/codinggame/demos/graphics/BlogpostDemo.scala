@@ -78,8 +78,25 @@ object BlogpostDemo {
       )
   }
 
+  val largeDrone = DroneDescriptor(
+    identifier = 1, xPos = 170, yPos = 300, orientation = 0,
+    positions = Seq(),
+    modules = Seq(
+      Lasers(0),
+      Engines(1),
+      StorageModule(Seq(2), 7),
+      ShieldGenerator(3),
+      Lasers(4),
+      Lasers(5),
+      Lasers(6)
+    ),
+    hullState = Seq.fill[Byte](5)(2),
+    6,
+    BluePlayer
+  )
+
   def generateObjects(t: Int): Seq[WorldObjectDescriptor] = {
-    hulls ++ minerals
+    hulls ++ minerals :+ largeDrone
   }
 
   def spawnObjects(t: Int): Seq[MockObject] = {

@@ -26,7 +26,7 @@ object ModulePosition {
     5 -> Geometry.polygonVertices2(4, radius = 17),
 
     6 -> permutation(
-      Geometry.polygonVertices2(6, radius = 27) :+ NullVectorXY,
+      Geometry.polygonVertices2(6, radius = 25) :+ NullVectorXY,
       IndexedSeq(1, 0, 5, 6, 4, 3, 2)
     ),
 
