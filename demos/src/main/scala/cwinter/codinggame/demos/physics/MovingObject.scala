@@ -1,5 +1,6 @@
-package cwinter.codinggame.physics
+package cwinter.codinggame.demos.physics
 
+import cwinter.codinggame.physics.{ConstantVelocityObject, DynamicObject}
 import cwinter.codinggame.util.maths.{Rng, Vector2}
 import cwinter.worldstate.{DrawCircle, WorldObjectDescriptor}
 

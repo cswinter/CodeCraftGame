@@ -29,7 +29,7 @@ lazy val physics = (project in file("physics")).
   .settings(
     name := "cg.physics",
     libraryDependencies ++= commonDependencies
-  ).dependsOn(graphics, util, collisions)
+  ).dependsOn(util, collisions)
 
 lazy val core = (project in file("core")).
   settings(Commons.settings: _*).

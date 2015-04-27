@@ -2,8 +2,6 @@ package cwinter.codinggame.physics
 
 import cwinter.codinggame.util.maths.{Rectangle, Vector2}
 import cwinter.collisions.{Positionable, SquareGrid}
-import cwinter.graphics.engine.Debug
-import cwinter.worldstate.{WorldObjectDescriptor, DrawRectangle => DrawRectangle}
 
 /**
  * Simulates movement of colliding particles.
@@ -68,9 +66,6 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
     worldBoundaries.yMax.toInt,
     2 * maxRadius
   )(ObjectRecordHasPosition)
-
-
-  Debug.drawAlways(DrawRectangle(-1, worldBoundaries))
 
   def time: Double = _time
 

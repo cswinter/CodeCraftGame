@@ -1,8 +1,9 @@
-package cwinter.codinggame.physics
+package cwinter.codinggame.demos.physics
 
+import cwinter.codinggame.physics.{ConstantVelocityObject, PhysicsEngine}
 import cwinter.codinggame.util.maths.{Rectangle, Vector2}
 import cwinter.graphics.application.DrawingCanvas
-import cwinter.worldstate.{WorldObjectDescriptor, GameWorld}
+import cwinter.worldstate.{GameWorld, WorldObjectDescriptor}
 
 
 object TheObjectManager extends GameWorld {
