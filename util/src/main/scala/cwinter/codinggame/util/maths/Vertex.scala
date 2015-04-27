@@ -81,6 +81,9 @@ object ColorRGB {
 }
 
 case class ColorRGBA(r: Float, g: Float, b: Float, a: Float) extends Vertex {
+  def *(float: Float): ColorRGBA = ColorRGBA(float * r, float * g, float * b, float * a)
+  def +(other: ColorRGBA): ColorRGBA = ColorRGBA(r + other.r, g + other.g, b + other.b, a + other.a)
+
   def apply(i: Int) = i match {
     case 0 => r
     case 1 => g
@@ -93,6 +96,10 @@ case class ColorRGBA(r: Float, g: Float, b: Float, a: Float) extends Vertex {
 object ColorRGBA {
   def apply(baseColor: ColorRGB, alpha: Float): ColorRGBA =
     ColorRGBA(baseColor.r, baseColor.g, baseColor.b, alpha)
+
+  implicit class Scalar(val value: Float) extends AnyVal {
+    def *(rhs: ColorRGBA): ColorRGBA = rhs * value
+  }
 }
 
 

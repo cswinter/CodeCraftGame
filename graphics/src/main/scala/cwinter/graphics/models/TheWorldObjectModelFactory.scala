@@ -30,9 +30,9 @@ object TheWorldObjectModelFactory {
         lightFlash,
         new LightFlashModelBuilder(lightFlash).getModel,
         modelview)
-      case laserMissile: LaserMissileDescriptor => new ClosedModel[Unit](
+      case LaserMissileDescriptor(_, positions, player) => new ClosedModel[Unit](
         Unit,
-        LaserMissileModelFactory.build(laserMissile.positions),
+        LaserMissileModelFactory.build(positions, player),
         modelview)
       case TestingObject(t) => new ClosedModel[Unit](
         Unit,

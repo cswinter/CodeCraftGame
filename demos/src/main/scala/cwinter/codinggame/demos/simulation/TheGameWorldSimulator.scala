@@ -140,6 +140,7 @@ object TheGameWorldSimulator extends GameWorld {
       ),
       hullState = Seq[Byte](2, 2, 2, 2, 2),
       size = 6,
+      BluePlayer,
       constructionState = Some(time),
       None, None
     )

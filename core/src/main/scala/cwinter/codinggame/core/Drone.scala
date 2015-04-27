@@ -2,7 +2,7 @@ package cwinter.codinggame.core
 
 import cwinter.codinggame.util.maths.{Geometry, Rng, Vector2}
 import cwinter.codinggame.util.modules.ModulePosition
-import cwinter.worldstate.{DroneDescriptor, WorldObjectDescriptor}
+import cwinter.worldstate.{BluePlayer, DroneDescriptor, WorldObjectDescriptor}
 
 
 private[core] class Drone(
@@ -227,6 +227,7 @@ private[core] class Drone(
       moduleDescriptors,
       Seq.fill[Byte](size - 1)(2),
       size,
+      BluePlayer,
       constructionProgress
     )
   }

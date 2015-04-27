@@ -1,6 +1,7 @@
 package cwinter.codinggame.demos.simulation
 
-import cwinter.worldstate.{LaserMissileDescriptor, WorldObjectDescriptor}
+import cwinter.codinggame.util.maths.Rng
+import cwinter.worldstate.{RedPlayer, BluePlayer, LaserMissileDescriptor, WorldObjectDescriptor}
 
 import scala.collection.mutable
 import scala.util.Random
@@ -11,6 +12,7 @@ class MockLaserMissile(
   var yPos: Float,
   var orientation: Float
 ) extends MockObject {
+  val player = if (Rng.bernoulli(0.5f)) BluePlayer else RedPlayer
   val speed = 5.0f
   val positions = 15
   val oldPositions = mutable.Queue((xPos, yPos), (xPos, yPos))
@@ -30,7 +32,7 @@ class MockLaserMissile(
   }
 
   override def state(): WorldObjectDescriptor =
-    LaserMissileDescriptor(identifier, oldPositions.toSeq)
+    LaserMissileDescriptor(identifier, oldPositions.toSeq, player)
 
 
   def vx = math.cos(orientation).toFloat * speed

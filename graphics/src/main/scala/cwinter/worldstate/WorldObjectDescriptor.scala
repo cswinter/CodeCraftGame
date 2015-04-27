@@ -20,9 +20,7 @@ case class DroneDescriptor(
   hullState: Seq[Byte],
   size: Int,
 
-  // storage module contents
-  // storage module arrangement
-  // storage module
+  player: Player,
   constructionState: Option[Int] = None,
 
   sightRadius: Option[Int] = None,
@@ -70,7 +68,8 @@ case class LightFlashDescriptor(
 
 case class LaserMissileDescriptor(
   identifier: Int,
-  positions: Seq[(Float, Float)]
+  positions: Seq[(Float, Float)],
+  player: Player
 ) extends WorldObjectDescriptor {
   val orientation = 0.0f
   val xPos = 0.0f

@@ -101,6 +101,7 @@ class MockRobot(
       hullState,
       size,
 
+      BluePlayer,
       None,
 
       Some(TheGameWorldSimulator.SightRadius),
