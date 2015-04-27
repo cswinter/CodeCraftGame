@@ -7,7 +7,8 @@ object BlogpostDemo {
   def main(args: Array[String]): Unit = {
     val s = new GraphicsSimulator(
       customObjects = modules,
-      customChangingObjects = generateObjects
+      customChangingObjects = generateObjects,
+      spawnedObjects = spawnObjects
     )
     s.run()
   }
@@ -79,5 +80,13 @@ object BlogpostDemo {
 
   def generateObjects(t: Int): Seq[WorldObjectDescriptor] = {
     hulls ++ minerals
+  }
+
+  def spawnObjects(t: Int): Seq[MockObject] = {
+    if (t % 50 == 1) {
+      Seq(new MockLaserMissile(100, -300, 0, 25))
+    } else {
+      Seq()
+    }
   }
 }

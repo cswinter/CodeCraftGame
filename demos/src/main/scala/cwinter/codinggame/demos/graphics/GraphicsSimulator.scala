@@ -8,6 +8,7 @@ import cwinter.worldstate._
 class GraphicsSimulator(
   customObjects: Seq[MockObject],
   customChangingObjects: Int => Seq[WorldObjectDescriptor],
+  spawnedObjects: Int => Seq[MockObject],
   val sightRadius: Option[Int] = None,
   nRandomDrones: Int = 0,
   nRandomMinerals: Int = 0,
@@ -37,6 +38,10 @@ class GraphicsSimulator(
     } yield new MockRobot(xPos, yPos, orientation, size, modules, sightRadius)
 
 
+  private def spawn(obj: MockObject): Unit = {
+    objects.add(obj)
+    vision.insert(obj)
+  }
 
   val objects = collection.mutable.Set(minerals ++ drones ++ customObjects:_*)
   objects.foreach(vision.insert(_))
@@ -70,9 +75,10 @@ class GraphicsSimulator(
 
     if (spawnProjectiles && rnd() < 0.03) {
       val missile = new MockLaserMissile(rnd(-500, 500), rnd(-250, 250), rnd(0, 2 * math.Pi.toFloat))
-      objects.add(missile)
-      vision.insert(missile)
+      spawn(missile)
     }
+
+    spawnedObjects(time).foreach(spawn)
   }
 
   override def timestep = time

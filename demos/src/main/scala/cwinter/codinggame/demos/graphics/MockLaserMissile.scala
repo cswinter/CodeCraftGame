@@ -10,7 +10,8 @@ import scala.util.Random
 class MockLaserMissile(
   var xPos: Float,
   var yPos: Float,
-  var orientation: Float
+  var orientation: Float,
+  val lifetime: Int = 90
 ) extends MockObject {
   val player = if (Rng.bernoulli(0.5f)) BluePlayer else RedPlayer
   val speed = 5.0f
@@ -42,5 +43,5 @@ class MockLaserMissile(
 
   def rnd() = Random.nextDouble().toFloat
 
-  def dead = age > 90
+  def dead = age > lifetime
 }

@@ -93,6 +93,7 @@ object Chaos {
     val s = new GraphicsSimulator(
       customRobots,
       t => Seq(robotConstruction(t)),
+      t => Seq(),
       sightRadius = sightRadius,
       nRandomDrones = 10,
       nRandomMinerals = 20,
