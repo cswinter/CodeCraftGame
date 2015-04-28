@@ -95,6 +95,9 @@ class AttackDroneController extends DroneController {
   override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = ()
 
   override def onTick(): Unit = {
+    if (weaponsCooldown == 0 && dronesInSight.nonEmpty) {
+      shootWeapons(dronesInSight.head)
+    }
     if (Rng.bernoulli(0.01)) {
       moveInDirection(Vector2(Rng.double(0, 100)))
     }

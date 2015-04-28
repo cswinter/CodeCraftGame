@@ -59,6 +59,8 @@ abstract class DroneController {
   def availableStorage: Int = drone.availableStorage
   def availableFactories: Int = drone.availableFactories
   def storedMinerals: Seq[MineralCrystal] = drone.storedMinerals
+  def dronesInSight: Set[Drone] = drone.dronesInSight
+  def weaponsCooldown: Int = drone.weaponsCooldown
 
   private[core] def initialise(drone: Drone): Unit = this.drone = drone
 }

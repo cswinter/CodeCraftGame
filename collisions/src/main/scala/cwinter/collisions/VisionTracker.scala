@@ -60,7 +60,7 @@ class VisionTracker[T: Positionable](
       elem.inSight = {
         for {
           other <- nearbyElements(x, y)
-          if contains(elem, other)
+          if elem != other && contains(elem, other)
         } yield other
       }.toSet
     }
@@ -117,9 +117,11 @@ class VisionTracker[T: Positionable](
 
 
     def entersSight(other: Element): Unit = {
-      _inSight += other
-      if (generateEvents && other != this)
-        events :+= EnteredSightRadius(other.elem)
+      if (other != this) {
+        _inSight += other
+        if (generateEvents)
+          events :+= EnteredSightRadius(other.elem)
+      }
     }
 
     def inSight_=(value: Set[Element]): Unit = {

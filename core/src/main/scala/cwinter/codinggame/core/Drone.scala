@@ -25,8 +25,12 @@ class Drone(
   val nLasers = modules.count(_ == Lasers)
   val factoryCapacity = modules.count(_ == NanobotFactory)
 
+  var objectsInSight: Set[WorldObject] = Set.empty[WorldObject]
+
   private var constructionProgress: Option[Int] = None
-  private var weaponsCooldown: Int = 0
+  private[this] var _weaponsCooldown: Int = 0
+  private def weaponsCooldown_=(value: Int) = _weaponsCooldown = value
+  def weaponsCooldown: Int = _weaponsCooldown
 
   private[this] val eventQueue = collection.mutable.Queue[DroneEvent](Spawned)
 
@@ -184,7 +188,7 @@ class Drone(
 
   def fireWeapons(target: Drone): Unit = {
     if (weaponsCooldown <= 0) {
-      weaponsCooldown = 100
+      weaponsCooldown = 30
       for (i <- modules.filter(_ == Lasers).indices) {
         val VertexXY(x, y) = ModulePosition(size, i)
         val offset = Vector2(x, y)
@@ -211,6 +215,8 @@ class Drone(
     factoryCapacity -
       droneConstructions.map(d => d._1.drone.requiredFactories).sum -
       mineralProcessing.map(d => d._1.size).sum
+
+  def dronesInSight: Set[Drone] = objectsInSight.filter(_.isInstanceOf[Drone]).map { case d: Drone => d }
 
   def resourceCost: Int = {
     requiredFactories * ResourceCost

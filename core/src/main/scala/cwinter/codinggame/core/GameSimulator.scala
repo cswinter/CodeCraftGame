@@ -107,6 +107,7 @@ class GameSimulator(
     // COLLECT ALL EVENTS FROM PHYSICS SIMULATION
 
     visionTracker.updateAll()
+    for (drone <- drones) drone.objectsInSight = visionTracker.getVisible(drone)
     // SPAWN NEW OBJECTS HERE???
     for {
       (drone: Drone, events) <- visionTracker.collectEvents()
