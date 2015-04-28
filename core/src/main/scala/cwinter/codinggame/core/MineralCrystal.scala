@@ -11,6 +11,8 @@ class MineralCrystal(
 ) extends WorldObject {
   override private[core] def descriptor: MineralDescriptor =
     MineralDescriptor(id, position.x.toFloat, position.y.toFloat, 0, size, harvested)
+
+  override private[core] def hasDied = false
 }
 
 object MineralCrystal {

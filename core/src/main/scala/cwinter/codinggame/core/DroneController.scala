@@ -9,6 +9,7 @@ abstract class DroneController {
   def onSpawn(): Unit
   def onTick(): Unit
   def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit
+  def onDroneEntersVision(drone: Drone): Unit
   def onArrival(): Unit
 
   // wrapper around drone properties and commands
@@ -47,6 +48,11 @@ abstract class DroneController {
 
   def processMineral(mineralCrystal: MineralCrystal): Unit = {
     drone.startMineralProcessing(mineralCrystal)
+  }
+
+  def shootWeapons(target: Drone): Unit = {
+    assert(target != drone)
+    drone.fireWeapons(target)
   }
 
   def position: Vector2 = drone.position

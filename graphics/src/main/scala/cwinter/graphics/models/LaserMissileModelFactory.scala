@@ -25,7 +25,8 @@ object LaserMissileModelFactory {
         rs.TranslucentAdditive,
         midpoints,
         colors,
-        2
+        2,
+        zPos = 3
       ).noCaching.getModel
     }
   }

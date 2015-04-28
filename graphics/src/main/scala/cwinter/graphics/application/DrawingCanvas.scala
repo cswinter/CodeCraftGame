@@ -46,7 +46,7 @@ object DrawingCanvas {
       val moveSpeed = 100
       val zoomSpeed = 0.2f
 
-      override def keyTyped(keyEvent: KeyEvent): Unit = println(s"keyTyped($keyEvent)")
+      override def keyTyped(keyEvent: KeyEvent): Unit = ()
 
       override def keyPressed(keyEvent: KeyEvent): Unit = keyEvent.getKeyCode match {
         case 37 | 65 /* LEFT, A */ => camera.x -= moveSpeed * camera.zoomFactor
@@ -59,7 +59,7 @@ object DrawingCanvas {
         case _ =>
       } //println(s"keyPressed($keyEvent)")
 
-      override def keyReleased(keyEvent: KeyEvent): Unit = println(s"keyReleased($keyEvent)")
+      override def keyReleased(keyEvent: KeyEvent): Unit = ()
     })
 
     new FPSAnimator(canvas, 60).start()

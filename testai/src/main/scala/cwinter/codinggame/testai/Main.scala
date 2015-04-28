@@ -1,6 +1,6 @@
 package cwinter.codinggame.testai
 
-import cwinter.codinggame.core.{StorageModule, MineralCrystal, DroneController, TheGameMaster}
+import cwinter.codinggame.core._
 import cwinter.codinggame.util.maths.{Rng, Vector2}
 
 object Main {
@@ -12,15 +12,21 @@ object Main {
 
 class Mothership extends DroneController {
   var t = 0
+  var collectors = 0
 
   // abstract methods for event handling
   override def onSpawn(): Unit = {
-    buildSmallDrone(StorageModule, StorageModule, new ScoutingDroneController(this))
+    buildTinyDrone(StorageModule, new ScoutingDroneController(this))
   }
 
   override def onTick(): Unit = {
     if (availableFactories >= 4) {
-     buildSmallDrone(StorageModule, StorageModule, new ScoutingDroneController(this))
+      if (collectors < 2) {
+        buildSmallDrone(StorageModule, StorageModule, new ScoutingDroneController(this))
+        collectors += 1
+      } else {
+        buildSmallDrone(Lasers, Lasers, new AttackDroneController())
+      }
     } else {
       for (mineralCrystal <- storedMinerals) {
         if (availableFactories >= mineralCrystal.size) {
@@ -32,6 +38,7 @@ class Mothership extends DroneController {
 
   override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = ()
   override def onArrival(): Unit = ()
+  override def onDroneEntersVision(drone: Drone): Unit = ()
 }
 
 class ScoutingDroneController(val mothership: Mothership) extends DroneController {
@@ -65,6 +72,9 @@ class ScoutingDroneController(val mothership: Mothership) extends DroneControlle
       depositMineralCrystals(mothership)
       hasReturned = true
     } else {
+      if (nextCrystal.map(_.harvested) == Some(true)) {
+        nextCrystal = None
+      }
       for (
         mineral <- nextCrystal
         if mineral.position ~ position
@@ -73,6 +83,28 @@ class ScoutingDroneController(val mothership: Mothership) extends DroneControlle
         nextCrystal = None
       }
     }
+  }
+
+  override def onDroneEntersVision(drone: Drone): Unit = ()
+}
+
+class AttackDroneController extends DroneController {
+  // abstract methods for event handling
+  override def onSpawn(): Unit = ()
+
+  override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = ()
+
+  override def onTick(): Unit = {
+    if (Rng.bernoulli(0.01)) {
+      moveInDirection(Vector2(Rng.double(0, 100)))
+    }
+  }
+
+  override def onArrival(): Unit = ()
+
+  override def onDroneEntersVision(drone: Drone): Unit = {
+    println("Shooting weapons!")
+    shootWeapons(drone)
   }
 }
 

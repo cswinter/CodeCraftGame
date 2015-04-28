@@ -14,7 +14,10 @@ class GameSimulator(
   final val MaxDroneRadius = 60
 
   private val visibleObjects = collection.mutable.Set.empty[WorldObject]
+  // TODO: only one set for objects that need to be updated
   private val drones = collection.mutable.Set.empty[Drone]
+  private val missiles = collection.mutable.Set.empty[LaserMissile]
+  private val lightFlashes = collection.mutable.Set.empty[LightFlash]
 
   private val visionTracker = new VisionTracker[WorldObject](
     map.size.xMin.toInt, map.size.xMax.toInt,
@@ -27,7 +30,7 @@ class GameSimulator(
   )
 
   map.minerals.foreach(spawnMineral)
-  spawnDrone(mothership(mothershipController, Vector2(0, -500)))
+  spawnDrone(mothership(mothershipController, Vector2(-50, -400)))
 
 
 
@@ -50,10 +53,20 @@ class GameSimulator(
     drone.initialise(physicsEngine.time)
   }
 
+  private def spawnMissile(missile: LaserMissile): Unit = {
+    visibleObjects.add(missile)
+    missiles.add(missile)
+    //physicsEngine.addObject(missile.dynamics)
+  }
+
   override def update(): Unit = {
     // INVOKE ALL EVENTS FROM LAST TIMESTEP, COLLECT DRONE COMMANDS
     drones.foreach { drone =>
       drone.processEvents()
+    }
+
+    missiles.foreach { missile =>
+      missile.update()
     }
 
     val simulatorEvents =
@@ -71,11 +84,27 @@ class GameSimulator(
         visibleObjects.add(mineralCrystal)
       case DroneConstructionStarted(drone) =>
         visibleObjects.add(drone)
+      case SpawnLaserMissile(position, target) =>
+        val newMissile = new LaserMissile(position, physicsEngine.time, target)
+        spawnMissile(newMissile)
       case SpawnDrone(drone) =>
         spawnDrone(drone)
     }
 
     physicsEngine.update()
+    lightFlashes.foreach(_.update())
+    missiles.foreach { missile =>
+      missile.dynamics.updatePosition(physicsEngine.time)
+      if (missile.hasDied) {
+        val lf = new LightFlash(missile.position.x.toFloat, missile.position.y.toFloat)
+        visibleObjects.add(lf)
+        lightFlashes.add(lf)
+      }
+    }
+    missiles.retain(!_.hasDied)
+    lightFlashes.retain(!_.hasDied)
+    visibleObjects.retain(!_.hasDied)
+
 
     // COLLECT ALL EVENTS FROM PHYSICS SIMULATION
 
@@ -89,8 +118,8 @@ class GameSimulator(
       case visionTracker.EnteredSightRadius(mineral: MineralCrystal) =>
         drone.enqueueEvent(MineralEntersSightRadius(mineral))
       case visionTracker.LeftSightRadius(obj) => // don't care (for now)
-      case visionTracker.EnteredSightRadius(drone: Drone) =>
-        drone.enqueueEvent(DroneEntersSightRadius(drone))
+      case visionTracker.EnteredSightRadius(other: Drone) =>
+        drone.enqueueEvent(DroneEntersSightRadius(other))
       case e => throw new Exception(s"AHHHH, AN UFO!!! RUN FOR YOUR LIFE!!! $e")
     }
     // COLLECT ALL EVENTS FROM VISION
@@ -106,4 +135,4 @@ case class DroneConstructionStarted(drone: Drone) extends SimulatorEvent
 case class SpawnDrone(drone: Drone) extends SimulatorEvent
 case class MineralCrystalActivated(mineralCrystal: MineralCrystal) extends SimulatorEvent
 case class MineralCrystalDestroyed(mineralCrystal: MineralCrystal) extends SimulatorEvent
-case class SpawnLasserMissile(laserMissile: LaserMissile) extends SimulatorEvent
+case class SpawnLaserMissile(position: Vector2, target: Drone) extends SimulatorEvent

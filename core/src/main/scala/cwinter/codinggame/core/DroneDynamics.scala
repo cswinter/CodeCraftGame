@@ -40,6 +40,8 @@ class DroneDynamics(
         other.velocity = -other.maxSpeed * normal
         isStunned = true
         other.isStunned = true
+      case missile: MissileDynamics =>
+        // should probably do something here...
     }
   }
 

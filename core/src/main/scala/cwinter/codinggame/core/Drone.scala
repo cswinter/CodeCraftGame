@@ -1,11 +1,12 @@
 package cwinter.codinggame.core
 
-import cwinter.codinggame.util.maths.{Geometry, Rng, Vector2}
+import cwinter.codinggame.util.maths.{VertexXY, Geometry, Rng, Vector2}
 import cwinter.codinggame.util.modules.ModulePosition
 import cwinter.worldstate.{BluePlayer, DroneDescriptor, WorldObjectDescriptor}
 
 
-private[core] class Drone(
+// TODO: make private[core] once DroneHandle class is implemented
+class Drone(
   val modules: Seq[Module],
   val size: Int,
   val controller: DroneController,
@@ -17,6 +18,7 @@ private[core] class Drone(
   // constants for drone construction
   final val ConstructionPeriod = 175
   final val ResourceCost = 5
+  final val ResourceProcessingPeriod = 15
 
   val dynamics: DroneDynamics = new DroneDynamics(100, radius, initialPos, time)
   val storageCapacity = modules.count(_ == StorageModule)
@@ -60,7 +62,7 @@ private[core] class Drone(
       case Spawned => controller.onSpawn()
       case MineralEntersSightRadius(mineral) => controller.onMineralEntersVision(mineral)
       case ArrivedAtPosition => controller.onArrival()
-      case DroneEntersSightRadius(drone) => // TODO: implement
+      case DroneEntersSightRadius(drone) => controller.onDroneEntersVision(drone)
       case event => throw new Exception(s"Unhandled event! $event")
     }
     eventQueue.clear()
@@ -132,7 +134,7 @@ private[core] class Drone(
           index += mineral.size
           mineral.position = position + Vector2(moduleOffset.x, moduleOffset.y)
 
-          if (progress % 25 == 0) {
+          if (progress % ResourceProcessingPeriod == 0) {
             storedEnergyGlobes += 1
           }
           (mineral, progress - 1)
@@ -148,6 +150,8 @@ private[core] class Drone(
         if (remaining <= 0) simulatorEvents ::= MineralCrystalDestroyed(mineral)
         remaining > 0
     }
+
+  weaponsCooldown -= 1
 
     dynamics.update()
 
@@ -171,7 +175,7 @@ private[core] class Drone(
   }
 
   def startMineralProcessing(mineral: MineralCrystal): Unit = {
-    mineralProcessing ::= (mineral, mineral.size * 7 * 25)
+    mineralProcessing ::= (mineral, mineral.size * 7 * ResourceProcessingPeriod)
     storedMinerals = storedMinerals.filter(_ != mineral)
     simulatorEvents ::= MineralCrystalActivated(mineral)
     mineral.harvested = true
@@ -181,8 +185,9 @@ private[core] class Drone(
     if (weaponsCooldown <= 0) {
       weaponsCooldown = 100
       for (i <- modules.filter(_ == Lasers).indices) {
-        val offset = ModulePosition(size, i)
-
+        val VertexXY(x, y) = ModulePosition(size, i)
+        val offset = Vector2(x, y)
+        simulatorEvents ::= SpawnLaserMissile(position + offset, target)
       }
     }
   }
@@ -285,6 +290,9 @@ private[core] class Drone(
     }
     result
   }
+
+
+  override def hasDied = false
 
 
   def radius: Double = {

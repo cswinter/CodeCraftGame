@@ -10,6 +10,7 @@ trait WorldObject {
 
   private[core] def descriptor: WorldObjectDescriptor
   private[core] val id = WorldObject.generateUID()
+  private[core] def hasDied: Boolean
 }
 
 
