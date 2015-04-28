@@ -24,6 +24,7 @@ private[core] class Drone(
   val factoryCapacity = modules.count(_ == NanobotFactory)
 
   private var constructionProgress: Option[Int] = None
+  private var weaponsCooldown: Int = 0
 
   private[this] val eventQueue = collection.mutable.Queue[DroneEvent](Spawned)
 
@@ -174,6 +175,16 @@ private[core] class Drone(
     storedMinerals = storedMinerals.filter(_ != mineral)
     simulatorEvents ::= MineralCrystalActivated(mineral)
     mineral.harvested = true
+  }
+
+  def fireWeapons(target: Drone): Unit = {
+    if (weaponsCooldown <= 0) {
+      weaponsCooldown = 100
+      for (i <- modules.filter(_ == Lasers).indices) {
+        val offset = ModulePosition(size, i)
+
+      }
+    }
   }
 
   def harvestResource(mineralCrystal: MineralCrystal): Unit = {

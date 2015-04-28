@@ -22,7 +22,7 @@ class GameSimulator(
     SightRadius
   )
 
-  private val physicsEngine = new PhysicsEngine[DroneDynamics](
+  private val physicsEngine = new PhysicsEngine[ConstantVelocityDynamics](
     map.size, MaxDroneRadius
   )
 
@@ -106,4 +106,4 @@ case class DroneConstructionStarted(drone: Drone) extends SimulatorEvent
 case class SpawnDrone(drone: Drone) extends SimulatorEvent
 case class MineralCrystalActivated(mineralCrystal: MineralCrystal) extends SimulatorEvent
 case class MineralCrystalDestroyed(mineralCrystal: MineralCrystal) extends SimulatorEvent
-
+case class SpawnLasserMissile(laserMissile: LaserMissile) extends SimulatorEvent
