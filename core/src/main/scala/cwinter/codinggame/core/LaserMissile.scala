@@ -4,12 +4,12 @@ import cwinter.codinggame.util.maths.Vector2
 import cwinter.worldstate.{BluePlayer, LaserMissileDescriptor, WorldObjectDescriptor}
 
 class LaserMissile(initialPos: Vector2, time: Double, target: Drone) extends WorldObject {
-  val dynamics: MissileDynamics = new MissileDynamics(200, target.dynamics, initialPos, time)
+  val dynamics: MissileDynamics = new MissileDynamics(150, target.dynamics, initialPos, time)
   val previousPositions = collection.mutable.Queue(initialPos)
   val positions = 15
   var lifetime = 90
 
-  def update(): Unit = {
+  def update(): Seq[SimulatorEvent] = {
     dynamics.update()
 
     lifetime -= 1
@@ -20,6 +20,10 @@ class LaserMissile(initialPos: Vector2, time: Double, target: Drone) extends Wor
     if ((dynamics.pos - target.position).size <= target.radius + dynamics.radius) {
       lifetime = 0
     }
+
+    if (lifetime == 0) {
+      Seq(LaserMissileDestroyed(this))
+    } else Seq.empty[SimulatorEvent]
   }
 
   override def position: Vector2 = dynamics.pos

@@ -58,6 +58,7 @@ class Drone(
       case _ => // don't care
     }
 
+    // process events
     eventQueue foreach {
       case Spawned => controller.onSpawn()
       case MineralEntersSightRadius(mineral) => controller.onMineralEntersVision(mineral)
@@ -69,7 +70,7 @@ class Drone(
     controller.onTick()
   }
 
-  def processCommands(): Seq[SimulatorEvent] = {
+  override def update(): Seq[SimulatorEvent] = {
     movementCommand match {
       case MoveInDirection(direction) =>
         dynamics.orientation = direction.normalized
@@ -151,7 +152,7 @@ class Drone(
         remaining > 0
     }
 
-  weaponsCooldown -= 1
+    weaponsCooldown -= 1
 
     dynamics.update()
 
@@ -169,7 +170,7 @@ class Drone(
 
   def startDroneConstruction(command: ConstructDrone): Unit = {
     droneConstructions ::= ((command, 0))
-    droneConstructions = droneConstructions.sortBy { case (c, p) => c.drone.requiredFactories }
+    droneConstructions = droneConstructions.sortBy { case (c, p) => -c.drone.requiredFactories }
     simulatorEvents ::= DroneConstructionStarted(command.drone)
     command.drone.dynamics.orientation = dynamics.orientation
   }

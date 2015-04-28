@@ -13,6 +13,8 @@ class MineralCrystal(
     MineralDescriptor(id, position.x.toFloat, position.y.toFloat, 0, size, harvested)
 
   override private[core] def hasDied = false
+
+  override def update(): Seq[SimulatorEvent] = Seq.empty[SimulatorEvent]
 }
 
 object MineralCrystal {

@@ -14,10 +14,8 @@ class GameSimulator(
   final val MaxDroneRadius = 60
 
   private val visibleObjects = collection.mutable.Set.empty[WorldObject]
-  // TODO: only one set for objects that need to be updated
+  private val dynamicObjects = collection.mutable.Set.empty[WorldObject]
   private val drones = collection.mutable.Set.empty[Drone]
-  private val missiles = collection.mutable.Set.empty[LaserMissile]
-  private val lightFlashes = collection.mutable.Set.empty[LightFlash]
 
   private val visionTracker = new VisionTracker[WorldObject](
     map.size.xMin.toInt, map.size.xMax.toInt,
@@ -47,6 +45,7 @@ class GameSimulator(
 
   private def spawnDrone(drone: Drone): Unit = {
     visibleObjects.add(drone)
+    dynamicObjects.add(drone)
     drones.add(drone)
     visionTracker.insert(drone, generateEvents=true)
     physicsEngine.addObject(drone.dynamics.unwrap)
@@ -55,22 +54,19 @@ class GameSimulator(
 
   private def spawnMissile(missile: LaserMissile): Unit = {
     visibleObjects.add(missile)
-    missiles.add(missile)
+    dynamicObjects.add(missile)
     //physicsEngine.addObject(missile.dynamics)
   }
 
   override def update(): Unit = {
-    // INVOKE ALL EVENTS FROM LAST TIMESTEP, COLLECT DRONE COMMANDS
-    drones.foreach { drone =>
+    // handle all drone events (execute user code)
+    for (drone <- drones) {
       drone.processEvents()
     }
 
-    missiles.foreach { missile =>
-      missile.update()
-    }
-
+    // execute game mechanics for all objects + collect resulting events
     val simulatorEvents =
-      for (drone <- drones; event <- drone.processCommands())
+      for (obj <- dynamicObjects; event <- obj.update())
         yield event
 
     simulatorEvents.foreach(println)
@@ -87,27 +83,28 @@ class GameSimulator(
       case SpawnLaserMissile(position, target) =>
         val newMissile = new LaserMissile(position, physicsEngine.time, target)
         spawnMissile(newMissile)
+      case LaserMissileDestroyed(laserMissile) =>
+        visibleObjects.remove(laserMissile)
+        dynamicObjects.remove(laserMissile)
+        val lightFlash = new LightFlash(laserMissile.position)
+        visibleObjects.add(lightFlash)
+        dynamicObjects.add(lightFlash)
+      case LightFlashDestroyed(lightFlash) =>
+        visibleObjects.remove(lightFlash)
+        dynamicObjects.remove(lightFlash)
       case SpawnDrone(drone) =>
         spawnDrone(drone)
     }
 
     physicsEngine.update()
-    lightFlashes.foreach(_.update())
-    missiles.foreach { missile =>
-      missile.dynamics.updatePosition(physicsEngine.time)
-      if (missile.hasDied) {
-        val lf = new LightFlash(missile.position.x.toFloat, missile.position.y.toFloat)
-        visibleObjects.add(lf)
-        lightFlashes.add(lf)
-      }
+    // TODO: remove this once missiles are integrated with physics engine
+    for (obj <- dynamicObjects) obj match {
+      case missile: LaserMissile => missile.dynamics.updatePosition(physicsEngine.time)
+      case _ =>
     }
-    missiles.retain(!_.hasDied)
-    lightFlashes.retain(!_.hasDied)
-    visibleObjects.retain(!_.hasDied)
 
 
     // COLLECT ALL EVENTS FROM PHYSICS SIMULATION
-
 
     visionTracker.updateAll()
     // SPAWN NEW OBJECTS HERE???
@@ -122,7 +119,6 @@ class GameSimulator(
         drone.enqueueEvent(DroneEntersSightRadius(other))
       case e => throw new Exception(s"AHHHH, AN UFO!!! RUN FOR YOUR LIFE!!! $e")
     }
-    // COLLECT ALL EVENTS FROM VISION
   }
 
   override def timestep = physicsEngine.timestep
@@ -136,3 +132,8 @@ case class SpawnDrone(drone: Drone) extends SimulatorEvent
 case class MineralCrystalActivated(mineralCrystal: MineralCrystal) extends SimulatorEvent
 case class MineralCrystalDestroyed(mineralCrystal: MineralCrystal) extends SimulatorEvent
 case class SpawnLaserMissile(position: Vector2, target: Drone) extends SimulatorEvent
+case class LaserMissileDestroyed(laserMissile: LaserMissile) extends SimulatorEvent
+case class LightFlashDestroyed(lightFlash: LightFlash) extends SimulatorEvent
+
+
+

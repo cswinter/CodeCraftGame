@@ -8,6 +8,7 @@ import cwinter.worldstate.WorldObjectDescriptor
 trait WorldObject {
   def position: Vector2
 
+  def update(): Seq[SimulatorEvent]
   private[core] def descriptor: WorldObjectDescriptor
   private[core] val id = WorldObject.generateUID()
   private[core] def hasDied: Boolean
