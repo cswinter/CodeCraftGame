@@ -40,6 +40,9 @@ class Drone(
 
   private[this] var storedEnergyGlobes: Int = startingResources
 
+  private[this] val oldPositions = collection.mutable.Queue.empty[(Float, Float, Float)]
+  private final val NJetPositions = 12
+
   private[this] var movementCommand: MovementCommand = HoldPosition
   private[this] var droneConstructions = List.empty[(ConstructDrone, Int)]
   private[this] var mineralProcessing = List.empty[(MineralCrystal, Int)]
@@ -140,7 +143,7 @@ class Drone(
           mineral.position = position + Vector2(moduleOffset.x, moduleOffset.y)
 
           if (progress % ResourceProcessingPeriod == 0) {
-            storedEnergyGlobes += 1
+          storedEnergyGlobes += 1
           }
           (mineral, progress - 1)
         }
@@ -159,6 +162,9 @@ class Drone(
     weaponsCooldown -= 1
 
     dynamics.update()
+
+    oldPositions.enqueue((position.x.toFloat, position.y.toFloat, dynamics.orientation.orientation.toFloat))
+    if (oldPositions.length > NJetPositions) oldPositions.dequeue()
 
     val events = simulatorEvents
     simulatorEvents = List.empty[SimulatorEvent]
@@ -246,7 +252,7 @@ class Drone(
       position.x.toFloat,
       position.y.toFloat,
       dynamics.orientation.orientation.toFloat,
-      Seq(),
+      Seq(),//oldPositions :+ (position.x.toFloat, position.y.toFloat, dynamics.orientation.orientation.toFloat),
       moduleDescriptors,
       Seq.fill[Byte](size - 1)(2),
       size,
