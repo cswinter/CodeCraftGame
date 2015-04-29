@@ -1,7 +1,7 @@
 package cwinter.collisions
 
 import Positionable.PositionableOps
-import cwinter.codinggame.util.maths.Rectangle
+import cwinter.codinggame.util.maths.{Vector2, Rectangle}
 
 class SquareGrid[T: Positionable](
   val xMin: Int,
@@ -69,9 +69,15 @@ class SquareGrid[T: Positionable](
 
 
   def computeCell[T2: Positionable](elem: T2): (Int, Int) = {
-    // can use toInt, since expression is always positive so rounds consistently
-    val cellX = Padding + ((elem.position.x - xMin) / cellWidth).toInt
-    val cellY = Padding + ((elem.position.y - yMin) / cellWidth).toInt
+    // if an object spawns outside of the bounds, expression can be negative, so we need floor
+    // toInt will round UP for negative values
+    val cellX = Padding + math.floor((elem.position.x - xMin) / cellWidth).toInt
+    val cellY = Padding + math.floor((elem.position.y - yMin) / cellWidth).toInt
+    assert({
+      val bounds = cellBounds(cellX, cellY)
+      val Vector2(x, y) = elem.position
+      x <= bounds.xMax && x >= bounds.xMin && y <= bounds.yMax && y >= bounds.yMin
+    }, s"invalid cell: ${(cellX, cellY)} with bounds ${cellBounds(cellX, cellY)} for ${elem.position}")
     (cellX, cellY)
   }
 
