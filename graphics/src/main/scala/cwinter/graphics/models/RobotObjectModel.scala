@@ -13,8 +13,8 @@ object RobotColors {
   val White = ColorRGB(1, 1, 1)
   val ColorBody = ColorRGB(0.05f, 0.05f, 0.05f)
   val ColorHull = ColorRGB(0.95f, 0.95f, 0.95f)
-  val ColorHullDamaged = ColorRGB(0.5f, 0.5f, 0.5f)
-  val ColorHullBroken = ColorRGB(1, 0, 0)
+  val ColorHullDamaged = ColorRGB(0.6f, 0.6f, 0.6f)
+  val ColorHullBroken = ColorRGB(0.2f, 0.2f, 0.2f)
   val ColorThrusters = ColorRGB(0, 0, 1)
   val ColorBackplane = ColorRGB(0.1f, 0.1f, 0.1f)
 }

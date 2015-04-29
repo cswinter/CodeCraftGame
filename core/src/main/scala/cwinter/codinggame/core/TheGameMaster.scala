@@ -10,7 +10,13 @@ object TheGameMaster {
 
   def startGame(mothership: DroneController): Unit = {
     val map = WorldMap(WorldSize, 100)
-    val simulator = new GameSimulator(map, mothership)
+    val simulator = new GameSimulator(map, mothership, devEvents)
     DrawingCanvas.run(simulator)
+  }
+
+
+  private var devEvents: Int => Seq[SimulatorEvent] = t => Seq()
+  private[cwinter] def setDevEvents(generator: Int => Seq[SimulatorEvent]): Unit = {
+    devEvents = generator
   }
 }

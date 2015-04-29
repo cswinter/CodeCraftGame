@@ -23,6 +23,7 @@ object Rng {
     size * Vector2(direction)
   }
 
+
   def vector2(xMin: Float, xMax: Float, yMin: Float, yMax: Float): Vector2 = {
     Vector2(float(xMin, xMax), float(yMin, yMax))
   }

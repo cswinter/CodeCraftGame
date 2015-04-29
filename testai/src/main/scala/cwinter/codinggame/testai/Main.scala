@@ -2,10 +2,27 @@ package cwinter.codinggame.testai
 
 import cwinter.codinggame.core._
 import cwinter.codinggame.util.maths.{Rng, Vector2}
+import cwinter.codinggame.util.modules.ModulePosition
 
 object Main {
   def main(args: Array[String]): Unit = {
+    TheGameMaster.setDevEvents(events)
     TheGameMaster.startGame(new Mothership)
+  }
+
+  private def events(t: Int): Seq[SimulatorEvent] = {
+    if (t % 20 == 0) {
+      Seq(SpawnDrone(randomAttackDrone))
+    } else Seq()
+  }
+
+  private def randomAttackDrone: Drone = {
+    val size = Rng.int(3, 6)
+    new Drone(
+      Seq.fill(ModulePosition.moduleCount(size))(Lasers), size,
+      new AttackDroneController, Rng.vector2(-1400, 1400, -1000, 1000),
+      0, 0
+    )
   }
 }
 
@@ -95,19 +112,19 @@ class AttackDroneController extends DroneController {
   override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = ()
 
   override def onTick(): Unit = {
-    if (weaponsCooldown == 0 && dronesInSight.nonEmpty) {
-      shootWeapons(dronesInSight.head)
+    if (weaponsCooldown <= 0 && enemies.nonEmpty) {
+      shootWeapons(enemies.head)
     }
     if (Rng.bernoulli(0.01)) {
       moveInDirection(Vector2(Rng.double(0, 100)))
     }
   }
 
+  def enemies: Set[Drone] =
+    dronesInSight.filter(_.controller.isInstanceOf[AttackDroneController])
+
   override def onArrival(): Unit = ()
 
-  override def onDroneEntersVision(drone: Drone): Unit = {
-    println("Shooting weapons!")
-    shootWeapons(drone)
-  }
+  override def onDroneEntersVision(drone: Drone): Unit = ()
 }
 

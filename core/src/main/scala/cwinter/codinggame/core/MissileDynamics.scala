@@ -9,12 +9,16 @@ class MissileDynamics(
   initialPosition: Vector2,
   initialTime: Double
 ) extends ConstantVelocityDynamics(1, initialPosition, initialTime) {
+  var hasHit = false
 
   override def handleObjectCollision(other: ConstantVelocityDynamics): Unit = {
     this.remove()
-    if (other.isInstanceOf[MissileDynamics]) other.remove()
-    // shouldn't collide with other missiles (or maybe you should!!! i get this for free, so why not?)
-    // destroy this object, create event for damage to other object (if it is Drone)
+
+    hasHit = true
+    other match {
+      case otherMissile: MissileDynamics => otherMissile.remove()
+      case otherDrone: DroneDynamics => otherDrone.drone.missileHit(pos)
+    }
   }
 
   override def handleWallCollision(areaBounds: Rectangle): Unit = {
@@ -24,7 +28,8 @@ class MissileDynamics(
 
   override def update(): Unit = {
     val targetDirection = target.pos - pos
-    assert(targetDirection.size > 0.1)
-    velocity = speed * targetDirection.normalized
+    if (!target.removed && targetDirection.size >= 0.0001) {
+      velocity = speed * targetDirection.normalized
+    }
   }
 }

@@ -20,7 +20,7 @@ class Drone(
   final val ResourceCost = 5
   final val ResourceProcessingPeriod = 15
 
-  val dynamics: DroneDynamics = new DroneDynamics(100, radius, initialPos, time)
+  val dynamics: DroneDynamics = new DroneDynamics(this, 100, radius, initialPos, time)
   val storageCapacity = modules.count(_ == StorageModule)
   val nLasers = modules.count(_ == Lasers)
   val factoryCapacity = modules.count(_ == NanobotFactory)
@@ -33,6 +33,8 @@ class Drone(
   def weaponsCooldown: Int = _weaponsCooldown
 
   private[this] val eventQueue = collection.mutable.Queue[DroneEvent](Spawned)
+
+  private[this] var hullState = List.fill[Byte](size - 1)(2)
 
   private var _storedMinerals = List.empty[MineralCrystal]
   def storedMinerals: List[MineralCrystal] = _storedMinerals
@@ -177,6 +179,23 @@ class Drone(
     eventQueue.enqueue(event)
   }
 
+  def missileHit(position: Vector2): Unit = {
+    def damageHull(hull: List[Byte]): List[Byte] = hull match {
+      case h :: hs =>
+        if (h > 0) (h - 1).toByte :: hs
+        else h :: damageHull(hs)
+      case Nil => Nil
+    }
+
+    hullState = damageHull(hullState)
+
+    if (hitpoints == 0) {
+      dynamics.remove()
+      simulatorEvents ::= DroneKilled(this)
+    }
+  }
+
+  def hitpoints: Int = hullState.map(_.toInt).sum
 
   def giveMovementCommand(value: MovementCommand): Unit = movementCommand = value
 
@@ -258,7 +277,7 @@ class Drone(
       dynamics.orientation.orientation.toFloat,
       Seq(),//oldPositions :+ (position.x.toFloat, position.y.toFloat, dynamics.orientation.orientation.toFloat),
       moduleDescriptors,
-      Seq.fill[Byte](size - 1)(2),
+      hullState,
       size,
       BluePlayer,
       constructionProgress

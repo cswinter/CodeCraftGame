@@ -4,6 +4,7 @@ import cwinter.codinggame.util.maths.{Rectangle, Vector2}
 
 
 class DroneDynamics(
+  val drone: Drone,
   val maxSpeed: Double,
   radius: Double,
   initialPosition: Vector2,

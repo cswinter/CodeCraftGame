@@ -1,14 +1,16 @@
 package cwinter.codinggame.core
 
 import cwinter.codinggame.physics.PhysicsEngine
-import cwinter.codinggame.util.maths.Vector2
+import cwinter.codinggame.util.maths.{Rng, Vector2}
+import cwinter.codinggame.util.modules.ModulePosition
 import cwinter.collisions.VisionTracker
 import cwinter.worldstate.{WorldObjectDescriptor, GameWorld}
 
 
 class GameSimulator(
   val map: WorldMap,
-  mothershipController: DroneController
+  mothershipController: DroneController,
+  eventGenerator: Int => Seq[SimulatorEvent]
 ) extends GameWorld {
   final val SightRadius = 250
   final val MaxDroneRadius = 60
@@ -52,11 +54,31 @@ class GameSimulator(
     drone.initialise(physicsEngine.time)
   }
 
+  private def droneKilled(drone: Drone): Unit = {
+    visibleObjects.remove(drone)
+    dynamicObjects.remove(drone)
+    drones.remove(drone)
+    visionTracker.remove(drone)
+    physicsEngine.remove(drone.dynamics)
+
+    for {
+      i <- 0 until ModulePosition.moduleCount(drone.size)
+      pos = drone.position + Rng.double(0, drone.radius) * Rng.vector2()
+    } spawnLightflash(pos)
+  }
+
   private def spawnMissile(missile: LaserMissile): Unit = {
     visibleObjects.add(missile)
     dynamicObjects.add(missile)
     physicsEngine.addObject(missile.dynamics)
   }
+
+  private def spawnLightflash(position: Vector2): Unit = {
+    val lightFlash = new LightFlash(position)
+    visibleObjects.add(lightFlash)
+    dynamicObjects.add(lightFlash)
+  }
+
 
   override def update(): Unit = {
     // handle all drone events (execute user code)
@@ -65,9 +87,12 @@ class GameSimulator(
     }
 
     // execute game mechanics for all objects + collect resulting events
-    val simulatorEvents =
+    val simulatorEvents = {
       for (obj <- dynamicObjects; event <- obj.update())
         yield event
+    } ++ eventGenerator(timestep)
+
+
 
     simulatorEvents.foreach(println)
     simulatorEvents.foreach {
@@ -90,12 +115,13 @@ class GameSimulator(
         visibleObjects.remove(laserMissile)
         dynamicObjects.remove(laserMissile)
         physicsEngine.remove(laserMissile.dynamics)
-        val lightFlash = new LightFlash(laserMissile.position)
-        visibleObjects.add(lightFlash)
-        dynamicObjects.add(lightFlash)
+        if (laserMissile.dynamics.hasHit)
+          spawnLightflash(laserMissile.position)
       case LightFlashDestroyed(lightFlash) =>
         visibleObjects.remove(lightFlash)
         dynamicObjects.remove(lightFlash)
+      case DroneKilled(drone) =>
+        droneKilled(drone)
       case SpawnDrone(drone) =>
         spawnDrone(drone)
     }
@@ -134,6 +160,7 @@ case class MineralCrystalDestroyed(mineralCrystal: MineralCrystal) extends Simul
 case class SpawnLaserMissile(position: Vector2, target: Drone) extends SimulatorEvent
 case class LaserMissileDestroyed(laserMissile: LaserMissile) extends SimulatorEvent
 case class LightFlashDestroyed(lightFlash: LightFlash) extends SimulatorEvent
+case class DroneKilled(drone: Drone) extends SimulatorEvent
 
 
 

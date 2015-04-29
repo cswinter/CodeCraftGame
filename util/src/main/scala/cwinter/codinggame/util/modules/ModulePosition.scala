@@ -37,6 +37,8 @@ object ModulePosition {
     )
   )
 
+  def moduleCount(size: Int): Int = ModulePosition(size).length
+
 
   private def permutation[T](set: IndexedSeq[T], indices: IndexedSeq[Int]): IndexedSeq[T] = {
     IndexedSeq.tabulate(set.size)(i => set(indices(i)))
