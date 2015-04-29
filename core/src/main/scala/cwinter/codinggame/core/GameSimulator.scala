@@ -81,8 +81,11 @@ class GameSimulator(
       case DroneConstructionStarted(drone) =>
         visibleObjects.add(drone)
       case SpawnLaserMissile(position, target) =>
-        val newMissile = new LaserMissile(position, physicsEngine.time, target)
-        spawnMissile(newMissile)
+        // TODO: remove this check once boundary collisions are done properly
+        if (map.size.contains(position)) {
+          val newMissile = new LaserMissile(position, physicsEngine.time, target)
+          spawnMissile(newMissile)
+        }
       case LaserMissileDestroyed(laserMissile) =>
         visibleObjects.remove(laserMissile)
         dynamicObjects.remove(laserMissile)

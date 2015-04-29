@@ -24,6 +24,7 @@ class SquareGrid[T: Positionable](
   def insert(obj: T): Unit = insert(obj, computeCell(obj))
 
   def insert(obj: T, cell: (Int, Int)): Unit = {
+    assert(Rectangle(xMin, xMax, yMin, yMax).contains(obj.position))
     val (x, y) = cell
     cells(x)(y) += obj
   }
