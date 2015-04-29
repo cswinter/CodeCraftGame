@@ -39,6 +39,7 @@ object DrawingCanvas {
     jframe.getContentPane.add(textField, BorderLayout.NORTH)
 
     jframe.setSize(1920, 1080)
+    jframe.setResizable(true)
     jframe.setVisible(true)
 
 
