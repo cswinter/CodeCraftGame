@@ -191,7 +191,6 @@ class Drone(
     mineralProcessing ::= (mineral, mineral.size * 7 * ResourceProcessingPeriod)
     storedMinerals = storedMinerals.filter(_ != mineral)
     simulatorEvents ::= MineralCrystalActivated(mineral)
-    mineral.harvested = true
   }
 
   def fireWeapons(target: Drone): Unit = {
@@ -210,8 +209,11 @@ class Drone(
     // TODO: harvesting takes some time to complete
     assert(mineralCrystal.size <= availableStorage, s"Crystal size is ${mineralCrystal.size} and storage is only $availableStorage")
     assert(this.position ~ mineralCrystal.position)
-    storedMinerals ::= mineralCrystal
-    simulatorEvents ::= MineralCrystalHarvested(mineralCrystal)
+    if (!mineralCrystal.harvested) {
+      storedMinerals ::= mineralCrystal
+      simulatorEvents ::= MineralCrystalHarvested(mineralCrystal)
+      mineralCrystal.harvested = true
+    }
   }
 
   override def position: Vector2 = dynamics.pos
