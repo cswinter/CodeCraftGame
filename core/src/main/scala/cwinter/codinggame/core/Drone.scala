@@ -97,9 +97,11 @@ class Drone(
         harvestResource(mineral)
         movementCommand = HoldPosition
       case DepositMineralCrystals(depositee) =>
-        // TODO: check storage etc
-        depositee.storedMinerals :::= storedMinerals
-        storedMinerals = List.empty[MineralCrystal]
+        if (depositee.availableStorage >= storedMinerals.map(_.size).sum) {
+          depositee.storedMinerals :::= storedMinerals
+          storedMinerals = List.empty[MineralCrystal]
+          movementCommand = HoldPosition
+        }
       case HoldPosition =>
         dynamics.halt()
     }
