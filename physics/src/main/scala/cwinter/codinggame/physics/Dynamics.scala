@@ -6,6 +6,9 @@ import cwinter.codinggame.util.maths.{Rectangle, Vector2, Solve}
 abstract class DynamicObject[T](initialPos: Vector2, initialTime: Double) {
   private[this] var _pos: Vector2 = initialPos
   private[this] var _time: Double = initialTime
+  private[this] var _removed: Boolean = false
+  def removed: Boolean = _removed
+  def remove(): Unit = _removed = true
 
   def pos: Vector2 = _pos
   protected def pos_=(value: Vector2): Unit = _pos = value
@@ -22,7 +25,7 @@ abstract class DynamicObject[T](initialPos: Vector2, initialTime: Double) {
   @inline final def updatePosition(time: Double): Unit = {
     if (time != _time) {
       val dt = time - _time
-      assert(dt > 0, s"dt=$dt")
+      if (dt <= 0) throw new Exception(s"dt=$dt") //assert(dt > 0, s"dt=$dt")
       _pos = computeNewPosition(dt)
       _time = time
     }

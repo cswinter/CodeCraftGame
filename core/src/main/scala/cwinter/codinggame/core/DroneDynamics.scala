@@ -41,6 +41,7 @@ class DroneDynamics(
         isStunned = true
         other.isStunned = true
       case missile: MissileDynamics =>
+        missile.handleObjectCollision(this)
         // should probably do something here...
     }
   }
@@ -68,5 +69,5 @@ class DroneDynamics(
     }
   }
 
-  override def toString: String = s"ConstantVelocityObject(pos=$pos, velocity=$velocity)"
+  override def toString: String = s"DroneDynamics(pos=$pos, velocity=$velocity)"
 }

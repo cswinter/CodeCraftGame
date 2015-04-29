@@ -10,7 +10,7 @@ class SquareGrid[T: Positionable](
   val yMax: Int,
   val cellWidth: Int
 ) {
-  final val Padding = 1
+  final val Padding = 2 // need padding of 2 since missiles can spawn outside the area TODO: set back to 1 if object radius is used in wall collisions
   assert((xMax - xMin) % cellWidth == 0, s"(xMax - xMin) % cellWidth = ${(xMax - xMin) % cellWidth}")
   assert((yMax - yMin) % cellWidth == 0)
 
@@ -99,4 +99,10 @@ class SquareGrid[T: Positionable](
       cells(x + 1)(y + 1).iterator ++
       cells(x - 1)(y + 0).iterator ++
       cells(x)(y).iterator
+
+
+  def minX: Int = Padding - 1
+  def minY: Int = Padding - 1
+  def maxX: Int = width + Padding
+  def maxY: Int = height + Padding
 }

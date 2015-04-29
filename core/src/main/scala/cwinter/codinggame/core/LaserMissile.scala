@@ -17,11 +17,10 @@ class LaserMissile(initialPos: Vector2, time: Double, target: Drone) extends Wor
     previousPositions.enqueue(position)
     if (previousPositions.length > positions) previousPositions.dequeue()
 
-    if ((dynamics.pos - target.position).size <= target.radius + dynamics.radius) {
-      lifetime = 0
-    }
+    if (dynamics.removed) lifetime = 0
 
     if (lifetime == 0) {
+      dynamics.remove()
       Seq(LaserMissileDestroyed(this))
     } else Seq.empty[SimulatorEvent]
   }

@@ -55,7 +55,7 @@ class GameSimulator(
   private def spawnMissile(missile: LaserMissile): Unit = {
     visibleObjects.add(missile)
     dynamicObjects.add(missile)
-    //physicsEngine.addObject(missile.dynamics)
+    physicsEngine.addObject(missile.dynamics)
   }
 
   override def update(): Unit = {
@@ -86,6 +86,7 @@ class GameSimulator(
       case LaserMissileDestroyed(laserMissile) =>
         visibleObjects.remove(laserMissile)
         dynamicObjects.remove(laserMissile)
+        physicsEngine.remove(laserMissile.dynamics)
         val lightFlash = new LightFlash(laserMissile.position)
         visibleObjects.add(lightFlash)
         dynamicObjects.add(lightFlash)
@@ -97,11 +98,6 @@ class GameSimulator(
     }
 
     physicsEngine.update()
-    // TODO: remove this once missiles are integrated with physics engine
-    for (obj <- dynamicObjects) obj match {
-      case missile: LaserMissile => missile.dynamics.updatePosition(physicsEngine.time)
-      case _ =>
-    }
 
 
     // COLLECT ALL EVENTS FROM PHYSICS SIMULATION

@@ -54,6 +54,7 @@ import cwinter.collisions.{Positionable, SquareGrid}
  */
 class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val maxRadius: Int) {
   private[this] val objects = collection.mutable.ArrayBuffer.empty[ObjectRecord]
+  private[this] val recordMap = collection.mutable.Map.empty[T, ObjectRecord]
   private[this] var _time: Double = 0
   private[this] var nextTime: Double = 0
   private[this] var discreteTime: Int = 0
@@ -75,7 +76,19 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
     val (x, y) = grid.computeCell(obj.pos)
     val record = new ObjectRecord(obj, x, y)
     objects += record
+    recordMap += obj -> record
     grid.insert(record, x, y)
+  }
+
+  def remove(obj: T): Unit = {
+    if (recordMap.contains(obj)) {
+      val record = recordMap(obj)
+      grid.remove(record, (record.cellX, record.cellY))
+      objects -= record // TODO: O(n). just remove list and use recordMap.values
+      recordMap -= obj
+      record.nextCollision = None
+      record.nextTransfer = None
+    }
   }
 
   /**
@@ -93,7 +106,9 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
 
 
     while (events.size > 0) {
+      println(s"$discreteTime: $events")
       val collision = events.dequeue()
+      println(s"$discreteTime: $collision")
 
       collision match {
         case ObjectWallCollision(obj, t) =>
@@ -102,9 +117,13 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
             obj.updatePosition(t)
 
             obj.handleWallCollision(worldBoundaries)
-            updateNextCollision(obj, grid.nearbyObjects(obj.cellX, obj.cellY))
 
-            updateTransfer(obj)
+            if (obj.removed) {
+              remove(obj)
+            } else {
+              updateNextCollision(obj, grid.nearbyObjects(obj.cellX, obj.cellY))
+              updateTransfer(obj)
+            }
           }
         case ObjectObjectCollision(obj1, obj2, t) =>
           if (obj1.nextCollision == Some(collision)) {
@@ -114,12 +133,16 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
               obj2.updatePosition(t)
 
               obj1.handleObjectCollision(obj2)
+
               updateNextCollision(obj2, grid.nearbyObjects(obj2.cellX, obj2.cellY))
 
               updateTransfer(obj1)
               updateTransfer(obj2)
+
+              if (obj2.removed) { println(s"removed$obj2"); remove(obj2) }
             }
             updateNextCollision(obj1, grid.nearbyObjects(obj1.cellX, obj1.cellY))
+            if (obj1.removed) { println(s"removed$obj1"); remove(obj1) }
           } else if (obj2.nextCollision == Some(collision)) {
             updateNextCollision(obj2, grid.nearbyObjects(obj2.cellX, obj2.cellY))
           }
@@ -202,7 +225,8 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
 
       // transfers out of the world boundaries may be scheduled before the corresponding wall collision
       // therefore we check for this explicitly
-      if (newX <= grid.width && newY <= grid.height && newX > 0 && newY > 0) {
+      // TODO: change in grid padding caused bug. fixed, but investigate deeper.
+      if (newX < grid.maxX && newY < grid.maxY && newX > grid.minX && newY > grid.minY) {
         obj.nextTransfer = Some(transferEvent)
         events.enqueue(transferEvent)
       }

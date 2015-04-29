@@ -43,8 +43,14 @@ abstract class ConstantVelocityDynamics(
       case (None, None) => None
     }
 
-    x.filter(_._1 < timeDelta)
-  }
+    val result = x.filter(_._1 < timeDelta)
+
+    if (result.map(_._1 < 0) == Some(true)) {
+      println(s"velocity=$velocity\nareaBounds=$areaBounds\ntimeDelta=$timeDelta\nctX=$ctX\nctY=$ctY\nresult=$result\npos=$pos")
+    }
+
+    result
+  } ensuring(x => x.map(_._1 < 0) != Some(true))
 
   override protected def computeCollisionTime(
     other: ConstantVelocityDynamics,
