@@ -69,8 +69,9 @@ class SquareGrid[T: Positionable](
 
 
   def computeCell[T2: Positionable](elem: T2): (Int, Int) = {
-    val cellX = Padding + (elem.position.x.toInt - xMin) / cellWidth
-    val cellY = Padding + (elem.position.y.toInt - yMin) / cellWidth
+    // can use toInt, since expression is always positive so rounds consistently
+    val cellX = Padding + ((elem.position.x - xMin) / cellWidth).toInt
+    val cellY = Padding + ((elem.position.y - yMin) / cellWidth).toInt
     (cellX, cellY)
   }
 

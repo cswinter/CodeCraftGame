@@ -48,7 +48,7 @@ class GameSimulator(
     dynamicObjects.add(drone)
     drones.add(drone)
     visionTracker.insert(drone, generateEvents=true)
-    physicsEngine.addObject(drone.dynamics.unwrap)
+    physicsEngine.addObject(drone.dynamics)
     drone.initialise(physicsEngine.time)
   }
 
