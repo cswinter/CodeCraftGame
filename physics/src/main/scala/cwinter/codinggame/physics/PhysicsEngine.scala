@@ -106,9 +106,7 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
 
 
     while (events.size > 0) {
-      println(s"$discreteTime: $events")
       val collision = events.dequeue()
-      println(s"$discreteTime: $collision")
 
       collision match {
         case ObjectWallCollision(obj, t) =>
@@ -139,10 +137,10 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
               updateTransfer(obj1)
               updateTransfer(obj2)
 
-              if (obj2.removed) { println(s"removed$obj2"); remove(obj2) }
+              if (obj2.removed) remove(obj2)
             }
             updateNextCollision(obj1, grid.nearbyObjects(obj1.cellX, obj1.cellY))
-            if (obj1.removed) { println(s"removed$obj1"); remove(obj1) }
+            if (obj1.removed) remove(obj1)
           } else if (obj2.nextCollision == Some(collision)) {
             updateNextCollision(obj2, grid.nearbyObjects(obj2.cellX, obj2.cellY))
           }

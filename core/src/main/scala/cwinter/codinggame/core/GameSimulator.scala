@@ -94,7 +94,6 @@ class GameSimulator(
 
 
 
-    simulatorEvents.foreach(println)
     simulatorEvents.foreach {
       case MineralCrystalHarvested(mineralCrystal) =>
         visibleObjects.remove(mineralCrystal)
