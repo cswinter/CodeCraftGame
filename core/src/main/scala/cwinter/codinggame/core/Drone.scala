@@ -28,9 +28,6 @@ class Drone(
   var objectsInSight: Set[WorldObject] = Set.empty[WorldObject]
 
   private var constructionProgress: Option[Int] = None
-  private[this] var _weaponsCooldown: Int = 0
-  private def weaponsCooldown_=(value: Int) = _weaponsCooldown = value
-  def weaponsCooldown: Int = _weaponsCooldown
 
   private[this] val eventQueue = collection.mutable.Queue[DroneEvent](Spawned)
 
@@ -50,6 +47,11 @@ class Drone(
   private[this] var mineralProcessing = List.empty[(MineralCrystal, Int)]
 
   private[this] var simulatorEvents = List.empty[SimulatorEvent]
+
+
+  private[this] val weapons: Option[DroneLasersModule] = Some(
+    new DroneLasersModule(modules.zipWithIndex.filter(_._1 == Lasers).map(_._2), this))
+
 
   def initialise(time: Double): Unit = {
     dynamics.setTime(time)
@@ -163,7 +165,11 @@ class Drone(
         remaining > 0
     }
 
-    weaponsCooldown -= 1
+    for (w <- weapons) {
+      val (events, resourceCost) = w.update(0)
+      simulatorEvents :::= events.toList
+    }
+
 
     dynamics.update()
 
@@ -213,15 +219,10 @@ class Drone(
   }
 
   def fireWeapons(target: Drone): Unit = {
-    if (weaponsCooldown <= 0) {
-      weaponsCooldown = 30
-      for (i <- modules.filter(_ == Lasers).indices) {
-        val VertexXY(x, y) = ModulePosition(size, i)
-        val offset = Vector2(x, y)
-        simulatorEvents ::= SpawnLaserMissile(position + offset, target)
-      }
-    }
+    for (w <- weapons) w.fire(target)
   }
+
+  def weaponsCooldown: Int = weapons.map(_.cooldown).getOrElse(1)
 
   def harvestResource(mineralCrystal: MineralCrystal): Unit = {
     // TODO: better error messages, add option to emit warnings and abort instead of throwing

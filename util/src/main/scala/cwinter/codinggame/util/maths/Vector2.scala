@@ -51,5 +51,8 @@ object Vector2 {
   def apply(angle: Double): Vector2 =
     Vector2(math.cos(angle).toFloat, math.sin(angle).toFloat)
 
+  def apply(vertexXY: VertexXY): Vector2 =
+    Vector2(vertexXY.x, vertexXY.y)
+
   val NullVector = Vector2(0, 0)
 }
