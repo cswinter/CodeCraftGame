@@ -58,7 +58,7 @@ abstract class DroneController {
   def position: Vector2 = drone.position
   def availableStorage: Int = drone.availableStorage
   def availableFactories: Int = drone.availableFactories
-  def storedMinerals: Seq[MineralCrystal] = drone.storedMinerals
+  def storedMinerals: Seq[MineralCrystal] = drone.storedMinerals.toSeq // TODO: remove this conversion
   def dronesInSight: Set[Drone] = drone.dronesInSight
   def weaponsCooldown: Int = drone.weaponsCooldown
 

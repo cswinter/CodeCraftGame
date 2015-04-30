@@ -1,7 +1,6 @@
 package cwinter.codinggame.core
 
-import cwinter.codinggame.util.maths.{VertexXY, Geometry, Rng, Vector2}
-import cwinter.codinggame.util.modules.ModulePosition
+import cwinter.codinggame.util.maths.{Geometry, Vector2}
 import cwinter.worldstate.{BluePlayer, DroneDescriptor, WorldObjectDescriptor}
 
 
@@ -32,17 +31,12 @@ class Drone(
 
   private[this] var hullState = List.fill[Byte](size - 1)(2)
 
-  private var _storedMinerals = List.empty[MineralCrystal]
-  def storedMinerals: List[MineralCrystal] = _storedMinerals
-  private def storedMinerals_=(value: List[MineralCrystal]): Unit = _storedMinerals = value
-
-  private[this] var storedEnergyGlobes: Int = startingResources
-
   private[this] val oldPositions = collection.mutable.Queue.empty[(Float, Float, Float)]
   private final val NJetPositions = 12
 
   private[this] var movementCommand: MovementCommand = HoldPosition
 
+  // TODO: remove this once all logic is moved into modules
   private[this] var simulatorEvents = List.empty[SimulatorEvent]
 
 // TODO: ensure canonical module ordering
@@ -50,6 +44,9 @@ class Drone(
     new DroneLasersModule(modules.zipWithIndex.filter(_._1 == Lasers).map(_._2), this))
   private[this] val factories: Option[DroneFactoryModule] = Some(
     new DroneFactoryModule(modules.zipWithIndex.filter(_._1 == NanobotFactory).map(_._2), this)
+  )// TODO: change to private[this] once storage module is implemented properly
+  private[core] val storage: Option[DroneStorageModule] = Some(
+    new DroneStorageModule(modules.zipWithIndex.filter(_._1 == StorageModule).map(_._2), this, startingResources)
   )
 
 
@@ -101,9 +98,13 @@ class Drone(
         harvestResource(mineral)
         movementCommand = HoldPosition
       case DepositMineralCrystals(depositee) =>
-        if (depositee.availableStorage >= storedMinerals.map(_.size).sum) {
-          depositee.storedMinerals :::= storedMinerals
-          storedMinerals = List.empty[MineralCrystal]
+        // TODO: eliminate .get
+        if (depositee.availableStorage >= storage.get.storedMinerals.foldLeft(0)(_ + _.size)) {
+          // TODO: do this operation properly (inside storage moduele + takes time)
+          for (m <- storage.get.storedMinerals) {
+            depositee.storage.get.depositMineralCrystal(m)
+          }
+          storage.get.clear()
           movementCommand = HoldPosition
         }
       case HoldPosition =>
@@ -113,14 +114,14 @@ class Drone(
 
 
     for (w <- weapons) {
-      val (events, resourceCost) = w.update(storedEnergyGlobes)
+      val (events, resourceCost) = w.update(availableResources)
       simulatorEvents :::= events.toList
-      storedEnergyGlobes -= resourceCost
+      for (s <- storage) s.modifyResources(resourceCost)
     }
     for (f <- factories) {
-      val (events, resourceCost) = f.update(storedEnergyGlobes)
+      val (events, resourceCost) = f.update(availableResources)
       simulatorEvents :::= events.toList
-      storedEnergyGlobes -= resourceCost
+      for (s <- storage) s.modifyResources(resourceCost)
     }
 
 
@@ -165,7 +166,7 @@ class Drone(
   def startMineralProcessing(mineral: MineralCrystal): Unit = {
     // TODO: check that mineral crystal is in storage
     for (f <- factories) {
-      storedMinerals = storedMinerals.filter(_ != mineral)
+      storage.get.removeMineralCrystal(mineral)
       f.startMineralProcessing(mineral)
     }
   }
@@ -179,10 +180,11 @@ class Drone(
   def harvestResource(mineralCrystal: MineralCrystal): Unit = {
     // TODO: better error messages, add option to emit warnings and abort instead of throwing
     // TODO: harvesting takes some time to complete
+    // TODO: make this part of mineral module
     assert(mineralCrystal.size <= availableStorage, s"Crystal size is ${mineralCrystal.size} and storage is only $availableStorage")
     assert(this.position ~ mineralCrystal.position)
     if (!mineralCrystal.harvested) {
-      storedMinerals ::= mineralCrystal
+      storage.get.depositMineralCrystal(mineralCrystal)
       simulatorEvents ::= MineralCrystalHarvested(mineralCrystal)
       mineralCrystal.harvested = true
     }
@@ -190,12 +192,22 @@ class Drone(
 
   override def position: Vector2 = dynamics.pos
 
-  def availableStorage: Int =
-    storageCapacity - storedMinerals.map(_.size).sum - math.ceil(storedEnergyGlobes / 7.0).toInt
+
+  def availableStorage: Int = {
+    for (s <- storage) yield s.availableStorage
+  }.getOrElse(0)
 
   def availableFactories: Int = {
     for (f <- factories) yield f.currentCapacity
   }.getOrElse(0)
+
+  def availableResources: Int = {
+    for (s <- storage) yield s.availableResources
+  }.getOrElse(0)
+
+  def storedMinerals: Iterable[MineralCrystal] = {
+    for (s <- storage) yield s.storedMinerals
+  }.getOrElse(Seq())
 
   def dronesInSight: Set[Drone] = objectsInSight.filter(_.isInstanceOf[Drone]).map { case d: Drone => d }
 
@@ -265,12 +277,12 @@ class Drone(
 
     var storageSum = 0
     // TODO: HarvestedMineral class (no position)
-    for (MineralCrystal(size, pos) <- storedMinerals.sortBy(-_.size)) {
+    for (MineralCrystal(size, pos) <- storage.map(_.storedMinerals).getOrElse(Seq()).toSeq.sortBy(-_.size)) {
       result ::= cwinter.worldstate.StorageModule(index until index + size, -1)
       index += size
       storageSum += size
     }
-    var globesRemaining = storedEnergyGlobes
+    var globesRemaining = availableResources
     for (i <- 0 until storageCapacity - storageSum) {
       val globes = math.min(7, globesRemaining)
       result ::= cwinter.worldstate.StorageModule(Seq(index), globes)
