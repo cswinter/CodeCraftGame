@@ -43,7 +43,7 @@ class GameSimulator(
 
 
   private def mothership(controller: DroneController, pos: Vector2): Drone =
-    new Drone(Seq.fill(4)(StorageModule) ++ Seq.fill(6)(NanobotFactory), 7, controller, pos, 0, 28)
+    new Drone(Seq.fill(6)(NanobotFactory) ++ Seq.fill(4)(StorageModule), 7, controller, pos, 0, 28)
 
   private def spawnDrone(drone: Drone): Unit = {
     visibleObjects.add(drone)

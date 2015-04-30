@@ -18,7 +18,6 @@ class Drone(
   // constants for drone construction
   final val ConstructionPeriod = 175
   final val ResourceCost = 5
-  final val ResourceProcessingPeriod = 15
 
   val dynamics: DroneDynamics = new DroneDynamics(this, 100, radius, initialPos, time)
   val storageCapacity = modules.count(_ == StorageModule)
@@ -27,7 +26,7 @@ class Drone(
 
   var objectsInSight: Set[WorldObject] = Set.empty[WorldObject]
 
-  private var constructionProgress: Option[Int] = None
+  private[core] var constructionProgress: Option[Int] = None
 
   private[this] val eventQueue = collection.mutable.Queue[DroneEvent](Spawned)
 
@@ -43,14 +42,15 @@ class Drone(
   private final val NJetPositions = 12
 
   private[this] var movementCommand: MovementCommand = HoldPosition
-  private[this] var droneConstructions = List.empty[(ConstructDrone, Int)]
-  private[this] var mineralProcessing = List.empty[(MineralCrystal, Int)]
 
   private[this] var simulatorEvents = List.empty[SimulatorEvent]
 
-
+// TODO: ensure canonical module ordering
   private[this] val weapons: Option[DroneLasersModule] = Some(
     new DroneLasersModule(modules.zipWithIndex.filter(_._1 == Lasers).map(_._2), this))
+  private[this] val factories: Option[DroneFactoryModule] = Some(
+    new DroneFactoryModule(modules.zipWithIndex.filter(_._1 == NanobotFactory).map(_._2), this)
+  )
 
 
   def initialise(time: Double): Unit = {
@@ -110,64 +110,17 @@ class Drone(
         dynamics.halt()
     }
 
-    var index = 0
-    droneConstructions =
-      for ((drone, progress) <- droneConstructions)
-        yield {
-          val requiredFactories = drone.drone.requiredFactories
-          drone.drone.dynamics.orientation = dynamics.orientation
-          drone.drone.constructionProgress = Some(progress)
-          val positions = index until index + requiredFactories
-          index += requiredFactories
-          val moduleOffset = ModulePosition.center(size, positions)
-          val rotation = dynamics.orientation.orientation
-          val moduleOffsetVector2 = Vector2(moduleOffset.x, moduleOffset.y).rotated(rotation)
-          drone.drone.dynamics.setPosition(position + moduleOffsetVector2)
-          if (progress == drone.drone.buildTime) {
-            simulatorEvents ::= SpawnDrone(drone.drone)
-            drone.drone.constructionProgress = None
-            drone.drone.dynamics.setPosition(position - 150 * Rng.vector2())
-          }
-          if (progress % drone.drone.resourceDepletionPeriod == 0) {
-            if (storedEnergyGlobes > 0) {
-              storedEnergyGlobes -= 1
-              (drone, progress + 1)
-            } else {
-              (drone, progress)
-            }
-          } else {
-            (drone, progress + 1)
-          }
-        }
 
-    mineralProcessing =
-      for ((mineral, progress) <- mineralProcessing)
-        yield {
-          val positions = index until index + mineral.size
-          val moduleOffset = ModulePosition.center(size, positions)
-          index += mineral.size
-          mineral.position = position + Vector2(moduleOffset.x, moduleOffset.y)
-
-          if (progress % ResourceProcessingPeriod == 0) {
-          storedEnergyGlobes += 1
-          }
-          (mineral, progress - 1)
-        }
-
-    droneConstructions = droneConstructions.filter {
-      case (drone, progress) =>
-        drone.drone.buildTime >= progress
-    }
-
-    mineralProcessing = mineralProcessing.filter {
-      case (mineral, remaining) =>
-        if (remaining <= 0) simulatorEvents ::= MineralCrystalDestroyed(mineral)
-        remaining > 0
-    }
 
     for (w <- weapons) {
-      val (events, resourceCost) = w.update(0)
+      val (events, resourceCost) = w.update(storedEnergyGlobes)
       simulatorEvents :::= events.toList
+      storedEnergyGlobes -= resourceCost
+    }
+    for (f <- factories) {
+      val (events, resourceCost) = f.update(storedEnergyGlobes)
+      simulatorEvents :::= events.toList
+      storedEnergyGlobes -= resourceCost
     }
 
 
@@ -206,16 +159,15 @@ class Drone(
   def giveMovementCommand(value: MovementCommand): Unit = movementCommand = value
 
   def startDroneConstruction(command: ConstructDrone): Unit = {
-    droneConstructions ::= ((command, 0))
-    droneConstructions = droneConstructions.sortBy { case (c, p) => -c.drone.requiredFactories }
-    simulatorEvents ::= DroneConstructionStarted(command.drone)
-    command.drone.dynamics.orientation = dynamics.orientation
+    for (f <- factories) f.startDroneConstruction(command)
   }
 
   def startMineralProcessing(mineral: MineralCrystal): Unit = {
-    mineralProcessing ::= (mineral, mineral.size * 7 * ResourceProcessingPeriod)
-    storedMinerals = storedMinerals.filter(_ != mineral)
-    simulatorEvents ::= MineralCrystalActivated(mineral)
+    // TODO: check that mineral crystal is in storage
+    for (f <- factories) {
+      storedMinerals = storedMinerals.filter(_ != mineral)
+      f.startMineralProcessing(mineral)
+    }
   }
 
   def fireWeapons(target: Drone): Unit = {
@@ -241,10 +193,9 @@ class Drone(
   def availableStorage: Int =
     storageCapacity - storedMinerals.map(_.size).sum - math.ceil(storedEnergyGlobes / 7.0).toInt
 
-  def availableFactories: Int =
-    factoryCapacity -
-      droneConstructions.map(d => d._1.drone.requiredFactories).sum -
-      mineralProcessing.map(d => d._1.size).sum
+  def availableFactories: Int = {
+    for (f <- factories) yield f.currentCapacity
+  }.getOrElse(0)
 
   def dronesInSight: Set[Drone] = objectsInSight.filter(_.isInstanceOf[Drone]).map { case d: Drone => d }
 
@@ -297,10 +248,11 @@ class Drone(
       index += 1
     }
 
-    val factoryContents = (
-      droneConstructions.map(_._1.drone.requiredFactories) ++
-      mineralProcessing.map(_._1.size)
-      ).sorted.reverse
+    // TODO: do this properly (+rest of this function) and remove .contents once everything is put into modules
+    val factoryContents = {
+      for (f <- factories)
+        yield f.contents
+    }.getOrElse(Seq())
 
     for (n <- factoryContents) {
       result ::= cwinter.worldstate.ProcessingModule(index until index + n)

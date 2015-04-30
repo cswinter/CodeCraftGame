@@ -6,7 +6,7 @@ import cwinter.codinggame.util.modules.ModulePosition
 
 object Main {
   def main(args: Array[String]): Unit = {
-    TheGameMaster.setDevEvents(events)
+    //TheGameMaster.setDevEvents(events)
     TheGameMaster.startGame(new Mothership)
   }
 
