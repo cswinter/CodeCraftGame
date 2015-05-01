@@ -4,9 +4,10 @@ import cwinter.codinggame.util.maths.VertexXY
 import cwinter.graphics.engine.RenderStack
 import cwinter.graphics.model._
 import RobotColors._
+import cwinter.worldstate.Player
 
 
-case class RobotLasersModelBuilder(position: VertexXY, n: Int)(implicit rs: RenderStack)
+case class RobotLasersModelBuilder(player: Player, position: VertexXY, n: Int)(implicit rs: RenderStack)
   extends ModelBuilder[RobotLasersModelBuilder, Unit] {
   override def signature: RobotLasersModelBuilder = this
 
@@ -14,8 +15,8 @@ case class RobotLasersModelBuilder(position: VertexXY, n: Int)(implicit rs: Rend
     Polygon(
       rs.MaterialXYRGB,
       3,
-      Seq.fill(n)(White) ++ Seq.fill(3 - n)(ColorThrusters),
-      Seq.fill(3)(0.3f * ColorThrusters),
+      Seq.fill(n)(White) ++ Seq.fill(3 - n)(player.color),
+      Seq.fill(3)(0.3f * player.color),
       radius = 8,
       position = position,
       zPos = 1,

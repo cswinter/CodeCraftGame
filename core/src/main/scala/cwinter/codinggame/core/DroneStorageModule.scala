@@ -58,6 +58,7 @@ class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: I
     if (!mineralCrystal.harvested) {
       harvesting ::=(mineralCrystal, 1)
       println(harvesting)
+      mineralCrystal.harvested = true
     }
   }
 

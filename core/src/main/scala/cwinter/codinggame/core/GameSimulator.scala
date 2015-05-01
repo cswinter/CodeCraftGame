@@ -4,12 +4,13 @@ import cwinter.codinggame.physics.PhysicsEngine
 import cwinter.codinggame.util.maths.{Rng, Vector2}
 import cwinter.codinggame.util.modules.ModulePosition
 import cwinter.collisions.VisionTracker
-import cwinter.worldstate.{WorldObjectDescriptor, GameWorld}
+import cwinter.worldstate._
 
 
 class GameSimulator(
   val map: WorldMap,
-  mothershipController: DroneController,
+  mothershipController1: DroneController,
+  mothershipController2: DroneController,
   eventGenerator: Int => Seq[SimulatorEvent]
 ) extends GameWorld {
   final val SightRadius = 250
@@ -18,6 +19,7 @@ class GameSimulator(
   private val visibleObjects = collection.mutable.Set.empty[WorldObject]
   private val dynamicObjects = collection.mutable.Set.empty[WorldObject]
   private val drones = collection.mutable.Set.empty[Drone]
+  private var deadDrones = List.empty[Drone]
 
   private val visionTracker = new VisionTracker[WorldObject](
     map.size.xMin.toInt, map.size.xMax.toInt,
@@ -30,7 +32,8 @@ class GameSimulator(
   )
 
   map.minerals.foreach(spawnMineral)
-  spawnDrone(mothership(mothershipController, Vector2(-50, -400)))
+  spawnDrone(mothership(BluePlayer, mothershipController1, Vector2(600, 600)))
+  spawnDrone(mothership(OrangePlayer, mothershipController2, Vector2(-600, -600)))
 
 
 
@@ -42,8 +45,8 @@ class GameSimulator(
   }
 
 
-  private def mothership(controller: DroneController, pos: Vector2): Drone =
-    new Drone(Seq.fill(6)(NanobotFactory) ++ Seq.fill(4)(StorageModule), 7, controller, pos, 0, 28)
+  private def mothership(player: Player, controller: DroneController, pos: Vector2): Drone =
+    new Drone(Seq.fill(6)(NanobotFactory) ++ Seq.fill(4)(StorageModule), 7, controller, player, pos, 0, 28)
 
   private def spawnDrone(drone: Drone): Unit = {
     visibleObjects.add(drone)
@@ -60,6 +63,9 @@ class GameSimulator(
     drones.remove(drone)
     visionTracker.remove(drone)
     physicsEngine.remove(drone.dynamics)
+
+    deadDrones ::= drone
+    drone.enqueueEvent(Destroyed)
 
     for {
       i <- 0 until ModulePosition.moduleCount(drone.size)
@@ -86,6 +92,11 @@ class GameSimulator(
       drone.processEvents()
     }
 
+    for (drone <- deadDrones) {
+      drone.processEvents()
+    }
+    deadDrones = List.empty[Drone]
+
     // execute game mechanics for all objects + collect resulting events
     val simulatorEvents = {
       for (obj <- dynamicObjects; event <- obj.update())
@@ -104,10 +115,10 @@ class GameSimulator(
         visibleObjects.add(mineralCrystal)
       case DroneConstructionStarted(drone) =>
         visibleObjects.add(drone)
-      case SpawnLaserMissile(position, target) =>
+      case SpawnLaserMissile(player, position, target) =>
         // TODO: remove this check once boundary collisions are done properly
         if (map.size.contains(position)) {
-          val newMissile = new LaserMissile(position, physicsEngine.time, target)
+        val newMissile = new LaserMissile(player, position, physicsEngine.time, target)
           spawnMissile(newMissile)
         }
       case LaserMissileDestroyed(laserMissile) =>
@@ -156,7 +167,7 @@ case class DroneConstructionStarted(drone: Drone) extends SimulatorEvent
 case class SpawnDrone(drone: Drone) extends SimulatorEvent
 case class MineralCrystalActivated(mineralCrystal: MineralCrystal) extends SimulatorEvent
 case class MineralCrystalDestroyed(mineralCrystal: MineralCrystal) extends SimulatorEvent
-case class SpawnLaserMissile(position: Vector2, target: Drone) extends SimulatorEvent
+case class SpawnLaserMissile(player: Player, position: Vector2, target: Drone) extends SimulatorEvent
 case class LaserMissileDestroyed(laserMissile: LaserMissile) extends SimulatorEvent
 case class LightFlashDestroyed(lightFlash: LightFlash) extends SimulatorEvent
 case class DroneKilled(drone: Drone) extends SimulatorEvent

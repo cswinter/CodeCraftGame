@@ -3,11 +3,12 @@ package cwinter.codinggame.testai
 import cwinter.codinggame.core._
 import cwinter.codinggame.util.maths.{Rng, Vector2}
 import cwinter.codinggame.util.modules.ModulePosition
+import cwinter.worldstate.BluePlayer
 
 object Main {
   def main(args: Array[String]): Unit = {
     //TheGameMaster.setDevEvents(events)
-    TheGameMaster.startGame(new Mothership)
+    TheGameMaster.startGame(new Mothership, new Mothership)
   }
 
   private def events(t: Int): Seq[SimulatorEvent] = {
@@ -20,7 +21,8 @@ object Main {
     val size = Rng.int(3, 6)
     new Drone(
       Seq.fill(ModulePosition.moduleCount(size))(Lasers), size,
-      new AttackDroneController, Rng.vector2(-1400, 1400, -1000, 1000),
+      new AttackDroneController, BluePlayer,
+      Rng.vector2(-1400, 1400, -1000, 1000),
       0, 0
     )
   }
@@ -56,6 +58,7 @@ class Mothership extends DroneController {
   override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = ()
   override def onArrival(): Unit = ()
   override def onDroneEntersVision(drone: Drone): Unit = ()
+  override def onDeath(): Unit = ()
 }
 
 class ScoutingDroneController(val mothership: Mothership) extends DroneController {
@@ -67,6 +70,8 @@ class ScoutingDroneController(val mothership: Mothership) extends DroneControlle
   override def onSpawn(): Unit = {
     moveInDirection(Vector2(Rng.double(0, 100)))
   }
+
+  override def onDeath(): Unit = mothership.collectors -= 1
 
   override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = {
     if (mineralCrystal.size <= availableStorage) {
@@ -113,7 +118,9 @@ class AttackDroneController extends DroneController {
 
   override def onTick(): Unit = {
     if (weaponsCooldown <= 0 && enemies.nonEmpty) {
-      shootWeapons(enemies.head)
+      val enemy = enemies.head
+      shootWeapons(enemy)
+      moveInDirection(enemy.position - position)
     }
     if (Rng.bernoulli(0.01)) {
       moveInDirection(Vector2(Rng.double(0, 100)))
@@ -121,10 +128,11 @@ class AttackDroneController extends DroneController {
   }
 
   def enemies: Set[Drone] =
-    dronesInSight.filter(_.controller.isInstanceOf[AttackDroneController])
+    dronesInSight.filter(_.player != drone.player)
 
   override def onArrival(): Unit = ()
 
   override def onDroneEntersVision(drone: Drone): Unit = ()
+  override def onDeath(): Unit = ()
 }
 

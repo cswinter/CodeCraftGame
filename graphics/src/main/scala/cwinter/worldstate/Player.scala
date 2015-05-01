@@ -15,4 +15,9 @@ object RedPlayer extends Player {
   def color: ColorRGB = ColorRGB(1, 0, 0)
 }
 
+object OrangePlayer extends Player {
+  def color: ColorRGB = ColorRGB(1, 0.25f, 0)
+}
+
+
 

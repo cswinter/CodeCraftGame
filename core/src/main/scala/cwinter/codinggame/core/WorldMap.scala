@@ -13,7 +13,7 @@ object WorldMap {
     val minerals =
       for (i <- 0 to resourceCount) yield
       new MineralCrystal(
-        Rng.int(1, 3),
+        Rng.int(1, 2),
         new Vector2(Rng.double(size.xMin, size.xMax), Rng.double(size.yMin, size.yMax))
       )
 

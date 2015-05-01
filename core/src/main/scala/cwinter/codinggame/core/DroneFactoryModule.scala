@@ -104,8 +104,10 @@ class DroneFactoryModule(positions: Seq[Int], owner: Drone)
 
 
   def currentCapacity: Int = positions.length -
-    droneConstructions.map(d => d._1.requiredFactories).sum -
-    mineralProcessing.map(d => d._1.size).sum
+    droneConstructions.foldLeft(0)(_ + _._1.requiredFactories) -
+    mineralProcessing.foldLeft(0)(_ + _._1.size) -
+    newMinerals.foldLeft(0)(_ + _.size) -
+    newDrones.foldLeft(0)(_ + _.requiredFactories)
 
   def contents: Seq[Int] = (
     droneConstructions.map(_._1.requiredFactories) ++

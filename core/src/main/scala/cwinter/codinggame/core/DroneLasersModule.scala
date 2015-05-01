@@ -23,7 +23,7 @@ class DroneLasersModule(positions: Seq[Int], owner: Drone)
 
       val missiles =
         for (pos <- absoluteModulePositions)
-          yield SpawnLaserMissile(pos, target)
+          yield SpawnLaserMissile(owner.player, pos, target)
 
       nextEffect = (missiles, 0)
     }

@@ -3,10 +3,12 @@ package cwinter.codinggame.core
 import cwinter.codinggame.util.maths.Vector2
 
 abstract class DroneController {
-  private var drone: Drone = null
+  // TODO: make private again once drone handles exist
+  var drone: Drone = null
 
   // abstract methods for event handling
   def onSpawn(): Unit
+  def onDeath(): Unit
   def onTick(): Unit
   def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit
   def onDroneEntersVision(drone: Drone): Unit
@@ -37,12 +39,12 @@ abstract class DroneController {
   }
 
   def buildSmallDrone(module1: Module, module2: Module, controller: DroneController): Unit = {
-    val newDrone = new Drone(Seq(module1, module2), 4, controller, Vector2.NullVector, -1)
+    val newDrone = new Drone(Seq(module1, module2), 4, controller, drone.player, Vector2.NullVector, -1)
     drone.startDroneConstruction(ConstructDrone(newDrone))
   }
 
   def buildTinyDrone(module: Module, controller: DroneController): Unit = {
-    val newDrone = new Drone(Seq(module), 3, controller, Vector2.NullVector, -1)
+    val newDrone = new Drone(Seq(module), 3, controller, drone.player, Vector2.NullVector, -1)
     drone.startDroneConstruction(ConstructDrone(newDrone))
   }
 

@@ -1,7 +1,7 @@
 package cwinter.codinggame.core
 
 import cwinter.codinggame.util.maths.{Geometry, Vector2}
-import cwinter.worldstate.{BluePlayer, DroneDescriptor, WorldObjectDescriptor}
+import cwinter.worldstate.{Player, DroneDescriptor, WorldObjectDescriptor}
 
 
 // TODO: make private[core] once DroneHandle class is implemented
@@ -9,6 +9,7 @@ class Drone(
   val modules: Seq[Module],
   val size: Int,
   val controller: DroneController,
+  val player: Player,
   initialPos: Vector2,
   time: Double,
   startingResources: Int = 0
@@ -70,6 +71,7 @@ class Drone(
     // process events
     eventQueue foreach {
       case Spawned => controller.onSpawn()
+      case Destroyed => controller.onDeath()
       case MineralEntersSightRadius(mineral) => controller.onMineralEntersVision(mineral)
       case ArrivedAtPosition => controller.onArrival()
       case DroneEntersSightRadius(drone) => controller.onDroneEntersVision(drone)
@@ -225,7 +227,7 @@ class Drone(
       moduleDescriptors,
       hullState,
       size,
-      BluePlayer,
+      player,
       constructionProgress
     )
   }
@@ -294,6 +296,7 @@ case object NanobotFactory extends Module
 
 sealed trait DroneEvent
 case object Spawned extends DroneEvent
+case object Destroyed extends DroneEvent
 case class MineralEntersSightRadius(mineralCrystal: MineralCrystal) extends DroneEvent
 case object ArrivedAtPosition extends DroneEvent
 case class DroneEntersSightRadius(drone: Drone) extends DroneEvent
