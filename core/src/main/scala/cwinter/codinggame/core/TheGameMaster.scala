@@ -5,7 +5,7 @@ import cwinter.graphics.application.DrawingCanvas
 
 
 object TheGameMaster {
-  final val WorldSize = Rectangle(-1500, 1500, -1500, 1500)
+  final val WorldSize = Rectangle(-2000, 2000, -1000, 1000)
 
 
   def startGame(mothership1: DroneController, mothership2: DroneController): Unit = {

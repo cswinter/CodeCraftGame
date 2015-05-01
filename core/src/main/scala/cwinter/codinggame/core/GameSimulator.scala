@@ -32,8 +32,8 @@ class GameSimulator(
   )
 
   map.minerals.foreach(spawnMineral)
-  spawnDrone(mothership(BluePlayer, mothershipController1, Vector2(600, 600)))
-  spawnDrone(mothership(OrangePlayer, mothershipController2, Vector2(-600, -600)))
+  spawnDrone(mothership(BluePlayer, mothershipController1, Vector2(1000, 200)))
+  spawnDrone(mothership(OrangePlayer, mothershipController2, Vector2(-1000, -200)))
 
 
 

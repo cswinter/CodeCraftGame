@@ -5,14 +5,16 @@ import cwinter.codinggame.util.maths.{Vector2, Rectangle}
 
 class SquareGrid[T: Positionable](
   val xMin: Int,
-  val xMax: Int,
+  val xMaxA: Int,
   val yMin: Int,
-  val yMax: Int,
+  val yMaxA: Int,
   val cellWidth: Int
 ) {
   final val Padding = 2 // need padding of 2 since missiles can spawn outside the area TODO: set back to 1 if object radius is used in wall collisions
-  assert((xMax - xMin) % cellWidth == 0, s"(xMax - xMin) % cellWidth = ${(xMax - xMin) % cellWidth}")
-  assert((yMax - yMin) % cellWidth == 0)
+
+  val xMax = math.ceil((xMaxA - xMin).toDouble / cellWidth).toInt * cellWidth + xMin
+  val yMax = math.ceil((yMaxA - yMin).toDouble / cellWidth).toInt * cellWidth + yMin
+  println(s"$xMaxA, $xMax, $yMaxA, $yMax")
 
   val width = (xMax - xMin) / cellWidth
   val height = (yMax - yMin) / cellWidth
