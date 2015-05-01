@@ -48,6 +48,7 @@ class Drone(
   private[core] val storage: Option[DroneStorageModule] = Some(
     new DroneStorageModule(modules.zipWithIndex.filter(_._1 == StorageModule).map(_._2), this, startingResources)
   )
+  val droneModules = Seq(weapons, factories, storage)
 
 
   def initialise(time: Double): Unit = {
@@ -94,32 +95,14 @@ class Drone(
         } else {
           dynamics.orientation = dist.normalized
         }
-      case HarvestMineralCrystal(mineral) =>
-        harvestResource(mineral)
-        movementCommand = HoldPosition
-      case DepositMineralCrystals(depositee) =>
-        // TODO: eliminate .get
-        if (depositee.availableStorage >= storage.get.storedMinerals.foldLeft(0)(_ + _.size)) {
-          // TODO: do this operation properly (inside storage moduele + takes time)
-          for (m <- storage.get.storedMinerals) {
-            depositee.storage.get.depositMineralCrystal(m)
-          }
-          storage.get.clear()
-          movementCommand = HoldPosition
-        }
       case HoldPosition =>
         dynamics.halt()
     }
 
 
 
-    for (w <- weapons) {
-      val (events, resourceCost) = w.update(availableResources)
-      simulatorEvents :::= events.toList
-      for (s <- storage) s.modifyResources(resourceCost)
-    }
-    for (f <- factories) {
-      val (events, resourceCost) = f.update(availableResources)
+    for (Some(m) <- droneModules) {
+      val (events, resourceCost) = m.update(availableResources)
       simulatorEvents :::= events.toList
       for (s <- storage) s.modifyResources(resourceCost)
     }
@@ -181,13 +164,7 @@ class Drone(
     // TODO: better error messages, add option to emit warnings and abort instead of throwing
     // TODO: harvesting takes some time to complete
     // TODO: make this part of mineral module
-    assert(mineralCrystal.size <= availableStorage, s"Crystal size is ${mineralCrystal.size} and storage is only $availableStorage")
-    assert(this.position ~ mineralCrystal.position)
-    if (!mineralCrystal.harvested) {
-      storage.get.depositMineralCrystal(mineralCrystal)
-      simulatorEvents ::= MineralCrystalHarvested(mineralCrystal)
-      mineralCrystal.harvested = true
-    }
+    for (s <- storage) s.harvestMineral(mineralCrystal)
   }
 
   override def position: Vector2 = dynamics.pos
@@ -208,6 +185,11 @@ class Drone(
   def storedMinerals: Iterable[MineralCrystal] = {
     for (s <- storage) yield s.storedMinerals
   }.getOrElse(Seq())
+
+  def depositMinerals(other: Drone): Unit = {
+    assert(other != this)
+    for (s <- storage) s.depositMinerals(other.storage)
+  }
 
   def dronesInSight: Set[Drone] = objectsInSight.filter(_.isInstanceOf[Drone]).map { case d: Drone => d }
 
@@ -322,9 +304,7 @@ sealed trait DroneCommand
 sealed trait MovementCommand extends DroneCommand
 case class MoveInDirection(direction: Vector2) extends MovementCommand
 case class MoveToPosition(position: Vector2) extends MovementCommand
-case class HarvestMineralCrystal(mineralCrystal: MineralCrystal) extends MovementCommand
 case object HoldPosition extends MovementCommand
-case class DepositMineralCrystals(drone: Drone) extends MovementCommand
 
 sealed trait ConstructionCommand extends DroneCommand
 case class ConstructDrone(drone: Drone) extends ConstructionCommand

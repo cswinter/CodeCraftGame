@@ -29,11 +29,11 @@ abstract class DroneController {
   }
 
   def harvestMineral(mineralCrystal: MineralCrystal): Unit = {
-    drone.giveMovementCommand(HarvestMineralCrystal(mineralCrystal))
+    drone.harvestResource(mineralCrystal)
   }
 
   def depositMineralCrystals(otherDrone: DroneController): Unit = {
-    drone.giveMovementCommand(DepositMineralCrystals(otherDrone.drone))
+    drone.depositMinerals(otherDrone.drone)
   }
 
   def buildSmallDrone(module1: Module, module2: Module, controller: DroneController): Unit = {
