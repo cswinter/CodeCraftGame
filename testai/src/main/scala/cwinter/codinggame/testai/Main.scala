@@ -74,7 +74,7 @@ class ScoutingDroneController(val mothership: Mothership) extends DroneControlle
   override def onDeath(): Unit = mothership.collectors -= 1
 
   override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = {
-    if (mineralCrystal.size <= availableStorage) {
+    if (nextCrystal.isEmpty && mineralCrystal.size <= availableStorage) {
       moveToPosition(mineralCrystal.position)
       nextCrystal = Some(mineralCrystal)
     }

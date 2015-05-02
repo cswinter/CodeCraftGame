@@ -95,8 +95,21 @@ object BlogpostDemo {
     BluePlayer
   )
 
+  val profilePic = DroneDescriptor(
+    identifier = 9000, xPos = -400, yPos = 0, orientation = 1,
+    positions = Seq(),
+    modules = Seq(
+      Engines(0),
+      Lasers(3),
+      ShieldGenerator(2),
+      StorageModule(Seq(1), 7)
+    ),
+    hullState = Seq.fill[Byte](4)(2),
+    5, BluePlayer
+  )
+
   def generateObjects(t: Int): Seq[WorldObjectDescriptor] = {
-    hulls ++ minerals :+ largeDrone
+    hulls ++ minerals :+ largeDrone :+ profilePic
   }
 
   def spawnObjects(t: Int): Seq[MockObject] = {
