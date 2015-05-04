@@ -37,7 +37,6 @@ class Drone(
   private[this] val oldPositions = collection.mutable.Queue.empty[(Float, Float, Float)]
   private final val NJetPositions = 12
 
-  private[this] var movementCommand: MovementCommand = HoldPosition
 
   // TODO: remove this once all logic is moved into modules
   private[this] var simulatorEvents = List.empty[SimulatorEvent]
@@ -60,14 +59,8 @@ class Drone(
   }
 
   def processEvents(): Unit = {
-    movementCommand match {
-      case MoveToPosition(position) =>
-        if (position ~ this.position) {
-          movementCommand = HoldPosition
-          enqueueEvent(ArrivedAtPosition)
-          dynamics.halt()
-        }
-      case _ => // don't care
+    if (dynamics.hasArrived) {
+      enqueueEvent(ArrivedAtPosition)
     }
 
     // process events
@@ -84,36 +77,14 @@ class Drone(
   }
 
   override def update(): Seq[SimulatorEvent] = {
-    movementCommand match {
-      case MoveInDirection(direction) =>
-        dynamics.orientation = direction.normalized
-      case MoveToPosition(position) =>
-        val dist = position - this.position
-        val speed = maximumSpeed / 30 // TODO: improve this
-        if (dist ~ Vector2.NullVector) {
-          // do nothing
-        } else if ((dist dot dist) <= speed * speed) {
-          dynamics.limitSpeed(dist.size * 30)
-          dynamics.orientation = dist.normalized
-          dynamics.limitSpeed(maximumSpeed)
-        } else {
-          dynamics.orientation = dist.normalized
-        }
-      case HoldPosition =>
-        dynamics.halt()
-    }
-
-
-
     for (Some(m) <- droneModules) {
       val (events, resourceCost) = m.update(availableResources)
       simulatorEvents :::= events.toList
       for (s <- storage) s.modifyResources(resourceCost)
     }
-
     dynamics.update()
 
-    oldPositions.enqueue((position.x.toFloat, position.y.toFloat, dynamics.orientation.orientation.toFloat))
+    oldPositions.enqueue((position.x.toFloat, position.y.toFloat, dynamics.orientation.toFloat))
     if (oldPositions.length > NJetPositions) oldPositions.dequeue()
 
     val events = simulatorEvents
@@ -143,7 +114,7 @@ class Drone(
 
   def hitpoints: Int = hullState.map(_.toInt).sum
 
-  def giveMovementCommand(value: MovementCommand): Unit = movementCommand = value
+  def giveMovementCommand(value: MovementCommand): Unit = dynamics.movementCommand_=(value)
 
   def startDroneConstruction(command: ConstructDrone): Unit = {
     for (f <- factories) f.startDroneConstruction(command)
@@ -226,7 +197,7 @@ class Drone(
       id,
       position.x.toFloat,
       position.y.toFloat,
-      dynamics.orientation.orientation.toFloat,
+      dynamics.orientation.toFloat,
       Seq(),//oldPositions :+ (position.x.toFloat, position.y.toFloat, dynamics.orientation.orientation.toFloat),
       moduleDescriptors,
       hullState,

@@ -21,13 +21,13 @@ abstract class DroneModule(
 
 
   protected def absoluteModulePositions: Seq[Vector2] = {
-    val rotation = owner.dynamics.orientation.orientation
+    val rotation = owner.dynamics.orientation
     for (p <- positions)
       yield owner.position + Vector2(ModulePosition(owner.size, p)).rotated(rotation)
   }
 
   protected def absoluteMergedModulePositions(partitioning: Seq[Int]): Seq[Vector2] = {
-    val rotation = owner.dynamics.orientation.orientation
+    val rotation = owner.dynamics.orientation
 
     def partition(elems: Seq[Int], partitions: Seq[Int]): List[Seq[Int]] = partitions match {
       case Seq(p, rest @ _*) => elems.take(p) :: partition(elems.drop(p), rest)

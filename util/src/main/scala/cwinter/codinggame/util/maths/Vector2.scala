@@ -21,7 +21,8 @@ case class Vector2(x: Double, y: Double) {
 
   def orientation = {
     assert(x != 0 || y != 0, s"x=$x, y=$y")
-    math.atan2(y, x)
+    val atan = math.atan2(y, x)
+    if (atan > 0) atan else atan + 2 * math.Pi
   }
 
   def isValid: Boolean = {
