@@ -27,7 +27,7 @@ case class FactoryModelBuilder(positions: Seq[VertexXY], t: Int, tMerging: Optio
   override protected def buildModel: Model[Unit] = {
     // triangle 1: 0, 2, 4
     // triangle 2: 1, 3, 5
-    val x = t / 125f
+    val x = t / 50f
     val transitions =
       if (x <= 1) Seq(0 -> 3, 2 -> 1, 4 -> 5)
       else Seq(1 -> 4, 3 -> 2, 5 -> 0)
@@ -42,7 +42,7 @@ case class FactoryModelBuilder(positions: Seq[VertexXY], t: Int, tMerging: Optio
           computeModelComponents(
             center, progress, x * math.Pi.toFloat, 1, scale, transitions))
       case Some(n) =>
-        val xM = n / 250f
+        val xM = n / 100f
         val fade = (1 - xM) * 1 + xM / size
         val components =
           for {

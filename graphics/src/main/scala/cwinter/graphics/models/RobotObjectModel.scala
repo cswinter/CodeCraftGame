@@ -38,7 +38,7 @@ object DroneSignature {
       robotObject.modules.exists(_.isInstanceOf[ShieldGenerator]),
       robotObject.hullState,
       robotObject.constructionState != None,
-      timestep % 250,
+      timestep % 100,
       robotObject.player)
   }
 }

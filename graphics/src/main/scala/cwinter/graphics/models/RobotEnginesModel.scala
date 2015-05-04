@@ -12,7 +12,7 @@ case class RobotEnginesModel(position: VertexXY, t: Int)(implicit rs: RenderStac
   def signature: RobotEnginesModel = this
 
   protected def buildModel: Model[Unit] = {
-    val enginePositions = Geometry.polygonVertices2(3, radius = 5, orientation = 2 * math.Pi.toFloat * t / 250)
+    val enginePositions = Geometry.polygonVertices2(3, radius = 5, orientation = 2 * math.Pi.toFloat * t / 100)
     val engines =
       for ((offset, i) <- enginePositions.zipWithIndex)
       yield Polygon(
