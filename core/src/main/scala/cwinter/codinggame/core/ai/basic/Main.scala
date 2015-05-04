@@ -1,7 +1,7 @@
 package cwinter.codinggame.core.ai.basic
 
 import cwinter.codinggame.core._
-import cwinter.codinggame.core.drone.{DroneController, Lasers, StorageModule, Drone}
+import cwinter.codinggame.core.drone._
 import cwinter.codinggame.util.maths.{Rng, Vector2}
 
 
@@ -17,7 +17,7 @@ class Mothership extends DroneController {
   override def onTick(): Unit = {
     if (availableFactories >= 4) {
       if (collectors < 2) {
-        buildSmallDrone(StorageModule, StorageModule, new ScoutingDroneController(this))
+        buildSmallDrone(StorageModule, if (Rng.bernoulli(0.9f)) Engines else StorageModule, new ScoutingDroneController(this))
         collectors += 1
       } else {
         buildSmallDrone(Lasers, Lasers, new AttackDroneController())

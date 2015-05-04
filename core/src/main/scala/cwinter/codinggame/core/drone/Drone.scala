@@ -201,11 +201,7 @@ class Drone(
   }
 
   def requiredFactories: Int = {
-    size match {
-      case 3 => 2
-      case 4 => 4
-      case x => throw new Exception(s"Drone of size $x!")
-    }
+    ModulePosition.moduleCount(size) * 2
   }
 
   def weight = size + modules.length
@@ -249,6 +245,14 @@ class Drone(
       if l == Lasers
     ) {
       result ::= cwinter.worldstate.Lasers(index)
+      index += 1
+    }
+
+    for (
+      e <- modules
+      if e == Engines
+    ) {
+      result ::= cwinter.worldstate.Engines(index)
       index += 1
     }
 
