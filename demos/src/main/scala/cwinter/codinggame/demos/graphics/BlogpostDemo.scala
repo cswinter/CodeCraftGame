@@ -113,7 +113,7 @@ object BlogpostDemo {
   }
 
   def spawnObjects(t: Int): Seq[MockObject] = {
-    if (t % 50 == 1) {
+    if (t % 100 < 40 && t % 5 == 1) {
       Seq(new MockLaserMissile(100, -300, 0, 25))
     } else {
       Seq()

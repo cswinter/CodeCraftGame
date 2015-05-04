@@ -11,11 +11,11 @@ class MockLaserMissile(
   var xPos: Float,
   var yPos: Float,
   var orientation: Float,
-  val lifetime: Int = 90
+  val lifetime: Int = 45
 ) extends MockObject {
   val player = if (Rng.bernoulli(0.5f)) BluePlayer else RedPlayer
-  val speed = 5.0f
-  val positions = 15
+  val speed = 10.0f
+  val positions = 9
   val oldPositions = mutable.Queue((xPos, yPos))
   var age = 0
   var rotationSpeed = 0.0f
