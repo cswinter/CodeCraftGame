@@ -8,8 +8,7 @@ import cwinter.worldstate.BluePlayer
 
 object Main {
   def main(args: Array[String]): Unit = {
-    //TheGameMaster.setDevEvents(events)
-    TheGameMaster.startGame(new Mothership, new Mothership)
+    TheGameMaster.runLevel1(new Mothership)
   }
 
   private def events(t: Int): Seq[SimulatorEvent] = {

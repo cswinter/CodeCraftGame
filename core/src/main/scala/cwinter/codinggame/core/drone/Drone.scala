@@ -2,6 +2,7 @@ package cwinter.codinggame.core.drone
 
 import cwinter.codinggame.core._
 import cwinter.codinggame.util.maths.{Geometry, Vector2}
+import cwinter.codinggame.util.modules.ModulePosition
 import cwinter.worldstate.{DroneDescriptor, Player, WorldObjectDescriptor}
 
 
@@ -17,10 +18,10 @@ class Drone(
 ) extends WorldObject {
 
   // constants for drone construction
-  final val ConstructionPeriod = 175
+  final val ConstructionPeriod = 50
   final val ResourceCost = 5
 
-  val dynamics: DroneDynamics = new DroneDynamics(this, 100, radius, initialPos, time)
+  val dynamics: DroneDynamics = new DroneDynamics(this, maximumSpeed, weight, radius, initialPos, time)
   val storageCapacity = modules.count(_ == StorageModule)
   val nLasers = modules.count(_ == Lasers)
   val factoryCapacity = modules.count(_ == NanobotFactory)
@@ -88,13 +89,13 @@ class Drone(
         dynamics.orientation = direction.normalized
       case MoveToPosition(position) =>
         val dist = position - this.position
-        val speed = 100 / 30 // TODO: improve this
+        val speed = maximumSpeed / 30 // TODO: improve this
         if (dist ~ Vector2.NullVector) {
           // do nothing
         } else if ((dist dot dist) <= speed * speed) {
           dynamics.limitSpeed(dist.size * 30)
           dynamics.orientation = dist.normalized
-          dynamics.limitSpeed(100)
+          dynamics.limitSpeed(maximumSpeed)
         } else {
           dynamics.orientation = dist.normalized
         }
@@ -109,7 +110,6 @@ class Drone(
       simulatorEvents :::= events.toList
       for (s <- storage) s.modifyResources(resourceCost)
     }
-
 
     dynamics.update()
 
@@ -197,7 +197,7 @@ class Drone(
   def dronesInSight: Set[Drone] = objectsInSight.filter(_.isInstanceOf[Drone]).map { case d: Drone => d }
 
   def resourceCost: Int = {
-    requiredFactories * ResourceCost
+    ModulePosition.moduleCount(size) * ResourceCost
   }
 
   def requiredFactories: Int = {
@@ -206,6 +206,13 @@ class Drone(
       case 4 => 4
       case x => throw new Exception(s"Drone of size $x!")
     }
+  }
+
+  def weight = size + modules.length
+
+  def maximumSpeed: Double = {
+    val propulsion = 1 + modules.count(_ == Engines)
+    1000 * propulsion / weight
   }
 
   def buildTime: Int = {
@@ -293,6 +300,7 @@ sealed trait Module
 case object StorageModule extends Module
 case object Lasers extends Module
 case object NanobotFactory extends Module
+case object Engines extends Module
 
 
 sealed trait DroneEvent

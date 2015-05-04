@@ -12,7 +12,7 @@ import cwinter.graphics.engine.RenderFrame._
 import cwinter.worldstate.GameWorld
 
 object DrawingCanvas {
-  def run(gameWorld: GameWorld): Unit = {
+  def run(gameWorld: GameWorld, fps: Int = 60): Unit = {
     RenderFrame.gameWorld = gameWorld
 
     // Setup code
@@ -64,7 +64,7 @@ object DrawingCanvas {
       override def keyReleased(keyEvent: KeyEvent): Unit = ()
     })
 
-    new FPSAnimator(canvas, 60).start()
+    new FPSAnimator(canvas, fps).start()
     canvas.transferFocus()
   }
 }

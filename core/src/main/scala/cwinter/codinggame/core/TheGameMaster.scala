@@ -15,7 +15,7 @@ object TheGameMaster {
 
 
   def runLevel1(mothership1: DroneController): Unit = {
-    val worldSize = Rectangle(2000, -2000, 1000, -1000)
+    val worldSize = Rectangle(-2000, 2000, -1000, 1000)
     val map = WorldMap(worldSize, 100)
     val opponent = new ai.basic.Mothership()
     val simulator = new GameSimulator(map, mothership1, opponent, devEvents)

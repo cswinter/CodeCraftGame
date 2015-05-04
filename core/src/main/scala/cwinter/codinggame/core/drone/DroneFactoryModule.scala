@@ -48,26 +48,30 @@ class DroneFactoryModule(positions: Seq[Int], owner: Drone)
           drone.dynamics.orientation = owner.dynamics.orientation
           drone.constructionProgress = Some(progress)
 
-          if (progress == drone.buildTime) {
+          val progress2 =
+          if (progress % drone.resourceDepletionPeriod == 0) {
+            if (remainingResources > 0) {
+              remainingResources -= 1
+              progress + 1
+            } else {
+              progress
+            }
+          } else {
+            progress + 1
+          }
+
+          if (progress2 == drone.buildTime) {
             effects ::= SpawnDrone(drone)
             drone.constructionProgress = None
             drone.dynamics.setPosition(owner.position - 150 * Rng.vector2())
           }
-          if (progress % drone.resourceDepletionPeriod == 0) {
-            if (remainingResources > 0) {
-              remainingResources -= 1
-              (drone, progress + 1)
-            } else {
-              (drone, progress)
-            }
-          } else {
-            (drone, progress + 1)
-          }
+
+          (drone, progress2)
         }
 
     droneConstructions = droneConstructions.filter {
       case (drone, progress) =>
-        drone.buildTime >= progress
+        progress < drone.buildTime
     }
 
     // perform mineral processing

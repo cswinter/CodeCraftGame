@@ -7,6 +7,7 @@ import cwinter.codinggame.util.maths.{Rectangle, Vector2}
 class DroneDynamics(
   val drone: Drone,
   val maxSpeed: Double,
+  val weight: Double,
   radius: Double,
   initialPosition: Vector2,
   initialTime: Double
@@ -29,7 +30,7 @@ class DroneDynamics(
     speed = limit
   }
 
-  def halt(): Unit = velocity = Vector2.NullVector
+  def halt(): Unit = if (!isStunned) velocity = Vector2.NullVector
 
   def orientation: Vector2 = _orientation
 
@@ -37,9 +38,14 @@ class DroneDynamics(
   override def handleObjectCollision(other: ConstantVelocityDynamics): Unit = {
     other match {
       case other: DroneDynamics =>
-        val normal = (pos - other.pos).normalized
-        velocity = maxSpeed * normal
-        other.velocity = -other.maxSpeed * normal
+        val v1 = velocity
+        val v2 = other.velocity
+        val x1 = pos
+        val x2 = other.pos
+        val w1 = weight
+        val w2 = other.weight
+        velocity = v1 - 2 * w2 / (w1 + w2) * (v1 - v2 dot x1 - x2) / (x1 - x2).magnitudeSquared * (x1 - x2)
+        other.velocity = v2 - 2 * w1 / (w1 + w2) * (v2 - v1 dot x2 - x1) / (x2 - x1).magnitudeSquared * (x2 - x1)
         isStunned = true
         other.isStunned = true
       case missile: MissileDynamics =>
@@ -64,7 +70,7 @@ class DroneDynamics(
 
   override def update(): Unit = {
     if (isStunned) {
-      velocity = 0.95f * velocity
+      velocity = 0.9f * velocity
       if (velocity.size <= maxSpeed * 0.1f) {
         isStunned = false
       }

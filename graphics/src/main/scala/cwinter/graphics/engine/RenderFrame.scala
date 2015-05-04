@@ -31,6 +31,7 @@ object RenderFrame extends GLEventListener {
   var textField: TextField = null
   var gameWorld: GameWorld = null
   var error = false
+  var t = true
 
 
   override def display(drawable: GLAutoDrawable): Unit = {
@@ -92,16 +93,19 @@ object RenderFrame extends GLEventListener {
 
   private def update(): Unit = {
     if (!paused) {
-      try {
-        cwinter.graphics.engine.Debug.clear()
-        gameWorld.update()
-      } catch {
-        case e: Exception =>
-          println(e)
-          e.getStackTrace.foreach(println)
-          paused = true
-          error = true
+      if (t) {
+        try {
+          cwinter.graphics.engine.Debug.clear()
+          gameWorld.update()
+        } catch {
+          case e: Exception =>
+            println(e)
+            e.getStackTrace.foreach(println)
+            paused = true
+            error = true
+        }
       }
+      t = !t
     }
   }
 

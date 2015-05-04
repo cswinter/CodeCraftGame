@@ -5,9 +5,9 @@ import cwinter.codinggame.util.maths.Vector2
 import cwinter.worldstate.{Player, BluePlayer, LaserMissileDescriptor, WorldObjectDescriptor}
 
 class LaserMissile(val player: Player, initialPos: Vector2, time: Double, target: Drone) extends WorldObject {
-  val dynamics: MissileDynamics = new MissileDynamics(150, target.dynamics, initialPos, time)
+  val dynamics: MissileDynamics = new MissileDynamics(300, target.dynamics, initialPos, time)
   val previousPositions = collection.mutable.Queue(initialPos)
-  val positions = 15
+  val positions = 10
   var lifetime = 90
 
   def update(): Seq[SimulatorEvent] = {
