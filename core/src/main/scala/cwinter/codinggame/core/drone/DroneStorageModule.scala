@@ -1,5 +1,6 @@
-package cwinter.codinggame.core
+package cwinter.codinggame.core.drone
 
+import cwinter.codinggame.core.{MineralCrystal, MineralCrystalHarvested, SimulatorEvent}
 
 class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: Int = 0)
   extends DroneModule(positions, owner) {

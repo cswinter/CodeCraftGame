@@ -1,5 +1,6 @@
-package cwinter.codinggame.core
+package cwinter.codinggame.core.drone
 
+import cwinter.codinggame.core.MineralCrystal
 import cwinter.codinggame.util.maths.Vector2
 
 abstract class DroneController {

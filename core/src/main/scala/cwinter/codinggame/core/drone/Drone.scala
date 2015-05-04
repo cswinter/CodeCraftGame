@@ -1,7 +1,8 @@
-package cwinter.codinggame.core
+package cwinter.codinggame.core.drone
 
+import cwinter.codinggame.core._
 import cwinter.codinggame.util.maths.{Geometry, Vector2}
-import cwinter.worldstate.{Player, DroneDescriptor, WorldObjectDescriptor}
+import cwinter.worldstate.{DroneDescriptor, Player, WorldObjectDescriptor}
 
 
 // TODO: make private[core] once DroneHandle class is implemented

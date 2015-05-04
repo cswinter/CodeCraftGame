@@ -1,6 +1,7 @@
 package cwinter.codinggame.testai
 
 import cwinter.codinggame.core._
+import cwinter.codinggame.core.drone.{DroneController, Lasers, StorageModule, Drone}
 import cwinter.codinggame.util.maths.{Rng, Vector2}
 import cwinter.codinggame.util.modules.ModulePosition
 import cwinter.worldstate.BluePlayer

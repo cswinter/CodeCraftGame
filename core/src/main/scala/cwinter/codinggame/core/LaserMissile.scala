@@ -1,5 +1,6 @@
 package cwinter.codinggame.core
 
+import cwinter.codinggame.core.drone.Drone
 import cwinter.codinggame.util.maths.Vector2
 import cwinter.worldstate.{Player, BluePlayer, LaserMissileDescriptor, WorldObjectDescriptor}
 

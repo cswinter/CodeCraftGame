@@ -1,5 +1,7 @@
 package cwinter.codinggame.core
 
+import cwinter.codinggame.core.drone
+import cwinter.codinggame.core.drone._
 import cwinter.codinggame.physics.PhysicsEngine
 import cwinter.codinggame.util.maths.{Rng, Vector2}
 import cwinter.codinggame.util.modules.ModulePosition
@@ -46,7 +48,7 @@ class GameSimulator(
 
 
   private def mothership(player: Player, controller: DroneController, pos: Vector2): Drone =
-    new Drone(Seq.fill(6)(NanobotFactory) ++ Seq.fill(4)(StorageModule), 7, controller, player, pos, 0, 28)
+    new Drone(Seq.fill(6)(NanobotFactory) ++ Seq.fill(4)(drone.StorageModule), 7, controller, player, pos, 0, 28)
 
   private def spawnDrone(drone: Drone): Unit = {
     visibleObjects.add(drone)

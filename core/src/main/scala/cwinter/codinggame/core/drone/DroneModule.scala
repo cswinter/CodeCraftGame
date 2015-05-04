@@ -1,5 +1,6 @@
-package cwinter.codinggame.core
+package cwinter.codinggame.core.drone
 
+import cwinter.codinggame.core.SimulatorEvent
 import cwinter.codinggame.util.maths.Vector2
 import cwinter.codinggame.util.modules.ModulePosition
 

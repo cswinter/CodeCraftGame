@@ -1,4 +1,6 @@
-package cwinter.codinggame.core
+package cwinter.codinggame.core.drone
+
+import cwinter.codinggame.core.{SimulatorEvent, SpawnLaserMissile}
 
 class DroneLasersModule(positions: Seq[Int], owner: Drone)
     extends DroneModule(positions, owner) {

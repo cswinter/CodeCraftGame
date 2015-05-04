@@ -1,5 +1,6 @@
-package cwinter.codinggame.core
+package cwinter.codinggame.core.drone
 
+import cwinter.codinggame.core._
 import cwinter.codinggame.util.maths.Rng
 
 class DroneFactoryModule(positions: Seq[Int], owner: Drone)
