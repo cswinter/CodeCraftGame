@@ -30,7 +30,7 @@ class DroneLasersModuleTest extends FlatSpec {
   it should "generate missile events exactly once after firing" in {
     val lasers = new DroneLasersModule(Seq(0, 1, 2), mockDrone)
 
-    assert(lasers.update(10) == (Seq(), 0))
+    assert(lasers.update(10) == ((Seq(), 0)))
 
     lasers.fire(mockEnemy)
     val (events, _) = lasers.update(10)

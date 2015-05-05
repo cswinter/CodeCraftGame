@@ -57,7 +57,7 @@ class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: I
     assert(mineralCrystal.size <= availableStorage, s"Crystal size is ${mineralCrystal.size} and storage is only $availableStorage")
     assert(owner.position ~ mineralCrystal.position)
     if (!mineralCrystal.harvested) {
-      harvesting ::=(mineralCrystal, 1)
+      harvesting ::= ((mineralCrystal, 1))
       println(harvesting)
       mineralCrystal.harvested = true
     }

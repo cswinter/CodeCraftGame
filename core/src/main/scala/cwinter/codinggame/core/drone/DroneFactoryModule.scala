@@ -21,7 +21,7 @@ class DroneFactoryModule(positions: Seq[Int], owner: Drone)
 
     // start new drone constructions
     for (drone <- newDrones) {
-      droneConstructions ::= (drone, 0)
+      droneConstructions ::= ((drone, 0))
       droneConstructions = droneConstructions.sortBy { case (c, p) => -drone.requiredFactories }
       drone.dynamics.orientation = owner.dynamics.orientation
       effects ::= DroneConstructionStarted(drone)
@@ -30,7 +30,7 @@ class DroneFactoryModule(positions: Seq[Int], owner: Drone)
 
     // start new mineral constructions
     for (mineral <- newMinerals) {
-      mineralProcessing ::= (mineral, mineral.size * 7 * ResourceProcessingPeriod)
+      mineralProcessing ::= ((mineral, mineral.size * 7 * ResourceProcessingPeriod))
       effects ::= MineralCrystalActivated(mineral)
     }
     newMinerals = List.empty[MineralCrystal]

@@ -57,7 +57,7 @@ object DrawingCanvas {
         case 33 | 81 /* PAGE UP, Q */ => camera.zoom -= zoomSpeed
         case 34 | 69 /* PAGE DOWN, E */ => camera.zoom += zoomSpeed
         case 32 /* SPACEBAR */ => RenderFrame.togglePause()
-        case 77 => jframe.reshape(0, 0, 3840, 2160)
+        case 77 => jframe.setBounds(0, 0, 3840, 2160)
         case _ =>
       } //println(s"keyPressed($keyEvent)")
 

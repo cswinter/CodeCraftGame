@@ -1,6 +1,5 @@
 package cwinter.codinggame.core
 
-import cwinter.codinggame.core.drone
 import cwinter.codinggame.core.drone._
 import cwinter.codinggame.physics.PhysicsEngine
 import cwinter.codinggame.util.maths.{Rng, Vector2}

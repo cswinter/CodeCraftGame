@@ -19,5 +19,5 @@ class MineralCrystal(
 
 object MineralCrystal {
   def unapply(mineralCrystal: MineralCrystal): Option[(Int, Vector2)] =
-    Some(mineralCrystal.size, mineralCrystal.position)
+    Some((mineralCrystal.size, mineralCrystal.position))
 }
