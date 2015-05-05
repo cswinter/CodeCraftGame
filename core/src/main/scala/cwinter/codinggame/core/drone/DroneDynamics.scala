@@ -12,7 +12,7 @@ class DroneDynamics(
   initialPosition: Vector2,
   initialTime: Double
 ) extends ConstantVelocityDynamics(radius, initialPosition, initialTime) {
-  final val MaxTurnSpeed = 0.1
+  final val MaxTurnSpeed = 0.25
   private var _orientation: Double = 0
   private var speed = maxSpeed
   private var isStunned: Boolean = false
@@ -27,12 +27,6 @@ class DroneDynamics(
 
   def setPosition(value: Vector2): Unit = pos = value
 
-  /*
-  def orientation_=(orientation: Vector2): Unit = {
-    if (isStunned) return
-    this._orientation = orientation.normalized
-    velocity = speed * orientation
-  }*/
 
   def limitSpeed(limit: Double): Unit = {
     assert(limit <= maxSpeed)
@@ -106,7 +100,7 @@ class DroneDynamics(
               val distance = dist.size
               velocity = distance * 30 * dist.normalized
             }
-          }
+          } else velocity = Vector2.NullVector
         case HoldPosition =>
           halt()
       }
