@@ -1,7 +1,7 @@
 package cwinter.codinggame.core
 
+import cwinter.codinggame.collisions.Positionable
 import cwinter.codinggame.util.maths.Vector2
-import cwinter.collisions.Positionable
 import cwinter.worldstate.WorldObjectDescriptor
 
 

@@ -1,7 +1,7 @@
 package cwinter.codinggame.physics
 
+import cwinter.codinggame.collisions.{Positionable, SquareGrid}
 import cwinter.codinggame.util.maths.{Rectangle, Vector2}
-import cwinter.collisions.{Positionable, SquareGrid}
 
 /**
  * Simulates movement of colliding particles.

@@ -1,4 +1,4 @@
-package cwinter.collisions
+package cwinter.codinggame.collisions
 
 import Positionable.PositionableOps
 import cwinter.codinggame.util.maths.{Vector2, Rectangle}
