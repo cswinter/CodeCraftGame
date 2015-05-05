@@ -9,8 +9,6 @@ abstract class DroneModule(
   val positions: Seq[Int],
   val owner: Drone
 ) {
-  println(s"$this, $positions")
-
   /**
    * Perform all module actions.
    * Method is called on every tick.
