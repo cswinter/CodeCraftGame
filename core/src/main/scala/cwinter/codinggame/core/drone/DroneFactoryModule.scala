@@ -6,7 +6,8 @@ import cwinter.codinggame.util.maths.Rng
 class DroneFactoryModule(positions: Seq[Int], owner: Drone)
     extends DroneModule(positions, owner) {
 
-  final val ResourceProcessingPeriod = 15
+  final val MineralProcessingPeriod = 15
+  final val MineralResourceYield = 7
 
 
   private[this] var newDrones = List.empty[Drone]
@@ -30,7 +31,7 @@ class DroneFactoryModule(positions: Seq[Int], owner: Drone)
 
     // start new mineral constructions
     for (mineral <- newMinerals) {
-      mineralProcessing ::= ((mineral, mineral.size * 7 * ResourceProcessingPeriod))
+      mineralProcessing ::= ((mineral, mineral.size * MineralResourceYield * MineralProcessingPeriod))
       effects ::= MineralCrystalActivated(mineral)
     }
     newMinerals = List.empty[MineralCrystal]
@@ -80,7 +81,7 @@ class DroneFactoryModule(positions: Seq[Int], owner: Drone)
         yield {
           mineral.position = center
 
-          if (progress % ResourceProcessingPeriod == 0) {
+          if (progress % MineralProcessingPeriod == 0) {
             remainingResources += 1
           }
           (mineral, progress - 1)
