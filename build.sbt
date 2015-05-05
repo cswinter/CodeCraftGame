@@ -21,7 +21,8 @@ lazy val graphics = (project in file("graphics")).
 lazy val collisions = (project in file("collisions")).
   settings(Commons.settings: _*).
   settings(
-    name := "cg.collisions"
+    name := "cg.collisions",
+    libraryDependencies ++= commonDependencies
   ).dependsOn(util)
 
 lazy val physics = (project in file("physics")).
