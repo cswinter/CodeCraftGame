@@ -116,6 +116,11 @@ class MockRobot(
       sightRadius.map(_ => inSight.map(obj => (obj.xPos, obj.yPos)))
     )
 
+  def extraState(): Seq[WorldObjectDescriptor] =
+    sightRadius.toSeq.flatMap(_ => inSight.map(obj =>
+      ManipulatorArm(BluePlayer, xPos, yPos, obj.xPos, obj.yPos)
+    ))
+
 
   def vx = math.cos(orientation).toFloat * speed
   def vy = math.sin(orientation).toFloat * speed

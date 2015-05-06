@@ -30,7 +30,8 @@ object Generators {
     2 -> Lasers(position, rni(4)),
     2 -> Engines(position),
     2 -> ShieldGenerator(position),
-    6 -> ProcessingModule(Seq(position))
+    6 -> ProcessingModule(Seq(position)),
+    50 -> Manipulator(position)
   )
 
   val ModuleCount = Map(3 -> 1, 4 -> 2, 5 -> 4, 6 -> 7, 7 -> 10).withDefaultValue(0)

@@ -1,7 +1,7 @@
 package cwinter.graphics.models
 
 import cwinter.graphics.engine.RenderStack
-import cwinter.graphics.matrices.{RotationZMatrix4x4, TranslationXYMatrix4x4}
+import cwinter.graphics.matrices.{IdentityMatrix4x4, RotationZMatrix4x4, TranslationXYMatrix4x4}
 import cwinter.graphics.model.ClosedModel
 import cwinter.worldstate._
 
@@ -34,6 +34,11 @@ object TheWorldObjectModelFactory {
         Unit,
         LaserMissileModelFactory.build(positions, player),
         modelview)
+      case ManipulatorArm(player, x1, y1, x2, y2) => new ClosedModel[Unit](
+        Unit,
+        ManipulatorArmModelFactory.build(player, x1, y1, x2, y2),
+        IdentityMatrix4x4
+      )
       case TestingObject(t) => new ClosedModel[Unit](
         Unit,
         new TestModelBuilder(t).getModel,

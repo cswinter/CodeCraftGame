@@ -43,7 +43,15 @@ case class Engines(position: Int) extends DroneModule
 case class ProcessingModule(positions: Seq[Int], mergingProgress: Option[Int] = None) extends DroneModule
 case class ShieldGenerator(position: Int) extends DroneModule
 case class Lasers(position: Int, n: Int = 3) extends DroneModule
+case class Manipulator(position: Int) extends DroneModule
 
+case class ManipulatorArm(player: Player, x1: Float, y1: Float, x2: Float, y2: Float)
+  extends WorldObjectDescriptor {
+  val identifier: Int = 0
+  val xPos: Float = 0
+  val yPos: Float = 0
+  val orientation: Float = 0
+}
 
 case class MineralDescriptor(
   identifier: Int,

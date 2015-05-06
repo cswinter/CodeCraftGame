@@ -101,6 +101,8 @@ class DroneModelBuilder(robot: DroneDescriptor, timestep: Int)(implicit val rs: 
           FactoryModelBuilder(ModulePosition(sides, positions), signature.animationTime, tMerging, positions.size)
         case StorageModule(positions, count, tm) =>
           RobotStorageModelBuilder(ModulePosition(sides, positions), count, positions.size, tm)
+        case Manipulator(position) =>
+          DroneManipulatorModelBuilder(signature.player, ModulePosition(sides, position))
       }).getModel
 
     val shields =

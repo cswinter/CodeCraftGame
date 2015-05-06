@@ -47,7 +47,8 @@ class GraphicsSimulator(
   objects.foreach(vision.insert(_))
 
   def worldState: Iterable[WorldObjectDescriptor] = {
-    objects.map(_.state()) + TestingObject(time) ++ customChangingObjects(time)
+    objects.map(_.state()) + TestingObject(time) ++ customChangingObjects(time) ++
+      objects.flatMap{case robot: MockRobot => robot.extraState() case _ => Seq()}
   }
 
   def update(): Unit = {
