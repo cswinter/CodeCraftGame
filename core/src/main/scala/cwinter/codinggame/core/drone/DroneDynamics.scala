@@ -88,19 +88,21 @@ class DroneDynamics(
           }
         case MoveToPosition(position) =>
           val dist = position - this.pos
-          val targetOrientation = dist.orientation
-          adjustOrientation(targetOrientation)
-          if (targetOrientation == orientation) {
-            val speed = maxSpeed / 30 // TODO: improve this
-            if (dist ~ Vector2.NullVector) {
-              // do nothing
-            } else if ((dist dot dist) > speed * speed) {
-              velocity = maxSpeed * dist.normalized
-            } else {
-              val distance = dist.size
-              velocity = distance * 30 * dist.normalized
+          if (dist ~ Vector2.NullVector) {
+            velocity = Vector2.NullVector
+          } else {
+            val targetOrientation = dist.orientation
+            adjustOrientation(targetOrientation)
+            if (targetOrientation == orientation) {
+              val speed = maxSpeed / 30 // TODO: improve this
+              if ((dist dot dist) > speed * speed) {
+                velocity = maxSpeed * dist.normalized
+              } else {
+                val distance = dist.size
+                velocity = distance * 30 * dist.normalized
+              }
             }
-          } else velocity = Vector2.NullVector
+          }
         case HoldPosition =>
           halt()
       }

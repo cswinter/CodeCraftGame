@@ -39,7 +39,7 @@ class Mothership extends DroneController {
   }
 
   override def onTick(): Unit = {
-    if (availableFactories >= 4) {
+    if (!isConstructing) {
       if (collectors < 2) {
         buildSmallDrone(StorageModule, StorageModule, new ScoutingDroneController(this))
         collectors += 1
@@ -111,8 +111,9 @@ class ScoutingDroneController(val mothership: Mothership) extends DroneControlle
 }
 
 class AttackDroneController extends DroneController {
-  // abstract methods for event handling
-  override def onSpawn(): Unit = ()
+  override def onSpawn(): Unit = {
+    moveInDirection(Vector2(Rng.double(0, 100)))
+  }
 
   override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = ()
 

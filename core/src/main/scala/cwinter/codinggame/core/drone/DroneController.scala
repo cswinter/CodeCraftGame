@@ -58,6 +58,7 @@ abstract class DroneController {
     drone.fireWeapons(target)
   }
 
+  def isConstructing: Boolean = drone.isConstructing
   def position: Vector2 = drone.position
   def availableStorage: Int = drone.availableStorage
   def availableFactories: Int = drone.availableFactories

@@ -50,7 +50,10 @@ class Drone(
   private[core] val storage: Option[DroneStorageModule] = Some(
     new DroneStorageModule(modules.zipWithIndex.filter(_._1 == StorageModule).map(_._2), this, startingResources)
   )
-  val droneModules = Seq(weapons, factories, storage)
+  private[this] val manipulator: Option[DroneManipulatorModule] = Some(
+    new DroneManipulatorModule(modules.zipWithIndex.filter(_._1 == Manipulator).map(_._2), this)
+  )
+  val droneModules = Seq(weapons, factories, storage, manipulator)
 
 
   def initialise(time: Double): Unit = {
@@ -117,7 +120,7 @@ class Drone(
   def giveMovementCommand(value: MovementCommand): Unit = dynamics.movementCommand_=(value)
 
   def startDroneConstruction(command: ConstructDrone): Unit = {
-    for (f <- factories) f.startDroneConstruction(command)
+    for (m <- manipulator) m.startDroneConstruction(command)
   }
 
   def startMineralProcessing(mineral: MineralCrystal): Unit = {
@@ -167,6 +170,8 @@ class Drone(
 
   def dronesInSight: Set[Drone] = objectsInSight.filter(_.isInstanceOf[Drone]).map { case d: Drone => d }
 
+  def isConstructing: Boolean = manipulator.map(_.isConstructing) == Some(true)
+
   def resourceCost: Int = {
     ModulePosition.moduleCount(size) * ResourceCost
   }
@@ -192,7 +197,8 @@ class Drone(
   }
 
 
-  override def descriptor: WorldObjectDescriptor = {
+  override def descriptor: Seq[WorldObjectDescriptor] = {
+    Seq(
     DroneDescriptor(
       id,
       position.x.toFloat,
@@ -204,9 +210,8 @@ class Drone(
       size,
       player,
       constructionProgress
-    )
+    )) ++ manipulator.toSeq.flatMap(_.manipulatorGraphics)
   }
-
 
   private def moduleDescriptors: Seq[cwinter.worldstate.DroneModule] = {
     var result = List.empty[cwinter.worldstate.DroneModule]
@@ -226,6 +231,15 @@ class Drone(
       result ::= cwinter.worldstate.Engines(index)
       index += 1
     }
+
+    for (
+      e <- modules
+      if e == Manipulator
+    ) {
+      result ::= cwinter.worldstate.Manipulator(index)
+      index += 1
+    }
+
 
     // TODO: do this properly (+rest of this function) and remove .contents once everything is put into modules
     val factoryContents = {
@@ -276,6 +290,7 @@ case object StorageModule extends Module
 case object Lasers extends Module
 case object NanobotFactory extends Module
 case object Engines extends Module
+case object Manipulator extends Module
 
 
 sealed trait DroneEvent

@@ -7,8 +7,9 @@ import cwinter.worldstate.{WorldObjectDescriptor, LightFlashDescriptor}
 class LightFlash(val position: Vector2) extends WorldObject {
   var stage: Float = 0
 
-  override private[core] def descriptor: WorldObjectDescriptor =
+  override private[core] def descriptor: Seq[WorldObjectDescriptor] = Seq(
     LightFlashDescriptor(id, position.x.toFloat, position.y.toFloat, stage)
+  )
 
   def update(): Seq[SimulatorEvent] = {
     stage += 1.0f / 10

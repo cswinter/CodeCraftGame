@@ -188,7 +188,7 @@ case class RobotModel(
 
     val modelview2 =
       if (constructionState.isDefined) {
-        new TranslationMatrix4x4(0, 0, 3) * new DilationXYMatrix4x4(0.5f) * modelview
+        new TranslationMatrix4x4(0, 0, -1) * modelview
       } else modelview
 
     super.draw(modelview2, material)

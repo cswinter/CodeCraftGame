@@ -9,8 +9,9 @@ class MineralCrystal(
   var position: Vector2,
   var harvested: Boolean = false
 ) extends WorldObject {
-  override private[core] def descriptor: MineralDescriptor =
+  override private[core] def descriptor: Seq[MineralDescriptor] = Seq(
     MineralDescriptor(id, position.x.toFloat, position.y.toFloat, 0, size, harvested)
+  )
 
   override private[core] def hasDied = false
 

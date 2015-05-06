@@ -27,9 +27,9 @@ class LaserMissile(val player: Player, initialPos: Vector2, time: Double, target
   }
 
   override def position: Vector2 = dynamics.pos
-  override private[core] def descriptor: WorldObjectDescriptor = {
+  override private[core] def descriptor: Seq[WorldObjectDescriptor] = Seq(
     LaserMissileDescriptor(id, previousPositions.map{case Vector2(x, y) => (x.toFloat, y.toFloat)}, player)
-  }
+  )
 
   override private[core] def hasDied = lifetime <= 0
 }

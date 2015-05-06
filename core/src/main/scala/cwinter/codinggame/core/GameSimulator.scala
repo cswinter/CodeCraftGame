@@ -38,7 +38,7 @@ class GameSimulator(
 
 
 
-  override def worldState: Iterable[WorldObjectDescriptor] = visibleObjects.map(_.descriptor)
+  override def worldState: Iterable[WorldObjectDescriptor] = visibleObjects.flatMap(_.descriptor)
 
   private def spawnMineral(mineralCrystal: MineralCrystal): Unit = {
     visibleObjects.add(mineralCrystal)
@@ -47,7 +47,7 @@ class GameSimulator(
 
 
   private def mothership(player: Player, controller: DroneController, pos: Vector2): Drone =
-    new Drone(Seq.fill(6)(NanobotFactory) ++ Seq.fill(4)(drone.StorageModule), 7, controller, player, pos, 0, 28)
+    new Drone(Seq.fill(3)(drone.Manipulator) ++ Seq.fill(3)(NanobotFactory) ++ Seq.fill(4)(drone.StorageModule), 7, controller, player, pos, 0, 28)
 
   private def spawnDrone(drone: Drone): Unit = {
     visibleObjects.add(drone)
