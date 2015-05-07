@@ -81,6 +81,7 @@ object Chaos {
         Lasers(6, 3)
       ),
       hullState = Seq[Byte](2, 2, 2, 2, 2),
+      shieldState = Some(1),
       size = 6,
       BluePlayer,
       constructionState = Some(time),

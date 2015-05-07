@@ -25,6 +25,7 @@ case class DroneSignature(
   modules: Seq[DroneModule],
   hasShields: Boolean,
   hullState: Seq[Byte],
+  shieldState: Option[Float],
   isBuilding: Boolean,
   animationTime: Int,
   player: Player
@@ -37,6 +38,7 @@ object DroneSignature {
       robotObject.modules,
       robotObject.modules.exists(_.isInstanceOf[ShieldGenerator]),
       robotObject.hullState,
+      robotObject.shieldState,
       robotObject.constructionState != None,
       timestep % 100,
       robotObject.player)
@@ -106,16 +108,15 @@ class DroneModelBuilder(robot: DroneDescriptor, timestep: Int)(implicit val rs: 
       }).getModel
 
     val shields =
-      if (signature.hasShields)
-        Some(PolygonRing(
-          material = rs.TranslucentAdditive,
-          n = 50,
-          colorInside = ColorRGBA(ColorThrusters, 0f),
-          colorOutside = ColorRGBA(White, 0.7f),
-          outerRadius = radiusHull + 2,
-          innerRadius = Geometry.inradius(radiusHull, sides) * 0.85f
-        ).getModel)
-      else None
+      for (shields <- signature.shieldState)
+        yield PolygonRing(
+            material = rs.TranslucentAdditive,
+            n = 50,
+            colorInside = ColorRGBA(ColorThrusters, 0f * shields),
+            colorOutside = ColorRGBA(White, 0.7f * shields),
+            outerRadius = radiusHull + 2,
+            innerRadius = Geometry.inradius(radiusHull, sides) * 0.85f
+          ).getModel
 
     val thrusters =
       if (!signature.isBuilding) {

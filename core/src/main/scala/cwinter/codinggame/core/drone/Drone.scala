@@ -215,6 +215,7 @@ class Drone(
       Seq(),//oldPositions :+ (position.x.toFloat, position.y.toFloat, dynamics.orientation.orientation.toFloat),
       moduleDescriptors,
       hullState,
+      shieldGenerators.map(_.hitpointPercentage),
       size,
       player,
       constructionProgress
@@ -245,6 +246,14 @@ class Drone(
       if e == Manipulator
     ) {
       result ::= cwinter.worldstate.Manipulator(index)
+      index += 1
+    }
+
+    for (
+      sg <- modules
+      if sg == ShieldGenerator
+    ) {
+      result ::= cwinter.worldstate.ShieldGenerator(index)
       index += 1
     }
 

@@ -27,6 +27,8 @@ class DroneShieldGeneratorModule(positions: Seq[Int], owner: Drone)
   }
 
 
+  def hitpointPercentage: Float = _currHitpoints.toFloat / maxHitpoints
+
   /**
    * Reduces shield strength by some amount of damage.
    * @return Returns the amount of damage which couldn't be absorbed.

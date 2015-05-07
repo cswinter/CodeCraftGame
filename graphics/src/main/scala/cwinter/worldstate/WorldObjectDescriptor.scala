@@ -18,6 +18,7 @@ case class DroneDescriptor(
   positions: Seq[(Float, Float, Float)],
   modules: Seq[DroneModule],
   hullState: Seq[Byte],
+  shieldState: Option[Float],
   size: Int,
 
   player: Player,

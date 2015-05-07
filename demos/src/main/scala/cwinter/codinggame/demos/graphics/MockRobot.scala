@@ -107,6 +107,7 @@ class MockRobot(
       oldPositions,
       modules,
       hullState,
+      if (modules.contains(ShieldGenerator)) Some(1) else None,
       size,
 
       BluePlayer,

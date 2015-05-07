@@ -37,6 +37,7 @@ object BlogpostDemo {
         positions = Seq(),
         modules = Seq(),
         hullState = Seq.fill[Byte](size - 1)(2),
+        Some(1),
         size = size,
         player = BluePlayer
       )
@@ -91,6 +92,7 @@ object BlogpostDemo {
       Lasers(6)
     ),
     hullState = Seq.fill[Byte](5)(2),
+    Some(1),
     6,
     BluePlayer
   )
@@ -105,6 +107,7 @@ object BlogpostDemo {
       StorageModule(Seq(1), 7)
     ),
     hullState = Seq.fill[Byte](4)(2),
+    Some(1),
     5, BluePlayer
   )
 
