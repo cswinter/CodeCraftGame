@@ -1,7 +1,7 @@
 package cwinter.codinggame.testai
 
 import cwinter.codinggame.core._
-import cwinter.codinggame.core.drone.{DroneController, Lasers, StorageModule, Drone}
+import cwinter.codinggame.core.drone._
 import cwinter.codinggame.util.maths.{Rng, Vector2}
 import cwinter.codinggame.util.modules.ModulePosition
 import cwinter.worldstate.BluePlayer
@@ -44,7 +44,7 @@ class Mothership extends DroneController {
         buildSmallDrone(StorageModule, StorageModule, new ScoutingDroneController(this))
         collectors += 1
       } else {
-        buildSmallDrone(Lasers, Lasers, new AttackDroneController())
+        buildMediumDrone(Lasers, Lasers, ShieldGenerator, Engines, new AttackDroneController())
       }
     } else {
       for (mineralCrystal <- storedMinerals) {

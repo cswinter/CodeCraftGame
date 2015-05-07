@@ -41,7 +41,8 @@ class Drone(
   // TODO: remove this once all logic is moved into modules
   private[this] var simulatorEvents = List.empty[SimulatorEvent]
 
-// TODO: ensure canonical module ordering
+  // TODO: unify module creation, make sure to assign None to nonexisting modules
+  // TODO: ensure canonical module ordering
   private[this] val weapons: Option[DroneLasersModule] = Some(
     new DroneLasersModule(modules.zipWithIndex.filter(_._1 == Lasers).map(_._2), this))
   private[this] val factories: Option[DroneFactoryModule] = Some(
@@ -52,6 +53,9 @@ class Drone(
   )
   private[this] val manipulator: Option[DroneManipulatorModule] = Some(
     new DroneManipulatorModule(modules.zipWithIndex.filter(_._1 == Manipulator).map(_._2), this)
+  )
+  private[this] val shieldGenerators: Option[DroneShieldGeneratorModule] = Some(
+    new DroneShieldGeneratorModule(modules.zipWithIndex.filter(_._1 == ShieldGenerator).map(_._2), this)
   )
   val droneModules = Seq(weapons, factories, storage, manipulator)
 
@@ -107,7 +111,11 @@ class Drone(
       case Nil => Nil
     }
 
-    hullState = damageHull(hullState)
+
+    val damage = shieldGenerators.map(_.absorbDamage(1)).getOrElse(0)
+
+    for (_ <- 0 until damage)
+      hullState = damageHull(hullState)
 
     if (hitpoints == 0) {
       dynamics.remove()
@@ -291,6 +299,7 @@ case object Lasers extends Module
 case object NanobotFactory extends Module
 case object Engines extends Module
 case object Manipulator extends Module
+case object ShieldGenerator extends Module
 
 
 sealed trait DroneEvent
