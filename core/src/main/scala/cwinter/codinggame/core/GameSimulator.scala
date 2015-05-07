@@ -14,7 +14,7 @@ class GameSimulator(
   mothershipController2: DroneController,
   eventGenerator: Int => Seq[SimulatorEvent]
 ) extends GameWorld {
-  final val SightRadius = 250
+  final val SightRadius = 500
   final val MaxDroneRadius = 60
 
   private val visibleObjects = collection.mutable.Set.empty[WorldObject]
