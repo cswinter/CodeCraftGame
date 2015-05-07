@@ -2,6 +2,7 @@ package cwinter.graphics.models
 
 import cwinter.codinggame.util.maths._
 import cwinter.graphics.engine.RenderStack
+import cwinter.graphics.materials.Intensity
 import cwinter.graphics.matrices.{TranslationMatrix4x4, DilationXYMatrix4x4, Matrix4x4}
 import cwinter.graphics.model._
 import cwinter.worldstate._
@@ -25,7 +26,6 @@ case class DroneSignature(
   modules: Seq[DroneModule],
   hasShields: Boolean,
   hullState: Seq[Byte],
-  shieldState: Option[Float],
   isBuilding: Boolean,
   animationTime: Int,
   player: Player
@@ -38,7 +38,6 @@ object DroneSignature {
       robotObject.modules,
       robotObject.modules.exists(_.isInstanceOf[ShieldGenerator]),
       robotObject.hullState,
-      robotObject.shieldState,
       robotObject.constructionState != None,
       timestep % 100,
       robotObject.player)
@@ -108,15 +107,16 @@ class DroneModelBuilder(robot: DroneDescriptor, timestep: Int)(implicit val rs: 
       }).getModel
 
     val shields =
-      for (shields <- signature.shieldState)
-        yield PolygonRing(
-            material = rs.TranslucentAdditive,
-            n = 50,
-            colorInside = ColorRGBA(ColorThrusters, 0f * shields),
-            colorOutside = ColorRGBA(White, 0.7f * shields),
-            outerRadius = radiusHull + 2,
-            innerRadius = Geometry.inradius(radiusHull, sides) * 0.85f
-          ).getModel
+      if (signature.hasShields) {
+        Some(PolygonRing(
+          material = rs.TranslucentAdditivePIntensity,
+          n = 50,
+          colorInside = ColorRGBA(ColorThrusters, 0f),
+          colorOutside = ColorRGBA(White, 0.7f),
+          outerRadius = radiusHull + 2,
+          innerRadius = Geometry.inradius(radiusHull, sides) * 0.85f
+        ).getModel)
+      } else None
 
     val thrusters =
       if (!signature.isBuilding) {
@@ -150,7 +150,7 @@ case class RobotModel(
   body: Model[Unit],
   hull: Model[Unit],
   modules: Seq[Model[Unit]],
-  shields: Option[Model[Unit]],
+  shields: Option[Model[Intensity]],
   thrusterTrails: Model[Seq[(Float, Float, Float)]],
   other: Seq[Model[Unit]],
   immediateMode: ImmediateModeModel,
@@ -166,6 +166,8 @@ case class RobotModel(
     thrusterTrails.update(a.positions)
 
     constructionState = a.constructionState
+
+    shields.foreach(_.update(Intensity(a.shieldState.getOrElse(0))))
 
     val sightLines: Iterable[Model[Unit]] =
       for {
@@ -191,6 +193,7 @@ case class RobotModel(
       if (constructionState.isDefined) {
         new TranslationMatrix4x4(0, 0, -1) * modelview
       } else modelview
+
 
     super.draw(modelview2, material)
     setVertexCount(Integer.MAX_VALUE)
