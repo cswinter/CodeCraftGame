@@ -42,6 +42,11 @@ class Mothership extends DroneController {
         }
       }
     }
+
+    if (weaponsCooldown <= 0 && enemies.nonEmpty) {
+      val enemy = enemies.head
+      shootWeapons(enemy)
+    }
   }
 
   def findClosestMineral(maxSize: Int, position: Vector2): Option[MineralCrystal] = {
@@ -54,6 +59,10 @@ class Mothership extends DroneController {
   def registerMineral(mineralCrystal: MineralCrystal): Unit = {
     minerals += mineralCrystal
   }
+
+  def enemies: Set[Drone] =
+    dronesInSight.filter(_.player != drone.player)
+
 
   override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = ()
   override def onArrival(): Unit = ()
