@@ -1,6 +1,7 @@
 package cwinter.codinggame.core.drone
 
 import cwinter.codinggame.core.{MineralCrystal, MineralCrystalHarvested, SimulatorEvent}
+import cwinter.worldstate
 
 class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: Int = 0)
   extends DroneModule(positions, owner) {
@@ -71,5 +72,14 @@ class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: I
 
   def availableStorage: Int =
     positions.size - _storedMinerals.foldLeft(0)(_ + _.size) - (storedEnergyGlobes + 6) / 7
+
+  override def descriptors: Seq[worldstate.DroneModule] = {
+    val partitioning = storedMinerals.toSeq.map(_.size).sortBy(-_)
+    val storesMineral = partitionIndices(partitioning)
+    val storesNothing = positions.drop(storedMinerals.foldLeft(0)(_ + _.size))
+
+    storesMineral.map(worldstate.StorageModule(_, -1)) ++
+      storesNothing.map(i => worldstate.StorageModule(Seq(i), 0))
+  }
 }
 

@@ -223,71 +223,10 @@ class Drone(
   }
 
   private def moduleDescriptors: Seq[cwinter.worldstate.DroneModule] = {
-    var result = List.empty[cwinter.worldstate.DroneModule]
-    var index = 0
-    for (
-      l <- modules
-      if l == Lasers
-    ) {
-      result ::= cwinter.worldstate.Lasers(index)
-      index += 1
-    }
-
-    for (
-      e <- modules
-      if e == Engines
-    ) {
-      result ::= cwinter.worldstate.Engines(index)
-      index += 1
-    }
-
-    for (
-      e <- modules
-      if e == Manipulator
-    ) {
-      result ::= cwinter.worldstate.Manipulator(index)
-      index += 1
-    }
-
-    for (
-      sg <- modules
-      if sg == ShieldGenerator
-    ) {
-      result ::= cwinter.worldstate.ShieldGenerator(index)
-      index += 1
-    }
-
-
-    // TODO: do this properly (+rest of this function) and remove .contents once everything is put into modules
-    val factoryContents = {
-      for (f <- factories)
-        yield f.contents
-    }.getOrElse(Seq())
-
-    for (n <- factoryContents) {
-      result ::= cwinter.worldstate.ProcessingModule(index until index + n)
-      index += n
-    }
-    for (i <- 0 until availableFactories) {
-      result ::= cwinter.worldstate.ProcessingModule(Seq(index))
-      index += 1
-    }
-
-    var storageSum = 0
-    // TODO: HarvestedMineral class (no position)
-    for (MineralCrystal(size, pos) <- storage.map(_.storedMinerals).getOrElse(Seq()).toSeq.sortBy(-_.size)) {
-      result ::= cwinter.worldstate.StorageModule(index until index + size, -1)
-      index += size
-      storageSum += size
-    }
-    var globesRemaining = availableResources
-    for (i <- 0 until storageCapacity - storageSum) {
-      val globes = math.min(7, globesRemaining)
-      result ::= cwinter.worldstate.StorageModule(Seq(index), globes)
-      globesRemaining -= globes
-      index += 1
-    }
-    result
+    for {
+      Some(m) <- droneModules
+      descr <- m.descriptors
+    } yield descr
   }
 
 

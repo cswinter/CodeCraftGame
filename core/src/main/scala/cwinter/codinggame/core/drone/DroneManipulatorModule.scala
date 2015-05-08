@@ -2,6 +2,7 @@ package cwinter.codinggame.core.drone
 
 import cwinter.codinggame.core._
 import cwinter.codinggame.util.maths.{Vector2, Rng}
+import cwinter.worldstate
 import cwinter.worldstate.ManipulatorArm
 
 class DroneManipulatorModule(positions: Seq[Int], owner: Drone)
@@ -80,5 +81,7 @@ class DroneManipulatorModule(positions: Seq[Int], owner: Drone)
             (offset.x + drone.position.x).toFloat, (offset.y + drone.position.y).toFloat)
         })
     }
+
+  override def descriptors: Seq[worldstate.DroneModule] = positions.map(worldstate.Manipulator)
 }
 

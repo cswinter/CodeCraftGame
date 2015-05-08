@@ -1,5 +1,6 @@
 package cwinter.codinggame.core.drone
 
+import cwinter.worldstate
 import cwinter.codinggame.core._
 import cwinter.codinggame.util.maths.Rng
 
@@ -32,6 +33,7 @@ class DroneFactoryModule(positions: Seq[Int], owner: Drone)
     // start new mineral constructions
     for (mineral <- newMinerals) {
       mineralProcessing ::= ((mineral, mineral.size * MineralResourceYield * MineralProcessingPeriod))
+      mineralProcessing = mineralProcessing.sortBy { case (m, p) => -m.size }
       effects ::= MineralCrystalActivated(mineral)
     }
     newMinerals = List.empty[MineralCrystal]
@@ -119,5 +121,12 @@ class DroneFactoryModule(positions: Seq[Int], owner: Drone)
     droneConstructions.map(_._1.requiredFactories) ++
       mineralProcessing.map(_._1.size)
   ).sorted.reverse
+
+  override def descriptors: Seq[worldstate.DroneModule] = {
+    val partitioning = mineralProcessing.map(_._1.size)
+    val processingMinerals = partitionIndices(partitioning)
+    val idle = positions.drop(mineralProcessing.foldLeft(0)(_ + _._1.size)).map(Seq(_))
+    (processingMinerals ++ idle).map(worldstate.ProcessingModule(_))
+  }
 }
 

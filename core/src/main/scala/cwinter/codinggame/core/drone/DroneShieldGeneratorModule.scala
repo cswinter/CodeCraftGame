@@ -1,6 +1,7 @@
 package cwinter.codinggame.core.drone
 
 import cwinter.codinggame.core.SimulatorEvent
+import cwinter.worldstate
 
 class DroneShieldGeneratorModule(positions: Seq[Int], owner: Drone)
   extends DroneModule(positions, owner) {
@@ -38,5 +39,7 @@ class DroneShieldGeneratorModule(positions: Seq[Int], owner: Drone)
     _currHitpoints -= absorbed
     damage - absorbed
   }
+
+  override def descriptors: Seq[worldstate.DroneModule] = positions.map(worldstate.ShieldGenerator)
 }
 
