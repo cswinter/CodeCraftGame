@@ -19,7 +19,7 @@ class Drone(
 
   // constants for drone construction
   final val ConstructionPeriod = 50
-  final val ResourceCost = 5
+  final val ResourceCost = 2
 
   val dynamics: DroneDynamics = new DroneDynamics(this, maximumSpeed, weight, radius, initialPos, time)
   val storageCapacity = modules.count(_ == StorageModule)

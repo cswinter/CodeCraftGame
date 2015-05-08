@@ -10,28 +10,13 @@ object Main {
   def main(args: Array[String]): Unit = {
     TheGameMaster.runLevel1(new Mothership)
   }
-
-  private def events(t: Int): Seq[SimulatorEvent] = {
-    if (t % 20 == 0) {
-      Seq(SpawnDrone(randomAttackDrone))
-    } else Seq()
-  }
-
-  private def randomAttackDrone: Drone = {
-    val size = Rng.int(3, 6)
-    new Drone(
-      Seq.fill(ModulePosition.moduleCount(size))(Lasers), size,
-      new AttackDroneController, BluePlayer,
-      Rng.vector2(-1400, 1400, -1000, 1000),
-      0, 0
-    )
-  }
 }
 
 
 class Mothership extends DroneController {
   var t = 0
   var collectors = 0
+  var minerals = Set.empty[MineralCrystal]
 
   // abstract methods for event handling
   override def onSpawn(): Unit = {
@@ -45,9 +30,9 @@ class Mothership extends DroneController {
         collectors += 1
       } else {
         if (Rng.bernoulli(0.7)) {
-          buildMediumDrone(Lasers, Lasers, ShieldGenerator, Engines, new AttackDroneController())
+          buildMediumDrone(Lasers, Lasers, ShieldGenerator, Engines, new AttackDroneController(this))
         } else {
-          buildLargeDrone(ShieldGenerator, Engines, Engines, Lasers, Lasers, Lasers, Lasers, new AttackDroneController())
+          buildLargeDrone(ShieldGenerator, Engines, Engines, Lasers, Lasers, Lasers, Lasers, new AttackDroneController(this))
         }
       }
     } else {
@@ -57,6 +42,17 @@ class Mothership extends DroneController {
         }
       }
     }
+  }
+
+  def findClosestMineral(maxSize: Int, position: Vector2): Option[MineralCrystal] = {
+    minerals = minerals.filter(!_.harvested)
+    val filtered = minerals.filter(_.size <= maxSize)
+    if (filtered.isEmpty) None
+    else Some(filtered.minBy(m => (m.position - position).magnitudeSquared))
+  }
+
+  def registerMineral(mineralCrystal: MineralCrystal): Unit = {
+    minerals += mineralCrystal
   }
 
   override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = ()
@@ -78,15 +74,22 @@ class ScoutingDroneController(val mothership: Mothership) extends DroneControlle
   override def onDeath(): Unit = mothership.collectors -= 1
 
   override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = {
-    if (nextCrystal.isEmpty && mineralCrystal.size <= availableStorage) {
-      moveToPosition(mineralCrystal.position)
-      nextCrystal = Some(mineralCrystal)
-    }
+    mothership.registerMineral(mineralCrystal)
   }
 
   override def onTick(): Unit = {
+    if (nextCrystal.map(_.harvested) == Some(true)) nextCrystal = None
+
+    if (nextCrystal == None) nextCrystal = mothership.findClosestMineral(availableStorage, position)
+
+    for (
+      c <- nextCrystal
+      if !(c.position ~ position)
+    ) moveToPosition(c.position)
+
     if (availableStorage == 0 && !hasReturned) {
       moveToDrone(mothership)
+      nextCrystal = None
     } else if ((hasReturned && availableStorage > 0) || Rng.bernoulli(0.005) && nextCrystal == None) {
       hasReturned = false
       moveInDirection(Vector2(Rng.double(0, 100)))
@@ -114,12 +117,13 @@ class ScoutingDroneController(val mothership: Mothership) extends DroneControlle
   override def onDroneEntersVision(drone: Drone): Unit = ()
 }
 
-class AttackDroneController extends DroneController {
+class AttackDroneController(val mothership: Mothership) extends DroneController {
   override def onSpawn(): Unit = {
     moveInDirection(Vector2(Rng.double(0, 100)))
   }
 
-  override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = ()
+  override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit =
+    mothership.registerMineral(mineralCrystal)
 
   override def onTick(): Unit = {
     if (weaponsCooldown <= 0 && enemies.nonEmpty) {

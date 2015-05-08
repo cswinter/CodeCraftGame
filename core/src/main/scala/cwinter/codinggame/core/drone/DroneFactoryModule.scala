@@ -8,7 +8,7 @@ class DroneFactoryModule(positions: Seq[Int], owner: Drone)
     extends DroneModule(positions, owner) {
 
   final val MineralProcessingPeriod = 15
-  final val MineralResourceYield = 7
+  final val MineralResourceYield = 1
 
 
   private[this] var newMinerals = List.empty[MineralCrystal]
