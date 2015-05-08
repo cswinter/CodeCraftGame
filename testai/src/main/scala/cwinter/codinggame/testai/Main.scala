@@ -44,7 +44,11 @@ class Mothership extends DroneController {
         buildSmallDrone(StorageModule, StorageModule, new ScoutingDroneController(this))
         collectors += 1
       } else {
-        buildMediumDrone(Lasers, Lasers, ShieldGenerator, Engines, new AttackDroneController())
+        if (Rng.bernoulli(0.7)) {
+          buildMediumDrone(Lasers, Lasers, ShieldGenerator, Engines, new AttackDroneController())
+        } else {
+          buildLargeDrone(ShieldGenerator, Engines, Engines, Lasers, Lasers, Lasers, Lasers, new AttackDroneController())
+        }
       }
     } else {
       for (mineralCrystal <- storedMinerals) {
