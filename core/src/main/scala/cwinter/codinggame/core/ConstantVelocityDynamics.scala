@@ -5,6 +5,8 @@ import cwinter.codinggame.util.maths.{Solve, Rectangle, Vector2}
 
 abstract class ConstantVelocityDynamics(
   val radius: Double,
+  val collisionID: Int,
+  val alwaysCollide: Boolean,
   initialPosition: Vector2,
   initialTime: Double
 ) extends DynamicObject[ConstantVelocityDynamics](initialPosition, initialTime) {
@@ -56,6 +58,8 @@ abstract class ConstantVelocityDynamics(
     other: ConstantVelocityDynamics,
     timeDelta: Double
   ): Option[Double] = {
+    if (collisionID == other.collisionID && (!alwaysCollide || !other.alwaysCollide)) return None
+    
         // need to calculate the intersection (if any), of two circles moving at constant speed
     // this is equivalent to a stationary circle with combined radius and a moving point
 
@@ -88,3 +92,5 @@ abstract class ConstantVelocityDynamics(
     } yield t
   }
 }
+
+

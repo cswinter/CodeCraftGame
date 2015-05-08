@@ -11,7 +11,7 @@ class DroneDynamics(
   radius: Double,
   initialPosition: Vector2,
   initialTime: Double
-) extends ConstantVelocityDynamics(radius, initialPosition, initialTime) {
+) extends ConstantVelocityDynamics(radius, drone.player.id, true, initialPosition, initialTime) {
   final val MaxTurnSpeed = 0.25
   private var _orientation: Double = 0
   private var speed = maxSpeed

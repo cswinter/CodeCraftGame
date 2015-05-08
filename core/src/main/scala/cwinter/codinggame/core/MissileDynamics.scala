@@ -7,9 +7,10 @@ import cwinter.codinggame.util.maths.{Rectangle, Vector2}
 class MissileDynamics(
   val speed: Double,
   val target: ConstantVelocityDynamics,
+  val ownerID: Int,
   initialPosition: Vector2,
   initialTime: Double
-) extends ConstantVelocityDynamics(1, initialPosition, initialTime) {
+) extends ConstantVelocityDynamics(1, ownerID, false, initialPosition, initialTime) {
   var hasHit = false
 
   override def handleObjectCollision(other: ConstantVelocityDynamics): Unit = {
