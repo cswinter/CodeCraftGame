@@ -71,5 +71,7 @@ class DroneFactoryModule(positions: Seq[Int], owner: Drone)
     val idle = positions.drop(contents.sum).map(Seq(_))
     (processingMinerals ++ idle).map(worldstate.ProcessingModule(_))
   }
+
+  def mineralCrystals: Seq[MineralCrystal] = newMinerals ::: mineralProcessing.map(_._1)
 }
 

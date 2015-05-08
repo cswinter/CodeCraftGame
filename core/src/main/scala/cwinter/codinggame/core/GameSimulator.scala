@@ -48,7 +48,7 @@ class GameSimulator(
 
   private def mothership(player: Player, controller: DroneController, pos: Vector2): Drone =
     new Drone(Seq.fill(2)(drone.Manipulator) ++ Seq.fill(3)(NanobotFactory) ++
-      Seq.fill(3)(drone.StorageModule) ++ Seq.fill(2)(drone.Lasers), 7, controller, player, pos, 0, 28)
+      Seq.fill(3)(drone.StorageModule) ++ Seq.fill(2)(drone.Lasers), 7, controller, player, pos, 0, 21, true)
 
   private def spawnDrone(drone: Drone): Unit = {
     visibleObjects.add(drone)
@@ -117,6 +117,8 @@ class GameSimulator(
         visibleObjects.add(mineralCrystal)
       case DroneConstructionStarted(drone) =>
         visibleObjects.add(drone)
+      case DroneConstructionCancelled(drone) =>
+        visibleObjects.remove(drone)
       case SpawnLaserMissile(player, position, target) =>
         // TODO: remove this check once boundary collisions are done properly
         if (map.size.contains(position)) {
@@ -173,6 +175,6 @@ case class SpawnLaserMissile(player: Player, position: Vector2, target: Drone) e
 case class LaserMissileDestroyed(laserMissile: LaserMissile) extends SimulatorEvent
 case class LightFlashDestroyed(lightFlash: LightFlash) extends SimulatorEvent
 case class DroneKilled(drone: Drone) extends SimulatorEvent
-
+case class DroneConstructionCancelled(drone: Drone) extends SimulatorEvent
 
 

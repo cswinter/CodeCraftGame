@@ -71,7 +71,7 @@ class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: I
   def availableResources: Int = storedEnergyGlobes
 
   def availableStorage: Int =
-    positions.size - _storedMinerals.foldLeft(0)(_ + _.size) - (storedEnergyGlobes + 6) / 7
+    positions.size - harvesting.size - _storedMinerals.foldLeft(0)(_ + _.size) - (storedEnergyGlobes + 6) / 7
 
   override def descriptors: Seq[worldstate.DroneModule] = {
     val partitioning = storedMinerals.toSeq.map(_.size).sortBy(-_)

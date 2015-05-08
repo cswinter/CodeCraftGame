@@ -83,5 +83,8 @@ class DroneManipulatorModule(positions: Seq[Int], owner: Drone)
     }
 
   override def descriptors: Seq[worldstate.DroneModule] = positions.map(worldstate.Manipulator)
+
+
+  def droneInConstruction: Option[Drone] = droneConstruction.map(_._1)
 }
 

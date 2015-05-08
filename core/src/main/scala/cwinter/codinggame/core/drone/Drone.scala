@@ -14,7 +14,8 @@ class Drone(
   val player: Player,
   initialPos: Vector2,
   time: Double,
-  startingResources: Int = 0
+  startingResources: Int = 0,
+  val isMothership: Boolean = false
 ) extends WorldObject {
 
   // constants for drone construction
@@ -123,6 +124,14 @@ class Drone(
     if (hitpoints == 0) {
       dynamics.remove()
       simulatorEvents ::= DroneKilled(this)
+      for {
+        m <- manipulator
+        d <- m.droneInConstruction
+      } simulatorEvents ::= DroneConstructionCancelled(d)
+      for {
+        f <- factories
+        c <- f.mineralCrystals
+      } simulatorEvents ::= MineralCrystalDestroyed(c)
     }
   }
 
@@ -191,7 +200,9 @@ class Drone(
     ModulePosition.moduleCount(size) * 2
   }
 
-  def weight = size + modules.length
+  def weight =
+    if (isMothership) 10000
+    else size + modules.length
 
   def maximumSpeed: Double = {
     val propulsion = 1 + modules.count(_ == Engines)

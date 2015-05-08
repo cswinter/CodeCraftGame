@@ -33,13 +33,16 @@ case class DroneSignature(
 
 object DroneSignature {
   def apply(robotObject: DroneDescriptor, timestep: Int): DroneSignature = {
+    val hasAnimatedComponents = robotObject.modules.exists(m =>
+      m.isInstanceOf[Engines] || m.isInstanceOf[ProcessingModule]
+    )
     DroneSignature(
       robotObject.size,
       robotObject.modules,
       robotObject.modules.exists(_.isInstanceOf[ShieldGenerator]),
       robotObject.hullState,
       robotObject.constructionState != None,
-      timestep % 100,
+      if (hasAnimatedComponents) timestep % 100 else 0,
       robotObject.player)
   }
 }

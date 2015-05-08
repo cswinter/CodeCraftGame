@@ -87,7 +87,7 @@ class ScoutingDroneController(val mothership: Mothership) extends DroneControlle
   }
 
   override def onTick(): Unit = {
-    if (nextCrystal.map(_.harvested) == Some(true)) nextCrystal = None
+    if (nextCrystal.exists(_.harvested)) nextCrystal = None
 
     if (nextCrystal == None) nextCrystal = mothership.findClosestMineral(availableStorage, position)
 
