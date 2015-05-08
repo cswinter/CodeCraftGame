@@ -76,10 +76,15 @@ class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: I
   override def descriptors: Seq[worldstate.DroneModule] = {
     val partitioning = storedMinerals.toSeq.map(_.size).sortBy(-_)
     val storesMineral = partitionIndices(partitioning)
-    val storesNothing = positions.drop(storedMinerals.foldLeft(0)(_ + _.size))
+    val storesGlobes = positions.drop(storedMinerals.foldLeft(0)(_ + _.size))
 
+    var remainingGlobes = storedEnergyGlobes
     storesMineral.map(worldstate.StorageModule(_, -1)) ++
-      storesNothing.map(i => worldstate.StorageModule(Seq(i), 0))
+      storesGlobes.map(i => {
+        val globes = math.min(7, remainingGlobes)
+        remainingGlobes -= globes
+        worldstate.StorageModule(Seq(i), globes)
+      })
   }
 }
 
