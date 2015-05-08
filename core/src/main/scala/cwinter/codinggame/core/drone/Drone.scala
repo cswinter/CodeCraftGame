@@ -57,7 +57,10 @@ class Drone(
   private[this] val shieldGenerators: Option[DroneShieldGeneratorModule] = Some(
     new DroneShieldGeneratorModule(modules.zipWithIndex.filter(_._1 == ShieldGenerator).map(_._2), this)
   )
-  val droneModules = Seq(weapons, factories, storage, manipulator, shieldGenerators)
+  private[this] val engines: Option[DroneEnginesModule] = Some(
+    new DroneEnginesModule(modules.zipWithIndex.filter(_._1 == Engines).map(_._2), this)
+  )
+  val droneModules = Seq(weapons, factories, storage, manipulator, shieldGenerators, engines)
 
 
   def initialise(time: Double): Unit = {
