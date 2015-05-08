@@ -8,7 +8,7 @@ class LaserMissile(val player: Player, initialPos: Vector2, time: Double, target
   val dynamics: MissileDynamics = new MissileDynamics(500, target.dynamics, player.id, initialPos, time)
   val previousPositions = collection.mutable.Queue(initialPos)
   val positions = 7
-  var lifetime = 100
+  var lifetime = 50
 
   def update(): Seq[SimulatorEvent] = {
     dynamics.update()
