@@ -12,16 +12,38 @@ case class RobotLasersModelBuilder(player: Player, position: VertexXY, n: Int)(i
   override def signature: RobotLasersModelBuilder = this
 
   override protected def buildModel: Model[Unit] = {
-    Polygon(
-      rs.MaterialXYRGB,
-      3,
-      Seq.fill(n)(White) ++ Seq.fill(3 - n)(player.color),
-      Seq.fill(3)(0.3f * player.color),
-      radius = 8,
-      position = position,
-      zPos = 1,
-      orientation = 0,
-      colorEdges = true
-    ).getModel
+    val components =
+      for {
+        pos <- Seq(VertexXY(1, 1), VertexXY(-1, 1), VertexXY(-1, -1), VertexXY(1, -1))
+        offset = pos * 3
+        segment <- buildSegment(offset + position)
+      } yield segment
+
+    new StaticCompositeModel(components)
+  }
+
+
+  def buildSegment(midpoint: VertexXY): Seq[Model[Unit]] = {
+    val background =
+      SquarePrimitive(
+        rs.MaterialXYRGB,
+        midpoint.x,
+        midpoint.y,
+        3,
+        player.color,
+        1
+      ).getModel
+
+    val element =
+      SquarePrimitive(
+        rs.BloomShader,
+        midpoint.x,
+        midpoint.y,
+        2,
+        White,
+        2
+      ).getModel
+
+    Seq(background, element)
   }
 }

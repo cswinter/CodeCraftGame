@@ -43,3 +43,4 @@ case class LinePrimitive[TColor <: Vertex : ClassTag, TParams](
     vertexPos.map(_.zPos(zPos)) zip colors
   }
 }
+

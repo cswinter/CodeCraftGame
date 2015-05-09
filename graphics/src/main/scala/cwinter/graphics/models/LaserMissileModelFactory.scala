@@ -21,6 +21,8 @@ object LaserMissileModelFactory {
           ColorRGBA(z * colorHead + (1 - z) * colorTail, x)
       }
 
+
+
       QuadStrip(
         rs.TranslucentAdditive,
         midpoints,
