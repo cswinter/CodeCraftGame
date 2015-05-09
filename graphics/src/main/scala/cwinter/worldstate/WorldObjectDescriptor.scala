@@ -78,6 +78,7 @@ case class LightFlashDescriptor(
 case class LaserMissileDescriptor(
   identifier: Int,
   positions: Seq[(Float, Float)],
+  maxPos: Int,
   player: Player
 ) extends WorldObjectDescriptor {
   val orientation = 0.0f

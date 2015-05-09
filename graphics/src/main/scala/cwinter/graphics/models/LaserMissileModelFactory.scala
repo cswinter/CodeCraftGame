@@ -7,11 +7,11 @@ import cwinter.worldstate.Player
 
 
 object LaserMissileModelFactory {
-  def build(positions: Seq[(Float, Float)], player: Player)(implicit rs: RenderStack) = {
+  def build(positions: Seq[(Float, Float)], nMaxPos: Int, player: Player)(implicit rs: RenderStack) = {
     if (positions.length < 2) EmptyModel
     else {
       val midpoints = positions.map { case (x, y) => VertexXY(x, y)}
-      val n = positions.length
+      val n = nMaxPos // positions.length
       val colorHead = ColorRGB(1, 1, 1)
       val colorTail = player.color
       val colors = positions.zipWithIndex.map {

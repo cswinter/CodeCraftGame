@@ -58,8 +58,9 @@ object DrawingCanvas {
         case 34 | 69 /* PAGE DOWN, E */ => camera.zoom += zoomSpeed
         case 32 /* SPACEBAR */ => RenderFrame.togglePause()
         case 77 => jframe.setBounds(0, 0, 3840, 2160)
-        case _ =>
-      } //println(s"keyPressed($keyEvent)")
+        case 80 /* P */ => RenderFrame.slowMode = !RenderFrame.slowMode
+        case _ => //println(s"keyPressed($keyEvent)")
+      }
 
       override def keyReleased(keyEvent: KeyEvent): Unit = ()
     })

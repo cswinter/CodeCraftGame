@@ -125,12 +125,12 @@ class GameSimulator(
         val newMissile = new LaserMissile(player, position, physicsEngine.time, target)
           spawnMissile(newMissile)
         }
-      case LaserMissileDestroyed(laserMissile) =>
+      case LaserMissileFaded(laserMissile) =>
         visibleObjects.remove(laserMissile)
         dynamicObjects.remove(laserMissile)
         physicsEngine.remove(laserMissile.dynamics)
-        if (laserMissile.dynamics.hasHit)
-          spawnLightflash(laserMissile.position)
+      case MissileExplodes(laserMissile) =>
+        spawnLightflash(laserMissile.position)
       case LightFlashDestroyed(lightFlash) =>
         visibleObjects.remove(lightFlash)
         dynamicObjects.remove(lightFlash)
@@ -172,7 +172,8 @@ case class SpawnDrone(drone: Drone) extends SimulatorEvent
 case class MineralCrystalActivated(mineralCrystal: MineralCrystal) extends SimulatorEvent
 case class MineralCrystalDestroyed(mineralCrystal: MineralCrystal) extends SimulatorEvent
 case class SpawnLaserMissile(player: Player, position: Vector2, target: Drone) extends SimulatorEvent
-case class LaserMissileDestroyed(laserMissile: LaserMissile) extends SimulatorEvent
+case class LaserMissileFaded(laserMissile: LaserMissile) extends SimulatorEvent
+case class MissileExplodes(homingMissile: LaserMissile) extends SimulatorEvent
 case class LightFlashDestroyed(lightFlash: LightFlash) extends SimulatorEvent
 case class DroneKilled(drone: Drone) extends SimulatorEvent
 case class DroneConstructionCancelled(drone: Drone) extends SimulatorEvent

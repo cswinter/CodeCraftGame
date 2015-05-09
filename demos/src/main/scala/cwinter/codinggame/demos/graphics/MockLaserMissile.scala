@@ -30,10 +30,11 @@ class MockLaserMissile(
     yPos += vy
     oldPositions.enqueue((xPos, yPos))
     if (oldPositions.length > positions) oldPositions.dequeue()
+    while (oldPositions.length > lifetime - age + 2) oldPositions.dequeue()
   }
 
   override def state(): WorldObjectDescriptor =
-    LaserMissileDescriptor(identifier, oldPositions.toSeq, player)
+    LaserMissileDescriptor(identifier, oldPositions.toSeq, math.min(positions, age), player)
 
 
   def vx = math.cos(orientation).toFloat * speed

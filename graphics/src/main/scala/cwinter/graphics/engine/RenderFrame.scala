@@ -32,6 +32,8 @@ object RenderFrame extends GLEventListener {
   var gameWorld: GameWorld = null
   var error = false
   var t = true
+  var slowMode = false
+  var step = 0
 
 
   override def display(drawable: GLAutoDrawable): Unit = {
@@ -93,19 +95,22 @@ object RenderFrame extends GLEventListener {
 
   private def update(): Unit = {
     if (!paused) {
-      if (t) {
-        try {
-          cwinter.graphics.engine.Debug.clear()
-          gameWorld.update()
-        } catch {
-          case e: Exception =>
-            println(e)
-            e.getStackTrace.foreach(println)
-            paused = true
-            error = true
+      if (!slowMode || step % 10 == 0) {
+        if (t) {
+          try {
+            cwinter.graphics.engine.Debug.clear()
+            gameWorld.update()
+          } catch {
+            case e: Exception =>
+              println(e)
+              e.getStackTrace.foreach(println)
+              paused = true
+              error = true
+          }
         }
+        t = !t
       }
-      t = !t
+      step += 1
     }
   }
 
