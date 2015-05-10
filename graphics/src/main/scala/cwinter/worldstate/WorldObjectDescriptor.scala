@@ -36,9 +36,13 @@ case class DroneDescriptor(
 
 sealed trait DroneModule
 
-case class StorageModule(positions: Seq[Int], resourceCount: Int, mergingProgress: Option[Int] = None) extends DroneModule {
+case class StorageModule(positions: Seq[Int], resourceCount: Int, mergingProgress: Option[Float] = None) extends DroneModule {
   assert(resourceCount >= -1)
   assert(resourceCount <= 7)
+  for (x <- mergingProgress) {
+    assert(x >= 0)
+    assert(x <= 1)
+  }
 }
 case class Engines(position: Int) extends DroneModule
 case class ProcessingModule(positions: Seq[Int], mergingProgress: Option[Int] = None) extends DroneModule

@@ -137,7 +137,13 @@ class Drone(
 
   def hitpoints: Int = hullState.map(_.toInt).sum
 
-  def giveMovementCommand(value: MovementCommand): Unit = dynamics.movementCommand_=(value)
+  def giveMovementCommand(value: MovementCommand): Unit = {
+    if (droneModules.exists(_.exists(_.cancelMovement))) {
+      // TODO: warning/error message? queue up command?
+      return
+    }
+    dynamics.movementCommand_=(value)
+  }
 
   def startDroneConstruction(command: ConstructDrone): Unit = {
     for (m <- manipulator) m.startDroneConstruction(command)

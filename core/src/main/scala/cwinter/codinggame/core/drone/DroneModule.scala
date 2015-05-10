@@ -17,6 +17,7 @@ abstract class DroneModule(
    */
   def update(availableResources: Int): (Seq[SimulatorEvent], Int)
   def descriptors: Seq[cwinter.worldstate.DroneModule]
+  def cancelMovement: Boolean = false
 
 
   protected def absoluteModulePositions: Seq[Vector2] = {

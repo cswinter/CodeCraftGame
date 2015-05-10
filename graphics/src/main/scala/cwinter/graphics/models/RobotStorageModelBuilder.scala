@@ -6,7 +6,7 @@ import cwinter.graphics.model._
 import RobotColors._
 
 
-case class RobotStorageModelBuilder(positions: Seq[VertexXY], nEnergyGlobes: Int, size: Int, tMerge: Option[Int])(implicit rs: RenderStack)
+case class RobotStorageModelBuilder(positions: Seq[VertexXY], nEnergyGlobes: Int, size: Int, tMerge: Option[Float])(implicit rs: RenderStack)
   extends ModelBuilder[RobotStorageModelBuilder, Unit] {
 
   val scale = math.sqrt(size).toFloat
@@ -20,8 +20,7 @@ case class RobotStorageModelBuilder(positions: Seq[VertexXY], nEnergyGlobes: Int
   protected def buildModel: Model[Unit] = {
     tMerge match {
       case None => assembledModel
-      case Some(n) =>
-        val x = n / 250f
+      case Some(x) =>
         val scale = 1 - x + x * math.sqrt(size).toFloat
         val xPos = if (x > 0.5f) 2 * (x - 0.5f) else 0
         val xFrac = if (x < 0.8f) x / 0.8f else 1
