@@ -14,8 +14,11 @@ case class RobotLasersModelBuilder(player: Player, position: VertexXY, n: Int)(i
   override protected def buildModel: Model[Unit] = {
     val components =
       for {
-        pos <- Seq(VertexXY(1, 1), VertexXY(-1, 1), VertexXY(-1, -1), VertexXY(1, -1))
-        offset = pos * 3
+        pos <- Seq(
+          VertexXY(1, 1), VertexXY(0, 1), VertexXY(-1, 1),
+          VertexXY(1, 0), VertexXY(0, 0), VertexXY(-1, 0),
+          VertexXY(1, -1), VertexXY(0, -1), VertexXY(-1, -1))
+        offset = pos * 4
         segment <- buildSegment(offset + position)
       } yield segment
 
@@ -29,7 +32,7 @@ case class RobotLasersModelBuilder(player: Player, position: VertexXY, n: Int)(i
         rs.MaterialXYRGB,
         midpoint.x,
         midpoint.y,
-        3,
+        2,
         player.color,
         1
       ).getModel
@@ -39,7 +42,7 @@ case class RobotLasersModelBuilder(player: Player, position: VertexXY, n: Int)(i
         rs.BloomShader,
         midpoint.x,
         midpoint.y,
-        2,
+        1,
         White,
         2
       ).getModel
