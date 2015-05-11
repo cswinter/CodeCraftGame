@@ -4,6 +4,7 @@ import cwinter.codinggame.graphics.engine.RenderStack
 import cwinter.codinggame.graphics.model._
 import cwinter.codinggame.graphics.models.RobotColors._
 import cwinter.codinggame.util.maths.{ColorRGB, Geometry, VertexXY}
+import cwinter.codinggame.util.modules.ModulePosition
 import cwinter.codinggame.worldstate.{EmptyStorage, MineralStorage, EnergyStorage, StorageModuleContents}
 
 
@@ -98,21 +99,13 @@ case class RobotStorageModelBuilder(positions: Seq[VertexXY], moduleContents: St
         zPos = 1
       ).getModel
 
-    val energyPositions = Seq(VertexXY(0, 0)) ++ Geometry.polygonVertices2(6, radius = 4.5f)
     val contents = moduleContents match {
       case EnergyStorage(filledSlots) =>
-        for (
+        for {
           i <- 0 until 7
           if filledSlots.contains(i)
-        ) yield Polygon(
-          material = rs.BloomShader,
-          n = 7,
-          colorMidpoint = ColorRGB(1, 1, 1),
-          colorOutside = ColorRGB(0, 1, 0),
-          radius = 2,
-          position = energyPositions(i) + center,
-          zPos = 2
-        ).getModel
+          position = ModulePosition.energyPosition(i) + center
+        } yield EnergyGlobeModelFactory.build(position).getModel
       case MineralStorage =>
         Seq(
           Polygon(

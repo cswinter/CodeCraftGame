@@ -3,6 +3,7 @@ package cwinter.codinggame.graphics.models
 import cwinter.codinggame.graphics.engine.RenderStack
 import cwinter.codinggame.graphics.matrices.{IdentityMatrix4x4, RotationZMatrix4x4, TranslationXYMatrix4x4}
 import cwinter.codinggame.graphics.model.ClosedModel
+import cwinter.codinggame.util.maths.VertexXY
 import cwinter.codinggame.worldstate._
 
 
@@ -37,6 +38,11 @@ object TheWorldObjectModelFactory {
       case ManipulatorArm(player, x1, y1, x2, y2) => new ClosedModel[Unit](
         Unit,
         ManipulatorArmModelFactory.build(player, x1, y1, x2, y2),
+        IdentityMatrix4x4
+      )
+      case EnergyGlobeDescriptor(x, y) => new ClosedModel[Unit](
+        Unit,
+        EnergyGlobeModelFactory.build(VertexXY(x, y)).noCaching.getModel,
         IdentityMatrix4x4
       )
       case TestingObject(t) => new ClosedModel[Unit](

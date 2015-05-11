@@ -17,6 +17,12 @@ object ModulePosition {
     modulePositions.map(i => this(robotSize, i)).reduce(_ + _) / modulePositions.size
   }
 
+
+  private val energyPositions = Seq(VertexXY(0, 0)) ++ Geometry.polygonVertices2(6, radius = 4.5f)
+  def energyPosition(i: Int): VertexXY = {
+    energyPositions(i)
+  }
+
   //noinspection ZeroIndexToHead
   val ModulePosition = Map[Int, IndexedSeq[VertexXY]](
     3 -> IndexedSeq(VertexXY(0, 0)),

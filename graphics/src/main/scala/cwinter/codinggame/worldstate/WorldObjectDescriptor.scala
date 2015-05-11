@@ -1,8 +1,8 @@
 package cwinter.codinggame.worldstate
 
 import cwinter.codinggame.util.maths
+import cwinter.codinggame.util.maths.VertexXY
 
-import scala.collection.BitSet
 
 
 sealed trait WorldObjectDescriptor {
@@ -55,6 +55,14 @@ case class ProcessingModuleDescriptor(positions: Seq[Int], mergingProgress: Opti
 case class ShieldGeneratorDescriptor(position: Int) extends DroneModuleDescriptor
 case class MissileBatteryDescriptor(position: Int, n: Int = 3) extends DroneModuleDescriptor
 case class ManipulatorDescriptor(position: Int) extends DroneModuleDescriptor
+
+case class EnergyGlobeDescriptor(
+  xPos: Float,
+  yPos: Float
+) extends WorldObjectDescriptor {
+  val identifier: Int = 0
+  val orientation: Float = 0
+}
 
 case class ManipulatorArm(player: Player, x1: Float, y1: Float, x2: Float, y2: Float)
   extends WorldObjectDescriptor {
