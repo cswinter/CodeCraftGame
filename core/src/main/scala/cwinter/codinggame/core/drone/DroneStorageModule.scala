@@ -1,7 +1,7 @@
 package cwinter.codinggame.core.drone
 
 import cwinter.codinggame.core.{MineralCrystal, MineralCrystalHarvested, SimulatorEvent}
-import cwinter.worldstate
+import cwinter.codinggame.worldstate.{DroneModuleDescriptor, StorageModuleDescriptor}
 
 class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: Int = 0)
   extends DroneModule(positions, owner) {
@@ -75,7 +75,7 @@ class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: I
   def availableStorage: Int =
     positions.size - harvesting.size - _storedMinerals.foldLeft(0)(_ + _.size) - (storedEnergyGlobes + 6) / 7
 
-  override def descriptors: Seq[worldstate.DroneModule] = {
+  override def descriptors: Seq[DroneModuleDescriptor] = {
     val mineralStorage = {
       (for (s <- storedMinerals.toSeq) yield (s, 1f)) ++
         (for ((m, p) <- harvesting) yield (m, (HarvestingTime - p).toFloat / HarvestingTime))
@@ -87,9 +87,9 @@ class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: I
 
     val mineralStorageDescriptors =
       for (((_, p), i) <- mineralStorage zip mineralStorageIndices) yield {
-        if (p == 1) worldstate.StorageModule(i, -1)
-        else if (p > 0.5f) worldstate.StorageModule(i, 0)
-        else worldstate.StorageModule(i, 0, Some(p * 2))
+        if (p == 1) StorageModuleDescriptor(i, -1)
+        else if (p > 0.5f) StorageModuleDescriptor(i, 0)
+        else StorageModuleDescriptor(i, 0, Some(p * 2))
       }
 
     val storesGlobes = positions.drop(mineralStorage.foldLeft(0)(_ + _._1.size))
@@ -98,7 +98,7 @@ class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: I
       for (i <- storesGlobes) yield {
         val globes = math.min(7, remainingGlobes)
         remainingGlobes -= globes
-        worldstate.StorageModule(Seq(i), globes)
+        StorageModuleDescriptor(Seq(i), globes)
       }
 
     mineralStorageDescriptors ++ energyStorageDescriptors

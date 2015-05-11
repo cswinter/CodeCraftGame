@@ -2,7 +2,7 @@ package cwinter.codinggame.demos.physics
 
 import cwinter.codinggame.physics.{ConstantVelocityObject, DynamicObject}
 import cwinter.codinggame.util.maths.{Rng, Vector2}
-import cwinter.worldstate.{DrawCircle, WorldObjectDescriptor}
+import cwinter.codinggame.worldstate.{DrawCircle, WorldObjectDescriptor}
 
 
 class MovingObject[TDynamics](

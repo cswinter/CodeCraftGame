@@ -1,8 +1,8 @@
 package cwinter.codinggame.core
 
 import cwinter.codinggame.core.drone.DroneController
+import cwinter.codinggame.graphics.application.DrawingCanvas
 import cwinter.codinggame.util.maths.Rectangle
-import cwinter.graphics.application.DrawingCanvas
 
 
 object TheGameMaster {

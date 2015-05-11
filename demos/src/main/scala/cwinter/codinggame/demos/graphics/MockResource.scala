@@ -1,6 +1,6 @@
 package cwinter.codinggame.demos.graphics
 
-import cwinter.worldstate.{MineralDescriptor, WorldObjectDescriptor}
+import cwinter.codinggame.worldstate.{MineralDescriptor, WorldObjectDescriptor}
 
 
 class MockResource(

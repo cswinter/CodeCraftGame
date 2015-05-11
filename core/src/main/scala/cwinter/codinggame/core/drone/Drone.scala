@@ -3,7 +3,7 @@ package cwinter.codinggame.core.drone
 import cwinter.codinggame.core._
 import cwinter.codinggame.util.maths.{Geometry, Vector2}
 import cwinter.codinggame.util.modules.ModulePosition
-import cwinter.worldstate.{DroneDescriptor, Player, WorldObjectDescriptor}
+import cwinter.codinggame.worldstate.{DroneModuleDescriptor, Player, DroneDescriptor, WorldObjectDescriptor}
 
 
 // TODO: make private[core] once DroneHandle class is implemented
@@ -242,7 +242,7 @@ class Drone(
     )) ++ manipulator.toSeq.flatMap(_.manipulatorGraphics)
   }
 
-  private def moduleDescriptors: Seq[cwinter.worldstate.DroneModule] = {
+  private def moduleDescriptors: Seq[DroneModuleDescriptor] = {
     for {
       Some(m) <- droneModules
       descr <- m.descriptors

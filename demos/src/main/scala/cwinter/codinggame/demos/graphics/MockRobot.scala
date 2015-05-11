@@ -1,6 +1,6 @@
 package cwinter.codinggame.demos.graphics
 
-import cwinter.worldstate._
+import cwinter.codinggame.worldstate._
 
 import scala.collection.mutable
 import scala.util.Random
@@ -11,7 +11,7 @@ class MockRobot(
   var yPos: Float,
   var orientation: Float,
   val size: Int,
-  var modules: Seq[DroneModule],
+  var modules: Seq[DroneModuleDescriptor],
   val sightRadius: Option[Int],
   val undamaged: Boolean = false,
   val dontMove: Boolean = false
@@ -36,13 +36,13 @@ class MockRobot(
   override def update(): Unit = {
     // update timer on engines
     modules = modules.map {
-      case ProcessingModule(pos, t) =>
-        ProcessingModule(pos, t.map(x => (x + 1) % 250))
-      case StorageModule(positions, rc, t) =>
-        StorageModule(
+      case ProcessingModuleDescriptor(pos, t) =>
+        ProcessingModuleDescriptor(pos, t.map(x => (x + 1) % 250))
+      case StorageModuleDescriptor(positions, rc, t) =>
+        StorageModuleDescriptor(
           positions,
           rc,
-          t.map(x => (x + 1) % 250)
+          t.map(x => ((x + 1) % 250) / 250f)
         )
       case m => m
     }
@@ -107,7 +107,7 @@ class MockRobot(
       oldPositions,
       modules,
       hullState,
-      if (modules.contains(ShieldGenerator)) Some(1) else None,
+      if (modules.contains(ShieldGeneratorDescriptor)) Some(1) else None,
       size,
 
       BluePlayer,

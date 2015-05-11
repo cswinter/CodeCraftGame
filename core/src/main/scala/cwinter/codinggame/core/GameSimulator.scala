@@ -5,7 +5,7 @@ import cwinter.codinggame.core.drone._
 import cwinter.codinggame.physics.PhysicsEngine
 import cwinter.codinggame.util.maths.{Rng, Vector2}
 import cwinter.codinggame.util.modules.ModulePosition
-import cwinter.worldstate._
+import cwinter.codinggame.worldstate._
 
 
 class GameSimulator(

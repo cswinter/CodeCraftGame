@@ -4,7 +4,7 @@ import cwinter.codinggame.core._
 import cwinter.codinggame.core.drone._
 import cwinter.codinggame.util.maths.{Rng, Vector2}
 import cwinter.codinggame.util.modules.ModulePosition
-import cwinter.worldstate.BluePlayer
+import cwinter.codinggame.worldstate.BluePlayer
 
 object Main {
   def main(args: Array[String]): Unit = {

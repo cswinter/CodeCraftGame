@@ -2,7 +2,7 @@ package cwinter.codinggame.core.drone
 
 import cwinter.codinggame.core.SpawnLaserMissile
 import cwinter.codinggame.util.maths.Vector2
-import cwinter.worldstate.{RedPlayer, BluePlayer}
+import cwinter.codinggame.worldstate.{RedPlayer, BluePlayer}
 import org.scalatest.FlatSpec
 
 

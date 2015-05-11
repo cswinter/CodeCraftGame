@@ -1,6 +1,6 @@
 package cwinter.codinggame.demos.graphics
 
-import cwinter.worldstate._
+import cwinter.codinggame.worldstate._
 
 object Chaos {
   val sightRadius = Some(250)
@@ -11,7 +11,7 @@ object Chaos {
       yPos = 0,
       orientation = north,
       modules = Seq(
-        ProcessingModule(Seq(0, 1))
+        ProcessingModuleDescriptor(Seq(0, 1))
       ),
       size = 4,
       sightRadius = sightRadius
@@ -21,8 +21,8 @@ object Chaos {
       yPos = 0,
       orientation = north,
       modules = Seq(
-        StorageModule(Seq(0, 1, 2), 0, Some(1)),
-        Engines(3)
+        StorageModuleDescriptor(Seq(0, 1, 2), 0, Some(1)),
+        EnginesDescriptor(3)
       ),
       size = 5,
       sightRadius = sightRadius
@@ -32,8 +32,8 @@ object Chaos {
       yPos = 0,
       orientation = north,
       modules = Seq(
-        StorageModule(Seq(0, 1), 0),
-        ProcessingModule(Seq(2, 3))
+        StorageModuleDescriptor(Seq(0, 1), 0),
+        ProcessingModuleDescriptor(Seq(2, 3))
       ),
       size = 5,
       sightRadius = sightRadius
@@ -43,9 +43,9 @@ object Chaos {
       yPos = 0,
       orientation = north,
       modules = Seq(
-        StorageModule(Seq(0), 7),
-        StorageModule(Seq(1, 2, 3), -1),
-        ProcessingModule(Seq(4, 5, 6), mergingProgress = Some(1))
+        StorageModuleDescriptor(Seq(0), 7),
+        StorageModuleDescriptor(Seq(1, 2, 3), -1),
+        ProcessingModuleDescriptor(Seq(4, 5, 6), mergingProgress = Some(1))
       ),
       size = 6,
       sightRadius = sightRadius
@@ -55,9 +55,9 @@ object Chaos {
       yPos = 0,
       orientation = north,
       modules = Seq(
-        StorageModule(Seq(0, 1), -1),
-        StorageModule(Seq(2, 3, 4), -1),
-        StorageModule(Seq(5, 6, 7, 8, 9), -1)
+        StorageModuleDescriptor(Seq(0, 1), -1),
+        StorageModuleDescriptor(Seq(2, 3, 4), -1),
+        StorageModuleDescriptor(Seq(5, 6, 7, 8, 9), -1)
       ),
       size = 7,
       sightRadius = sightRadius
@@ -72,13 +72,13 @@ object Chaos {
       orientation = 2,
       positions = Seq(),
       modules = Seq(
-        Engines(0),
-        Lasers(1, 0),
-        StorageModule(Seq(2), 0),
-        ShieldGenerator(3),
-        StorageModule(Seq(4), 0),
-        Lasers(5,3),
-        Lasers(6, 3)
+        EnginesDescriptor(0),
+        MissileBatteryDescriptor(1, 0),
+        StorageModuleDescriptor(Seq(2), 0),
+        ShieldGeneratorDescriptor(3),
+        StorageModuleDescriptor(Seq(4), 0),
+        MissileBatteryDescriptor(5,3),
+        MissileBatteryDescriptor(6, 3)
       ),
       hullState = Seq[Byte](2, 2, 2, 2, 2),
       shieldState = Some(1),

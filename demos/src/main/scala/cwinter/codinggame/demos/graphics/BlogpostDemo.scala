@@ -1,7 +1,7 @@
 package cwinter.codinggame.demos.graphics
 
 import cwinter.codinggame.util.maths.{VertexXY, Geometry}
-import cwinter.worldstate._
+import cwinter.codinggame.worldstate._
 
 object BlogpostDemo {
   def main(args: Array[String]): Unit = {
@@ -57,14 +57,14 @@ object BlogpostDemo {
     )
   }
 
-  def modules = Seq[DroneModule](
-    StorageModule(Seq(0), 0),
-    StorageModule(Seq(0), 7),
-    StorageModule(Seq(0), -1),
-    Engines(0),
-    ShieldGenerator(0),
-    ProcessingModule(Seq(0)),
-    Lasers(0)
+  def modules = Seq[DroneModuleDescriptor](
+    StorageModuleDescriptor(Seq(0), 0),
+    StorageModuleDescriptor(Seq(0), 7),
+    StorageModuleDescriptor(Seq(0), -1),
+    EnginesDescriptor(0),
+    ShieldGeneratorDescriptor(0),
+    ProcessingModuleDescriptor(Seq(0)),
+    MissileBatteryDescriptor(0)
   ).zipWithIndex.map {
     case (module, i) =>
       new MockRobot(
@@ -72,7 +72,7 @@ object BlogpostDemo {
         yPos = 100 * i - 200,
         orientation = 0,
         size = 3,
-        modules = Seq[DroneModule](module),
+        modules = Seq[DroneModuleDescriptor](module),
         sightRadius = None,
         undamaged = true,
         dontMove = true
@@ -83,13 +83,13 @@ object BlogpostDemo {
     identifier = 1, xPos = 170, yPos = 300, orientation = 0,
     positions = Seq(),
     modules = Seq(
-      Lasers(0),
-      Engines(1),
-      StorageModule(Seq(2), 7),
-      ShieldGenerator(3),
-      Lasers(4),
-      Lasers(5),
-      Lasers(6)
+      MissileBatteryDescriptor(0),
+      EnginesDescriptor(1),
+      StorageModuleDescriptor(Seq(2), 7),
+      ShieldGeneratorDescriptor(3),
+      MissileBatteryDescriptor(4),
+      MissileBatteryDescriptor(5),
+      MissileBatteryDescriptor(6)
     ),
     hullState = Seq.fill[Byte](5)(2),
     Some(1),
@@ -101,10 +101,10 @@ object BlogpostDemo {
     identifier = 9000, xPos = -400, yPos = 0, orientation = 1,
     positions = Seq(),
     modules = Seq(
-      Engines(0),
-      Lasers(3),
-      ShieldGenerator(2),
-      StorageModule(Seq(1), 7)
+      EnginesDescriptor(0),
+      MissileBatteryDescriptor(3),
+      ShieldGeneratorDescriptor(2),
+      StorageModuleDescriptor(Seq(1), 7)
     ),
     hullState = Seq.fill[Byte](4)(2),
     Some(1),

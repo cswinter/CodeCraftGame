@@ -2,7 +2,7 @@ package cwinter.codinggame.core
 
 import cwinter.codinggame.core.drone.Drone
 import cwinter.codinggame.util.maths.Vector2
-import cwinter.worldstate.{Player, BluePlayer, LaserMissileDescriptor, WorldObjectDescriptor}
+import cwinter.codinggame.worldstate.{Player, LaserMissileDescriptor, WorldObjectDescriptor}
 
 class LaserMissile(val player: Player, initialPos: Vector2, time: Double, target: Drone) extends WorldObject {
   final val MaxLifetime = 50

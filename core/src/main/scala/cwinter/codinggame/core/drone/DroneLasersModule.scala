@@ -1,7 +1,7 @@
 package cwinter.codinggame.core.drone
 
 import cwinter.codinggame.core.{SimulatorEvent, SpawnLaserMissile}
-import cwinter.worldstate
+import cwinter.codinggame.worldstate.{DroneModuleDescriptor, MissileBatteryDescriptor}
 
 class DroneLasersModule(positions: Seq[Int], owner: Drone)
   extends DroneModule(positions, owner) {
@@ -39,6 +39,6 @@ class DroneLasersModule(positions: Seq[Int], owner: Drone)
     }
   }
 
-  override def descriptors: Seq[worldstate.DroneModule] = positions.map(worldstate.Lasers(_))
+  override def descriptors: Seq[DroneModuleDescriptor] = positions.map(MissileBatteryDescriptor(_))
 }
 

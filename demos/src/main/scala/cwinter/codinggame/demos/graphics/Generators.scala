@@ -1,6 +1,6 @@
 package cwinter.codinggame.demos.graphics
 
-import cwinter.worldstate._
+import cwinter.codinggame.worldstate._
 
 import scala.util.Random
 
@@ -26,12 +26,12 @@ object Generators {
   }
 
   def randomModule(position: Int) = rnd(
-    50 -> StorageModule(Seq(position), rni(9) - 1),
-    2 -> Lasers(position, rni(4)),
-    2 -> Engines(position),
-    2 -> ShieldGenerator(position),
-    6 -> ProcessingModule(Seq(position)),
-    50 -> Manipulator(position)
+    50 -> StorageModuleDescriptor(Seq(position), rni(9) - 1),
+    2 -> MissileBatteryDescriptor(position, rni(4)),
+    2 -> EnginesDescriptor(position),
+    2 -> ShieldGeneratorDescriptor(position),
+    6 -> ProcessingModuleDescriptor(Seq(position)),
+    50 -> ManipulatorDescriptor(position)
   )
 
   val ModuleCount = Map(3 -> 1, 4 -> 2, 5 -> 4, 6 -> 7, 7 -> 10).withDefaultValue(0)

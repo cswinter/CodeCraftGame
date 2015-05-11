@@ -1,7 +1,7 @@
 package cwinter.codinggame.core
 
 import cwinter.codinggame.util.maths.Vector2
-import cwinter.worldstate.{WorldObjectDescriptor, LightFlashDescriptor}
+import cwinter.codinggame.worldstate.{LightFlashDescriptor, WorldObjectDescriptor}
 
 
 class LightFlash(val position: Vector2) extends WorldObject {

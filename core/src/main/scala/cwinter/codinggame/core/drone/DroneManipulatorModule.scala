@@ -2,8 +2,7 @@ package cwinter.codinggame.core.drone
 
 import cwinter.codinggame.core._
 import cwinter.codinggame.util.maths.{Vector2, Rng}
-import cwinter.worldstate
-import cwinter.worldstate.ManipulatorArm
+import cwinter.codinggame.worldstate.{DroneModuleDescriptor, ManipulatorDescriptor, ManipulatorArm}
 
 class DroneManipulatorModule(positions: Seq[Int], owner: Drone)
   extends DroneModule(positions, owner) {
@@ -82,7 +81,7 @@ class DroneManipulatorModule(positions: Seq[Int], owner: Drone)
         })
     }
 
-  override def descriptors: Seq[worldstate.DroneModule] = positions.map(worldstate.Manipulator)
+  override def descriptors: Seq[DroneModuleDescriptor] = positions.map(ManipulatorDescriptor)
 
 
   def droneInConstruction: Option[Drone] = droneConstruction.map(_._1)

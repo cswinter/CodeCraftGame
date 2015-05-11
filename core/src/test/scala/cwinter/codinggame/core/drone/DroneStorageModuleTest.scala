@@ -2,7 +2,7 @@ package cwinter.codinggame.core.drone
 
 import cwinter.codinggame.core.{MineralCrystalHarvested, MineralCrystal}
 import cwinter.codinggame.util.maths.Vector2
-import cwinter.worldstate.BluePlayer
+import cwinter.codinggame.worldstate.BluePlayer
 import org.scalatest.FlatSpec
 
 class DroneStorageModuleTest extends FlatSpec {

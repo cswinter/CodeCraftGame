@@ -1,3 +1,0 @@
-package cwinter.graphics.model
-
-

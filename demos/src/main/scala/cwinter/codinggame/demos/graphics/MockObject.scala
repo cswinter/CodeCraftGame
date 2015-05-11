@@ -2,7 +2,7 @@ package cwinter.codinggame.demos.graphics
 
 import cwinter.codinggame.collisions.Positionable
 import cwinter.codinggame.util.maths.Vector2
-import cwinter.worldstate.WorldObjectDescriptor
+import cwinter.codinggame.worldstate.WorldObjectDescriptor
 
 
 trait MockObject {

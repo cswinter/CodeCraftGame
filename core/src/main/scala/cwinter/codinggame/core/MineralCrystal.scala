@@ -1,7 +1,7 @@
 package cwinter.codinggame.core
 
 import cwinter.codinggame.util.maths.Vector2
-import cwinter.worldstate.{MineralDescriptor, WorldObjectDescriptor}
+import cwinter.codinggame.worldstate.MineralDescriptor
 
 
 class MineralCrystal(

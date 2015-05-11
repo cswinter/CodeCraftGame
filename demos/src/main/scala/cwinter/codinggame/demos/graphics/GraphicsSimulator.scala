@@ -1,8 +1,8 @@
 package cwinter.codinggame.demos.graphics
 
 import cwinter.codinggame.collisions.VisionTracker
-import cwinter.graphics.application.DrawingCanvas
-import cwinter.worldstate._
+import cwinter.codinggame.graphics.application.DrawingCanvas
+import cwinter.codinggame.worldstate.{GameWorld, TestingObject, WorldObjectDescriptor}
 
 
 class GraphicsSimulator(
