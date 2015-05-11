@@ -1,5 +1,7 @@
 package cwinter.codinggame.demos.graphics
 
+import cwinter.codinggame.util.maths.Rng
+import cwinter.codinggame.worldstate
 import cwinter.codinggame.worldstate._
 
 import scala.util.Random
@@ -12,6 +14,8 @@ object Generators {
   }
 
   def rni(n: Int) = if (n <= 0) 0 else Random.nextInt(n)
+
+  def rndset(max: Int) = for (i <- (0 to max).toSet if Rng.bernoulli(0.5f)) yield i
 
   def rnd[T](elems: (Int, T)*): T = {
     val totalWeight = elems.map(_._1).sum
@@ -26,7 +30,8 @@ object Generators {
   }
 
   def randomModule(position: Int) = rnd(
-    50 -> StorageModuleDescriptor(Seq(position), rni(9) - 1),
+    50 -> StorageModuleDescriptor(
+      Seq(position), if (Rng.bernoulli(0.3f)) worldstate.MineralStorage else EnergyStorage(rndset(7))),
     2 -> MissileBatteryDescriptor(position, rni(4)),
     2 -> EnginesDescriptor(position),
     2 -> ShieldGeneratorDescriptor(position),

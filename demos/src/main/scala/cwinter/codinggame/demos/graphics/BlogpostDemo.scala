@@ -58,9 +58,9 @@ object BlogpostDemo {
   }
 
   def modules = Seq[DroneModuleDescriptor](
-    StorageModuleDescriptor(Seq(0), 0),
-    StorageModuleDescriptor(Seq(0), 7),
-    StorageModuleDescriptor(Seq(0), -1),
+    StorageModuleDescriptor(Seq(0), EmptyStorage),
+    StorageModuleDescriptor(Seq(0), EnergyStorage(Set(0, 3, 4, 5))),
+    StorageModuleDescriptor(Seq(0), MineralStorage),
     EnginesDescriptor(0),
     ShieldGeneratorDescriptor(0),
     ProcessingModuleDescriptor(Seq(0)),
@@ -85,7 +85,7 @@ object BlogpostDemo {
     modules = Seq(
       MissileBatteryDescriptor(0),
       EnginesDescriptor(1),
-      StorageModuleDescriptor(Seq(2), 7),
+      StorageModuleDescriptor(Seq(2), EnergyStorage((0 to 6).toSet)),
       ShieldGeneratorDescriptor(3),
       MissileBatteryDescriptor(4),
       MissileBatteryDescriptor(5),
@@ -104,7 +104,7 @@ object BlogpostDemo {
       EnginesDescriptor(0),
       MissileBatteryDescriptor(3),
       ShieldGeneratorDescriptor(2),
-      StorageModuleDescriptor(Seq(1), 7)
+      StorageModuleDescriptor(Seq(1), EnergyStorage())
     ),
     hullState = Seq.fill[Byte](4)(2),
     Some(1),

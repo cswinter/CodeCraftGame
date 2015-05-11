@@ -4,9 +4,10 @@ import cwinter.codinggame.graphics.engine.RenderStack
 import cwinter.codinggame.graphics.model._
 import cwinter.codinggame.graphics.models.RobotColors._
 import cwinter.codinggame.util.maths.{ColorRGB, Geometry, VertexXY}
+import cwinter.codinggame.worldstate.{EmptyStorage, MineralStorage, EnergyStorage, StorageModuleContents}
 
 
-case class RobotStorageModelBuilder(positions: Seq[VertexXY], nEnergyGlobes: Int, size: Int, tMerge: Option[Float])(implicit rs: RenderStack)
+case class RobotStorageModelBuilder(positions: Seq[VertexXY], moduleContents: StorageModuleContents, size: Int, tMerge: Option[Float])(implicit rs: RenderStack)
   extends ModelBuilder[RobotStorageModelBuilder, Unit] {
 
   val scale = math.sqrt(size).toFloat
@@ -98,20 +99,21 @@ case class RobotStorageModelBuilder(positions: Seq[VertexXY], nEnergyGlobes: Int
       ).getModel
 
     val energyPositions = Seq(VertexXY(0, 0)) ++ Geometry.polygonVertices2(6, radius = 4.5f)
-    val contents =
-      if (nEnergyGlobes > 0) {
-        for (i <- 0 until nEnergyGlobes)
-          yield
-          Polygon(
-            material = rs.BloomShader,
-            n = 7,
-            colorMidpoint = ColorRGB(1, 1, 1),
-            colorOutside = ColorRGB(0, 1, 0),
-            radius = 2,
-            position = energyPositions(i) + center,
-            zPos = 2
-          ).getModel
-      } else if (nEnergyGlobes == -1) {
+    val contents = moduleContents match {
+      case EnergyStorage(filledSlots) =>
+        for (
+          i <- 0 until 7
+          if filledSlots.contains(i)
+        ) yield Polygon(
+          material = rs.BloomShader,
+          n = 7,
+          colorMidpoint = ColorRGB(1, 1, 1),
+          colorOutside = ColorRGB(0, 1, 0),
+          radius = 2,
+          position = energyPositions(i) + center,
+          zPos = 2
+        ).getModel
+      case MineralStorage =>
         Seq(
           Polygon(
             rs.MaterialXYRGB,
@@ -123,7 +125,8 @@ case class RobotStorageModelBuilder(positions: Seq[VertexXY], nEnergyGlobes: Int
             position = center
           ).getModel
         )
-      } else Seq()
+      case EmptyStorage => Seq()
+    }
 
     new StaticCompositeModel(body +: hull +: contents)
   }

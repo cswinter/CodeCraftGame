@@ -1,14 +1,15 @@
 package cwinter.codinggame.core.drone
 
 import cwinter.codinggame.core.{MineralCrystal, MineralCrystalHarvested, SimulatorEvent}
-import cwinter.codinggame.worldstate.{DroneModuleDescriptor, StorageModuleDescriptor}
+import cwinter.codinggame.worldstate._
+import scala.collection.{BitSet, mutable}
 
 class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: Int = 0)
   extends DroneModule(positions, owner) {
 
   final val HarvestingTime = 50
 
-  private[this] var storedEnergyGlobes: Int = startingResources
+private[this] val storedEnergyGlobes = mutable.Stack(Seq.fill(startingResources)(EnergyGlobe): _*)
   private var _storedMinerals = Set.empty[MineralCrystal]
 
   private[this] var harvesting = List.empty[(MineralCrystal, Int)]
@@ -48,7 +49,11 @@ class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: I
   }
 
   def modifyResources(amount: Int): Unit = {
-    storedEnergyGlobes -= amount
+    if (amount > 0) {
+      for (_ <- 0 until amount) storedEnergyGlobes.pop()
+    } else if (amount < 0) {
+      for (_ <- 0 until -amount) storedEnergyGlobes.push(EnergyGlobe)
+    }
   }
 
   def depositMinerals(other: Option[DroneStorageModule]): Unit = {
@@ -70,10 +75,10 @@ class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: I
 
   def storedMinerals: Set[MineralCrystal] = _storedMinerals
 
-  def availableResources: Int = storedEnergyGlobes
+  def availableResources: Int = storedEnergyGlobes.size
 
   def availableStorage: Int =
-    positions.size - harvesting.size - _storedMinerals.foldLeft(0)(_ + _.size) - (storedEnergyGlobes + 6) / 7
+    positions.size - harvesting.size - _storedMinerals.foldLeft(0)(_ + _.size) - (availableResources + 6) / 7
 
   override def descriptors: Seq[DroneModuleDescriptor] = {
     val mineralStorage = {
@@ -87,18 +92,17 @@ class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: I
 
     val mineralStorageDescriptors =
       for (((_, p), i) <- mineralStorage zip mineralStorageIndices) yield {
-        if (p == 1) StorageModuleDescriptor(i, -1)
-        else if (p > 0.5f) StorageModuleDescriptor(i, 0)
-        else StorageModuleDescriptor(i, 0, Some(p * 2))
+        if (p == 1) StorageModuleDescriptor(i, MineralStorage)
+        else if (p > 0.5f) StorageModuleDescriptor(i, EmptyStorage)
+        else StorageModuleDescriptor(i, EmptyStorage, Some(p * 2))
       }
 
-    val storesGlobes = positions.drop(mineralStorage.foldLeft(0)(_ + _._1.size))
-    var remainingGlobes = storedEnergyGlobes
+    val storesGlobes: Seq[Int] = positions.drop(mineralStorage.foldLeft(0)(_ + _._1.size))
+    var remainingGlobes = availableResources
     val energyStorageDescriptors =
-      for (i <- storesGlobes) yield {
-        val globes = math.min(7, remainingGlobes)
-        remainingGlobes -= globes
-        StorageModuleDescriptor(Seq(i), globes)
+      for ((group, i) <- storedEnergyGlobes.grouped(7).zipAll(storesGlobes.iterator, Seq(), 0)) yield {
+        val globes = (for ((_, i) <- group.zipWithIndex) yield i).toSet
+        StorageModuleDescriptor(Seq(i), EnergyStorage(globes))
       }
 
     mineralStorageDescriptors ++ energyStorageDescriptors
@@ -107,4 +111,7 @@ class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: I
 
   override def cancelMovement: Boolean = harvesting.nonEmpty
 }
+
+
+case object EnergyGlobe
 

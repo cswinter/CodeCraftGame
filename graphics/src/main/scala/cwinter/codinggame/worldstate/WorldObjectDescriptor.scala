@@ -2,6 +2,8 @@ package cwinter.codinggame.worldstate
 
 import cwinter.codinggame.util.maths
 
+import scala.collection.BitSet
+
 
 sealed trait WorldObjectDescriptor {
   val identifier: Int
@@ -36,14 +38,18 @@ case class DroneDescriptor(
 
 sealed trait DroneModuleDescriptor
 
-case class StorageModuleDescriptor(positions: Seq[Int], resourceCount: Int, mergingProgress: Option[Float] = None) extends DroneModuleDescriptor {
-  assert(resourceCount >= -1)
-  assert(resourceCount <= 7)
+case class StorageModuleDescriptor(positions: Seq[Int], contents: StorageModuleContents, mergingProgress: Option[Float] = None) extends DroneModuleDescriptor {
   for (x <- mergingProgress) {
     assert(x >= 0)
     assert(x <= 1)
   }
 }
+
+sealed trait StorageModuleContents
+case object EmptyStorage extends StorageModuleContents
+case object MineralStorage extends StorageModuleContents
+case class EnergyStorage(filledPositions: Set[Int] = Set(0, 1, 2, 3, 4, 5, 6)) extends StorageModuleContents
+
 case class EnginesDescriptor(position: Int) extends DroneModuleDescriptor
 case class ProcessingModuleDescriptor(positions: Seq[Int], mergingProgress: Option[Int] = None) extends DroneModuleDescriptor
 case class ShieldGeneratorDescriptor(position: Int) extends DroneModuleDescriptor

@@ -21,7 +21,7 @@ object Chaos {
       yPos = 0,
       orientation = north,
       modules = Seq(
-        StorageModuleDescriptor(Seq(0, 1, 2), 0, Some(1)),
+        StorageModuleDescriptor(Seq(0, 1, 2), EmptyStorage, Some(1)),
         EnginesDescriptor(3)
       ),
       size = 5,
@@ -32,7 +32,7 @@ object Chaos {
       yPos = 0,
       orientation = north,
       modules = Seq(
-        StorageModuleDescriptor(Seq(0, 1), 0),
+        StorageModuleDescriptor(Seq(0, 1), EmptyStorage),
         ProcessingModuleDescriptor(Seq(2, 3))
       ),
       size = 5,
@@ -43,8 +43,8 @@ object Chaos {
       yPos = 0,
       orientation = north,
       modules = Seq(
-        StorageModuleDescriptor(Seq(0), 7),
-        StorageModuleDescriptor(Seq(1, 2, 3), -1),
+        StorageModuleDescriptor(Seq(0), EnergyStorage()),
+        StorageModuleDescriptor(Seq(1, 2, 3), MineralStorage),
         ProcessingModuleDescriptor(Seq(4, 5, 6), mergingProgress = Some(1))
       ),
       size = 6,
@@ -55,9 +55,9 @@ object Chaos {
       yPos = 0,
       orientation = north,
       modules = Seq(
-        StorageModuleDescriptor(Seq(0, 1), -1),
-        StorageModuleDescriptor(Seq(2, 3, 4), -1),
-        StorageModuleDescriptor(Seq(5, 6, 7, 8, 9), -1)
+        StorageModuleDescriptor(Seq(0, 1), MineralStorage),
+        StorageModuleDescriptor(Seq(2, 3, 4), MineralStorage),
+        StorageModuleDescriptor(Seq(5, 6, 7, 8, 9), MineralStorage)
       ),
       size = 7,
       sightRadius = sightRadius
@@ -74,9 +74,9 @@ object Chaos {
       modules = Seq(
         EnginesDescriptor(0),
         MissileBatteryDescriptor(1, 0),
-        StorageModuleDescriptor(Seq(2), 0),
+        StorageModuleDescriptor(Seq(2), EmptyStorage),
         ShieldGeneratorDescriptor(3),
-        StorageModuleDescriptor(Seq(4), 0),
+        StorageModuleDescriptor(Seq(4), EmptyStorage),
         MissileBatteryDescriptor(5,3),
         MissileBatteryDescriptor(6, 3)
       ),
