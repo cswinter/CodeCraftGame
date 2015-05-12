@@ -2,7 +2,7 @@ package cwinter.codinggame.core.drone
 
 import cwinter.codinggame.worldstate.{DroneModuleDescriptor, ProcessingModuleDescriptor}
 import cwinter.codinggame.core._
-import cwinter.codinggame.util.maths.Rng
+import cwinter.codinggame.util.maths.{Vector2, Rng}
 
 class DroneFactoryModule(positions: Seq[Int], owner: Drone)
     extends DroneModule(positions, owner) {
@@ -15,9 +15,9 @@ class DroneFactoryModule(positions: Seq[Int], owner: Drone)
   private[this] var mineralProcessing = List.empty[(MineralCrystal, Int)]
 
 
-  override def update(availableResources: Int): (Seq[SimulatorEvent], Int) = {
+  override def update(availableResources: Int): (Seq[SimulatorEvent], Int, Seq[Vector2]) = {
     var effects = List.empty[SimulatorEvent]
-    var remainingResources = availableResources
+    var spawnedResources = List.empty[Vector2]
 
     // start new mineral constructions
     for (mineral <- newMinerals) {
@@ -37,7 +37,7 @@ class DroneFactoryModule(positions: Seq[Int], owner: Drone)
           mineral.position = center
 
           if (progress % MineralProcessingPeriod == 0) {
-            remainingResources += 1
+            spawnedResources ::= center
           }
           (mineral, progress - 1)
         }
@@ -49,7 +49,7 @@ class DroneFactoryModule(positions: Seq[Int], owner: Drone)
     }
 
 
-    (effects, availableResources - remainingResources)
+    (effects, 0, spawnedResources)
   }
 
 

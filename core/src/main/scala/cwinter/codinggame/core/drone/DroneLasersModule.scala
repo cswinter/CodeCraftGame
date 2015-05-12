@@ -1,6 +1,7 @@
 package cwinter.codinggame.core.drone
 
 import cwinter.codinggame.core.{SimulatorEvent, SpawnLaserMissile}
+import cwinter.codinggame.util.maths.Vector2
 import cwinter.codinggame.worldstate.{DroneModuleDescriptor, MissileBatteryDescriptor}
 
 class DroneLasersModule(positions: Seq[Int], owner: Drone)
@@ -13,7 +14,7 @@ class DroneLasersModule(positions: Seq[Int], owner: Drone)
   def cooldown: Int = _cooldown
 
 
-  override def update(availableResources: Int): (Seq[SimulatorEvent], Int) = {
+  override def update(availableResources: Int): (Seq[SimulatorEvent], Int, Seq[Vector2]) = {
     if (_cooldown > 0) _cooldown = _cooldown - 1
 
     val result = nextEffect
@@ -34,7 +35,7 @@ class DroneLasersModule(positions: Seq[Int], owner: Drone)
           for (pos <- absoluteModulePositions)
             yield SpawnLaserMissile(owner.player, pos, target)
 
-        nextEffect = (missiles, 0)
+        nextEffect = (missiles, 0, Seq.empty[Vector2])
       }
     }
   }

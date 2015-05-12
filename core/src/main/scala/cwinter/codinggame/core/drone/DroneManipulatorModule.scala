@@ -11,7 +11,7 @@ class DroneManipulatorModule(positions: Seq[Int], owner: Drone)
   private[this] var droneConstruction: Option[(Drone, Int)] = None
 
 
-  override def update(availableResources: Int): (Seq[SimulatorEvent], Int) = {
+  override def update(availableResources: Int): (Seq[SimulatorEvent], Int, Seq[Vector2]) = {
     var effects = List.empty[SimulatorEvent]
     var remainingResources = availableResources
 
@@ -54,7 +54,7 @@ class DroneManipulatorModule(positions: Seq[Int], owner: Drone)
         progress < drone.buildTime
     }
 
-    (effects, availableResources - remainingResources)
+    (effects, availableResources - remainingResources, Seq.empty[Vector2])
   }
 
   def isConstructing: Boolean = droneConstruction != None || newDrone != None

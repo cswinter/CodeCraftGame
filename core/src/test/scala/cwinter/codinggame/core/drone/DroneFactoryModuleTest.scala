@@ -42,8 +42,8 @@ class DroneFactoryModuleTest extends FlatSpec {
     while (continue) {
       continue = false
       for (i <- 0 until minTime) {
-        val (events, r) = factory.update(0)
-        if (r != 0 || events.nonEmpty) {
+        val (events, r, rs) = factory.update(0)
+        if (r != 0 || events.nonEmpty || rs.nonEmpty) {
           continue = true
         }
 

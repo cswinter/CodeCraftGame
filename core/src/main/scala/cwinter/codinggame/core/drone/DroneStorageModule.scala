@@ -1,6 +1,8 @@
 package cwinter.codinggame.core.drone
 
 import cwinter.codinggame.core.{MineralCrystal, MineralCrystalHarvested, SimulatorEvent}
+import cwinter.codinggame.util.maths.Vector2
+import cwinter.codinggame.util.modules.ModulePosition
 import cwinter.codinggame.worldstate._
 import scala.collection.{BitSet, mutable}
 
@@ -9,7 +11,7 @@ class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: I
 
   final val HarvestingTime = 50
 
-private[this] val storedEnergyGlobes = mutable.Stack(Seq.fill(startingResources)(EnergyGlobe): _*)
+  private[this] var storedEnergyGlobes = mutable.Stack[EnergyGlobe](Seq.fill(startingResources)(StaticEnergyGlobe): _*)
   private var _storedMinerals = Set.empty[MineralCrystal]
 
   private[this] var harvesting = List.empty[(MineralCrystal, Int)]
@@ -17,7 +19,7 @@ private[this] val storedEnergyGlobes = mutable.Stack(Seq.fill(startingResources)
   private[this] var deposit: Option[DroneStorageModule] = None
 
 
-  override def update(availableResources: Int): (Seq[SimulatorEvent], Int) = {
+  override def update(availableResources: Int): (Seq[SimulatorEvent], Int, Seq[Vector2]) = {
     var effects = List.empty[SimulatorEvent]
 
     harvesting = for ((m, t) <- harvesting) yield (m, t - 1)
@@ -41,7 +43,9 @@ private[this] val storedEnergyGlobes = mutable.Stack(Seq.fill(startingResources)
       }
     }
 
-    (effects, 0)
+    storedEnergyGlobes = storedEnergyGlobes.map(_.update())
+
+    (effects, 0, Seq.empty[Vector2])
   }
 
   def removeMineralCrystal(m: MineralCrystal): Unit = {
@@ -52,8 +56,16 @@ private[this] val storedEnergyGlobes = mutable.Stack(Seq.fill(startingResources)
     if (amount > 0) {
       for (_ <- 0 until amount) storedEnergyGlobes.pop()
     } else if (amount < 0) {
-      for (_ <- 0 until -amount) storedEnergyGlobes.push(EnergyGlobe)
+      for (_ <- 0 until -amount) storedEnergyGlobes.push(StaticEnergyGlobe)
     }
+  }
+
+  def depositEnergyGlobe(position: Vector2): Unit = {
+    val index = availableResources / 7
+    val targetPosition = ModulePosition(owner.size, positions.reverse(index)) +
+      ModulePosition.energyPosition(availableResources % 7)
+    val newEnergyGlobe = new MovingEnergyGlobe(Vector2(targetPosition.x, targetPosition.y), position - owner.position, 20)
+    storedEnergyGlobes.push(newEnergyGlobe)
   }
 
   def depositMinerals(other: Option[DroneStorageModule]): Unit = {
@@ -97,15 +109,28 @@ private[this] val storedEnergyGlobes = mutable.Stack(Seq.fill(startingResources)
         else StorageModuleDescriptor(i, EmptyStorage, Some(p * 2))
       }
 
-    val storesGlobes: Seq[Int] = positions.drop(mineralStorage.foldLeft(0)(_ + _._1.size))
-    var remainingGlobes = availableResources
+    val globeStorageIndices: Seq[Int] = positions.drop(mineralStorage.foldLeft(0)(_ + _._1.size)).reverse
     val energyStorageDescriptors =
-      for ((group, i) <- storedEnergyGlobes.grouped(7).zipAll(storesGlobes.iterator, Seq(), 0)) yield {
-        val globes = (for ((_, i) <- group.zipWithIndex) yield i).toSet
+      for ((group, i) <- storedEnergyGlobes.reverseIterator.grouped(7).zipAll(globeStorageIndices.iterator, Seq(), 0)) yield {
+        val globes = {
+          for (
+            (eg, i) <- group.zipWithIndex
+            if eg == StaticEnergyGlobe
+          ) yield i
+        }.toSet
         StorageModuleDescriptor(Seq(i), EnergyStorage(globes))
       }
 
     mineralStorageDescriptors ++ energyStorageDescriptors
+  }
+
+  def energyGlobeAnimations: Seq[WorldObjectDescriptor] = {
+    for {
+      eg <- storedEnergyGlobes
+      if eg.isInstanceOf[MovingEnergyGlobe]
+      meg = eg.asInstanceOf[MovingEnergyGlobe]
+      position = meg.position.rotated(owner.dynamics.orientation) + owner.position
+    } yield EnergyGlobeDescriptor(position.x.toFloat, position.y.toFloat)
   }
 
 
@@ -113,5 +138,25 @@ private[this] val storedEnergyGlobes = mutable.Stack(Seq.fill(startingResources)
 }
 
 
-case object EnergyGlobe
+trait EnergyGlobe {
+  def update(): EnergyGlobe
+}
+case object StaticEnergyGlobe extends EnergyGlobe {
+  def update(): StaticEnergyGlobe.type = this
+}
+class MovingEnergyGlobe(
+  val targetPosition: Vector2,
+  var position: Vector2,
+  var tta: Int
+) extends EnergyGlobe {
+  val velocity: Vector2 = (targetPosition - position) / tta
+
+  def update(): EnergyGlobe = {
+    tta -= 1
+    position += velocity
+    if (tta == 0) StaticEnergyGlobe
+    else this
+  }
+}
+
 

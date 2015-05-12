@@ -3,7 +3,7 @@ package cwinter.codinggame.core.drone
 import cwinter.codinggame.core.SimulatorEvent
 import cwinter.codinggame.util.maths.Vector2
 import cwinter.codinggame.util.modules.ModulePosition
-import cwinter.codinggame.worldstate.DroneModuleDescriptor
+import cwinter.codinggame.worldstate.{DroneModuleDescriptor, WorldObjectDescriptor}
 
 
 abstract class DroneModule(
@@ -14,9 +14,9 @@ abstract class DroneModule(
    * Perform all module actions.
    * Method is called on every tick.
    * @param availableResources The amount of resources available to the module.
-   * @return Returns all simulator events and the amount of resources consumed.
+   * @return Returns all simulator events, the amount of resources consumed and a list of positions that have produced a resource.
    */
-  def update(availableResources: Int): (Seq[SimulatorEvent], Int)
+  def update(availableResources: Int): (Seq[SimulatorEvent], Int, Seq[Vector2])
   def descriptors: Seq[DroneModuleDescriptor]
   def cancelMovement: Boolean = false
 
@@ -46,6 +46,6 @@ abstract class DroneModule(
     } yield owner.position + offset
   }
 
-  protected final val NoEffects = (Seq.empty[SimulatorEvent], 0)
+  protected final val NoEffects = (Seq.empty[SimulatorEvent], 0, Seq.empty[Vector2])
 }
 

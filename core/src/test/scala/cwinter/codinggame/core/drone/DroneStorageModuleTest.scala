@@ -15,7 +15,7 @@ class DroneStorageModuleTest extends FlatSpec {
   "A drone storage module" should "harvest a mineral in less than 1000 timesteps" in {
     storageModule2.harvestMineral(mineralCrystal)
 
-    val (events, _) = DroneModuleTestHelper.multipleUpdates(storageModule2, 1000)
+    val (events, _, _) = DroneModuleTestHelper.multipleUpdates(storageModule2, 1000)
     assert(events.contains(MineralCrystalHarvested(mineralCrystal)))
     assert(storageModule2.storedMinerals.contains(mineralCrystal))
   }

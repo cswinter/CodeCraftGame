@@ -1,6 +1,7 @@
 package cwinter.codinggame.core.drone
 
 import cwinter.codinggame.core.SimulatorEvent
+import cwinter.codinggame.util.maths.Vector2
 import cwinter.codinggame.worldstate.{DroneModuleDescriptor, ShieldGeneratorDescriptor}
 
 class DroneShieldGeneratorModule(positions: Seq[Int], owner: Drone)
@@ -15,7 +16,7 @@ class DroneShieldGeneratorModule(positions: Seq[Int], owner: Drone)
   private[this] var _currHitpoints: Int = maxHitpoints
   def currHitpoints: Int = _currHitpoints
 
-  override def update(availableResources: Int): (Seq[SimulatorEvent], Int) = {
+  override def update(availableResources: Int): (Seq[SimulatorEvent], Int, Seq[Vector2]) = {
     if (_currHitpoints < maxHitpoints) {
       regenCooldown = regenCooldown - 1
       if (regenCooldown == 0) {

@@ -89,9 +89,10 @@ class Drone(
 
   override def update(): Seq[SimulatorEvent] = {
     for (Some(m) <- droneModules) {
-      val (events, resourceCost) = m.update(availableResources)
+      val (events, resourceCost, resourceSpawns) = m.update(availableResources)
       simulatorEvents :::= events.toList
       for (s <- storage) s.modifyResources(resourceCost)
+      for (s <- storage; rs <- resourceSpawns) s.depositEnergyGlobe(rs)
     }
     dynamics.update()
 
@@ -239,7 +240,8 @@ class Drone(
       size,
       player,
       constructionProgress
-    )) ++ manipulator.toSeq.flatMap(_.manipulatorGraphics)
+    )) ++ manipulator.toSeq.flatMap(_.manipulatorGraphics) ++
+    storage.toSeq.flatMap(_.energyGlobeAnimations)
   }
 
   private def moduleDescriptors: Seq[DroneModuleDescriptor] = {
