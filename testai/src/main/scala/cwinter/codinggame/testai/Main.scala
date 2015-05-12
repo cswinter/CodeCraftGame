@@ -35,7 +35,6 @@ class Mothership extends DroneController {
         buildSmallDrone(StorageModule, StorageModule, new ScoutingDroneController(this))
         collectors += 1
       } else {
-        return
         if (Rng.bernoulli(0.7)) {
           buildMediumDrone(Lasers, Lasers, Lasers, Engines, new AttackDroneController(this))
         } else {
