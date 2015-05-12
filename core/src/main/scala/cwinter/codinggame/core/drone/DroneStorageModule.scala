@@ -19,7 +19,7 @@ class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: I
   private[this] var deposit: Option[DroneStorageModule] = None
 
 
-  override def update(availableResources: Int): (Seq[SimulatorEvent], Int, Seq[Vector2]) = {
+  override def update(availableResources: Int): (Seq[SimulatorEvent], Seq[Vector2], Seq[Vector2]) = {
     var effects = List.empty[SimulatorEvent]
 
     harvesting = for ((m, t) <- harvesting) yield (m, t - 1)
@@ -45,7 +45,7 @@ class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: I
 
     storedEnergyGlobes = storedEnergyGlobes.map(_.update())
 
-    (effects, 0, Seq.empty[Vector2])
+    (effects, Seq.empty[Vector2], Seq.empty[Vector2])
   }
 
   def removeMineralCrystal(m: MineralCrystal): Unit = {
@@ -60,13 +60,25 @@ class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: I
     }
   }
 
+  private def calculateEnergyGlobePosition(index: Int): Vector2 = {
+    val container = index / 7
+    val pos = ModulePosition(owner.size, positions.reverse(container)) +
+      ModulePosition.energyPosition(index % 7)
+    Vector2(pos.x, pos.y)
+  }
+
   def depositEnergyGlobe(position: Vector2): Unit = {
-    val index = availableResources / 7
-    val targetPosition = ModulePosition(owner.size, positions.reverse(index)) +
-      ModulePosition.energyPosition(availableResources % 7)
-    val newEnergyGlobe = new MovingEnergyGlobe(Vector2(targetPosition.x, targetPosition.y), position - owner.position, 20)
+    val targetPosition = calculateEnergyGlobePosition(availableResources)
+    val newEnergyGlobe = new MovingEnergyGlobe(targetPosition, position - owner.position, 20)
     storedEnergyGlobes.push(newEnergyGlobe)
   }
+
+  def withdrawEnergyGlobe(): Vector2 = {
+    storedEnergyGlobes.pop() match {
+      case StaticEnergyGlobe => calculateEnergyGlobePosition(availableResources)
+      case meg: MovingEnergyGlobe => meg.position
+    }
+  }.rotated(owner.dynamics.orientation) + owner.position
 
   def depositMinerals(other: Option[DroneStorageModule]): Unit = {
     deposit = other

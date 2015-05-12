@@ -138,6 +138,12 @@ class GameSimulator(
         droneKilled(drone)
       case SpawnDrone(drone) =>
         spawnDrone(drone)
+      case SpawnEnergyGlobeAnimation(energyGlobeObject) =>
+        visibleObjects.add(energyGlobeObject)
+        dynamicObjects.add(energyGlobeObject)
+      case RemoveEnergyGlobeAnimation(energyGlobeObject) =>
+        visibleObjects.remove(energyGlobeObject)
+        dynamicObjects.remove(energyGlobeObject)
     }
 
     physicsEngine.update()
@@ -177,5 +183,6 @@ case class MissileExplodes(homingMissile: LaserMissile) extends SimulatorEvent
 case class LightFlashDestroyed(lightFlash: LightFlash) extends SimulatorEvent
 case class DroneKilled(drone: Drone) extends SimulatorEvent
 case class DroneConstructionCancelled(drone: Drone) extends SimulatorEvent
-
+case class SpawnEnergyGlobeAnimation(energyGlobeObject: EnergyGlobeObject) extends SimulatorEvent
+case class RemoveEnergyGlobeAnimation(energyGlobeObject: EnergyGlobeObject) extends SimulatorEvent
 

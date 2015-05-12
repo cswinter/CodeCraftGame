@@ -89,9 +89,13 @@ class Drone(
 
   override def update(): Seq[SimulatorEvent] = {
     for (Some(m) <- droneModules) {
-      val (events, resourceCost, resourceSpawns) = m.update(availableResources)
+      val (events, resourceDepletions, resourceSpawns) = m.update(availableResources)
       simulatorEvents :::= events.toList
-      for (s <- storage) s.modifyResources(resourceCost)
+      for {
+        s <- storage
+        rd <- resourceDepletions
+        pos = s.withdrawEnergyGlobe()
+      } simulatorEvents ::= SpawnEnergyGlobeAnimation(new EnergyGlobeObject(pos, 30, rd))
       for (s <- storage; rs <- resourceSpawns) s.depositEnergyGlobe(rs)
     }
     dynamics.update()

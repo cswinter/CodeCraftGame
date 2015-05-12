@@ -15,7 +15,7 @@ class DroneFactoryModule(positions: Seq[Int], owner: Drone)
   private[this] var mineralProcessing = List.empty[(MineralCrystal, Int)]
 
 
-  override def update(availableResources: Int): (Seq[SimulatorEvent], Int, Seq[Vector2]) = {
+  override def update(availableResources: Int): (Seq[SimulatorEvent], Seq[Vector2], Seq[Vector2]) = {
     var effects = List.empty[SimulatorEvent]
     var spawnedResources = List.empty[Vector2]
 
@@ -49,7 +49,7 @@ class DroneFactoryModule(positions: Seq[Int], owner: Drone)
     }
 
 
-    (effects, 0, spawnedResources)
+    (effects, Seq.empty[Vector2], spawnedResources)
   }
 
 

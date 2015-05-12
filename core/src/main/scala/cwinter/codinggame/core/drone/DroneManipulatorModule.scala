@@ -11,9 +11,10 @@ class DroneManipulatorModule(positions: Seq[Int], owner: Drone)
   private[this] var droneConstruction: Option[(Drone, Int)] = None
 
 
-  override def update(availableResources: Int): (Seq[SimulatorEvent], Int, Seq[Vector2]) = {
+  override def update(availableResources: Int): (Seq[SimulatorEvent], Seq[Vector2], Seq[Vector2]) = {
     var effects = List.empty[SimulatorEvent]
     var remainingResources = availableResources
+    var resourceDepletions = List.empty[Vector2]
 
     // start new drone constructions
     for (drone <- newDrone) {
@@ -31,6 +32,8 @@ class DroneManipulatorModule(positions: Seq[Int], owner: Drone)
             if (progress % drone.resourceDepletionPeriod == 0) {
               if (remainingResources > 0) {
                 remainingResources -= 1
+                // TODO: use all manipulator modules
+                resourceDepletions ::= absoluteModulePositions.head
                 progress + 1
               } else {
                 progress
@@ -54,7 +57,7 @@ class DroneManipulatorModule(positions: Seq[Int], owner: Drone)
         progress < drone.buildTime
     }
 
-    (effects, availableResources - remainingResources, Seq.empty[Vector2])
+    (effects, resourceDepletions, Seq.empty[Vector2])
   }
 
   def isConstructing: Boolean = droneConstruction != None || newDrone != None

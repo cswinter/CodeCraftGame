@@ -14,7 +14,7 @@ class DroneLasersModule(positions: Seq[Int], owner: Drone)
   def cooldown: Int = _cooldown
 
 
-  override def update(availableResources: Int): (Seq[SimulatorEvent], Int, Seq[Vector2]) = {
+  override def update(availableResources: Int): (Seq[SimulatorEvent], Seq[Vector2], Seq[Vector2]) = {
     if (_cooldown > 0) _cooldown = _cooldown - 1
 
     val result = nextEffect
@@ -35,7 +35,7 @@ class DroneLasersModule(positions: Seq[Int], owner: Drone)
           for (pos <- absoluteModulePositions)
             yield SpawnLaserMissile(owner.player, pos, target)
 
-        nextEffect = (missiles, 0, Seq.empty[Vector2])
+        nextEffect = (missiles, Seq.empty[Vector2], Seq.empty[Vector2])
       }
     }
   }
