@@ -1,12 +1,13 @@
 package cwinter.codinggame.demos.graphics
 
+import cwinter.codinggame.util.maths.Float0To1
 import cwinter.codinggame.worldstate._
 
 object Chaos {
   val sightRadius = Some(250)
   val north = (math.Pi / 2).toFloat
-  val customRobots = Seq(
-    new MockRobot(
+  val customDrones = Seq(
+    new MockDrone(
       xPos = 100,
       yPos = 0,
       orientation = north,
@@ -16,7 +17,7 @@ object Chaos {
       size = 4,
       sightRadius = sightRadius
     ),
-    new MockRobot(
+    new MockDrone(
       xPos = 200,
       yPos = 0,
       orientation = north,
@@ -27,7 +28,7 @@ object Chaos {
       size = 5,
       sightRadius = sightRadius
     ),
-    new MockRobot(
+    new MockDrone(
       xPos = 300,
       yPos = 0,
       orientation = north,
@@ -38,7 +39,7 @@ object Chaos {
       size = 5,
       sightRadius = sightRadius
     ),
-    new MockRobot(
+    new MockDrone(
       xPos = 400,
       yPos = 0,
       orientation = north,
@@ -50,7 +51,7 @@ object Chaos {
       size = 6,
       sightRadius = sightRadius
     ),
-    new MockRobot(
+    new MockDrone(
       xPos = 550,
       yPos = 0,
       orientation = north,
@@ -64,7 +65,7 @@ object Chaos {
     )
   )
 
-  def robotConstruction(time: Int): DroneDescriptor = {
+  def droneConstruction(time: Int): DroneDescriptor = {
     DroneDescriptor(
       identifier = -2,
       xPos = 100,
@@ -84,7 +85,7 @@ object Chaos {
       shieldState = Some(1),
       size = 6,
       BluePlayer,
-      constructionState = Some(time),
+      constructionState = Some(Float0To1(math.max(time / 5000f, 1))),
       None, None
     )
   }
@@ -92,8 +93,8 @@ object Chaos {
 
   def main(args: Array[String]): Unit = {
     val s = new GraphicsSimulator(
-      customRobots,
-      t => Seq(robotConstruction(t)),
+      customDrones,
+      t => Seq(droneConstruction(t)),
       t => Seq(),
       sightRadius = sightRadius,
       nRandomDrones = 10,

@@ -2,14 +2,14 @@ package cwinter.codinggame.graphics.models
 
 import cwinter.codinggame.graphics.engine.RenderStack
 import cwinter.codinggame.graphics.model._
-import cwinter.codinggame.graphics.models.RobotColors._
+import cwinter.codinggame.graphics.models.DroneColors._
 import cwinter.codinggame.util.maths.{ColorRGB, Geometry, VertexXY}
 import cwinter.codinggame.util.modules.ModulePosition
 import cwinter.codinggame.worldstate.{EmptyStorage, MineralStorage, EnergyStorage, StorageModuleContents}
 
 
-case class RobotStorageModelBuilder(positions: Seq[VertexXY], moduleContents: StorageModuleContents, size: Int, tMerge: Option[Float])(implicit rs: RenderStack)
-  extends ModelBuilder[RobotStorageModelBuilder, Unit] {
+case class DroneStorageModelBuilder(positions: Seq[VertexXY], moduleContents: StorageModuleContents, size: Int, tMerge: Option[Float])(implicit rs: RenderStack)
+  extends ModelBuilder[DroneStorageModelBuilder, Unit] {
 
   val scale = math.sqrt(size).toFloat
   val radius = 8 * scale

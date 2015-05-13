@@ -5,16 +5,16 @@ import cwinter.codinggame.util.maths.{NullVectorXY, VertexXY, Geometry}
 
 object ModulePosition {
 
-  def apply(robotSize: Int, moduleIndex: Int): VertexXY = {
-    ModulePosition(robotSize)(moduleIndex)
+  def apply(droneSize: Int, moduleIndex: Int): VertexXY = {
+    ModulePosition(droneSize)(moduleIndex)
   }
 
-  def apply(robotSize: Int, moduleIndex: Seq[Int]): Seq[VertexXY] = {
-    moduleIndex.map(this(robotSize, _))
+  def apply(droneSize: Int, moduleIndex: Seq[Int]): Seq[VertexXY] = {
+    moduleIndex.map(this(droneSize, _))
   }
 
-  def center(robotSize: Int, modulePositions: Seq[Int]): VertexXY = {
-    modulePositions.map(i => this(robotSize, i)).reduce(_ + _) / modulePositions.size
+  def center(droneSize: Int, modulePositions: Seq[Int]): VertexXY = {
+    modulePositions.map(i => this(droneSize, i)).reduce(_ + _) / modulePositions.size
   }
 
 

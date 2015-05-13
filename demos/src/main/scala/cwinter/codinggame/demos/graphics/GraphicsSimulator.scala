@@ -35,7 +35,7 @@ class GraphicsSimulator(
       orientation = 2 * math.Pi.toFloat * rnd()
       size = i % 5 + 3
       modules = randomModules(size)
-    } yield new MockRobot(xPos, yPos, orientation, size, modules, sightRadius)
+    } yield new MockDrone(xPos, yPos, orientation, size, modules, sightRadius)
 
 
   private def spawn(obj: MockObject): Unit = {
@@ -48,7 +48,7 @@ class GraphicsSimulator(
 
   def worldState: Iterable[WorldObjectDescriptor] = {
     objects.map(_.state()) + TestingObject(time) ++ customChangingObjects(time) ++
-      objects.flatMap{case robot: MockRobot => robot.extraState() case _ => Seq()}
+      objects.flatMap{case drone: MockDrone => drone.extraState() case _ => Seq()}
   }
 
   def update(): Unit = {
@@ -57,7 +57,7 @@ class GraphicsSimulator(
     objects.foreach(_.update())
     vision.updateAll()
     for (r <- objects) { r match {
-      case robot: MockRobot => robot.inSight = vision.getVisible(r)
+      case drone: MockDrone => drone.inSight = vision.getVisible(r)
       case _ =>
     } }
 

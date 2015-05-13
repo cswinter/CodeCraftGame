@@ -25,7 +25,7 @@ class Drone(
   private[this] var hullState = List.fill[Byte](spec.size - 1)(2)
 
   private[this] val oldPositions = collection.mutable.Queue.empty[(Float, Float, Float)]
-  private final val NJetPositions = 12
+  private final val NJetPositions = 6
 
 
   // TODO: remove this once all logic is moved into modules
@@ -193,7 +193,7 @@ class Drone(
       position.x.toFloat,
       position.y.toFloat,
       dynamics.orientation.toFloat,
-      Seq(),//oldPositions :+ (position.x.toFloat, position.y.toFloat, dynamics.orientation.orientation.toFloat),
+      Seq(),//oldPositions :+ (position.x.toFloat, position.y.toFloat, dynamics.orientation.toFloat),
       moduleDescriptors,
       hullState,
       shieldGenerators.map(_.hitpointPercentage),

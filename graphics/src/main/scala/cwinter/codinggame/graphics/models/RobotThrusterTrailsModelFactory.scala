@@ -2,15 +2,17 @@ package cwinter.codinggame.graphics.models
 
 import cwinter.codinggame.graphics.engine.RenderStack
 import cwinter.codinggame.graphics.model.{EmptyModel, Model, RichQuadStrip, StaticCompositeModel}
-import cwinter.codinggame.graphics.models.RobotColors._
+import cwinter.codinggame.graphics.models.DroneColors._
 import cwinter.codinggame.util.maths.Geometry._
 import cwinter.codinggame.util.maths.{ColorRGBA, VertexXY}
+import cwinter.codinggame.worldstate.Player
 
 
-class RobotThrusterTrailsModelFactory(
+class DroneThrusterTrailsModelFactory(
   val sideLength: Float,
   val radiusHull: Float,
-  val sides: Int
+  val sides: Int,
+  val player: Player
 )(implicit rs: RenderStack) {
   def buildModel(positions: Seq[(Float, Float, Float)]): Model[Unit] = {
     val n = positions.length
@@ -29,7 +31,7 @@ class RobotThrusterTrailsModelFactory(
       }
 
     val (trail1, trail2) = trailPositions.unzip
-    val colors = trailPositions.indices.map(index => ColorRGBA(ColorThrusters, (n - index) / n.toFloat))
+    val colors = trailPositions.indices.map(index => ColorRGBA(player.color, (n - index) / n.toFloat))
 
     new StaticCompositeModel(Seq(
       RichQuadStrip(

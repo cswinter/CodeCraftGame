@@ -3,7 +3,7 @@ package cwinter.codinggame.graphics.models
 import cwinter.codinggame.graphics.engine.RenderStack
 import cwinter.codinggame.graphics.model.LinePrimitive
 import cwinter.codinggame.util.maths.{ColorRGB, ColorRGBA, VertexXY}
-import RobotColors.White
+import DroneColors.White
 import cwinter.codinggame.worldstate.Player
 
 

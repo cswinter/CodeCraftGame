@@ -2,14 +2,14 @@ package cwinter.codinggame.graphics.models
 
 import cwinter.codinggame.graphics.engine.RenderStack
 import cwinter.codinggame.graphics.model.{Model, ModelBuilder, SquarePrimitive, StaticCompositeModel}
-import cwinter.codinggame.graphics.models.RobotColors._
+import cwinter.codinggame.graphics.models.DroneColors._
 import cwinter.codinggame.util.maths.VertexXY
 import cwinter.codinggame.worldstate.Player
 
 
-case class RobotLasersModelBuilder(player: Player, position: VertexXY, n: Int)(implicit rs: RenderStack)
-  extends ModelBuilder[RobotLasersModelBuilder, Unit] {
-  override def signature: RobotLasersModelBuilder = this
+case class DroneLasersModelBuilder(player: Player, position: VertexXY, n: Int)(implicit rs: RenderStack)
+  extends ModelBuilder[DroneLasersModelBuilder, Unit] {
+  override def signature: DroneLasersModelBuilder = this
 
   override protected def buildModel: Model[Unit] = {
     val components =

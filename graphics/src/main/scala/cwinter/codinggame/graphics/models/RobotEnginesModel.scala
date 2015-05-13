@@ -2,14 +2,14 @@ package cwinter.codinggame.graphics.models
 
 import cwinter.codinggame.graphics.engine.RenderStack
 import cwinter.codinggame.graphics.model.{Model, ModelBuilder, Polygon, StaticCompositeModel}
-import cwinter.codinggame.graphics.models.RobotColors._
+import cwinter.codinggame.graphics.models.DroneColors._
 import cwinter.codinggame.util.maths.{Geometry, VertexXY}
 
 
-case class RobotEnginesModel(position: VertexXY, t: Int)(implicit rs: RenderStack)
-  extends ModelBuilder[RobotEnginesModel, Unit] {
+case class DroneEnginesModel(position: VertexXY, t: Int)(implicit rs: RenderStack)
+  extends ModelBuilder[DroneEnginesModel, Unit] {
 
-  def signature: RobotEnginesModel = this
+  def signature: DroneEnginesModel = this
 
   protected def buildModel: Model[Unit] = {
     val enginePositions = Geometry.polygonVertices2(3, radius = 5, orientation = 2 * math.Pi.toFloat * t / 100)

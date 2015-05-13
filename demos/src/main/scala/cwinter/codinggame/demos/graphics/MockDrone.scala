@@ -6,7 +6,7 @@ import scala.collection.mutable
 import scala.util.Random
 
 
-class MockRobot(
+class MockDrone(
   var xPos: Float,
   var yPos: Float,
   var orientation: Float,

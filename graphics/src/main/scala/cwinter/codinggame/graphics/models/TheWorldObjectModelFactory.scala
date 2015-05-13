@@ -23,9 +23,9 @@ object TheWorldObjectModelFactory {
         Unit,
         new MineralModelBuilder(mineral).getModel,
         modelview)
-      case robot: DroneDescriptor => new ClosedModel(
-        robot,
-        new DroneModelBuilder(robot, timestep).getModel,
+      case drone: DroneDescriptor => new ClosedModel(
+        drone,
+        new DroneModelBuilder(drone, timestep).getModel,
         modelview)
       case lightFlash: LightFlashDescriptor => new ClosedModel(
         lightFlash,

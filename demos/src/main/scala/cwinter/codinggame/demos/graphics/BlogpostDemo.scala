@@ -67,7 +67,7 @@ object BlogpostDemo {
     MissileBatteryDescriptor(0)
   ).zipWithIndex.map {
     case (module, i) =>
-      new MockRobot(
+      new MockDrone(
         xPos = -250,
         yPos = 100 * i - 200,
         orientation = 0,

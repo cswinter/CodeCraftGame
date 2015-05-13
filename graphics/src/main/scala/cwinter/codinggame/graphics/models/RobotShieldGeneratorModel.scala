@@ -2,13 +2,13 @@ package cwinter.codinggame.graphics.models
 
 import cwinter.codinggame.graphics.engine.RenderStack
 import cwinter.codinggame.graphics.model._
-import cwinter.codinggame.graphics.models.RobotColors._
+import cwinter.codinggame.graphics.models.DroneColors._
 import cwinter.codinggame.util.maths.Geometry._
 import cwinter.codinggame.util.maths.{Geometry, VertexXY}
 
 
-case class RobotShieldGeneratorModel(position: VertexXY)(implicit rs: RenderStack)
-  extends ModelBuilder[RobotShieldGeneratorModel, Unit] {
+case class DroneShieldGeneratorModel(position: VertexXY)(implicit rs: RenderStack)
+  extends ModelBuilder[DroneShieldGeneratorModel, Unit] {
   def signature = this
 
 

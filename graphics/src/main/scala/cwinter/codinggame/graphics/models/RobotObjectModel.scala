@@ -4,12 +4,12 @@ import cwinter.codinggame.graphics.engine.RenderStack
 import cwinter.codinggame.graphics.materials.Intensity
 import cwinter.codinggame.graphics.matrices.{Matrix4x4, TranslationMatrix4x4}
 import cwinter.codinggame.graphics.model._
-import cwinter.codinggame.graphics.models.RobotColors._
+import cwinter.codinggame.graphics.models.DroneColors._
 import cwinter.codinggame.util.maths._
 import cwinter.codinggame.worldstate._
 
 
-object RobotColors {
+object DroneColors {
   val Black = ColorRGB(0, 0, 0)
   val White = ColorRGB(1, 1, 1)
   val ColorBody = ColorRGB(0.05f, 0.05f, 0.05f)
@@ -32,25 +32,25 @@ case class DroneSignature(
 )
 
 object DroneSignature {
-  def apply(robotObject: DroneDescriptor, timestep: Int): DroneSignature = {
-    val hasAnimatedComponents = robotObject.modules.exists(m =>
+  def apply(droneObject: DroneDescriptor, timestep: Int): DroneSignature = {
+    val hasAnimatedComponents = droneObject.modules.exists(m =>
       m.isInstanceOf[EnginesDescriptor] || m.isInstanceOf[ProcessingModuleDescriptor]
     )
     DroneSignature(
-      robotObject.size,
-      robotObject.modules,
-      robotObject.modules.exists(_.isInstanceOf[ShieldGeneratorDescriptor]),
-      robotObject.hullState,
-      robotObject.constructionState != None,
+      droneObject.size,
+      droneObject.modules,
+      droneObject.modules.exists(_.isInstanceOf[ShieldGeneratorDescriptor]),
+      droneObject.hullState,
+      droneObject.constructionState != None,
       if (hasAnimatedComponents) timestep % 100 else 0,
-      robotObject.player)
+      droneObject.player)
   }
 }
 
 
-class DroneModelBuilder(robot: DroneDescriptor, timestep: Int)(implicit val rs: RenderStack)
+class DroneModelBuilder(drone: DroneDescriptor, timestep: Int)(implicit val rs: RenderStack)
   extends ModelBuilder[DroneSignature, DroneDescriptor] {
-  def signature: DroneSignature = DroneSignature(robot, timestep)
+  def signature: DroneSignature = DroneSignature(drone, timestep)
 
   import Geometry.circumradius
   import cwinter.codinggame.util.modules.ModulePosition
@@ -58,7 +58,7 @@ class DroneModelBuilder(robot: DroneDescriptor, timestep: Int)(implicit val rs: 
   import scala.math._
 
   protected def buildModel: Model[DroneDescriptor] = {
-    val sides = robot.size
+    val sides = drone.size
     val sideLength = 40
     val radiusBody = 0.5f * sideLength / sin(Pi / sides).toFloat
     val radiusHull = radiusBody + circumradius(4, sides)
@@ -73,7 +73,7 @@ class DroneModelBuilder(robot: DroneDescriptor, timestep: Int)(implicit val rs: 
         radius = radiusBody
       ).getModel
 
-    val hullColors = robot.hullState.map {
+    val hullColors = drone.hullState.map {
       case 2 => ColorHull
       case 1 => ColorHullDamaged
       case 0 => ColorHullBroken
@@ -96,15 +96,15 @@ class DroneModelBuilder(robot: DroneDescriptor, timestep: Int)(implicit val rs: 
         module <- signature.modules
       } yield (module match {
         case EnginesDescriptor(position) =>
-          RobotEnginesModel(ModulePosition(sides, position), signature.animationTime)
+          DroneEnginesModel(ModulePosition(sides, position), signature.animationTime)
         case MissileBatteryDescriptor(position, n) =>
-          RobotLasersModelBuilder(signature.player, ModulePosition(sides, position), n)
+          DroneLasersModelBuilder(signature.player, ModulePosition(sides, position), n)
         case ShieldGeneratorDescriptor(position) =>
-          RobotShieldGeneratorModel(ModulePosition(sides, position))
+          DroneShieldGeneratorModel(ModulePosition(sides, position))
         case ProcessingModuleDescriptor(positions, tMerging) =>
           FactoryModelBuilder(ModulePosition(sides, positions), signature.animationTime, tMerging, positions.size)
         case StorageModuleDescriptor(positions, contents, tm) =>
-          RobotStorageModelBuilder(ModulePosition(sides, positions), contents, positions.size, tm)
+          DroneStorageModelBuilder(ModulePosition(sides, positions), contents, positions.size, tm)
         case ManipulatorDescriptor(position) =>
           DroneManipulatorModelBuilder(signature.player, ModulePosition(sides, position))
       }).getModel
@@ -124,13 +124,13 @@ class DroneModelBuilder(robot: DroneDescriptor, timestep: Int)(implicit val rs: 
     val thrusters =
       if (!signature.isBuilding) {
         new DynamicModel(
-          new RobotThrusterTrailsModelFactory(
-            sideLength, radiusHull, sides).buildModel)
+          new DroneThrusterTrailsModelFactory(
+            sideLength, radiusHull, sides, signature.player).buildModel)
       } else new EmptyModel[Seq[(Float, Float, Float)]]
 
 
     val other = {
-      for (r <- robot.sightRadius)
+      for (r <- drone.sightRadius)
         yield PolygonRing(
           material = rs.MaterialXYRGB,
           n = 50,
@@ -144,12 +144,12 @@ class DroneModelBuilder(robot: DroneDescriptor, timestep: Int)(implicit val rs: 
 
 
 
-    new RobotModel(body, hull, modules, shields, thrusters, other, new ImmediateModeModel, rs)
+    new DroneModel(body, hull, modules, shields, thrusters, other, new ImmediateModeModel, rs)
   }
 }
 
 
-case class RobotModel(
+case class DroneModel(
   body: Model[Unit],
   hull: Model[Unit],
   modules: Seq[Model[Unit]],
