@@ -168,7 +168,7 @@ case class RobotModel(
   override def update(a: DroneDescriptor): Unit = {
     thrusterTrails.update(a.positions)
 
-    constructionState = a.constructionState
+    constructionState = a.constructionState.map(f => (f * vertexCount / 3).toInt)
 
     shields.foreach(_.update(Intensity(a.shieldState.getOrElse(0))))
 
@@ -187,10 +187,7 @@ case class RobotModel(
   }
 
   override def draw(modelview: Matrix4x4, material: GenericMaterial): Unit = {
-    for {
-      t <- constructionState
-      flicker = (t % 5 & 1) ^ 1
-    } setVertexCount((t / 5 + flicker) * 3)
+    for (t <- constructionState) setVertexCount(t * 3)
 
     val modelview2 =
       if (constructionState.isDefined) {

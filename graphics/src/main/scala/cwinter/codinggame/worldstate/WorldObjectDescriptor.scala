@@ -1,7 +1,7 @@
 package cwinter.codinggame.worldstate
 
 import cwinter.codinggame.util.maths
-import cwinter.codinggame.util.maths.VertexXY
+import cwinter.codinggame.util.maths.{Float0To1, VertexXY}
 
 
 
@@ -24,7 +24,7 @@ case class DroneDescriptor(
   size: Int,
 
   player: Player,
-  constructionState: Option[Int] = None,
+  constructionState: Option[Float0To1] = None,
 
   sightRadius: Option[Int] = None,
   inSight: Option[Iterable[(Float, Float)]] = None

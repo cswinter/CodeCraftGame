@@ -1,7 +1,7 @@
 package cwinter.codinggame.core.drone
 
 import cwinter.codinggame.core._
-import cwinter.codinggame.util.maths.{Geometry, Vector2}
+import cwinter.codinggame.util.maths.{Float0To1, Geometry, Vector2}
 import cwinter.codinggame.util.modules.ModulePosition
 import cwinter.codinggame.worldstate.{DroneModuleDescriptor, Player, DroneDescriptor, WorldObjectDescriptor}
 
@@ -243,7 +243,7 @@ class Drone(
       shieldGenerators.map(_.hitpointPercentage),
       size,
       player,
-      constructionProgress
+      constructionProgress.map(p => Float0To1(p / buildTime.toFloat))
     )) ++ manipulator.toSeq.flatMap(_.manipulatorGraphics) ++
     storage.toSeq.flatMap(_.energyGlobeAnimations)
   }
