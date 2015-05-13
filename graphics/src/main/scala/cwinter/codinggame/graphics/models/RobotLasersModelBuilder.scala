@@ -7,9 +7,9 @@ import cwinter.codinggame.util.maths.VertexXY
 import cwinter.codinggame.worldstate.Player
 
 
-case class DroneLasersModelBuilder(player: Player, position: VertexXY, n: Int)(implicit rs: RenderStack)
-  extends ModelBuilder[DroneLasersModelBuilder, Unit] {
-  override def signature: DroneLasersModelBuilder = this
+case class DroneMissileBatteryModelBuilder(player: Player, position: VertexXY, n: Int)(implicit rs: RenderStack)
+  extends ModelBuilder[DroneMissileBatteryModelBuilder, Unit] {
+  override def signature: DroneMissileBatteryModelBuilder = this
 
   override protected def buildModel: Model[Unit] = {
     val components =

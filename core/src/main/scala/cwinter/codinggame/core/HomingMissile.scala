@@ -2,9 +2,9 @@ package cwinter.codinggame.core
 
 import cwinter.codinggame.core.drone.Drone
 import cwinter.codinggame.util.maths.Vector2
-import cwinter.codinggame.worldstate.{Player, LaserMissileDescriptor, WorldObjectDescriptor}
+import cwinter.codinggame.worldstate.{Player, HomingMissileDescriptor, WorldObjectDescriptor}
 
-class LaserMissile(val player: Player, initialPos: Vector2, time: Double, target: Drone) extends WorldObject {
+class HomingMissile(val player: Player, initialPos: Vector2, time: Double, target: Drone) extends WorldObject {
   final val MaxLifetime = 50
   val dynamics: MissileDynamics = new MissileDynamics(500, target.dynamics, player.id, initialPos, time)
   val previousPositions = collection.mutable.Queue(initialPos)
@@ -16,7 +16,7 @@ class LaserMissile(val player: Player, initialPos: Vector2, time: Double, target
     if (fading) {
       previousPositions.dequeue()
       if (previousPositions.isEmpty) {
-        Seq(LaserMissileFaded(this))
+        Seq(HomingMissileFaded(this))
       } else {
         Seq.empty[SimulatorEvent]
       }
@@ -34,14 +34,14 @@ class LaserMissile(val player: Player, initialPos: Vector2, time: Double, target
         Seq(MissileExplodes(this))
       } else if (lifetime == 0) {
         dynamics.remove()
-        Seq(LaserMissileFaded(this))
+        Seq(HomingMissileFaded(this))
       } else Seq.empty[SimulatorEvent]
     }
   }
 
   override def position: Vector2 = dynamics.pos
   override private[core] def descriptor: Seq[WorldObjectDescriptor] = Seq(
-    LaserMissileDescriptor(
+    HomingMissileDescriptor(
       id,
       previousPositions.map{case Vector2(x, y) => (x.toFloat, y.toFloat)},
       math.min(MaxLifetime - lifetime, positions), player)

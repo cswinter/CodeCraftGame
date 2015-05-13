@@ -1,6 +1,6 @@
 package cwinter.codinggame.core.drone
 
-import cwinter.codinggame.core.{SimulatorEvent, SpawnLaserMissile}
+import cwinter.codinggame.core.{SimulatorEvent, SpawnHomingMissile}
 import cwinter.codinggame.util.maths.Vector2
 import cwinter.codinggame.worldstate.EnginesDescriptor
 

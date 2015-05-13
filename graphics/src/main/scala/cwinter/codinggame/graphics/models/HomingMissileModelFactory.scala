@@ -6,7 +6,7 @@ import cwinter.codinggame.util.maths.{ColorRGB, ColorRGBA, VertexXY}
 import cwinter.codinggame.worldstate.Player
 
 
-object LaserMissileModelFactory {
+object HomingMissileModelFactory {
   def build(positions: Seq[(Float, Float)], nMaxPos: Int, player: Player)(implicit rs: RenderStack) = {
     if (positions.length < 2) EmptyModel
     else {

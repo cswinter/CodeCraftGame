@@ -1,10 +1,10 @@
 package cwinter.codinggame.core.drone
 
-import cwinter.codinggame.core.{SimulatorEvent, SpawnLaserMissile}
+import cwinter.codinggame.core.{SimulatorEvent, SpawnHomingMissile}
 import cwinter.codinggame.util.maths.Vector2
 import cwinter.codinggame.worldstate.{DroneModuleDescriptor, MissileBatteryDescriptor}
 
-class DroneLasersModule(positions: Seq[Int], owner: Drone)
+class DroneMissileBatteryModule(positions: Seq[Int], owner: Drone)
   extends DroneModule(positions, owner) {
   final val LockOnRadius = 300
 
@@ -33,7 +33,7 @@ class DroneLasersModule(positions: Seq[Int], owner: Drone)
 
         val missiles =
           for (pos <- absoluteModulePositions)
-            yield SpawnLaserMissile(owner.player, pos, target)
+            yield SpawnHomingMissile(owner.player, pos, target)
 
         nextEffect = (missiles, Seq.empty[Vector2], Seq.empty[Vector2])
       }

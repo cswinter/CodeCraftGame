@@ -84,7 +84,7 @@ class GameSimulator(
     } spawnLightflash(pos)
   }
 
-  private def spawnMissile(missile: LaserMissile): Unit = {
+  private def spawnMissile(missile: HomingMissile): Unit = {
     visibleObjects.add(missile)
     dynamicObjects.add(missile)
     physicsEngine.addObject(missile.dynamics)
@@ -128,18 +128,18 @@ class GameSimulator(
         visibleObjects.add(drone)
       case DroneConstructionCancelled(drone) =>
         visibleObjects.remove(drone)
-      case SpawnLaserMissile(player, position, target) =>
+      case SpawnHomingMissile(player, position, target) =>
         // TODO: remove this check once boundary collisions are done properly
         if (map.size.contains(position)) {
-        val newMissile = new LaserMissile(player, position, physicsEngine.time, target)
+        val newMissile = new HomingMissile(player, position, physicsEngine.time, target)
           spawnMissile(newMissile)
         }
-      case LaserMissileFaded(laserMissile) =>
-        visibleObjects.remove(laserMissile)
-        dynamicObjects.remove(laserMissile)
-        physicsEngine.remove(laserMissile.dynamics)
-      case MissileExplodes(laserMissile) =>
-        spawnLightflash(laserMissile.position)
+      case HomingMissileFaded(missile) =>
+        visibleObjects.remove(missile)
+        dynamicObjects.remove(missile)
+        physicsEngine.remove(missile.dynamics)
+      case MissileExplodes(missile) =>
+        spawnLightflash(missile.position)
       case LightFlashDestroyed(lightFlash) =>
         visibleObjects.remove(lightFlash)
         dynamicObjects.remove(lightFlash)
@@ -186,9 +186,9 @@ case class DroneConstructionStarted(drone: Drone) extends SimulatorEvent
 case class SpawnDrone(drone: Drone) extends SimulatorEvent
 case class MineralCrystalActivated(mineralCrystal: MineralCrystal) extends SimulatorEvent
 case class MineralCrystalDestroyed(mineralCrystal: MineralCrystal) extends SimulatorEvent
-case class SpawnLaserMissile(player: Player, position: Vector2, target: Drone) extends SimulatorEvent
-case class LaserMissileFaded(laserMissile: LaserMissile) extends SimulatorEvent
-case class MissileExplodes(homingMissile: LaserMissile) extends SimulatorEvent
+case class SpawnHomingMissile(player: Player, position: Vector2, target: Drone) extends SimulatorEvent
+case class HomingMissileFaded(missile: HomingMissile) extends SimulatorEvent
+case class MissileExplodes(homingMissile: HomingMissile) extends SimulatorEvent
 case class LightFlashDestroyed(lightFlash: LightFlash) extends SimulatorEvent
 case class DroneKilled(drone: Drone) extends SimulatorEvent
 case class DroneConstructionCancelled(drone: Drone) extends SimulatorEvent

@@ -97,7 +97,7 @@ case class LightFlashDescriptor(
 }
 
 
-case class LaserMissileDescriptor(
+case class HomingMissileDescriptor(
   identifier: Int,
   positions: Seq[(Float, Float)],
   maxPos: Int,

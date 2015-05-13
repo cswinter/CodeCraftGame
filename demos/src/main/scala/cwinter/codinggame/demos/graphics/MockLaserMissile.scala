@@ -1,7 +1,7 @@
 package cwinter.codinggame.demos.graphics
 
 import cwinter.codinggame.util.maths.Rng
-import cwinter.codinggame.worldstate.{RedPlayer, BluePlayer, LaserMissileDescriptor, WorldObjectDescriptor}
+import cwinter.codinggame.worldstate.{RedPlayer, BluePlayer, HomingMissileDescriptor, WorldObjectDescriptor}
 
 import scala.collection.mutable
 import scala.util.Random
@@ -34,7 +34,7 @@ class MockLaserMissile(
   }
 
   override def state(): WorldObjectDescriptor =
-    LaserMissileDescriptor(identifier, oldPositions.toSeq, math.min(positions, age), player)
+    HomingMissileDescriptor(identifier, oldPositions.toSeq, math.min(positions, age), player)
 
 
   def vx = math.cos(orientation).toFloat * speed

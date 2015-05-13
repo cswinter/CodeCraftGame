@@ -51,9 +51,9 @@ case class DroneSpec(
     )
     else None
 
-  private[drone] def constructMissilesBatteries(owner: Drone): Option[DroneLasersModule] =
+  private[drone] def constructMissilesBatteries(owner: Drone): Option[DroneMissileBatteryModule] =
     if (missileBatteries > 0) Some(
-      new DroneLasersModule(storageModules until (storageModules + missileBatteries), owner)
+      new DroneMissileBatteryModule(storageModules until (storageModules + missileBatteries), owner)
     )
     else None
 
