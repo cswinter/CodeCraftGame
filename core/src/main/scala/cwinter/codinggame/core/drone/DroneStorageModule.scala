@@ -1,7 +1,7 @@
 package cwinter.codinggame.core.drone
 
 import cwinter.codinggame.core.{MineralCrystal, MineralCrystalHarvested, SimulatorEvent}
-import cwinter.codinggame.util.maths.Vector2
+import cwinter.codinggame.util.maths.{Float0To1, Vector2}
 import cwinter.codinggame.util.modules.ModulePosition
 import cwinter.codinggame.worldstate._
 import scala.collection.{BitSet, mutable}
@@ -22,7 +22,11 @@ class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: I
   override def update(availableResources: Int): (Seq[SimulatorEvent], Seq[Vector2], Seq[Vector2]) = {
     var effects = List.empty[SimulatorEvent]
 
-    harvesting = for ((m, t) <- harvesting) yield (m, t - 1)
+    harvesting =
+      for ((m, t) <- harvesting) yield {
+        m.harvestProgress = Some(Float0To1(1 - t / HarvestingTime.toFloat))
+        (m, t - 1)
+      }
 
     // TODO: animation (merging + lift)
     val (ongoing, finished) = harvesting.partition { case (m, t) => t > 0 }
@@ -92,6 +96,12 @@ class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: I
       harvesting ::= ((mineralCrystal, HarvestingTime))
       // TODO: what if harvesting cancelled/drone killed?
       mineralCrystal.harvested = true
+
+      val mineralStorage = allMineralsSorted
+      val positions = absoluteMergedModulePositions(mineralStorage.map(_._1.size))
+      val Some((_, index)) = allMineralsSorted.zipWithIndex.find {case ((m, _), _) => m == mineralCrystal}
+      mineralCrystal.harvestPosition = positions(index)
+      mineralCrystal.harvestProgress = Some(Float0To1(0))
     }
   }
 
@@ -104,12 +114,13 @@ class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: I
   def availableStorage: Int =
     positions.size - harvesting.size - _storedMinerals.foldLeft(0)(_ + _.size) - (availableResources + 6) / 7
 
-  override def descriptors: Seq[DroneModuleDescriptor] = {
-    val mineralStorage = {
-      (for (s <- storedMinerals.toSeq) yield (s, 1f)) ++
-        (for ((m, p) <- harvesting) yield (m, (HarvestingTime - p).toFloat / HarvestingTime))
-    }.sortBy(_._1.size)
+  private def allMineralsSorted = {
+    (for (s <- storedMinerals.toSeq) yield (s, 1f)) ++
+      (for ((m, p) <- harvesting) yield (m, (HarvestingTime - p).toFloat / HarvestingTime))
+  }.sortBy(_._1.size)
 
+  override def descriptors: Seq[DroneModuleDescriptor] = {
+    val mineralStorage = allMineralsSorted
     val partitioning = mineralStorage.map(_._1.size)
     val mineralStorageIndices = partitionIndices(partitioning)
 

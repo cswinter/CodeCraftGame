@@ -1,16 +1,25 @@
 package cwinter.codinggame.core
 
-import cwinter.codinggame.util.maths.Vector2
+import cwinter.codinggame.util.maths.{Float0To1, Vector2}
 import cwinter.codinggame.worldstate.MineralDescriptor
 
 
 class MineralCrystal(
   val size: Int,
   var position: Vector2,
-  var harvested: Boolean = false
+  var harvested: Boolean = false,
+  var harvestPosition: Vector2 = Vector2.NullVector,
+  var harvestProgress: Option[Float0To1] = None
 ) extends WorldObject {
   override private[core] def descriptor: Seq[MineralDescriptor] = Seq(
-    MineralDescriptor(id, position.x.toFloat, position.y.toFloat, 0, size, harvested)
+    harvestProgress match {
+      case Some(_) =>
+        MineralDescriptor(
+          id, harvestPosition.x.toFloat, harvestPosition.y.toFloat,
+          0, size, harvested, harvestProgress)
+      case None =>
+        MineralDescriptor(id, position.x.toFloat, position.y.toFloat, 0, size, harvested)
+    }
   )
 
   override private[core] def hasDied = false

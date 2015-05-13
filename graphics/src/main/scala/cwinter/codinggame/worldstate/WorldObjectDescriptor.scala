@@ -82,7 +82,8 @@ case class MineralDescriptor(
   orientation: Float,
 
   size: Int,
-  harvested: Boolean = false
+  harvested: Boolean = false,
+  harvestingProgress: Option[Float0To1] = None
 ) extends WorldObjectDescriptor
 
 
