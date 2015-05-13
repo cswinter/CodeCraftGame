@@ -9,18 +9,22 @@ class Mothership extends DroneController {
   var t = 0
   var collectors = 0
 
+  val collectorDroneSpec = new DroneSpec(4, storageModules = 2)
+  val fastCollectorDroneSpec = new DroneSpec(4, storageModules = 1, engineModules = 1)
+  val attackDroneSpec = new DroneSpec(4, missileBatteries = 2)
+
   // abstract methods for event handling
   override def onSpawn(): Unit = {
-    buildTinyDrone(StorageModule, new ScoutingDroneController(this))
+    buildDrone(new DroneSpec(3, storageModules = 1), new ScoutingDroneController(this))
   }
 
   override def onTick(): Unit = {
     if (!isConstructing) {
       if (collectors < 2) {
-        buildSmallDrone(StorageModule, if (Rng.bernoulli(0.9f)) Engines else StorageModule, new ScoutingDroneController(this))
+        buildDrone(if (Rng.bernoulli(0.9f)) collectorDroneSpec else fastCollectorDroneSpec, new ScoutingDroneController(this))
         collectors += 1
       } else {
-        buildSmallDrone(Lasers, Lasers, new AttackDroneController())
+        buildDrone(attackDroneSpec, new AttackDroneController())
       }
     } else {
       for (mineralCrystal <- storedMinerals) {

@@ -18,9 +18,14 @@ class Mothership extends DroneController {
   var collectors = 0
   var minerals = Set.empty[MineralCrystal]
 
+  val scoutSpec = DroneSpec(3, storageModules = 1)
+  val collectorSpec = DroneSpec(4, storageModules = 2)
+  val attackSpec = DroneSpec(5, missileBatteries = 3, engineModules = 1)
+  val destroyerSpec = DroneSpec(6, missileBatteries = 4, engineModules = 2, shieldGenerators = 1)
+
   // abstract methods for event handling
   override def onSpawn(): Unit = {
-    buildTinyDrone(StorageModule, new ScoutingDroneController(this))
+    buildDrone(scoutSpec, new ScoutingDroneController(this))
   }
 
   override def onTick(): Unit = {
@@ -32,13 +37,13 @@ class Mothership extends DroneController {
 
     if (!isConstructing) {
       if (collectors < 2) {
-        buildSmallDrone(StorageModule, StorageModule, new ScoutingDroneController(this))
+        buildDrone(collectorSpec, new ScoutingDroneController(this))
         collectors += 1
       } else {
         if (Rng.bernoulli(0.7)) {
-          buildMediumDrone(Lasers, Lasers, Lasers, Engines, new AttackDroneController(this))
+          buildDrone(attackSpec, new AttackDroneController(this))
         } else {
-          buildLargeDrone(ShieldGenerator, Engines, Engines, Lasers, Lasers, Lasers, Lasers, new AttackDroneController(this))
+          buildDrone(destroyerSpec, new AttackDroneController(this))
         }
       }
     }

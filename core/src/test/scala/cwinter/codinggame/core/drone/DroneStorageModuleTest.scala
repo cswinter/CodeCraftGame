@@ -6,8 +6,8 @@ import cwinter.codinggame.worldstate.BluePlayer
 import org.scalatest.FlatSpec
 
 class DroneStorageModuleTest extends FlatSpec {
-  val mockDrone1 = new Drone(Seq.fill(4)(StorageModule), 5, null, BluePlayer, Vector2.NullVector, 0)
-  val mockDrone2 = new Drone(Seq.fill(2)(StorageModule), 4, null, BluePlayer, Vector2.NullVector, 0)
+  val mockDrone1 = new Drone(DroneSpec(5, storageModules = 4), null, BluePlayer, Vector2.NullVector, 0)
+  val mockDrone2 = new Drone(DroneSpec(4, storageModules = 2), null, BluePlayer, Vector2.NullVector, 0)
   val mineralCrystal = new MineralCrystal(2, Vector2.NullVector)
   val storageModule1 = new DroneStorageModule((0 to 3).toSeq, mockDrone1)
   val storageModule2 = new DroneStorageModule((0 to 2).toSeq, mockDrone2)

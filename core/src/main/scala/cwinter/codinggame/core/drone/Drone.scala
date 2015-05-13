@@ -1,31 +1,20 @@
 package cwinter.codinggame.core.drone
 
 import cwinter.codinggame.core._
-import cwinter.codinggame.util.maths.{Float0To1, Geometry, Vector2}
-import cwinter.codinggame.util.modules.ModulePosition
-import cwinter.codinggame.worldstate.{DroneModuleDescriptor, Player, DroneDescriptor, WorldObjectDescriptor}
+import cwinter.codinggame.util.maths.{Float0To1, Vector2}
+import cwinter.codinggame.worldstate.{DroneDescriptor, DroneModuleDescriptor, Player, WorldObjectDescriptor}
 
 
 // TODO: make private[core] once DroneHandle class is implemented
 class Drone(
-  val modules: Seq[Module],
-  val size: Int,
+  val spec: DroneSpec,
   val controller: DroneController,
   val player: Player,
   initialPos: Vector2,
   time: Double,
-  startingResources: Int = 0,
-  val isMothership: Boolean = false
+  startingResources: Int = 0
 ) extends WorldObject {
 
-  // constants for drone construction
-  final val ConstructionPeriod = 50
-  final val ResourceCost = 2
-
-  val dynamics: DroneDynamics = new DroneDynamics(this, maximumSpeed, weight, radius, initialPos, time)
-  val storageCapacity = modules.count(_ == StorageModule)
-  val nLasers = modules.count(_ == Lasers)
-  val factoryCapacity = modules.count(_ == NanobotFactory)
 
   var objectsInSight: Set[WorldObject] = Set.empty[WorldObject]
 
@@ -33,7 +22,7 @@ class Drone(
 
   private[this] val eventQueue = collection.mutable.Queue[DroneEvent](Spawned)
 
-  private[this] var hullState = List.fill[Byte](size - 1)(2)
+  private[this] var hullState = List.fill[Byte](spec.size - 1)(2)
 
   private[this] val oldPositions = collection.mutable.Queue.empty[(Float, Float, Float)]
   private final val NJetPositions = 12
@@ -42,25 +31,13 @@ class Drone(
   // TODO: remove this once all logic is moved into modules
   private[this] var simulatorEvents = List.empty[SimulatorEvent]
 
-  // TODO: unify module creation, make sure to assign None to nonexisting modules
-  // TODO: ensure canonical module ordering
-  private[this] val weapons: Option[DroneLasersModule] = Some(
-    new DroneLasersModule(modules.zipWithIndex.filter(_._1 == Lasers).map(_._2), this))
-  private[this] val factories: Option[DroneFactoryModule] = Some(
-    new DroneFactoryModule(modules.zipWithIndex.filter(_._1 == NanobotFactory).map(_._2), this)
-  )// TODO: change to private[this] once storage module is implemented properly
-  private[core] val storage: Option[DroneStorageModule] = Some(
-    new DroneStorageModule(modules.zipWithIndex.filter(_._1 == StorageModule).map(_._2), this, startingResources)
-  )
-  private[this] val manipulator: Option[DroneManipulatorModule] = Some(
-    new DroneManipulatorModule(modules.zipWithIndex.filter(_._1 == Manipulator).map(_._2), this)
-  )
-  private[this] val shieldGenerators: Option[DroneShieldGeneratorModule] = Some(
-    new DroneShieldGeneratorModule(modules.zipWithIndex.filter(_._1 == ShieldGenerator).map(_._2), this)
-  )
-  private[this] val engines: Option[DroneEnginesModule] = Some(
-    new DroneEnginesModule(modules.zipWithIndex.filter(_._1 == Engines).map(_._2), this)
-  )
+  val dynamics: DroneDynamics = spec.constructDynamics(this, initialPos, time)
+  private[this] val weapons = spec.constructMissilesBatteries(this)
+  private[this] val factories = spec.constructProcessingModules(this)
+  private[core] val storage = spec.constructStorage(this, startingResources)
+  private[this] val manipulator = spec.constructManipulatorModules(this)
+  private[this] val shieldGenerators = spec.constructShieldGenerators(this)
+  private[this] val engines = spec.constructEngineModules(this)
   val droneModules = Seq(weapons, factories, storage, manipulator, shieldGenerators, engines)
 
 
@@ -203,31 +180,10 @@ class Drone(
 
   def isConstructing: Boolean = manipulator.map(_.isConstructing) == Some(true)
 
-  def resourceCost: Int = {
-    ModulePosition.moduleCount(size) * ResourceCost
-  }
-
-  def requiredFactories: Int = {
-    ModulePosition.moduleCount(size) * 2
-  }
-
-  def weight =
-    if (isMothership) 10000
-    else size + modules.length
-
-  def maximumSpeed: Double = {
-    val propulsion = 1 + modules.count(_ == Engines)
-    1000 * propulsion / weight
-  }
-
-  def buildTime: Int = {
-    ConstructionPeriod * (size - 1)
-  }
-
-  def resourceDepletionPeriod: Int = {
-    // TODO: this is not always accurate bc integer division
-    buildTime / resourceCost
-  }
+  def storageCapacity = spec.storageModules
+  def factoryCapacity = spec.processingModules
+  def size = spec.size
+  def radius = spec.radius
 
 
   override def descriptor: Seq[WorldObjectDescriptor] = {
@@ -241,9 +197,9 @@ class Drone(
       moduleDescriptors,
       hullState,
       shieldGenerators.map(_.hitpointPercentage),
-      size,
+      spec.size,
       player,
-      constructionProgress.map(p => Float0To1(p / buildTime.toFloat))
+      constructionProgress.map(p => Float0To1(p / spec.buildTime.toFloat))
     )) ++ manipulator.toSeq.flatMap(_.manipulatorGraphics) ++
     storage.toSeq.flatMap(_.energyGlobeAnimations)
   }
@@ -259,21 +215,7 @@ class Drone(
   override def hasDied = false
 
 
-  def radius: Double = {
-    val sideLength = 40
-    val radiusBody = 0.5f * sideLength / math.sin(math.Pi / size).toFloat
-    radiusBody + 0.5f * Geometry.circumradius(4, size)
-  }
 }
-
-
-sealed trait Module
-case object StorageModule extends Module
-case object Lasers extends Module
-case object NanobotFactory extends Module
-case object Engines extends Module
-case object Manipulator extends Module
-case object ShieldGenerator extends Module
 
 
 sealed trait DroneEvent

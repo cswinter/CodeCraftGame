@@ -39,27 +39,8 @@ abstract class DroneController {
     drone.depositMinerals(otherDrone.drone)
   }
 
-  def buildLargeDrone(
-    module1: Module, module2: Module, module3: Module, module4: Module,
-    module5: Module, module6: Module, module7: Module,
-    controller: DroneController
-  ): Unit = {
-    val newDrone = new Drone(Seq(module1, module2, module3, module4, module5, module6, module7), 6, controller, drone.player, Vector2.NullVector, -1)
-    drone.startDroneConstruction(ConstructDrone(newDrone))
-  }
-
-  def buildMediumDrone(module1: Module, module2: Module, module3: Module, module4: Module, controller: DroneController): Unit = {
-    val newDrone = new Drone(Seq(module1, module2, module3, module4), 5, controller, drone.player, Vector2.NullVector, -1)
-    drone.startDroneConstruction(ConstructDrone(newDrone))
-  }
-
-  def buildSmallDrone(module1: Module, module2: Module, controller: DroneController): Unit = {
-    val newDrone = new Drone(Seq(module1, module2), 4, controller, drone.player, Vector2.NullVector, -1)
-    drone.startDroneConstruction(ConstructDrone(newDrone))
-  }
-
-  def buildTinyDrone(module: Module, controller: DroneController): Unit = {
-    val newDrone = new Drone(Seq(module), 3, controller, drone.player, Vector2.NullVector, -1)
+  def buildDrone(spec: DroneSpec, controller: DroneController): Unit = {
+    val newDrone = new Drone(spec, controller, drone.player, Vector2.NullVector, -1)
     drone.startDroneConstruction(ConstructDrone(newDrone))
   }
 

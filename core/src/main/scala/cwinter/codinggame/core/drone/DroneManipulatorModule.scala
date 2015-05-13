@@ -29,7 +29,7 @@ class DroneManipulatorModule(positions: Seq[Int], owner: Drone)
       for ((drone, progress) <- droneConstruction)
         yield {
           val progress2 =
-            if (progress % drone.resourceDepletionPeriod == 0) {
+            if (progress % drone.spec.resourceDepletionPeriod == 0) {
               if (remainingResources > 0) {
                 remainingResources -= 1
                 // TODO: use all manipulator modules
@@ -44,7 +44,7 @@ class DroneManipulatorModule(positions: Seq[Int], owner: Drone)
 
           drone.constructionProgress = Some(progress2)
 
-          if (progress2 == drone.buildTime) {
+          if (progress2 == drone.spec.buildTime) {
             effects ::= SpawnDrone(drone)
             drone.constructionProgress = None
           }
@@ -54,7 +54,7 @@ class DroneManipulatorModule(positions: Seq[Int], owner: Drone)
 
     droneConstruction = droneConstruction.filter {
       case (drone, progress) =>
-        progress < drone.buildTime
+        progress < drone.spec.buildTime
     }
 
     (effects, resourceDepletions, Seq.empty[Vector2])

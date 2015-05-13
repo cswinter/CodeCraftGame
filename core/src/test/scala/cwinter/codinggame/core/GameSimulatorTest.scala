@@ -1,6 +1,6 @@
 package cwinter.codinggame.core
 
-import cwinter.codinggame.core.drone.{DroneStorageModule, StorageModule, Drone, DroneController}
+import cwinter.codinggame.core.drone.{DroneSpec, DroneStorageModule, Drone, DroneController}
 import cwinter.codinggame.util.maths.{Vector2, Rectangle}
 import cwinter.codinggame.worldstate.BluePlayer
 import org.scalatest.FlatSpec
@@ -16,7 +16,8 @@ class GameSimulatorTest extends FlatSpec {
     override def onDroneEntersVision(drone: Drone): Unit = ()
     override def onSpawn(): Unit = ()
   }
-  val mockDrone = new Drone(Seq(StorageModule, StorageModule), 4, emptyController, BluePlayer, Vector2(0, 0), 0, 0)
+  val mockDroneSpec = new DroneSpec(4, storageModules = 2)
+  val mockDrone = new Drone(mockDroneSpec, emptyController, BluePlayer, Vector2(0, 0), 0, 0)
 
   val simulator = new GameSimulator(map, emptyController, emptyController, t => if (t == 0) Seq(SpawnDrone(mockDrone)) else Seq())
 

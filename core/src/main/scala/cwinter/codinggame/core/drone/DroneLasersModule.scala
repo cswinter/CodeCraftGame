@@ -28,7 +28,7 @@ class DroneLasersModule(positions: Seq[Int], owner: Drone)
       // TODO: report error
     } else {
       if (_cooldown <= 0) {
-        if (owner.isMothership) _cooldown = 10
+        if (owner.spec.isMothership) _cooldown = 10
         else _cooldown = 30
 
         val missiles =

@@ -6,9 +6,8 @@ import cwinter.codinggame.worldstate.BluePlayer
 import org.scalatest.FlatSpec
 
 class DroneFactoryModuleTest extends FlatSpec {
-  val mockDrone = new Drone(
-    Seq.fill(5)(NanobotFactory) ++ Seq.fill(2)(StorageModule),
-    6, null, BluePlayer, Vector2(0, 0), 0)
+  val mockDroneSpec = new DroneSpec(6, processingModules = 5, storageModules = 2)
+  val mockDrone = new Drone(mockDroneSpec, null, BluePlayer, Vector2(0, 0), 0)
 
   val factory = new DroneFactoryModule((0 to 4).toSeq, mockDrone)
 
