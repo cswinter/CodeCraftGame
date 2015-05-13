@@ -102,7 +102,7 @@ class DroneModelBuilder(drone: DroneDescriptor, timestep: Int)(implicit val rs: 
         case ShieldGeneratorDescriptor(position) =>
           DroneShieldGeneratorModel(ModulePosition(sides, position))
         case ProcessingModuleDescriptor(positions, tMerging) =>
-          FactoryModelBuilder(ModulePosition(sides, positions), signature.animationTime, tMerging, positions.size)
+          ProcessingModuleModelBuilder(ModulePosition(sides, positions), signature.animationTime, tMerging, positions.size)
         case StorageModuleDescriptor(positions, contents, tm) =>
           DroneStorageModelBuilder(ModulePosition(sides, positions), contents, positions.size, tm)
         case ManipulatorDescriptor(position) =>

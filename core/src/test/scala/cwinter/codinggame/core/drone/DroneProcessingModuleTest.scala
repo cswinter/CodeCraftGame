@@ -5,37 +5,37 @@ import cwinter.codinggame.util.maths.Vector2
 import cwinter.codinggame.worldstate.BluePlayer
 import org.scalatest.FlatSpec
 
-class DroneFactoryModuleTest extends FlatSpec {
+class DroneProcessingModuleTest extends FlatSpec {
   val mockDroneSpec = new DroneSpec(6, processingModules = 5, storageModules = 2)
   val mockDrone = new Drone(mockDroneSpec, null, BluePlayer, Vector2(0, 0), 0)
 
-  val factory = new DroneFactoryModule((0 to 4).toSeq, mockDrone)
+  val processingModule = new DroneProcessingModule((0 to 4).toSeq, mockDrone)
 
   "A factory module" should "generate the correct amount of resources when processing a mineral crystal" in {
     for (mineralSize <- 1 to 5) {
-      factory.startMineralProcessing(new MineralCrystal(mineralSize, Vector2.NullVector, true))
-      val (_, resourcesConsumed, resourcesSpawned) = runFactory(factory, 2 * factory.MineralProcessingPeriod)
-      assert(resourcesSpawned.size == mineralSize * factory.MineralResourceYield)
+      processingModule.startMineralProcessing(new MineralCrystal(mineralSize, Vector2.NullVector, true))
+      val (_, resourcesConsumed, resourcesSpawned) = runProcessingModule(processingModule, 2 * processingModule.MineralProcessingPeriod)
+      assert(resourcesSpawned.size == mineralSize * processingModule.MineralResourceYield)
     }
   }
 
   it should "generate a mineral destroyed event after processing a mineral crystal" in {
     for (mineralSize <- 1 to 5) {
       val mineralCrystal = new MineralCrystal(mineralSize, Vector2.NullVector, true)
-      factory.startMineralProcessing(mineralCrystal)
-      val (events, _, _) = runFactory(factory, 2 * factory.MineralProcessingPeriod)
+      processingModule.startMineralProcessing(mineralCrystal)
+      val (events, _, _) = runProcessingModule(processingModule, 2 * processingModule.MineralProcessingPeriod)
       assert(events.contains(MineralCrystalDestroyed(mineralCrystal)))
     }
   }
 
   it should "not generate spurious events or resources" in {
-    val (events, resourcesConsumed, resourcesSpawned) = runFactory(factory, 250)
+    val (events, resourcesConsumed, resourcesSpawned) = runProcessingModule(processingModule, 250)
     assert(events == Seq())
     assert(resourcesConsumed.size == 0)
     assert(resourcesSpawned.size == 0)
   }
 
-  def runFactory(factory: DroneFactoryModule, minTime: Int): (Seq[SimulatorEvent], Seq[Vector2], Seq[Vector2]) = {
+  def runProcessingModule(module: DroneProcessingModule, minTime: Int): (Seq[SimulatorEvent], Seq[Vector2], Seq[Vector2]) = {
     var continue = true
     var allEvents = Seq.empty[SimulatorEvent]
     var netResourceSpawns = Seq.empty[Vector2]
@@ -43,7 +43,7 @@ class DroneFactoryModuleTest extends FlatSpec {
     while (continue) {
       continue = false
       for (i <- 0 until minTime) {
-        val (events, r, rs) = factory.update(0)
+        val (events, r, rs) = module.update(0)
         if (r.nonEmpty || events.nonEmpty || rs.nonEmpty) {
           continue = true
         }

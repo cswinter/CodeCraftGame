@@ -4,7 +4,7 @@ import cwinter.codinggame.worldstate.{DroneModuleDescriptor, ProcessingModuleDes
 import cwinter.codinggame.core._
 import cwinter.codinggame.util.maths.{Vector2, Rng}
 
-class DroneFactoryModule(positions: Seq[Int], owner: Drone)
+class DroneProcessingModule(positions: Seq[Int], owner: Drone)
     extends DroneModule(positions, owner) {
 
   final val MineralProcessingPeriod = 15

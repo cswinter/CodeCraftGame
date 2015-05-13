@@ -181,7 +181,7 @@ class Drone(
   def isConstructing: Boolean = manipulator.map(_.isConstructing) == Some(true)
 
   def storageCapacity = spec.storageModules
-  def factoryCapacity = spec.processingModules
+  def processingCapacity = spec.processingModules
   def size = spec.size
   def radius = spec.radius
 

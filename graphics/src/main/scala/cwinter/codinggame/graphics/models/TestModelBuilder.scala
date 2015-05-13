@@ -21,8 +21,8 @@ case class TestModelBuilder(t: Int)(implicit rs: RenderStack) extends ModelBuild
 }
 
 
-case class FactoryModelBuilder(positions: Seq[VertexXY], t: Int, tMerging: Option[Int], size: Int)(implicit rs: RenderStack) extends ModelBuilder[FactoryModelBuilder, Unit] {
-  def signature: FactoryModelBuilder = this
+case class ProcessingModuleModelBuilder(positions: Seq[VertexXY], t: Int, tMerging: Option[Int], size: Int)(implicit rs: RenderStack) extends ModelBuilder[ProcessingModuleModelBuilder, Unit] {
+  def signature: ProcessingModuleModelBuilder = this
 
   override protected def buildModel: Model[Unit] = {
     // triangle 1: 0, 2, 4
