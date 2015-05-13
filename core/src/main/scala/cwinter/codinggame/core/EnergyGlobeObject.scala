@@ -8,19 +8,29 @@ class EnergyGlobeObject(
   var tta: Int,
   targetPosition: Vector2
 ) extends WorldObject {
+  final val FadeTime = 15
   val velocity = (targetPosition - position) / tta
+  var fade = FadeTime
 
   override private[core] def descriptor: Seq[WorldObjectDescriptor] = Seq(
-    EnergyGlobeDescriptor(position.x.toFloat, position.y.toFloat)
+    if (tta > 0) {
+      EnergyGlobeDescriptor(position.x.toFloat, position.y.toFloat)
+    } else {
+      EnergyGlobeDescriptor(position.x.toFloat, position.y.toFloat, fade / FadeTime.toFloat)
+    }
   )
 
   override def update(): Seq[SimulatorEvent] = {
-    tta -= 1
-    position += velocity
-
-    if (tta == 0) Seq(RemoveEnergyGlobeAnimation(this))
+    if (tta > 0) {
+      tta -= 1
+      position += velocity
+    } else {
+      fade -= 1
+    }
+    if (fade == 0) Seq(RemoveEnergyGlobeAnimation(this))
     else Seq()
   }
 
-  override private[core] def hasDied: Boolean = tta <= 0
+  override private[core] def hasDied: Boolean = fade <= 0
 }
+

@@ -18,11 +18,12 @@ class RenderStack(implicit val gl: GL4, implicit val fbo: FramebufferObject) {
   val GaussianGlow: GaussianGlow = new GaussianGlow
   val GaussianGlowPIntensity: GaussianGlowPIntensity = new GaussianGlowPIntensity
   val TranslucentAdditive: TranslucentAdditive = new TranslucentAdditive
+  val TranslucentProportional: TranslucentProportional = new TranslucentProportional
   val TranslucentAdditivePIntensity: TranslucentAdditivePIntensity = new TranslucentAdditivePIntensity
   // TODO: possible to write macro that automatically collects all materials/emits warning if not all are added?
   /** NEED TO ADD ANY NEW MATERIALS HERE: **/
   val materials = List(SimpleMaterial, MaterialXYRGB, BloomShader, GaussianGlow, GaussianGlowPIntensity,
-    TranslucentAdditive, TranslucentAdditivePIntensity)
+    TranslucentAdditive, TranslucentProportional, TranslucentAdditivePIntensity)
 
 
   // texture to screen rendering code

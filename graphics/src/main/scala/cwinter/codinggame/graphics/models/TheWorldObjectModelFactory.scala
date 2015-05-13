@@ -40,9 +40,9 @@ object TheWorldObjectModelFactory {
         ManipulatorArmModelFactory.build(player, x1, y1, x2, y2),
         IdentityMatrix4x4
       )
-      case EnergyGlobeDescriptor(x, y) => new ClosedModel[Unit](
+      case EnergyGlobeDescriptor(x, y, f) => new ClosedModel[Unit](
         Unit,
-        EnergyGlobeModelFactory.build(VertexXY(x, y)).noCaching.getModel,
+        EnergyGlobeModelFactory.build(VertexXY(x, y), f).noCaching.getModel,
         IdentityMatrix4x4
       )
       case TestingObject(t) => new ClosedModel[Unit](

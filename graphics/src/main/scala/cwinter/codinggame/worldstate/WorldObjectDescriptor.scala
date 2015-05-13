@@ -58,8 +58,11 @@ case class ManipulatorDescriptor(position: Int) extends DroneModuleDescriptor
 
 case class EnergyGlobeDescriptor(
   xPos: Float,
-  yPos: Float
+  yPos: Float,
+  fade: Float = 1
 ) extends WorldObjectDescriptor {
+  assert(fade >= 0)
+  assert(fade <= 1)
   val identifier: Int = 0
   val orientation: Float = 0
 }
