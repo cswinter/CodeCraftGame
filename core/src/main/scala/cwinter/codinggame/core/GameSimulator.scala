@@ -33,6 +33,7 @@ class GameSimulator(
   )
 
   map.minerals.foreach(spawnMineral)
+  // TODO: check map bounds
   spawnDrone(mothership(BluePlayer, mothershipController1, Vector2(1000, 200)))
   spawnDrone(mothership(OrangePlayer, mothershipController2, Vector2(-1000, -200)))
 

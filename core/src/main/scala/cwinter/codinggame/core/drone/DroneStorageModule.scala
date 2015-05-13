@@ -8,8 +8,8 @@ import scala.collection.{BitSet, mutable}
 
 class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: Int = 0)
   extends DroneModule(positions, owner) {
+  import DroneStorageModule._
 
-  final val HarvestingTime = 50
 
   private[this] var storedEnergyGlobes = mutable.Stack[EnergyGlobe](Seq.fill(startingResources)(StaticEnergyGlobe): _*)
   private var _storedMinerals = Set.empty[MineralCrystal]
@@ -147,6 +147,10 @@ class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: I
 
 
   override def cancelMovement: Boolean = harvesting.nonEmpty
+}
+
+object DroneStorageModule {
+  final val HarvestingTime = 50
 }
 
 
