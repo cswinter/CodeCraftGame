@@ -1,6 +1,6 @@
 package cwinter.codinggame.util.maths
 
-import scala.languageFeature.implicitConversions
+import scala.language.implicitConversions
 
 class Float0To1 private (val value: Float) extends AnyVal
 

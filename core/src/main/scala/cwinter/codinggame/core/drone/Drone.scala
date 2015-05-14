@@ -28,6 +28,8 @@ class Drone(
   private final val NJetPositions = 6
 
 
+  private[this] var mineralDepositee: Option[Drone] = None
+
   // TODO: remove this once all logic is moved into modules
   private[this] var simulatorEvents = List.empty[SimulatorEvent]
 
@@ -64,7 +66,25 @@ class Drone(
     controller.onTick()
   }
 
+  def depositMineral(crystal: MineralCrystal, pos: Vector2): Unit = {
+    for {
+      s <- storage
+    } s.depositMineral(crystal, pos)
+  }
+
   override def update(): Seq[SimulatorEvent] = {
+    for {
+      depositee <- mineralDepositee
+      capacity = depositee.availableStorage
+      s <- storage
+      (min, pos) <- s.popMineralCrystal(capacity)
+    } {
+      depositee.depositMineral(min, pos)
+      if (s.storedMinerals.isEmpty) {
+        mineralDepositee = None
+      }
+    }
+
     for (Some(m) <- droneModules) {
       val (events, resourceDepletions, resourceSpawns) = m.update(availableResources)
       simulatorEvents :::= events.toList
@@ -173,7 +193,8 @@ class Drone(
 
   def depositMinerals(other: Drone): Unit = {
     assert(other != this)
-    for (s <- storage) s.depositMinerals(other.storage)
+
+    mineralDepositee = Some(other)
   }
 
   def dronesInSight: Set[Drone] = objectsInSight.filter(_.isInstanceOf[Drone]).map { case d: Drone => d }

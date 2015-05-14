@@ -11,6 +11,7 @@ class MineralCrystal(
   var harvestPosition: Vector2 = Vector2.NullVector,
   var harvestProgress: Option[Float0To1] = None
 ) extends WorldObject {
+
   override private[core] def descriptor: Seq[MineralDescriptor] = Seq(
     harvestProgress match {
       case Some(_) =>

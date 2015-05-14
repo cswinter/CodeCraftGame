@@ -29,6 +29,8 @@ case class VertexXY(x: Float, y: Float) extends Vertex {
   def zPos(z: Float): VertexXYZ = VertexXYZ(x, y, z)
 
   def direction = math.atan2(y, x).toFloat
+
+  def toVector2: Vector2 = Vector2(x, y)
 }
 
 

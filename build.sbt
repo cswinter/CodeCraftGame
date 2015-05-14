@@ -8,7 +8,6 @@ lazy val util = (project in file("util")).
     libraryDependencies ++= commonDependencies
   )
 
-
 lazy val graphics = (project in file("graphics")).
   settings(Commons.settings: _*).
   settings(

@@ -10,7 +10,8 @@ object Commons {
     scalacOptions := Seq(
       "-Xlint",
       "-deprecation",
-      "-Xfatal-warnings"
+      "-Xfatal-warnings",
+      "-feature"
     )
   )
 }

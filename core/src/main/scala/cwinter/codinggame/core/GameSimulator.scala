@@ -124,6 +124,8 @@ class GameSimulator(
         visibleObjects.remove(mineralCrystal)
       case MineralCrystalActivated(mineralCrystal) =>
         visibleObjects.add(mineralCrystal)
+    case MineralCrystalInactivated(mineralCrystal) =>
+        visibleObjects.remove(mineralCrystal)
       case DroneConstructionStarted(drone) =>
         visibleObjects.add(drone)
       case DroneConstructionCancelled(drone) =>
@@ -185,6 +187,7 @@ case class MineralCrystalHarvested(mineralCrystal: MineralCrystal) extends Simul
 case class DroneConstructionStarted(drone: Drone) extends SimulatorEvent
 case class SpawnDrone(drone: Drone) extends SimulatorEvent
 case class MineralCrystalActivated(mineralCrystal: MineralCrystal) extends SimulatorEvent
+case class MineralCrystalInactivated(mineralCrystal: MineralCrystal) extends SimulatorEvent
 case class MineralCrystalDestroyed(mineralCrystal: MineralCrystal) extends SimulatorEvent
 case class SpawnHomingMissile(player: Player, position: Vector2, target: Drone) extends SimulatorEvent
 case class HomingMissileFaded(missile: HomingMissile) extends SimulatorEvent
