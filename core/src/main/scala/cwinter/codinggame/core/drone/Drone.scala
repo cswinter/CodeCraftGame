@@ -30,6 +30,8 @@ class Drone(
 
   private[this] var mineralDepositee: Option[Drone] = None
 
+  private[this] var automaticMineralProcessing: Boolean = true
+
   // TODO: remove this once all logic is moved into modules
   private[this] var simulatorEvents = List.empty[SimulatorEvent]
 
@@ -49,6 +51,12 @@ class Drone(
   }
 
   def processEvents(): Unit = {
+    for (mineralCrystal <- storedMinerals) {
+      if (availableFactories >= mineralCrystal.size) {
+        startMineralProcessing(mineralCrystal)
+      }
+    }
+
     if (dynamics.hasArrived) {
       enqueueEvent(ArrivedAtPosition)
     }
