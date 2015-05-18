@@ -20,7 +20,6 @@ class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: I
 
 
   override def update(availableResources: Int): (Seq[SimulatorEvent], Seq[Vector2], Seq[Vector2]) = {
-    //println(_storedMinerals)
     var effects = List.empty[SimulatorEvent]
 
     for {
@@ -28,27 +27,6 @@ class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: I
       e <- s.contents.effect
     } effects ::= e
     _storedMinerals = _storedMinerals.map(_.updated)
-    /*
-    for (mcit <- depositing) {
-      mcit.update()
-      if (mcit.hasArrived) {
-        _storedMinerals += mcit.mineralCrystal
-      }
-    }
-    depositing = depositing.filter(!_.hasArrived)
-    */
-
-    /*
-    // TODO: make this take time, + animation
-    // TODO: range check
-    for (s <- deposit) {
-      if (s.availableStorage >= storedMinerals.foldLeft(0)(_ + _.size)) {
-        s._storedMinerals ++= _storedMinerals
-        _storedMinerals = Set.empty[MineralCrystal]
-        deposit = None
-      }
-    }
-    */
 
     storedEnergyGlobes = storedEnergyGlobes.map(_.updated())
 
@@ -61,17 +39,17 @@ class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: I
   }
 
   private def reassignMineralStorageIndices(): Unit = {
-    // TODO: implement
+    val indices = partitionIndices(_storedMinerals.map(_.size))
+    for ((slot, indices) <- _storedMinerals zip indices) {
+      slot.positions = indices
+    }
   }
 
   private def createMineralSlot(contents: MineralSlotContents): MineralSlot = {
     val newSlot = new MineralSlot(Seq(), contents)
     _storedMinerals :+= newSlot
     _storedMinerals = _storedMinerals.sortBy(_.size)
-    val indices = partitionIndices(_storedMinerals.map(_.size))
-    for ((slot, indices) <- _storedMinerals zip indices) {
-      slot.positions = indices
-    }
+  reassignMineralStorageIndices()
     newSlot
   }
 
@@ -142,8 +120,6 @@ class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: I
     }
   }
 
-  def clear(): Unit = _storedMinerals = ???
-
   def storedMinerals: Set[MineralCrystal] = _storedMinerals.map(_.contents.mineralCrystal).toSet // TODO: improve
 
   def availableResources: Int = storedEnergyGlobes.size
@@ -155,7 +131,8 @@ class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: I
 
   private def calculateAbsoluteMineralPosition(mineralCrystal: MineralCrystal): Vector2 = {
     val slot = _storedMinerals.find(_.contents.mineralCrystal == mineralCrystal).get
-    ModulePosition.center(owner.size, slot.positions).toVector2 + owner.position
+    ModulePosition.center(owner.size, slot.positions).toVector2.rotated(owner.dynamics.orientation) +
+      owner.position
   }
 
   override def descriptors: Seq[DroneModuleDescriptor] = {
