@@ -1,20 +1,23 @@
 package cwinter.codinggame.graphics.engine
 
-import java.awt.TextField
+import java.awt.{Font, TextField}
 
 import javax.media.opengl._
 import javax.media.opengl.GL._
 
+import com.jogamp.opengl.util.awt.TextRenderer
 import cwinter.codinggame.graphics.engine
 import cwinter.codinggame.graphics.materials.Material
+import cwinter.codinggame.graphics.matrices.IdentityMatrix4x4
 import cwinter.codinggame.graphics.model.{VBO, TheModelCache, PrimitiveModelBuilder}
 import cwinter.codinggame.graphics.models.TheWorldObjectModelFactory
+import cwinter.codinggame.util.maths.VertexXY
 import cwinter.codinggame.worldstate.GameWorld
 import org.joda.time.DateTime
 
 
 object RenderFrame extends GLEventListener {
-  val Debug = false
+  val DebugMode = false
 
   private[this] var paused = false
 
@@ -24,6 +27,7 @@ object RenderFrame extends GLEventListener {
   implicit var fbo: FramebufferObject = null
   implicit var renderStack: RenderStack = null
   var camera = new Camera2D
+  var textRenderer: TextRenderer = null
 
   var cullFaceToggle = false
   val FrametimeSamples = 100
@@ -76,6 +80,8 @@ object RenderFrame extends GLEventListener {
     // draw to screen
     renderStack.postDraw(camera)
 
+    renderText(drawable)
+
     // dispose one-time VBOs
     PrimitiveModelBuilder.disposeAll()
 
@@ -91,6 +97,30 @@ object RenderFrame extends GLEventListener {
       f"Allocated VBOs: ${VBO.count}   " +
       f"Last cached model: ${TheModelCache.lastCachedModel}"
     )
+  }
+
+  private def renderText(drawable: GLAutoDrawable): Unit = {
+    val gl = getGL(drawable)
+    import gl._
+    val width = drawable.getSurfaceWidth
+    val height = drawable.getSurfaceHeight
+    glUseProgram(0)
+    glBindVertexArray(0)
+
+    textRenderer.beginRendering(width, height)
+
+    for (TextModel(text, xPos, yPos, color) <- Debug.textModels) {
+      textRenderer.setColor(color.r, color.g, color.b, color.a)
+      val bounds = textRenderer.getBounds(text)
+      val projection = IdentityMatrix4x4
+      val worldPos = VertexXY(xPos - bounds.getWidth.toFloat / 2, yPos + bounds.getHeight.toFloat / 2)
+      val position = (1 / camera.zoomFactor) * (worldPos - VertexXY(camera.x, camera.y)) +
+        VertexXY(width / 2, height / 2)
+      println(position)
+      textRenderer.draw("Text to draw", position.x.toInt, position.y.toInt)
+    }
+
+    textRenderer.endRendering()
   }
 
   private def update(): Unit = {
@@ -135,6 +165,7 @@ object RenderFrame extends GLEventListener {
 
     fbo = new FramebufferObject
     renderStack = new RenderStack
+    textRenderer = new TextRenderer(new Font("SansSerif", Font.BOLD, 14))
   }
 
   def reshape(drawable: GLAutoDrawable, x: Int, y: Int, width: Int, height: Int): Unit = {
@@ -146,7 +177,7 @@ object RenderFrame extends GLEventListener {
   }
 
   def getGL(drawable: GLAutoDrawable): GL4 =
-    if (Debug) {
+    if (DebugMode) {
       drawable.setGL(new DebugGL4(drawable.getGL.getGL4)).getGL4
     } else {
       drawable.getGL.getGL4

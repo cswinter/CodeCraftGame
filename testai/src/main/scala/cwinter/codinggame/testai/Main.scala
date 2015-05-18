@@ -2,7 +2,8 @@ package cwinter.codinggame.testai
 
 import cwinter.codinggame.core._
 import cwinter.codinggame.core.drone._
-import cwinter.codinggame.util.maths.{Rng, Vector2}
+import cwinter.codinggame.graphics.engine.Debug
+import cwinter.codinggame.util.maths.{ColorRGBA, Rng, Vector2}
 import cwinter.codinggame.util.modules.ModulePosition
 import cwinter.codinggame.worldstate.BluePlayer
 
@@ -29,6 +30,7 @@ class Mothership extends DroneController {
   }
 
   override def onTick(): Unit = {
+    Debug.drawText("Hello, world!", 0, 0, ColorRGBA(0, 0, 1, 1))
     if (!isConstructing) {
       if (collectors < 2) {
         buildDrone(collectorSpec, new ScoutingDroneController(this))
