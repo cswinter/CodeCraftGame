@@ -118,7 +118,8 @@ class Drone(
     }
 
 
-    val damage = shieldGenerators.map(_.absorbDamage(1)).getOrElse(0)
+    val incomingDamage = 1
+    val damage = shieldGenerators.map(_.absorbDamage(incomingDamage)).getOrElse(incomingDamage)
 
     for (_ <- 0 until damage)
       hullState = damageHull(hullState)
