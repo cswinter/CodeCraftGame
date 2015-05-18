@@ -7,8 +7,8 @@ import cwinter.codinggame.util.maths.{Vector2, Rng}
 class DroneProcessingModule(positions: Seq[Int], owner: Drone)
     extends DroneModule(positions, owner) {
 
-  final val MineralProcessingPeriod = 15
-  final val MineralResourceYield = 1
+  final val MineralProcessingPeriod = 100
+  final val MineralResourceYield = 2
 
 
   private[this] var newMinerals = List.empty[MineralCrystal]
