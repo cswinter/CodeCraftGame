@@ -2,7 +2,7 @@ package cwinter.codinggame.testai
 
 import cwinter.codinggame.core._
 import cwinter.codinggame.core.objects.drone._
-import cwinter.codinggame.core.objects.MineralCrystal
+import cwinter.codinggame.core.objects.{MineralCrystalHandle, MineralCrystal}
 import cwinter.codinggame.graphics.engine.Debug
 import cwinter.codinggame.util.maths.{ColorRGBA, Rng, Vector2}
 import cwinter.codinggame.util.modules.ModulePosition
@@ -18,7 +18,7 @@ object Main {
 class Mothership extends DroneController {
   var t = 0
   var collectors = 0
-  var minerals = Set.empty[MineralCrystal]
+  var minerals = Set.empty[MineralCrystalHandle]
 
   val scoutSpec = DroneSpec(3, storageModules = 1)
   val collectorSpec = DroneSpec(4, storageModules = 2)
@@ -50,14 +50,14 @@ class Mothership extends DroneController {
     }
   }
 
-  def findClosestMineral(maxSize: Int, position: Vector2): Option[MineralCrystal] = {
+  def findClosestMineral(maxSize: Int, position: Vector2): Option[MineralCrystalHandle] = {
     minerals = minerals.filter(!_.harvested)
     val filtered = minerals.filter(_.size <= maxSize)
     if (filtered.isEmpty) None
     else Some(filtered.minBy(m => (m.position - position).magnitudeSquared))
   }
 
-  def registerMineral(mineralCrystal: MineralCrystal): Unit = {
+  def registerMineral(mineralCrystal: MineralCrystalHandle): Unit = {
     minerals += mineralCrystal
   }
 
@@ -65,7 +65,7 @@ class Mothership extends DroneController {
     dronesInSight.filter(_.player != player)
 
 
-  override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = ()
+  override def onMineralEntersVision(mineralCrystal: MineralCrystalHandle): Unit = ()
   override def onArrival(): Unit = ()
   override def onDroneEntersVision(drone: Drone): Unit = ()
   override def onDeath(): Unit = ()
@@ -73,7 +73,7 @@ class Mothership extends DroneController {
 
 class ScoutingDroneController(val mothership: Mothership) extends DroneController {
   var hasReturned = false
-  var nextCrystal: Option[MineralCrystal] = None
+  var nextCrystal: Option[MineralCrystalHandle] = None
 
 
   // abstract methods for event handling
@@ -83,7 +83,7 @@ class ScoutingDroneController(val mothership: Mothership) extends DroneControlle
 
   override def onDeath(): Unit = mothership.collectors -= 1
 
-  override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = {
+  override def onMineralEntersVision(mineralCrystal: MineralCrystalHandle): Unit = {
     mothership.registerMineral(mineralCrystal)
   }
 
@@ -132,7 +132,7 @@ class AttackDroneController(val mothership: Mothership) extends DroneController 
     moveInDirection(Vector2(Rng.double(0, 100)))
   }
 
-  override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit =
+  override def onMineralEntersVision(mineralCrystal: MineralCrystalHandle): Unit =
     mothership.registerMineral(mineralCrystal)
 
   override def onTick(): Unit = {

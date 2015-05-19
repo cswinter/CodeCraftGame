@@ -1,7 +1,7 @@
 package cwinter.codinggame.core.objects.drone
 
 import cwinter.codinggame.core.errors.Errors
-import cwinter.codinggame.core.objects.MineralCrystal
+import cwinter.codinggame.core.objects.MineralCrystalHandle
 import cwinter.codinggame.util.maths.Vector2
 import cwinter.codinggame.worldstate.Player
 
@@ -12,7 +12,7 @@ abstract class DroneController extends DroneHandle {
   def onSpawn(): Unit
   def onDeath(): Unit
   def onTick(): Unit
-  def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit
+  def onMineralEntersVision(mineralCrystal: MineralCrystalHandle): Unit
   def onDroneEntersVision(drone: Drone): Unit
   def onArrival(): Unit
 
@@ -32,8 +32,8 @@ abstract class DroneController extends DroneHandle {
     drone.giveMovementCommand(MoveToPosition(position))
   }
 
-  def harvestMineral(mineralCrystal: MineralCrystal): Unit = {
-    drone.harvestResource(mineralCrystal)
+  def harvestMineral(mineralCrystal: MineralCrystalHandle): Unit = {
+    drone.harvestResource(mineralCrystal.mineralCrystal)
   }
 
   def depositMineralCrystals(otherDrone: DroneController): Unit = {
@@ -45,8 +45,8 @@ abstract class DroneController extends DroneHandle {
     drone.startDroneConstruction(ConstructDrone(newDrone))
   }
 
-  def processMineral(mineralCrystal: MineralCrystal): Unit = {
-    drone.startMineralProcessing(mineralCrystal)
+  def processMineral(mineralCrystal: MineralCrystalHandle): Unit = {
+    drone.startMineralProcessing(mineralCrystal.mineralCrystal)
   }
 
   def shootWeapons(target: DroneHandle): Unit = {
@@ -68,7 +68,9 @@ abstract class DroneController extends DroneHandle {
   def isConstructing: Boolean = drone.isConstructing
   def availableStorage: Int = drone.availableStorage
   def availableFactories: Int = drone.availableFactories
-  def storedMinerals: Seq[MineralCrystal] = drone.storedMinerals.toSeq // TODO: remove this conversion
+  // TODO: make this O(1)
+  def storedMinerals: Seq[MineralCrystalHandle] =
+    drone.storedMinerals.toSeq.map(new MineralCrystalHandle(_, player))
   def dronesInSight: Set[DroneHandle] = drone.dronesInSight.map( d =>
       if (d.player == drone.player) d.controller
       else new EnemyDroneHandle(d, drone.player)   // TODO: maybe create drone handles once for each player

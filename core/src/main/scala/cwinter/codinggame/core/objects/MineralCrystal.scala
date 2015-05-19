@@ -5,7 +5,7 @@ import cwinter.codinggame.util.maths.{Float0To1, Vector2}
 import cwinter.codinggame.worldstate.MineralDescriptor
 
 
-class MineralCrystal(
+private[core] class MineralCrystal(
   val size: Int,
   var position: Vector2,
   var harvested: Boolean = false,

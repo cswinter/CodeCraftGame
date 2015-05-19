@@ -1,8 +1,7 @@
 package cwinter.codinggame.core.ai.basic
 
-import cwinter.codinggame.core._
 import cwinter.codinggame.core.objects.drone._
-import cwinter.codinggame.core.objects.MineralCrystal
+import cwinter.codinggame.core.objects.{MineralCrystalHandle, MineralCrystal}
 import cwinter.codinggame.util.maths.{Rng, Vector2}
 
 
@@ -44,7 +43,7 @@ class Mothership extends DroneController {
   def enemies: Set[DroneHandle] =
     dronesInSight.filter(_.player != player)
 
-  override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = ()
+  override def onMineralEntersVision(mineralCrystal: MineralCrystalHandle): Unit = ()
   override def onArrival(): Unit = ()
   override def onDroneEntersVision(drone: Drone): Unit = ()
   override def onDeath(): Unit = ()
@@ -52,7 +51,7 @@ class Mothership extends DroneController {
 
 class ScoutingDroneController(val mothership: Mothership) extends DroneController {
   var hasReturned = false
-  var nextCrystal: Option[MineralCrystal] = None
+  var nextCrystal: Option[MineralCrystalHandle] = None
 
 
   // abstract methods for event handling
@@ -62,7 +61,7 @@ class ScoutingDroneController(val mothership: Mothership) extends DroneControlle
 
   override def onDeath(): Unit = mothership.collectors -= 1
 
-  override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = {
+  override def onMineralEntersVision(mineralCrystal: MineralCrystalHandle): Unit = {
     if (nextCrystal.isEmpty && mineralCrystal.size <= availableStorage) {
       moveToPosition(mineralCrystal.position)
       nextCrystal = Some(mineralCrystal)
@@ -103,7 +102,7 @@ class AttackDroneController extends DroneController {
   // abstract methods for event handling
   override def onSpawn(): Unit = ()
 
-  override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = ()
+  override def onMineralEntersVision(mineralCrystal: MineralCrystalHandle): Unit = ()
 
   override def onTick(): Unit = {
     if (weaponsCooldown <= 0 && enemies.nonEmpty) {
