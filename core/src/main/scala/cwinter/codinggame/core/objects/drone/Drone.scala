@@ -6,8 +6,7 @@ import cwinter.codinggame.util.maths.{Float0To1, Vector2}
 import cwinter.codinggame.worldstate.{DroneDescriptor, DroneModuleDescriptor, Player, WorldObjectDescriptor}
 
 
-// TODO: make private[core] once DroneHandle class is implemented
-class Drone(
+private[core] class Drone(
   val spec: DroneSpec,
   val controller: DroneController,
   val player: Player,
@@ -32,6 +31,8 @@ class Drone(
   private[this] var mineralDepositee: Option[Drone] = None
 
   private[this] var automaticMineralProcessing: Boolean = true
+
+  private[this] var _hasDied: Boolean = false
 
   // TODO: remove this once all logic is moved into modules
   private[this] var simulatorEvents = List.empty[SimulatorEvent]
@@ -141,6 +142,7 @@ class Drone(
     if (hitpoints == 0) {
       dynamics.remove()
       simulatorEvents ::= DroneKilled(this)
+      _hasDied = true
       for {
         m <- manipulator
         d <- m.droneInConstruction
@@ -248,7 +250,7 @@ class Drone(
   }
 
 
-  override def hasDied = false
+  override def hasDied = _hasDied
 }
 
 
