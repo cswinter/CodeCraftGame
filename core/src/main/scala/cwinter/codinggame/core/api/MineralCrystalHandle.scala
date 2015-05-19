@@ -1,5 +1,6 @@
-package cwinter.codinggame.core.objects
+package cwinter.codinggame.core.api
 
+import cwinter.codinggame.core.objects.MineralCrystal
 import cwinter.codinggame.util.maths.Vector2
 import cwinter.codinggame.worldstate.Player
 

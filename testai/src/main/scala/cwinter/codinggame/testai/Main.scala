@@ -1,12 +1,7 @@
 package cwinter.codinggame.testai
 
-import cwinter.codinggame.core._
-import cwinter.codinggame.core.objects.drone._
-import cwinter.codinggame.core.objects.{MineralCrystalHandle, MineralCrystal}
-import cwinter.codinggame.graphics.engine.Debug
-import cwinter.codinggame.util.maths.{ColorRGBA, Rng, Vector2}
-import cwinter.codinggame.util.modules.ModulePosition
-import cwinter.codinggame.worldstate.BluePlayer
+import cwinter.codinggame.core.api._
+import cwinter.codinggame.util.maths.{Vector2, Rng}
 
 object Main {
   def main(args: Array[String]): Unit = {
@@ -67,7 +62,7 @@ class Mothership extends DroneController {
 
   override def onMineralEntersVision(mineralCrystal: MineralCrystalHandle): Unit = ()
   override def onArrival(): Unit = ()
-  override def onDroneEntersVision(drone: Drone): Unit = ()
+  override def onDroneEntersVision(drone: DroneHandle): Unit = ()
   override def onDeath(): Unit = ()
 }
 
@@ -124,7 +119,7 @@ class ScoutingDroneController(val mothership: Mothership) extends DroneControlle
     }
   }
 
-  override def onDroneEntersVision(drone: Drone): Unit = ()
+  override def onDroneEntersVision(drone: DroneHandle): Unit = ()
 }
 
 class AttackDroneController(val mothership: Mothership) extends DroneController {
@@ -151,7 +146,7 @@ class AttackDroneController(val mothership: Mothership) extends DroneController 
 
   override def onArrival(): Unit = ()
 
-  override def onDroneEntersVision(drone: Drone): Unit = ()
+  override def onDroneEntersVision(drone: DroneHandle): Unit = ()
   override def onDeath(): Unit = ()
 }
 

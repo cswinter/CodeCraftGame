@@ -1,6 +1,6 @@
-package cwinter.codinggame.core
+package cwinter.codinggame.core.api
 
-import cwinter.codinggame.core.objects.drone.DroneController
+import cwinter.codinggame.core.{GameSimulator, SimulatorEvent, WorldMap, ai}
 import cwinter.codinggame.graphics.application.DrawingCanvas
 import cwinter.codinggame.util.maths.Rectangle
 

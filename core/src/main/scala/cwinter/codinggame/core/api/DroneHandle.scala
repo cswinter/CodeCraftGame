@@ -1,5 +1,6 @@
-package cwinter.codinggame.core.objects.drone
+package cwinter.codinggame.core.api
 
+import cwinter.codinggame.core.objects.drone.Drone
 import cwinter.codinggame.util.maths.Vector2
 import cwinter.codinggame.worldstate.Player
 

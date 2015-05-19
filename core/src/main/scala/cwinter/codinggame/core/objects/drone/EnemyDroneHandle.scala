@@ -1,5 +1,6 @@
 package cwinter.codinggame.core.objects.drone
 
+import cwinter.codinggame.core.api.{DroneHandle, DroneSpec}
 import cwinter.codinggame.core.errors.{ObjectNotVisibleException, Errors}
 import cwinter.codinggame.util.maths.Vector2
 import cwinter.codinggame.worldstate.Player

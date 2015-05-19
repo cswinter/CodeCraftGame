@@ -1,7 +1,8 @@
 package cwinter.codinggame.core.objects.drone
 
 import cwinter.codinggame.core._
-import cwinter.codinggame.core.objects.{MineralCrystalHandle, WorldObject, MineralCrystal, EnergyGlobeObject}
+import cwinter.codinggame.core.api.{DroneController, DroneSpec, MineralCrystalHandle}
+import cwinter.codinggame.core.objects.{WorldObject, MineralCrystal, EnergyGlobeObject}
 import cwinter.codinggame.util.maths.{Float0To1, Vector2}
 import cwinter.codinggame.worldstate.{DroneDescriptor, DroneModuleDescriptor, Player, WorldObjectDescriptor}
 
@@ -73,7 +74,10 @@ private[core] class Drone(
         case MineralEntersSightRadius(mineral) =>
           controller.onMineralEntersVision(new MineralCrystalHandle(mineral, player))
         case ArrivedAtPosition => controller.onArrival()
-        case DroneEntersSightRadius(drone) => controller.onDroneEntersVision(drone)
+        case DroneEntersSightRadius(drone) => controller.onDroneEntersVision(
+          if (drone.player == player) drone.controller
+          else new EnemyDroneHandle(drone, player)
+        )
         case event => throw new Exception(s"Unhandled event! $event")
       }
       eventQueue.clear()

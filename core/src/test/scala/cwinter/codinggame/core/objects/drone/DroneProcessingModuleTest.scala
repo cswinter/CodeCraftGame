@@ -1,5 +1,6 @@
 package cwinter.codinggame.core.objects.drone
 
+import cwinter.codinggame.core.api.DroneSpec
 import cwinter.codinggame.core.objects.MineralCrystal
 import cwinter.codinggame.core.{MineralCrystalDestroyed, SimulatorEvent}
 import cwinter.codinggame.util.maths.Vector2

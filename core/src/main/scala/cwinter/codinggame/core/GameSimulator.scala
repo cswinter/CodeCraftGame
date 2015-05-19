@@ -1,6 +1,7 @@
 package cwinter.codinggame.core
 
 import cwinter.codinggame.collisions.VisionTracker
+import cwinter.codinggame.core.api.{DroneController, DroneSpec}
 import cwinter.codinggame.core.objects.drone._
 import cwinter.codinggame.core.errors.Errors
 import cwinter.codinggame.core.objects._

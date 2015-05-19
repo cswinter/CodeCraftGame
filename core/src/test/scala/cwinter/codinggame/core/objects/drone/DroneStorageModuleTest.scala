@@ -1,6 +1,7 @@
 package cwinter.codinggame.core.objects.drone
 
 import cwinter.codinggame.core.MineralCrystalHarvested
+import cwinter.codinggame.core.api.DroneSpec
 import cwinter.codinggame.core.objects.MineralCrystal
 import cwinter.codinggame.util.maths.Vector2
 import cwinter.codinggame.worldstate.BluePlayer

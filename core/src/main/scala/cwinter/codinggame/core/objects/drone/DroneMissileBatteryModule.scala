@@ -4,7 +4,7 @@ import cwinter.codinggame.core.{SimulatorEvent, SpawnHomingMissile}
 import cwinter.codinggame.util.maths.Vector2
 import cwinter.codinggame.worldstate.{DroneModuleDescriptor, MissileBatteryDescriptor}
 
-class DroneMissileBatteryModule(positions: Seq[Int], owner: Drone)
+private[core] class DroneMissileBatteryModule(positions: Seq[Int], owner: Drone)
   extends DroneModule(positions, owner) {
   final val LockOnRadius = 300
 

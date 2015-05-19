@@ -1,7 +1,7 @@
-package cwinter.codinggame.core.objects.drone
+package cwinter.codinggame.core.api
 
 import cwinter.codinggame.core.errors.Errors
-import cwinter.codinggame.core.objects.MineralCrystalHandle
+import cwinter.codinggame.core.objects.drone._
 import cwinter.codinggame.util.maths.Vector2
 import cwinter.codinggame.worldstate.Player
 
@@ -13,7 +13,7 @@ abstract class DroneController extends DroneHandle {
   def onDeath(): Unit
   def onTick(): Unit
   def onMineralEntersVision(mineralCrystal: MineralCrystalHandle): Unit
-  def onDroneEntersVision(drone: Drone): Unit
+  def onDroneEntersVision(drone: DroneHandle): Unit
   def onArrival(): Unit
 
   // drone commands
