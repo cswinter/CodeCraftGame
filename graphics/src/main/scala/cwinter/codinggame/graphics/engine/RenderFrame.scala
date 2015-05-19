@@ -116,8 +116,7 @@ object RenderFrame extends GLEventListener {
       val worldPos = VertexXY(xPos - bounds.getWidth.toFloat / 2, yPos + bounds.getHeight.toFloat / 2)
       val position = (1 / camera.zoomFactor) * (worldPos - VertexXY(camera.x, camera.y)) +
         VertexXY(width / 2, height / 2)
-      println(position)
-      textRenderer.draw("Text to draw", position.x.toInt, position.y.toInt)
+      textRenderer.draw(text, position.x.toInt, position.y.toInt)
     }
 
     textRenderer.endRendering()

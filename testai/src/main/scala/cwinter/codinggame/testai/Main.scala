@@ -30,7 +30,6 @@ class Mothership extends DroneController {
   }
 
   override def onTick(): Unit = {
-    Debug.drawText("Hello, world!", 0, 0, ColorRGBA(0, 0, 1, 1))
     if (!isConstructing) {
       if (collectors < 2) {
         buildDrone(collectorSpec, new ScoutingDroneController(this))

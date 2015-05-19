@@ -243,8 +243,6 @@ class Drone(
 
 
   override def hasDied = false
-
-
 }
 
 

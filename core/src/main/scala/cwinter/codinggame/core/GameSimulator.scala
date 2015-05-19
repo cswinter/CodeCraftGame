@@ -176,6 +176,8 @@ class GameSimulator(
         drone.enqueueEvent(DroneEntersSightRadius(other))
       case e => throw new Exception(s"AHHHH, AN UFO!!! RUN FOR YOUR LIFE!!! $e")
     }
+
+    Errors.updateMessages()
   }
 
   override def timestep = physicsEngine.timestep
