@@ -1,4 +1,4 @@
-package cwinter.codinggame.core.drone
+package cwinter.codinggame.core.objects.drone
 
 import cwinter.codinggame.core.errors.{ObjectNotVisibleException, Errors}
 import cwinter.codinggame.util.maths.Vector2

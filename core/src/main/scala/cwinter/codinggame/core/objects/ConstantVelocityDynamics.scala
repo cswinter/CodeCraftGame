@@ -1,7 +1,7 @@
-package cwinter.codinggame.core
+package cwinter.codinggame.core.objects
 
 import cwinter.codinggame.physics._
-import cwinter.codinggame.util.maths.{Solve, Rectangle, Vector2}
+import cwinter.codinggame.util.maths.{Rectangle, Solve, Vector2}
 
 abstract class ConstantVelocityDynamics(
   val radius: Double,

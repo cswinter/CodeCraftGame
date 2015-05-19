@@ -1,6 +1,7 @@
 package cwinter.codinggame.core
 
-import cwinter.codinggame.core.drone.{DroneSpec, DroneStorageModule, Drone, DroneController}
+import cwinter.codinggame.core.objects.drone.{DroneSpec, DroneStorageModule, Drone, DroneController}
+import cwinter.codinggame.core.objects.MineralCrystal
 import cwinter.codinggame.util.maths.{Vector2, Rectangle}
 import cwinter.codinggame.worldstate.BluePlayer
 import org.scalatest.FlatSpec

@@ -1,5 +1,6 @@
 package cwinter.codinggame.core
 
+import cwinter.codinggame.core.objects.ConstantVelocityDynamics
 import cwinter.codinggame.util.maths.{Rectangle, Vector2}
 import org.scalatest.FlatSpec
 

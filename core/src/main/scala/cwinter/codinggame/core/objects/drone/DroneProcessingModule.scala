@@ -1,5 +1,6 @@
-package cwinter.codinggame.core.drone
+package cwinter.codinggame.core.objects.drone
 
+import cwinter.codinggame.core.objects.MineralCrystal
 import cwinter.codinggame.worldstate.{DroneModuleDescriptor, ProcessingModuleDescriptor}
 import cwinter.codinggame.core._
 import cwinter.codinggame.util.maths.{Vector2, Rng}

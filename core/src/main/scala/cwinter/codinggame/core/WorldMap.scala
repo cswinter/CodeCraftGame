@@ -1,5 +1,6 @@
 package cwinter.codinggame.core
 
+import cwinter.codinggame.core.objects.MineralCrystal
 import cwinter.codinggame.util.maths.{Rng, Rectangle, Vector2}
 
 case class WorldMap(

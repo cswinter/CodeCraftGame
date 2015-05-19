@@ -1,6 +1,7 @@
-package cwinter.codinggame.core
+package cwinter.codinggame.core.objects
 
 import cwinter.codinggame.collisions.Positionable
+import cwinter.codinggame.core.SimulatorEvent
 import cwinter.codinggame.util.maths.Vector2
 import cwinter.codinggame.worldstate.WorldObjectDescriptor
 

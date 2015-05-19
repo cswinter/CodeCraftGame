@@ -1,7 +1,8 @@
 package cwinter.codinggame.testai
 
 import cwinter.codinggame.core._
-import cwinter.codinggame.core.drone._
+import cwinter.codinggame.core.objects.drone._
+import cwinter.codinggame.core.objects.MineralCrystal
 import cwinter.codinggame.graphics.engine.Debug
 import cwinter.codinggame.util.maths.{ColorRGBA, Rng, Vector2}
 import cwinter.codinggame.util.modules.ModulePosition

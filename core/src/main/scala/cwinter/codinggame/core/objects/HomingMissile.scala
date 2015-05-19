@@ -1,8 +1,9 @@
-package cwinter.codinggame.core
+package cwinter.codinggame.core.objects
 
-import cwinter.codinggame.core.drone.Drone
+import cwinter.codinggame.core._
+import cwinter.codinggame.core.objects.drone.Drone
 import cwinter.codinggame.util.maths.Vector2
-import cwinter.codinggame.worldstate.{Player, HomingMissileDescriptor, WorldObjectDescriptor}
+import cwinter.codinggame.worldstate.{HomingMissileDescriptor, Player, WorldObjectDescriptor}
 
 class HomingMissile(val player: Player, initialPos: Vector2, time: Double, target: Drone) extends WorldObject {
   final val MaxLifetime = 50

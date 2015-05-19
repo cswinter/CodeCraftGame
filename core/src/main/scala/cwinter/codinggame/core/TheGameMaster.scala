@@ -1,6 +1,6 @@
 package cwinter.codinggame.core
 
-import cwinter.codinggame.core.drone.DroneController
+import cwinter.codinggame.core.objects.drone.DroneController
 import cwinter.codinggame.graphics.application.DrawingCanvas
 import cwinter.codinggame.util.maths.Rectangle
 

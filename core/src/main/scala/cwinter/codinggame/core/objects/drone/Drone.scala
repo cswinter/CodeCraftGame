@@ -1,6 +1,7 @@
-package cwinter.codinggame.core.drone
+package cwinter.codinggame.core.objects.drone
 
 import cwinter.codinggame.core._
+import cwinter.codinggame.core.objects.{WorldObject, MineralCrystal, EnergyGlobeObject}
 import cwinter.codinggame.util.maths.{Float0To1, Vector2}
 import cwinter.codinggame.worldstate.{DroneDescriptor, DroneModuleDescriptor, Player, WorldObjectDescriptor}
 

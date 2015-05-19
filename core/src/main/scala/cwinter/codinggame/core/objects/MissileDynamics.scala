@@ -1,6 +1,6 @@
-package cwinter.codinggame.core
+package cwinter.codinggame.core.objects
 
-import cwinter.codinggame.core.drone.DroneDynamics
+import cwinter.codinggame.core.objects.drone.DroneDynamics
 import cwinter.codinggame.util.maths.{Rectangle, Vector2}
 
 

@@ -1,5 +1,6 @@
-package cwinter.codinggame.core
+package cwinter.codinggame.core.objects
 
+import cwinter.codinggame.core.{RemoveEnergyGlobeAnimation, SimulatorEvent}
 import cwinter.codinggame.util.maths.Vector2
 import cwinter.codinggame.worldstate.{EnergyGlobeDescriptor, WorldObjectDescriptor}
 

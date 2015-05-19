@@ -1,4 +1,4 @@
-package cwinter.codinggame.core.drone
+package cwinter.codinggame.core.objects.drone
 
 import cwinter.codinggame.util.maths.{Geometry, Vector2}
 import cwinter.codinggame.util.modules.ModulePosition

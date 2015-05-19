@@ -1,7 +1,7 @@
-package cwinter.codinggame.core.drone
+package cwinter.codinggame.core.objects.drone
 
-import cwinter.codinggame.core.MineralCrystal
 import cwinter.codinggame.core.errors.Errors
+import cwinter.codinggame.core.objects.MineralCrystal
 import cwinter.codinggame.util.maths.Vector2
 import cwinter.codinggame.worldstate.Player
 

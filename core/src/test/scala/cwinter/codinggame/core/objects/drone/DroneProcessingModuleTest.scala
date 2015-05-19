@@ -1,6 +1,7 @@
-package cwinter.codinggame.core.drone
+package cwinter.codinggame.core.objects.drone
 
-import cwinter.codinggame.core.{MineralCrystalDestroyed, SimulatorEvent, MineralCrystal}
+import cwinter.codinggame.core.objects.MineralCrystal
+import cwinter.codinggame.core.{MineralCrystalDestroyed, SimulatorEvent}
 import cwinter.codinggame.util.maths.Vector2
 import cwinter.codinggame.worldstate.BluePlayer
 import org.scalatest.FlatSpec
