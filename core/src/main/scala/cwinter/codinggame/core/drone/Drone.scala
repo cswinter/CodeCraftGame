@@ -61,17 +61,21 @@ class Drone(
       enqueueEvent(ArrivedAtPosition)
     }
 
-    // process events
-    eventQueue foreach {
-      case Spawned => controller.onSpawn()
-      case Destroyed => controller.onDeath()
-      case MineralEntersSightRadius(mineral) => controller.onMineralEntersVision(mineral)
-      case ArrivedAtPosition => controller.onArrival()
-      case DroneEntersSightRadius(drone) => controller.onDroneEntersVision(drone)
-      case event => throw new Exception(s"Unhandled event! $event")
+    if (hasDied) {
+      controller.onDeath()
+    } else {
+      // process events
+      eventQueue foreach {
+        case Spawned => controller.onSpawn()
+        case Destroyed => controller.onDeath()
+        case MineralEntersSightRadius(mineral) => controller.onMineralEntersVision(mineral)
+        case ArrivedAtPosition => controller.onArrival()
+        case DroneEntersSightRadius(drone) => controller.onDroneEntersVision(drone)
+        case event => throw new Exception(s"Unhandled event! $event")
+      }
+      eventQueue.clear()
+      controller.onTick()
     }
-    eventQueue.clear()
-    controller.onTick()
   }
 
   def depositMineral(crystal: MineralCrystal, pos: Vector2): Unit = {

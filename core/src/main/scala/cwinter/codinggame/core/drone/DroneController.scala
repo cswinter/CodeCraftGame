@@ -1,11 +1,12 @@
 package cwinter.codinggame.core.drone
 
 import cwinter.codinggame.core.MineralCrystal
+import cwinter.codinggame.core.errors.Errors
 import cwinter.codinggame.util.maths.Vector2
+import cwinter.codinggame.worldstate.Player
 
-abstract class DroneController {
-  // TODO: make private again once drone handles exist
-  var drone: Drone = null
+abstract class DroneController extends DroneHandle {
+  private[this] var _drone: Drone = null
 
   // abstract methods for event handling
   def onSpawn(): Unit
@@ -15,7 +16,7 @@ abstract class DroneController {
   def onDroneEntersVision(drone: Drone): Unit
   def onArrival(): Unit
 
-  // wrapper around drone properties and commands
+  // drone commands
   def moveInDirection(direction: Vector2): Unit = {
     drone.giveMovementCommand(MoveInDirection(direction))
   }
@@ -48,18 +49,36 @@ abstract class DroneController {
     drone.startMineralProcessing(mineralCrystal)
   }
 
-  def shootWeapons(target: Drone): Unit = {
-    assert(target != drone)
-    drone.fireWeapons(target)
+  def shootWeapons(target: DroneHandle): Unit = {
+    if (target.drone == drone) {
+      Errors.warn("Drone tried to shoot itself!", drone.position)
+    } else {
+      drone.fireWeapons(target.drone)
+    }
   }
 
+  // drone properties
+  override def position: Vector2 = drone.position
+  override def weaponsCooldown: Int = drone.weaponsCooldown
+  override def isVisible: Boolean = true
+  override def spec: DroneSpec = drone.spec
+  override def player: Player = drone.player
+  @inline final override private[core] def drone: Drone = _drone
+
   def isConstructing: Boolean = drone.isConstructing
-  def position: Vector2 = drone.position
   def availableStorage: Int = drone.availableStorage
   def availableFactories: Int = drone.availableFactories
   def storedMinerals: Seq[MineralCrystal] = drone.storedMinerals.toSeq // TODO: remove this conversion
-  def dronesInSight: Set[Drone] = drone.dronesInSight
-  def weaponsCooldown: Int = drone.weaponsCooldown
+  def dronesInSight: Set[DroneHandle] = drone.dronesInSight.map( d =>
+      if (d.player == drone.player) d.controller
+      else new EnemyDroneHandle(d, drone.player)   // TODO: maybe create drone handles once for each player
+    )
 
-  private[core] def initialise(drone: Drone): Unit = this.drone = drone
+
+  private[core] def initialise(drone: Drone): Unit = {
+    require(_drone == null)
+    _drone = drone
+  }
 }
+
+

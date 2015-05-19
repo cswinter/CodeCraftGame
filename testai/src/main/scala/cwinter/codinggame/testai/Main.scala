@@ -60,8 +60,8 @@ class Mothership extends DroneController {
     minerals += mineralCrystal
   }
 
-  def enemies: Set[Drone] =
-    dronesInSight.filter(_.player != drone.player)
+  def enemies: Set[DroneHandle] =
+    dronesInSight.filter(_.player != player)
 
 
   override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = ()
@@ -145,8 +145,8 @@ class AttackDroneController(val mothership: Mothership) extends DroneController 
     }
   }
 
-  def enemies: Set[Drone] =
-    dronesInSight.filter(_.player != drone.player)
+  def enemies: Set[DroneHandle] =
+    dronesInSight.filter(_.player != player)
 
   override def onArrival(): Unit = ()
 

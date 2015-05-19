@@ -1,12 +1,16 @@
-package cwinter.codinggame.core
+package cwinter.codinggame.core.errors
 
-import cwinter.codinggame.graphics.engine.Debug
 import cwinter.codinggame.util.maths.{ColorRGB, Vector2}
 
 object Errors {
   private[this] var throwExceptions: Boolean = false
 
   private[this] var errorMessages = List.empty[ErrorMessageObject]
+
+  def error(exception: CodingGameException, position: Vector2): Nothing = {
+    addMessage(exception.getMessage, position, Error)
+    throw exception
+  }
 
   def warn(message: String, position: Vector2): Unit = {
     addMessage(message, position, Warning)

@@ -1,4 +1,4 @@
-package cwinter.codinggame.core
+package cwinter.codinggame.core.errors
 
 import cwinter.codinggame.graphics.engine.Debug
 import cwinter.codinggame.util.maths.{ColorRGBA, Vector2}
@@ -13,11 +13,7 @@ class ErrorMessageObject(
 
   def update(): Unit = {
     val color = ColorRGBA(errorLevel.color, 1 - (age.toFloat / lifetime))
-    Debug.drawText(
-      errorLevel.messagePrefix + message,
-      position.x.toFloat, position.y.toFloat,
-      color
-    )
+    Debug.drawText(message, position.x.toFloat, position.y.toFloat, color)
     position += Vector2(0, 3)
     age += 1
   }

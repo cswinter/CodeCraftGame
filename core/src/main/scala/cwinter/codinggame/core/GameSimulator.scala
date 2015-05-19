@@ -2,6 +2,7 @@ package cwinter.codinggame.core
 
 import cwinter.codinggame.collisions.VisionTracker
 import cwinter.codinggame.core.drone._
+import cwinter.codinggame.core.errors.Errors
 import cwinter.codinggame.physics.PhysicsEngine
 import cwinter.codinggame.util.maths.{Rng, Vector2}
 import cwinter.codinggame.util.modules.ModulePosition
