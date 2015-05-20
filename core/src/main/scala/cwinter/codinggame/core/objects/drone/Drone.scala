@@ -2,6 +2,7 @@ package cwinter.codinggame.core.objects.drone
 
 import cwinter.codinggame.core._
 import cwinter.codinggame.core.api.{DroneController, DroneSpec, MineralCrystalHandle}
+import cwinter.codinggame.core.errors.Errors
 import cwinter.codinggame.core.objects.{WorldObject, MineralCrystal, EnergyGlobeObject}
 import cwinter.codinggame.util.maths.{Float0To1, Vector2}
 import cwinter.codinggame.worldstate.{DroneDescriptor, DroneModuleDescriptor, Player, WorldObjectDescriptor}
@@ -16,7 +17,6 @@ private[core] class Drone(
   startingResources: Int = 0
 ) extends WorldObject {
 
-
   var objectsInSight: Set[WorldObject] = Set.empty[WorldObject]
 
   private[core] var constructionProgress: Option[Int] = None
@@ -28,6 +28,8 @@ private[core] class Drone(
   private[this] val oldPositions = collection.mutable.Queue.empty[(Float, Float, Float)]
   private final val NJetPositions = 6
 
+  final val MessageCooldown = 20
+  private[this] var messageCooldown = MessageCooldown
 
   private[this] var mineralDepositee: Option[Drone] = None
 
@@ -116,6 +118,8 @@ private[core] class Drone(
     }
     dynamics.update()
 
+    messageCooldown -= 1
+
     oldPositions.enqueue((position.x.toFloat, position.y.toFloat, dynamics.orientation.toFloat))
     if (oldPositions.length > NJetPositions) oldPositions.dequeue()
 
@@ -169,28 +173,43 @@ private[core] class Drone(
   }
 
   def startDroneConstruction(command: ConstructDrone): Unit = {
-    for (m <- manipulator) m.startDroneConstruction(command)
+    manipulator match {
+      case Some(m) => m.startDroneConstruction(command)
+      case None => warn("Drone construction requires a manipulator module.")
+    }
   }
 
   def startMineralProcessing(mineral: MineralCrystal): Unit = {
-    // TODO: check that mineral crystal is in storage
-    for (f <- factories) {
-      storage.get.removeMineralCrystal(mineral)
-      f.startMineralProcessing(mineral)
+    if (!storage.exists(_.storedMinerals.contains(mineral))) {
+      warn("Tried to process mineral not stored in this drone!")
+    } else {
+      factories match {
+        case Some(f) =>
+          storage.get.removeMineralCrystal(mineral)
+          f.startMineralProcessing(mineral)
+        case None => warn("Processing minerals requires a refinery module.")
+      }
     }
   }
 
   def fireWeapons(target: Drone): Unit = {
-    for (w <- weapons) w.fire(target)
+    if (target == this) {
+      warn("Drone tried to shoot itself!")
+    } else {
+      weapons match {
+        case Some(w) => w.fire(target)
+        case None => warn("Firing missiles requires a missile battery module.")
+      }
+    }
   }
 
   def weaponsCooldown: Int = weapons.map(_.cooldown).getOrElse(1)
 
   def harvestResource(mineralCrystal: MineralCrystal): Unit = {
-    // TODO: better error messages, add option to emit warnings and abort instead of throwing
-    // TODO: harvesting takes some time to complete
-    // TODO: make this part of mineral module
-    for (s <- storage) s.harvestMineral(mineralCrystal)
+    storage match {
+      case Some(s) => s.harvestMineral(mineralCrystal)
+      case None => warn("Harvesting resources requires a storage module.")
+    }
   }
 
   override def position: Vector2 = dynamics.pos
@@ -213,9 +232,13 @@ private[core] class Drone(
   }.getOrElse(Seq())
 
   def depositMinerals(other: Drone): Unit = {
-    assert(other != this)
-
-    mineralDepositee = Some(other)
+    if (other == this) {
+      warn("Drone is trying to deposit minerals into itself!")
+    } else if (other.storage == None) {
+      warn("Trying to deposit minerals into a drone without a storage module.")
+    } else {
+      mineralDepositee = Some(other)
+    }
   }
 
   def dronesInSight: Set[Drone] = objectsInSight.filter(_.isInstanceOf[Drone]).map { case d: Drone => d }
@@ -251,6 +274,14 @@ private[core] class Drone(
       Some(m) <- droneModules
       descr <- m.descriptors
     } yield descr
+  }
+
+
+  def warn(message: String): Unit = {
+    if (messageCooldown <= 0) {
+      messageCooldown = MessageCooldown
+      Errors.warn(message, position)
+    }
   }
 
 

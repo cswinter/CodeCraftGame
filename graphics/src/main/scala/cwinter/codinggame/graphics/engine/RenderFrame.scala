@@ -112,10 +112,9 @@ object RenderFrame extends GLEventListener {
     for (TextModel(text, xPos, yPos, color) <- Debug.textModels) {
       textRenderer.setColor(color.r, color.g, color.b, color.a)
       val bounds = textRenderer.getBounds(text)
-      val projection = IdentityMatrix4x4
-      val worldPos = VertexXY(xPos - bounds.getWidth.toFloat / 2, yPos + bounds.getHeight.toFloat / 2)
+      val worldPos = VertexXY(xPos, yPos)
       val position = (1 / camera.zoomFactor) * (worldPos - VertexXY(camera.x, camera.y)) +
-        VertexXY(width / 2, height / 2)
+        VertexXY(width / 2 - bounds.getWidth.toFloat / 2, height / 2 + bounds.getHeight.toFloat / 2)
       textRenderer.draw(text, position.x.toInt, position.y.toInt)
     }
 

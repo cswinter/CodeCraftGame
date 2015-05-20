@@ -21,11 +21,15 @@ abstract class DroneController extends DroneHandle {
     drone.giveMovementCommand(MoveInDirection(direction))
   }
 
-  def moveToDrone(otherDrone: DroneController): Unit = {
+  def moveToDrone(otherDrone: DroneHandle): Unit = {
     val other = otherDrone.drone
     val targetDirection = (other.position - position).normalized
     val targetPos = other.position - (other.radius + drone.radius + 10) * targetDirection
     moveToPosition(targetPos)
+  }
+  
+  def moveToMineral(mineralCrystal: MineralCrystalHandle): Unit = {
+    drone.giveMovementCommand(MoveToPosition(mineralCrystal.position))
   }
 
   def moveToPosition(position: Vector2): Unit = {
@@ -36,7 +40,7 @@ abstract class DroneController extends DroneHandle {
     drone.harvestResource(mineralCrystal.mineralCrystal)
   }
 
-  def depositMineralCrystals(otherDrone: DroneController): Unit = {
+  def depositMinerals(otherDrone: DroneHandle): Unit = {
     drone.depositMinerals(otherDrone.drone)
   }
 
@@ -49,12 +53,8 @@ abstract class DroneController extends DroneHandle {
     drone.startMineralProcessing(mineralCrystal.mineralCrystal)
   }
 
-  def shootWeapons(target: DroneHandle): Unit = {
-    if (target.drone == drone) {
-      Errors.warn("Drone tried to shoot itself!", drone.position)
-    } else {
-      drone.fireWeapons(target.drone)
-    }
+  def shootMissiles(target: DroneHandle): Unit = {
+    drone.fireWeapons(target.drone)
   }
 
   // drone properties

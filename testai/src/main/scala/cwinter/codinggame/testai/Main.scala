@@ -41,7 +41,7 @@ class Mothership extends DroneController {
 
     if (weaponsCooldown <= 0 && enemies.nonEmpty) {
       val enemy = enemies.head
-      shootWeapons(enemy)
+      shootMissiles(enemy)
     }
   }
 
@@ -103,7 +103,7 @@ class ScoutingDroneController(val mothership: Mothership) extends DroneControlle
 
   override def onArrival(): Unit = {
     if (availableStorage == 0) {
-      depositMineralCrystals(mothership)
+      depositMinerals(mothership)
       hasReturned = true
     } else {
       if (nextCrystal.map(_.harvested) == Some(true)) {
@@ -133,7 +133,7 @@ class AttackDroneController(val mothership: Mothership) extends DroneController 
   override def onTick(): Unit = {
     if (weaponsCooldown <= 0 && enemies.nonEmpty) {
       val enemy = enemies.head
-      shootWeapons(enemy)
+      shootMissiles(enemy)
       moveInDirection(enemy.position - position)
     }
     if (Rng.bernoulli(0.01)) {

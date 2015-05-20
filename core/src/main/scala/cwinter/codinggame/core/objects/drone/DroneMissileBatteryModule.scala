@@ -1,5 +1,6 @@
 package cwinter.codinggame.core.objects.drone
 
+import cwinter.codinggame.core.errors.Errors
 import cwinter.codinggame.core.{SimulatorEvent, SpawnHomingMissile}
 import cwinter.codinggame.util.maths.Vector2
 import cwinter.codinggame.worldstate.{DroneModuleDescriptor, MissileBatteryDescriptor}
@@ -25,7 +26,7 @@ private[core] class DroneMissileBatteryModule(positions: Seq[Int], owner: Drone)
 
   def fire(target: Drone): Unit = {
     if ((target.position - owner.position).size > LockOnRadius) {
-      // TODO: report error
+      owner.warn(s"Cannot fire homing missiles unless the target is within lock-on range ($LockOnRadius)")
     } else {
       if (_cooldown <= 0) {
         if (owner.spec.isMothership) _cooldown = 10

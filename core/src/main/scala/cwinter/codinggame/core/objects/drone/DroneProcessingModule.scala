@@ -5,7 +5,7 @@ import cwinter.codinggame.worldstate.{DroneModuleDescriptor, ProcessingModuleDes
 import cwinter.codinggame.core._
 import cwinter.codinggame.util.maths.{Vector2, Rng}
 
-class DroneProcessingModule(positions: Seq[Int], owner: Drone)
+private[core] class DroneProcessingModule(positions: Seq[Int], owner: Drone)
     extends DroneModule(positions, owner) {
 
   final val MineralProcessingPeriod = 100
@@ -55,10 +55,12 @@ class DroneProcessingModule(positions: Seq[Int], owner: Drone)
 
 
   def startMineralProcessing(mineral: MineralCrystal): Unit = {
-    // TODO: need a capacity check somewhere
-    newMinerals ::= mineral
+    if (mineral.size > currentCapacity) {
+      owner.warn(s"Mineral size (${mineral.size}) exceeds current processing capacity ($currentCapacity)")
+    } else {
+      newMinerals ::= mineral
+    }
   }
-
 
   def currentCapacity: Int = positions.length -
     mineralProcessing.foldLeft(0)(_ + _._1.size) -

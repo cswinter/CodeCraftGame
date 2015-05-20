@@ -7,7 +7,7 @@ import cwinter.codinggame.util.modules.ModulePosition
 import cwinter.codinggame.worldstate._
 import scala.collection.{BitSet, mutable}
 
-class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: Int = 0)
+private[core] class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: Int = 0)
   extends DroneModule(positions, owner) {
 
   import DroneStorageModule._
@@ -111,9 +111,13 @@ class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: I
 
 
   def harvestMineral(mineralCrystal: MineralCrystal): Unit = {
-    assert(mineralCrystal.size <= availableStorage, s"Crystal size is ${mineralCrystal.size} and storage is only $availableStorage")
-    assert(owner.position ~ mineralCrystal.position)
-    if (!mineralCrystal.harvested) {
+    if (mineralCrystal.size > availableStorage) {
+      owner.warn(s"Trying to harvest mineral crystal of size ${mineralCrystal.size}. Available storage is only $availableStorage.")
+    } else if (owner.position !~ mineralCrystal.position) {
+      owner.warn("To far away from mineral crystal to harvest.")
+    } else if (mineralCrystal.harvested) {
+      owner.warn("Trying to harvest mineral crystal that has already been harvested.")
+    } else {
       createMineralSlot(HarvestsMineral(mineralCrystal, HarvestingTime))
       // TODO: what if harvesting cancelled/drone killed?
       mineralCrystal.harvested = true
