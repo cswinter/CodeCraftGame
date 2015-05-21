@@ -17,8 +17,8 @@ class Mothership extends DroneController {
 
   val scoutSpec = DroneSpec(3, storageModules = 1)
   val collectorSpec = DroneSpec(4, storageModules = 2)
-  val attackSpec = DroneSpec(5, missileBatteries = 3, engineModules = 1)
-  val destroyerSpec = DroneSpec(6, missileBatteries = 4, engineModules = 2, shieldGenerators = 1)
+  val attackSpec = DroneSpec(5, missileBatteries = 3, engines = 1)
+  val destroyerSpec = DroneSpec(6, missileBatteries = 4, engines = 2, shieldGenerators = 1)
 
   // abstract methods for event handling
   override def onSpawn(): Unit = {
@@ -40,8 +40,10 @@ class Mothership extends DroneController {
     }
 
     if (weaponsCooldown <= 0 && enemies.nonEmpty) {
-      val enemy = enemies.head
-      shootMissiles(enemy)
+      val enemy = enemies.minBy(x => (x.position - position).magnitudeSquared)
+      if (isInMissileRange(enemy)) {
+        shootMissiles(enemy)
+      }
     }
   }
 
@@ -132,8 +134,10 @@ class AttackDroneController(val mothership: Mothership) extends DroneController 
 
   override def onTick(): Unit = {
     if (weaponsCooldown <= 0 && enemies.nonEmpty) {
-      val enemy = enemies.head
-      shootMissiles(enemy)
+      val enemy = enemies.minBy(x => (x.position - position).magnitudeSquared)
+      if (isInMissileRange(enemy)) {
+        shootMissiles(enemy)
+      }
       moveInDirection(enemy.position - position)
     }
     if (Rng.bernoulli(0.01)) {

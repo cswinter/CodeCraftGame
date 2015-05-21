@@ -42,7 +42,7 @@ private[core] class Drone(
 
   val dynamics: DroneDynamics = spec.constructDynamics(this, initialPos, time)
   private[this] val weapons = spec.constructMissilesBatteries(this)
-  private[this] val factories = spec.constructProcessingModules(this)
+  private[this] val factories = spec.constructRefineries(this)
   private[core] val storage = spec.constructStorage(this, startingResources)
   private[this] val manipulator = spec.constructManipulatorModules(this)
   private[this] val shieldGenerators = spec.constructShieldGenerators(this)
@@ -246,7 +246,7 @@ private[core] class Drone(
   def isConstructing: Boolean = manipulator.map(_.isConstructing) == Some(true)
 
   def storageCapacity = spec.storageModules
-  def processingCapacity = spec.processingModules
+  def processingCapacity = spec.refineries
   def size = spec.size
   def radius = spec.radius
 

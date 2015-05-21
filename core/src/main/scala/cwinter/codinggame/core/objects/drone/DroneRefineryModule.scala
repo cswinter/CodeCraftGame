@@ -5,7 +5,7 @@ import cwinter.codinggame.worldstate.{DroneModuleDescriptor, ProcessingModuleDes
 import cwinter.codinggame.core._
 import cwinter.codinggame.util.maths.{Vector2, Rng}
 
-private[core] class DroneProcessingModule(positions: Seq[Int], owner: Drone)
+private[core] class DroneRefineryModule(positions: Seq[Int], owner: Drone)
     extends DroneModule(positions, owner) {
 
   final val MineralProcessingPeriod = 100
@@ -22,7 +22,8 @@ private[core] class DroneProcessingModule(positions: Seq[Int], owner: Drone)
 
     // start new mineral constructions
     for (mineral <- newMinerals) {
-      mineralProcessing ::= ((mineral, mineral.size * MineralResourceYield * MineralProcessingPeriod))
+      mineralProcessing ::= ((mineral, MineralResourceYield * MineralProcessingPeriod))
+      mineralProcessing = mineralProcessing.sortBy(-_._1.size)
       effects ::= MineralCrystalActivated(mineral)
     }
     newMinerals = List.empty[MineralCrystal]
@@ -37,7 +38,7 @@ private[core] class DroneProcessingModule(positions: Seq[Int], owner: Drone)
         yield {
           mineral.position = center
 
-          if (progress % MineralProcessingPeriod == 0) {
+          if (progress % (MineralProcessingPeriod / mineral.size) == 1) {
             spawnedResources ::= center
           }
           (mineral, progress - 1)

@@ -5,7 +5,7 @@ import cwinter.codinggame.util.maths.Vector2
 import cwinter.codinggame.worldstate.{LightFlashDescriptor, WorldObjectDescriptor}
 
 
-class LightFlash(val position: Vector2) extends WorldObject {
+private[core] class LightFlash(val position: Vector2) extends WorldObject {
   var stage: Float = 0
 
   override private[core] def descriptor: Seq[WorldObjectDescriptor] = Seq(

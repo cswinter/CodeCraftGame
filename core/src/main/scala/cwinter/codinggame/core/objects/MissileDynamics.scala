@@ -4,7 +4,7 @@ import cwinter.codinggame.core.objects.drone.DroneDynamics
 import cwinter.codinggame.util.maths.{Rectangle, Vector2}
 
 
-class MissileDynamics(
+private[core] class MissileDynamics(
   val speed: Double,
   val target: ConstantVelocityDynamics,
   val ownerID: Int,

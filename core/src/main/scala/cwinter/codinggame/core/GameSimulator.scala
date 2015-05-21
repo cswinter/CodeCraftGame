@@ -54,10 +54,9 @@ class GameSimulator(
     val spec = new DroneSpec(
       size = 7,
       missileBatteries = 2,
-      manipulatorModules = 2,
-      processingModules = 3,
-      storageModules = 3,
-      isMothership = true
+      manipulators = 2,
+      refineries = 3,
+      storageModules = 3
     )
     new Drone(spec, controller, player, pos, 0, 21)
   }

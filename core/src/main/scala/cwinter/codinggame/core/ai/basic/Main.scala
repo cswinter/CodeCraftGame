@@ -6,12 +6,12 @@ import cwinter.codinggame.core.objects.MineralCrystal
 import cwinter.codinggame.util.maths.{Rng, Vector2}
 
 
-class Mothership extends DroneController {
+private[core] class Mothership extends DroneController {
   var t = 0
   var collectors = 0
 
   val collectorDroneSpec = new DroneSpec(4, storageModules = 2)
-  val fastCollectorDroneSpec = new DroneSpec(4, storageModules = 1, engineModules = 1)
+  val fastCollectorDroneSpec = new DroneSpec(4, storageModules = 1, engines = 1)
   val attackDroneSpec = new DroneSpec(4, missileBatteries = 2)
 
   // abstract methods for event handling
@@ -36,8 +36,10 @@ class Mothership extends DroneController {
     }
 
     if (weaponsCooldown <= 0 && enemies.nonEmpty) {
-      val enemy = enemies.head
-      shootMissiles(enemy)
+      val enemy = enemies.minBy(x => (x.position - position).magnitudeSquared)
+      if (isInMissileRange(enemy)) {
+        shootMissiles(enemy)
+      }
     }
   }
 
@@ -50,7 +52,7 @@ class Mothership extends DroneController {
   override def onDeath(): Unit = ()
 }
 
-class ScoutingDroneController(val mothership: Mothership) extends DroneController {
+private[core] class ScoutingDroneController(val mothership: Mothership) extends DroneController {
   var hasReturned = false
   var nextCrystal: Option[MineralCrystalHandle] = None
 
@@ -99,7 +101,7 @@ class ScoutingDroneController(val mothership: Mothership) extends DroneControlle
   override def onDroneEntersVision(drone: DroneHandle): Unit = ()
 }
 
-class AttackDroneController extends DroneController {
+private[core] class AttackDroneController extends DroneController {
   // abstract methods for event handling
   override def onSpawn(): Unit = ()
 
@@ -107,11 +109,12 @@ class AttackDroneController extends DroneController {
 
   override def onTick(): Unit = {
     if (weaponsCooldown <= 0 && enemies.nonEmpty) {
-      val enemy = enemies.head
-      shootMissiles(enemy)
+      val enemy = enemies.minBy(x => (x.position - position).magnitudeSquared)
+      if (isInMissileRange(enemy)) {
+        shootMissiles(enemy)
+      }
       moveInDirection(enemy.position - position)
-    }
-    if (Rng.bernoulli(0.01)) {
+    } else if (Rng.bernoulli(0.01)) {
       moveInDirection(Vector2(Rng.double(0, 100)))
     }
   }

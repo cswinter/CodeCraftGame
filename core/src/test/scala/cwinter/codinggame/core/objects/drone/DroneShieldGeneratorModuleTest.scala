@@ -6,7 +6,7 @@ import cwinter.codinggame.worldstate.BluePlayer
 import org.scalatest.FlatSpec
 
 class DroneShieldGeneratorModuleTest extends FlatSpec {
-  val mockDroneSpec = DroneSpec(5, missileBatteries = 2, shieldGenerators = 1, engineModules = 1)
+  val mockDroneSpec = DroneSpec(5, missileBatteries = 2, shieldGenerators = 1, engines = 1)
   val mockDrone = new Drone(mockDroneSpec, null, BluePlayer, Vector2(0, 0), 0)
   val shieldGenerator = new DroneShieldGeneratorModule(Seq(2), mockDrone)
 

@@ -1,13 +1,12 @@
 package cwinter.codinggame.core.objects.drone
 
-import cwinter.codinggame.core.errors.Errors
 import cwinter.codinggame.core.{SimulatorEvent, SpawnHomingMissile}
 import cwinter.codinggame.util.maths.Vector2
 import cwinter.codinggame.worldstate.{DroneModuleDescriptor, MissileBatteryDescriptor}
 
 private[core] class DroneMissileBatteryModule(positions: Seq[Int], owner: Drone)
   extends DroneModule(positions, owner) {
-  final val LockOnRadius = 300
+  import DroneConstants._
 
   private[this] var nextEffect = NoEffects
   private[this] var _cooldown = 0
@@ -25,12 +24,11 @@ private[core] class DroneMissileBatteryModule(positions: Seq[Int], owner: Drone)
 
 
   def fire(target: Drone): Unit = {
-    if ((target.position - owner.position).size > LockOnRadius) {
-      owner.warn(s"Cannot fire homing missiles unless the target is within lock-on range ($LockOnRadius)")
+    if ((target.position - owner.position).size > MissileLockOnRadius) {
+      owner.warn(s"Cannot fire homing missiles unless the target is within lock-on range ($MissileLockOnRadius)")
     } else {
       if (_cooldown <= 0) {
-        if (owner.spec.isMothership) _cooldown = 10
-        else _cooldown = 30
+        _cooldown = 30
 
         val missiles =
           for (pos <- absoluteModulePositions)

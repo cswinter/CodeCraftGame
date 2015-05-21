@@ -12,13 +12,18 @@ case class DroneMissileBatteryModelBuilder(player: Player, position: VertexXY, n
   override def signature: DroneMissileBatteryModelBuilder = this
 
   override protected def buildModel: Model[Unit] = {
-    val components =
-      for {
-        pos <- Seq(
+    /*
+    val positions = Seq(
           VertexXY(1, 1), VertexXY(0, 1), VertexXY(-1, 1),
           VertexXY(1, 0), VertexXY(0, 0), VertexXY(-1, 0),
           VertexXY(1, -1), VertexXY(0, -1), VertexXY(-1, -1))
-        offset = pos * 4
+          */
+    val positions = Seq(VertexXY(1, 1), VertexXY(1, -1), VertexXY(-1, -1), VertexXY(-1, 1))
+
+    val components =
+      for {
+        pos <- positions
+        offset = pos * 3
         segment <- buildSegment(offset + position)
       } yield segment
 
@@ -32,7 +37,7 @@ case class DroneMissileBatteryModelBuilder(player: Player, position: VertexXY, n
         rs.MaterialXYRGB,
         midpoint.x,
         midpoint.y,
-        2,
+        2.5fd,
         player.color,
         1
       ).getModel
@@ -42,7 +47,7 @@ case class DroneMissileBatteryModelBuilder(player: Player, position: VertexXY, n
         rs.BloomShader,
         midpoint.x,
         midpoint.y,
-        1,
+        1.5f,
         White,
         2
       ).getModel

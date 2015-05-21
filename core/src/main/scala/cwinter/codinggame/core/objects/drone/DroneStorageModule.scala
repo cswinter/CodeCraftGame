@@ -258,7 +258,7 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: Drone, starti
 }
 
 object DroneStorageModule {
-  final val HarvestingTime = 50
+  final val HarvestingTime = 100
   final val MineralDepositTime = 45
 }
 

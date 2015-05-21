@@ -2,6 +2,7 @@ package cwinter.codinggame.core.api
 
 import cwinter.codinggame.core.errors.Errors
 import cwinter.codinggame.core.objects.drone._
+import cwinter.codinggame.graphics.models.DroneMissileBatteryModelBuilder
 import cwinter.codinggame.util.maths.Vector2
 import cwinter.codinggame.worldstate.Player
 
@@ -65,6 +66,9 @@ abstract class DroneController extends DroneHandle {
   override def player: Player = drone.player
   @inline final override private[core] def drone: Drone = _drone
 
+  def isInMissileRange(droneHandle: DroneHandle): Boolean =
+    (droneHandle.position - drone.position).magnitudeSquared <=
+      DroneConstants.MissileLockOnRadius * DroneConstants.MissileLockOnRadius
   def isConstructing: Boolean = drone.isConstructing
   def availableStorage: Int = drone.availableStorage
   def availableFactories: Int = drone.availableFactories

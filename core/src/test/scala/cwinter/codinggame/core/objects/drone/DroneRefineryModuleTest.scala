@@ -7,11 +7,11 @@ import cwinter.codinggame.util.maths.Vector2
 import cwinter.codinggame.worldstate.BluePlayer
 import org.scalatest.FlatSpec
 
-class DroneProcessingModuleTest extends FlatSpec {
-  val mockDroneSpec = new DroneSpec(6, processingModules = 5, storageModules = 2)
+private[core] class DroneRefineryModuleTest extends FlatSpec {
+  val mockDroneSpec = new DroneSpec(6, refineries = 5, storageModules = 2)
   val mockDrone = new Drone(mockDroneSpec, null, BluePlayer, Vector2(0, 0), 0)
 
-  val processingModule = new DroneProcessingModule((0 to 4).toSeq, mockDrone)
+  val processingModule = new DroneRefineryModule((0 to 4).toSeq, mockDrone)
 
   "A factory module" should "generate the correct amount of resources when processing a mineral crystal" in {
     for (mineralSize <- 1 to 5) {
@@ -37,7 +37,7 @@ class DroneProcessingModuleTest extends FlatSpec {
     assert(resourcesSpawned.size == 0)
   }
 
-  def runProcessingModule(module: DroneProcessingModule, minTime: Int): (Seq[SimulatorEvent], Seq[Vector2], Seq[Vector2]) = {
+  def runProcessingModule(module: DroneRefineryModule, minTime: Int): (Seq[SimulatorEvent], Seq[Vector2], Seq[Vector2]) = {
     var continue = true
     var allEvents = Seq.empty[SimulatorEvent]
     var netResourceSpawns = Seq.empty[Vector2]

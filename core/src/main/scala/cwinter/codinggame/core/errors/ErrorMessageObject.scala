@@ -3,7 +3,7 @@ package cwinter.codinggame.core.errors
 import cwinter.codinggame.graphics.engine.Debug
 import cwinter.codinggame.util.maths.{ColorRGBA, Vector2}
 
-class ErrorMessageObject(
+private[core] class ErrorMessageObject(
   val message: String,
   val errorLevel: ErrorLevel,
   var position: Vector2,

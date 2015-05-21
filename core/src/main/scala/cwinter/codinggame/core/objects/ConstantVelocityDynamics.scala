@@ -3,7 +3,7 @@ package cwinter.codinggame.core.objects
 import cwinter.codinggame.physics._
 import cwinter.codinggame.util.maths.{Rectangle, Solve, Vector2}
 
-abstract class ConstantVelocityDynamics(
+abstract private[core] class ConstantVelocityDynamics(
   val radius: Double,
   val collisionID: Int,
   val alwaysCollide: Boolean,

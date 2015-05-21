@@ -109,7 +109,7 @@ object RenderFrame extends GLEventListener {
 
     textRenderer.beginRendering(width, height)
 
-    for (TextModel(text, xPos, yPos, color) <- Debug.textModels) {
+    for (TextModel(text, xPos, yPos, color) <- Debug.textModels ++ shortcuts) {
       textRenderer.setColor(color.r, color.g, color.b, color.a)
       val bounds = textRenderer.getBounds(text)
       val worldPos = VertexXY(xPos, yPos)
