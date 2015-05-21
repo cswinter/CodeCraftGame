@@ -37,7 +37,7 @@ case class DroneMissileBatteryModelBuilder(player: Player, position: VertexXY, n
         rs.MaterialXYRGB,
         midpoint.x,
         midpoint.y,
-        2.5fd,
+        2.5f,
         player.color,
         1
       ).getModel

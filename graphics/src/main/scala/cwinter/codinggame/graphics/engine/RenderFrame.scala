@@ -11,7 +11,7 @@ import cwinter.codinggame.graphics.materials.Material
 import cwinter.codinggame.graphics.matrices.IdentityMatrix4x4
 import cwinter.codinggame.graphics.model.{VBO, TheModelCache, PrimitiveModelBuilder}
 import cwinter.codinggame.graphics.models.TheWorldObjectModelFactory
-import cwinter.codinggame.util.maths.VertexXY
+import cwinter.codinggame.util.maths.{ColorRGBA, VertexXY}
 import cwinter.codinggame.worldstate.GameWorld
 import org.joda.time.DateTime
 
@@ -109,7 +109,7 @@ object RenderFrame extends GLEventListener {
 
     textRenderer.beginRendering(width, height)
 
-    for (TextModel(text, xPos, yPos, color) <- Debug.textModels ++ shortcuts) {
+    for (TextModel(text, xPos, yPos, color) <- Debug.textModels) {
       textRenderer.setColor(color.r, color.g, color.b, color.a)
       val bounds = textRenderer.getBounds(text)
       val worldPos = VertexXY(xPos, yPos)
@@ -118,8 +118,23 @@ object RenderFrame extends GLEventListener {
       textRenderer.draw(text, position.x.toInt, position.y.toInt)
     }
 
+    textRenderer.setColor(1, 1, 1, 0.7f)
+    var yPos = height - 15
+    for (line <- infoText.split("\n")) {
+      textRenderer.draw(line, 0, yPos)
+      yPos = yPos - textRenderer.getBounds(line).getHeight.toInt
+    }
+
     textRenderer.endRendering()
   }
+
+  private def infoText: String =
+    s"""Hotkeys:
+       |Move camera: WASD, arrow keys
+       |Zoom in/out: QE, Page Up/Down
+       |Pause/unpause: Spacebar
+       |Slow mode: P
+     """.stripMargin
 
   private def update(): Unit = {
     if (!paused) {

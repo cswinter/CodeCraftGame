@@ -37,8 +37,10 @@ class GameSimulator(
 
   map.minerals.foreach(spawnMineral)
   // TODO: check map bounds
-  spawnDrone(mothership(BluePlayer, mothershipController1, Vector2(1000, 200)))
-  spawnDrone(mothership(OrangePlayer, mothershipController2, Vector2(-1000, -200)))
+  val mothership1 = mothership(BluePlayer, mothershipController1, Vector2(1000, 200))
+  val mothership2 = mothership(OrangePlayer, mothershipController2, Vector2(-1000, -200))
+  spawnDrone(mothership1)
+  spawnDrone(mothership2)
 
 
 
@@ -100,6 +102,24 @@ class GameSimulator(
 
 
   override def update(): Unit = {
+    // check win condition
+    if (timestep % 30 == 0) {
+      if (mothership1.hasDied) {
+        for (drone <- drones) {
+          if (drone.player == mothership2.player) {
+            Errors.inform("Victory!", drone.position)
+          }
+        }
+      } else if (mothership2.hasDied) {
+        for (drone <- drones) {
+          if (drone.player == mothership1.player) {
+            Errors.inform("Victory!", drone.position)
+          }
+        }
+      }
+    }
+
+
     // handle all drone events (execute user code)
     for (drone <- drones) {
       drone.processEvents()
