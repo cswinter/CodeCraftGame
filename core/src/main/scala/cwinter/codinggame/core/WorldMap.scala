@@ -30,7 +30,7 @@ object WorldMap {
       var cpos: Vector2 = null
       do {
         cpos = 0.75 * Rng.vector2(size)
-      } while (clusterPositions.exists(p => (p - cpos).magnitudeSquared <= 60 * spread))
+      } while (clusterPositions.exists(p => (p - cpos).magnitudeSquared <= 4 * 4 * spread * spread))
       clusterPositions ::= cpos
       cpos
     }

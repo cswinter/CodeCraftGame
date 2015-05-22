@@ -11,6 +11,8 @@ trait DroneHandle {
   def weaponsCooldown: Int
   def isVisible: Boolean
   def player: Player
+  def hitpoints: Int
+  def isEnemy: Boolean
 
   private[core] def drone: Drone
 }

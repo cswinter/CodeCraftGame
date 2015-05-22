@@ -64,6 +64,8 @@ abstract class DroneController extends DroneHandle {
   override def isVisible: Boolean = true
   override def spec: DroneSpec = drone.spec
   override def player: Player = drone.player
+  override def hitpoints: Int = drone.hitpoints
+  override def isEnemy: Boolean = false
   @inline final override private[core] def drone: Drone = _drone
 
   def isInMissileRange(droneHandle: DroneHandle): Boolean =

@@ -35,6 +35,18 @@ class EnemyDroneHandle(
     }
   }
 
+  override def hitpoints: Int = {
+    if (isVisible) {
+      drone.hitpoints
+    } else {
+      val exception = new ObjectNotVisibleException(
+        "Cannot get the hitpoints of an enemy droen that is not inside the sight radius of any of your drones.")
+      Errors.error(exception, drone.position)
+    }
+  }
+
+  override def isEnemy: Boolean = true
+
   def isVisible: Boolean = {
     drone.player == holder ||
     drone.objectsInSight.exists {
