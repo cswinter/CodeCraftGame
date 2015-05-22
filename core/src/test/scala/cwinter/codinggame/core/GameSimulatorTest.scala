@@ -27,7 +27,7 @@ class GameSimulatorTest extends FlatSpec {
   "Game simulator" must "allow for mineral harvesting" in {
     mockDrone.harvestResource(mineral)
     for (_ <- 0 until DroneStorageModule.HarvestingTime) {
-      simulator.update()
+      simulator.performUpdate()
     }
     assert(mineral.harvested)
   }
@@ -35,7 +35,7 @@ class GameSimulatorTest extends FlatSpec {
   it must "prevent double harvesting of resources" in {
     mockDrone.harvestResource(mineral)
     for (_ <- 0 until DroneStorageModule.HarvestingTime) {
-      simulator.update()
+      simulator.performUpdate()
     }
     assert(mockDrone.storedMinerals.size == 1)
   }

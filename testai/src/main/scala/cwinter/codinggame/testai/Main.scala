@@ -50,7 +50,6 @@ abstract class BaseController(val name: Symbol) extends DroneController {
   override def onArrival(): Unit = ()
   override def onDroneEntersVision(drone: DroneHandle): Unit = {
     if (drone.isEnemy)
-      println(s"enters vision ${drone.spec}")
     if (drone.isEnemy && drone.spec.size > 6) {
       mothership.foundCapitalShip(drone)
     }
@@ -95,7 +94,6 @@ class Mothership extends BaseController('Mothership) {
   }
 
   def foundCapitalShip(drone: DroneHandle): Unit = {
-    println(s"found capital ship! ${drone.position}")
     _lastCapitalShipSighting = Some(drone.position)
   }
 

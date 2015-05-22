@@ -1,5 +1,7 @@
 package cwinter.codinggame.core
 
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 import cwinter.codinggame.collisions.VisionTracker
 import cwinter.codinggame.core.api.{DroneController, DroneSpec}
 import cwinter.codinggame.core.objects.drone._
@@ -19,11 +21,18 @@ class GameSimulator(
 ) extends GameWorld {
   final val SightRadius = 500
   final val MaxDroneRadius = 60
+  
 
   private val visibleObjects = collection.mutable.Set.empty[WorldObject]
   private val dynamicObjects = collection.mutable.Set.empty[WorldObject]
   private val drones = collection.mutable.Set.empty[Drone]
   private var deadDrones = List.empty[Drone]
+  @volatile private[this] var savedWorldState = Seq.empty[WorldObjectDescriptor]
+
+  private[this] var targetFPS = 30
+  private def frameMillis = 1000 / targetFPS
+  private[this] var running = false
+  private var tFrameCompleted = System.nanoTime()
 
   private val visionTracker = new VisionTracker[WorldObject](
     map.size.xMin.toInt, map.size.xMax.toInt,
@@ -44,7 +53,7 @@ class GameSimulator(
 
 
 
-  override def worldState: Iterable[WorldObjectDescriptor] = visibleObjects.flatMap(_.descriptor)
+  override def worldState: Iterable[WorldObjectDescriptor] = savedWorldState
 
   private def spawnMineral(mineralCrystal: MineralCrystal): Unit = {
     visibleObjects.add(mineralCrystal)
@@ -100,8 +109,32 @@ class GameSimulator(
     dynamicObjects.add(lightFlash)
   }
 
-
   override def update(): Unit = {
+    if (!running) {
+      running = true
+      Future {
+        run()
+      }
+    }
+  }
+
+  def run(): Unit = {
+    while (true) {
+      performUpdate()
+
+      savedWorldState = Seq(visibleObjects.toSeq: _*).flatMap(_.descriptor)
+
+      val nanos = System.nanoTime()
+      val dt = nanos - tFrameCompleted
+      tFrameCompleted = nanos
+      val sleepMillis = frameMillis - dt / 1000000
+      if (sleepMillis > 0) {
+        Thread.sleep(sleepMillis)
+      }
+    }
+  }
+
+  def performUpdate(): Unit = {
     // check win condition
     if (timestep % 30 == 0) {
       if (mothership1.hasDied) {
