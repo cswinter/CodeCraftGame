@@ -5,9 +5,10 @@ import cwinter.codinggame.graphics.model._
 import cwinter.codinggame.graphics.models.DroneColors._
 import cwinter.codinggame.util.maths.Geometry._
 import cwinter.codinggame.util.maths.{Geometry, VertexXY}
+import cwinter.codinggame.worldstate.Player
 
 
-case class DroneShieldGeneratorModel(position: VertexXY)(implicit rs: RenderStack)
+case class DroneShieldGeneratorModel(position: VertexXY, player: Player)(implicit rs: RenderStack)
   extends ModelBuilder[DroneShieldGeneratorModel, Unit] {
   def signature = this
 
@@ -36,8 +37,8 @@ case class DroneShieldGeneratorModel(position: VertexXY)(implicit rs: RenderStac
         Polygon(
           material = rs.MaterialXYRGB,
           n = 6,
-          colorMidpoint = ColorThrusters,
-          colorOutside = ColorThrusters,
+          colorMidpoint = player.color,
+          colorOutside = player.color,
           radius = radius - 0.5f,
           position = pos + position,
           zPos = 1

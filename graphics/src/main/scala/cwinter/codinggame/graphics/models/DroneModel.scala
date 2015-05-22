@@ -96,11 +96,11 @@ class DroneModelBuilder(drone: DroneDescriptor, timestep: Int)(implicit val rs: 
         module <- signature.modules
       } yield (module match {
         case EnginesDescriptor(position) =>
-          DroneEnginesModel(ModulePosition(sides, position), signature.animationTime)
+          DroneEnginesModel(ModulePosition(sides, position), signature.player, signature.animationTime)
         case MissileBatteryDescriptor(position, n) =>
           DroneMissileBatteryModelBuilder(signature.player, ModulePosition(sides, position), n)
         case ShieldGeneratorDescriptor(position) =>
-          DroneShieldGeneratorModel(ModulePosition(sides, position))
+          DroneShieldGeneratorModel(ModulePosition(sides, position), signature.player)
         case ProcessingModuleDescriptor(positions, tMerging) =>
           ProcessingModuleModelBuilder(ModulePosition(sides, positions), signature.animationTime, tMerging, positions.size)
         case StorageModuleDescriptor(positions, contents, tm) =>

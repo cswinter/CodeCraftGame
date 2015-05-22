@@ -4,9 +4,10 @@ import cwinter.codinggame.graphics.engine.RenderStack
 import cwinter.codinggame.graphics.model.{Model, ModelBuilder, Polygon, StaticCompositeModel}
 import cwinter.codinggame.graphics.models.DroneColors._
 import cwinter.codinggame.util.maths.{Geometry, VertexXY}
+import cwinter.codinggame.worldstate.Player
 
 
-case class DroneEnginesModel(position: VertexXY, t: Int)(implicit rs: RenderStack)
+case class DroneEnginesModel(position: VertexXY, player: Player, t: Int)(implicit rs: RenderStack)
   extends ModelBuilder[DroneEnginesModel, Unit] {
 
   def signature: DroneEnginesModel = this
@@ -18,7 +19,7 @@ case class DroneEnginesModel(position: VertexXY, t: Int)(implicit rs: RenderStac
       yield Polygon(
         rs.MaterialXYRGB,
         5,
-        ColorThrusters,
+        player.color,
         ColorHull,
         radius = 4,
         position = position + offset,

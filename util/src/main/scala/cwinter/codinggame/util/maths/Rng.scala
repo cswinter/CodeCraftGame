@@ -2,7 +2,7 @@ package cwinter.codinggame.util.maths
 
 object Rng {
   private[this] val random = scala.util.Random
-  val seed = 83//scala.util.Random.nextInt(100)
+  val seed = scala.util.Random.nextInt(100)
   println(s"Rng seed: $seed")
   scala.util.Random.setSeed(seed)
 
@@ -42,9 +42,10 @@ object Rng {
     random.nextDouble()
   }
 
+  def gaussian2D(): Vector2 = Vector2(random.nextGaussian(), random.nextGaussian())
+
   def double(min: Double, max: Double): Double = {
     assert(min <= max)
     random.nextDouble() * (max - min) + min
   }
-
 }

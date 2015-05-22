@@ -9,7 +9,7 @@ import org.scalatest.FlatSpec
 
 class GameSimulatorTest extends FlatSpec {
   val mineral = new MineralCrystal(1, Vector2(0, 0))
-  val map = new WorldMap(Rectangle(-2000, 2000, -2000, 2000), Seq(mineral))
+  val map = new WorldMap(Seq(mineral), Rectangle(-2000, 2000, -2000, 2000), Seq(Vector2(0, 0), Vector2(0, 0)))
   val emptyController = new DroneController {
     override def onMineralEntersVision(mineralCrystal: MineralCrystalHandle): Unit = ()
     override def onTick(): Unit = ()

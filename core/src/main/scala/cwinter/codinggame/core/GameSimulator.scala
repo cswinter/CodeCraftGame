@@ -37,8 +37,8 @@ class GameSimulator(
 
   map.minerals.foreach(spawnMineral)
   // TODO: check map bounds
-  val mothership1 = mothership(BluePlayer, mothershipController1, Vector2(1000, 200))
-  val mothership2 = mothership(OrangePlayer, mothershipController2, Vector2(-1000, -200))
+  val mothership1 = mothership(BluePlayer, mothershipController1, map.spawns(0))
+  val mothership2 = mothership(OrangePlayer, mothershipController2, map.spawns(1))
   spawnDrone(mothership1)
   spawnDrone(mothership2)
 
