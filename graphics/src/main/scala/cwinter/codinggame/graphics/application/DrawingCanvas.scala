@@ -9,10 +9,10 @@ import javax.swing.JFrame
 import com.jogamp.opengl.util.FPSAnimator
 import cwinter.codinggame.graphics.engine.RenderFrame
 import RenderFrame._
-import cwinter.codinggame.worldstate.GameWorld
+import cwinter.codinggame.worldstate.Simulator
 
 object DrawingCanvas {
-  def run(gameWorld: GameWorld, fps: Int = 60): Unit = {
+  def run(gameWorld: Simulator, fps: Int = 60): Unit = {
     RenderFrame.gameWorld = gameWorld
 
     // Setup code
@@ -56,9 +56,11 @@ object DrawingCanvas {
         case 40 | 83 /* DOWN, S */ => camera.y -= moveSpeed * camera.zoomFactor
         case 33 | 81 /* PAGE UP, Q */ => camera.zoom -= zoomSpeed
         case 34 | 69 /* PAGE DOWN, E */ => camera.zoom += zoomSpeed
-        case 32 /* SPACEBAR */ => RenderFrame.togglePause()
+        case 32 /* SPACEBAR */ => gameWorld.togglePause()
         case 77 => jframe.setBounds(0, 0, 3840, 2160)
-        case 80 /* P */ => RenderFrame.slowMode = !RenderFrame.slowMode
+        case 80 /* P */ =>
+          if (gameWorld.framerateTarget == 5) gameWorld.framerateTarget = 30
+          else gameWorld.framerateTarget = 5
         case _ => //println(s"keyPressed($keyEvent)")
       }
 

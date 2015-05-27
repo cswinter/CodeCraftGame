@@ -15,12 +15,12 @@ import cwinter.codinggame.util.modules.ModulePosition
 import cwinter.codinggame.worldstate._
 
 
-class GameSimulator(
+class DroneWorldSimulator(
   val map: WorldMap,
   mothershipController1: DroneController,
   mothershipController2: DroneController,
   eventGenerator: Int => Seq[SimulatorEvent]
-) extends GameWorld {
+) extends Simulator {
   final val MaxDroneRadius = 60
   
 
@@ -30,12 +30,7 @@ class GameSimulator(
   private val dynamicObjects = collection.mutable.Set.empty[WorldObject]
   private val drones = collection.mutable.Set.empty[Drone]
   private var deadDrones = List.empty[Drone]
-  @volatile private[this] var savedWorldState = Seq.empty[WorldObjectDescriptor]
 
-  private[this] var targetFPS = 30
-  private def frameMillis = 1000 / targetFPS
-  private[this] var running = false
-  private var tFrameCompleted = System.nanoTime()
 
   private val visionTracker = new VisionTracker[WorldObject](
     map.size.xMin.toInt, map.size.xMax.toInt,
@@ -57,8 +52,6 @@ class GameSimulator(
   spawnDrone(mothership2)
 
 
-
-  override def worldState: Iterable[WorldObjectDescriptor] = savedWorldState
 
   private def spawnMineral(mineralCrystal: MineralCrystal): Unit = {
     visibleObjects.add(mineralCrystal)
@@ -115,31 +108,6 @@ class GameSimulator(
   }
 
   override def update(): Unit = {
-    if (!running) {
-      running = true
-      Future {
-        run()
-      }
-    }
-  }
-
-  def run(): Unit = {
-    while (true) {
-      performUpdate()
-
-      savedWorldState = Seq(visibleObjects.toSeq: _*).flatMap(_.descriptor)
-
-      val nanos = System.nanoTime()
-      val dt = nanos - tFrameCompleted
-      tFrameCompleted = nanos
-      val sleepMillis = frameMillis - dt / 1000000
-      if (sleepMillis > 0) {
-        Thread.sleep(sleepMillis)
-      }
-    }
-  }
-
-  def performUpdate(): Unit = {
     // check win condition
     if (timestep % 30 == 0) {
       if (mothership1.hasDied) {
@@ -240,8 +208,12 @@ class GameSimulator(
     Errors.updateMessages()
   }
 
-  override def timestep = physicsEngine.timestep
+
+  override def computeWorldState: Iterable[WorldObjectDescriptor] = {
+    visibleObjects.flatMap(_.descriptor)
+  }
 }
+
 
 
 sealed trait SimulatorEvent

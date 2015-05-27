@@ -12,16 +12,12 @@ import cwinter.codinggame.graphics.matrices.IdentityMatrix4x4
 import cwinter.codinggame.graphics.model.{VBO, TheModelCache, PrimitiveModelBuilder}
 import cwinter.codinggame.graphics.models.TheWorldObjectModelFactory
 import cwinter.codinggame.util.maths.{ColorRGBA, VertexXY}
-import cwinter.codinggame.worldstate.GameWorld
+import cwinter.codinggame.worldstate.Simulator
 import org.joda.time.DateTime
 
 
 object RenderFrame extends GLEventListener {
   val DebugMode = false
-
-  private[this] var paused = false
-
-  def togglePause(): Unit = paused = !paused
 
   var gl: GL4 = null
   implicit var fbo: FramebufferObject = null
@@ -33,10 +29,8 @@ object RenderFrame extends GLEventListener {
   val FrametimeSamples = 100
   var frameTimes = scala.collection.mutable.Queue.fill(FrametimeSamples - 1)(new DateTime().getMillis)
   var textField: TextField = null
-  var gameWorld: GameWorld = null
+  var gameWorld: Simulator = null
   var error = false
-  var t = true
-  var slowMode = false
   var step = 0
 
 
@@ -137,24 +131,7 @@ object RenderFrame extends GLEventListener {
      """.stripMargin
 
   private def update(): Unit = {
-    if (!paused) {
-      if (!slowMode || step % 10 == 0) {
-        if (t) {
-          try {
-            engine.Debug.clear()
-            gameWorld.update()
-          } catch {
-            case e: Exception =>
-              println(e)
-              e.getStackTrace.foreach(println)
-              paused = true
-              error = true
-          }
-        }
-        t = !t
-      }
-      step += 1
-    }
+    step += 1
   }
 
   def dispose(arg0: GLAutoDrawable): Unit = {
@@ -179,6 +156,7 @@ object RenderFrame extends GLEventListener {
     fbo = new FramebufferObject
     renderStack = new RenderStack
     textRenderer = new TextRenderer(new Font("SansSerif", Font.BOLD, 14))
+    gameWorld.run()
   }
 
   def reshape(drawable: GLAutoDrawable, x: Int, y: Int, width: Int, height: Int): Unit = {

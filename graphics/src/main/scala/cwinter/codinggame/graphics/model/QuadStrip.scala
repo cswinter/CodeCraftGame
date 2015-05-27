@@ -17,7 +17,7 @@ case class QuadStrip[TColor <: Vertex : ClassTag, TParams](
   val shape: QuadStrip[TColor, TParams] = this
   val n = midpoints.length
 
-  assert(colors.length == n)
+  assert(colors.length == n, s"There are ${midpoints.length} midpoints and ${colors.length} colors")
   assert(n >= 2, "There must be at least two midpoints.")
 
   protected def computeVertexData(): Seq[(VertexXYZ, TColor)] = {

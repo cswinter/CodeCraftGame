@@ -10,7 +10,7 @@ object BlogpostDemo {
       customChangingObjects = generateObjects,
       spawnedObjects = spawnObjects
     )
-    s.run()
+    s.start()
   }
 
 

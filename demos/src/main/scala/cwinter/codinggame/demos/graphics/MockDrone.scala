@@ -104,7 +104,7 @@ class MockDrone(
       identifier,
       xPos, yPos,
       orientation,
-      oldPositions,
+      oldPositions.clone(),
       modules,
       hullState,
       if (modules.contains(ShieldGeneratorDescriptor)) Some(1) else None,

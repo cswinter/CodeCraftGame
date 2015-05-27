@@ -101,6 +101,6 @@ object Chaos {
       nRandomMinerals = 20,
       spawnProjectiles = true
     )
-    s.run()
+    s.start()
   }
 }

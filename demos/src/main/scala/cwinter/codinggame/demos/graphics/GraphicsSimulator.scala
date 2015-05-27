@@ -2,7 +2,7 @@ package cwinter.codinggame.demos.graphics
 
 import cwinter.codinggame.collisions.VisionTracker
 import cwinter.codinggame.graphics.application.DrawingCanvas
-import cwinter.codinggame.worldstate.{GameWorld, TestingObject, WorldObjectDescriptor}
+import cwinter.codinggame.worldstate.{Simulator, TestingObject, WorldObjectDescriptor}
 
 
 class GraphicsSimulator(
@@ -13,7 +13,7 @@ class GraphicsSimulator(
   nRandomDrones: Int = 0,
   nRandomMinerals: Int = 0,
   spawnProjectiles: Boolean = false
-) extends GameWorld {
+) extends Simulator {
   var time = 0
   val vision = new VisionTracker[MockObject](-10000, 10000, -10000, 10000, sightRadius.getOrElse(250))
 
@@ -46,12 +46,12 @@ class GraphicsSimulator(
   val objects = collection.mutable.Set(minerals ++ drones ++ customObjects:_*)
   objects.foreach(vision.insert(_))
 
-  def worldState: Iterable[WorldObjectDescriptor] = {
+  override def computeWorldState: Iterable[WorldObjectDescriptor] = {
     objects.map(_.state()) + TestingObject(time) ++ customChangingObjects(time) ++
       objects.flatMap{case drone: MockDrone => drone.extraState() case _ => Seq()}
   }
 
-  def update(): Unit = {
+  override def update(): Unit = {
     time += 1
 
     objects.foreach(_.update())
@@ -82,9 +82,8 @@ class GraphicsSimulator(
     spawnedObjects(time).foreach(spawn)
   }
 
-  override def timestep = time
-
-  def run(): Unit = {
+  
+  def start(): Unit = {
     DrawingCanvas.run(this)
   }
 }

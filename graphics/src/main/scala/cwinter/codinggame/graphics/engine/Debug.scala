@@ -27,7 +27,7 @@ object Debug {
 
   private[engine] def textModels = _textModels
 
-  private[engine] def clear(): Unit = {
+  private[codinggame] def clear(): Unit = {
     objects = List.empty[WorldObjectDescriptor]
     _textModels = List.empty[TextModel]
   }

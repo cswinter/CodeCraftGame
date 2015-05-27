@@ -34,7 +34,7 @@ class MockLaserMissile(
   }
 
   override def state(): WorldObjectDescriptor =
-    HomingMissileDescriptor(identifier, oldPositions.toSeq, math.min(positions, age), player)
+    HomingMissileDescriptor(identifier, oldPositions.clone().toSeq, math.min(positions, age), player)
 
 
   def vx = math.cos(orientation).toFloat * speed
