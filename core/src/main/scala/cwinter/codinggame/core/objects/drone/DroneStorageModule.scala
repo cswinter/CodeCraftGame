@@ -95,10 +95,6 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: Drone, starti
     }
   }.rotated(owner.dynamics.orientation) + owner.position
 
-  def depositMinerals(other: Option[DroneStorageModule]): Unit = {
-    deposit = other
-  }
-
   def depositMineral(mineralCrystal: MineralCrystal, position: Vector2): Unit = {
     val dummy = StoresMineral(mineralCrystal)
     createMineralSlot(dummy)

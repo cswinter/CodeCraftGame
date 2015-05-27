@@ -2,14 +2,14 @@ package cwinter.codinggame.core.objects.drone
 
 import cwinter.codinggame.core.api.DroneSpec
 import cwinter.codinggame.core.objects.MineralCrystal
-import cwinter.codinggame.core.{MineralCrystalDestroyed, SimulatorEvent}
-import cwinter.codinggame.util.maths.Vector2
+import cwinter.codinggame.core.{WorldConfig, MineralCrystalDestroyed, SimulatorEvent}
+import cwinter.codinggame.util.maths.{Rectangle, Vector2}
 import cwinter.codinggame.worldstate.BluePlayer
 import org.scalatest.FlatSpec
 
 private[core] class DroneRefineryModuleTest extends FlatSpec {
   val mockDroneSpec = new DroneSpec(6, refineries = 5, storageModules = 2)
-  val mockDrone = new Drone(mockDroneSpec, null, BluePlayer, Vector2(0, 0), 0)
+  val mockDrone = new Drone(mockDroneSpec, null, BluePlayer, Vector2(0, 0), 0, WorldConfig(Rectangle(-100, 100, -100, 100)))
 
   val processingModule = new DroneRefineryModule((0 to 4).toSeq, mockDrone)
 

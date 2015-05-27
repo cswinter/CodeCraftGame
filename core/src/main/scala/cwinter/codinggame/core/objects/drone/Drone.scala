@@ -14,28 +14,24 @@ private[core] class Drone(
   val player: Player,
   initialPos: Vector2,
   time: Double,
+  val worldConfig: WorldConfig,
   startingResources: Int = 0
 ) extends WorldObject {
 
   var objectsInSight: Set[WorldObject] = Set.empty[WorldObject]
 
-  private[core] var constructionProgress: Option[Int] = None
-
   private[this] val eventQueue = collection.mutable.Queue[DroneEvent](Spawned)
-
   private[this] var hullState = List.fill[Byte](spec.size - 1)(2)
-
-  private[this] val oldPositions = collection.mutable.Queue.empty[(Float, Float, Float)]
-  private final val NJetPositions = 6
+  private[core] var constructionProgress: Option[Int] = None
+  private[this] var mineralDepositee: Option[Drone] = None
+  private[this] var _hasDied: Boolean = false
+  private[this] var automaticMineralProcessing: Boolean = true
 
   final val MessageCooldown = 20
   private[this] var messageCooldown = MessageCooldown
+  private final val NJetPositions = 6
+  private[this] val oldPositions = collection.mutable.Queue.empty[(Float, Float, Float)]
 
-  private[this] var mineralDepositee: Option[Drone] = None
-
-  private[this] var automaticMineralProcessing: Boolean = true
-
-  private[this] var _hasDied: Boolean = false
 
   // TODO: remove this once all logic is moved into modules
   private[this] var simulatorEvents = List.empty[SimulatorEvent]

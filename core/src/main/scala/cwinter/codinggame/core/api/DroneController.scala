@@ -3,7 +3,7 @@ package cwinter.codinggame.core.api
 import cwinter.codinggame.core.errors.Errors
 import cwinter.codinggame.core.objects.drone._
 import cwinter.codinggame.graphics.models.DroneMissileBatteryModelBuilder
-import cwinter.codinggame.util.maths.Vector2
+import cwinter.codinggame.util.maths.{Rectangle, Vector2}
 import cwinter.codinggame.worldstate.Player
 
 abstract class DroneController extends DroneHandle {
@@ -46,7 +46,7 @@ abstract class DroneController extends DroneHandle {
   }
 
   def buildDrone(spec: DroneSpec, controller: DroneController): Unit = {
-    val newDrone = new Drone(spec, controller, drone.player, Vector2.NullVector, -1)
+    val newDrone = new Drone(spec, controller, drone.player, Vector2.NullVector, -1, drone.worldConfig)
     drone.startDroneConstruction(ConstructDrone(newDrone))
   }
 
@@ -81,10 +81,11 @@ abstract class DroneController extends DroneHandle {
       if (d.player == drone.player) d.controller
       else new EnemyDroneHandle(d, drone.player)   // TODO: maybe create drone handles once for each player
     )
+  def worldSize: Rectangle = drone.worldConfig.size
 
 
   private[core] def initialise(drone: Drone): Unit = {
-    require(_drone == null)
+    require(_drone == null, "DroneController must only be initialised once.")
     _drone = drone
   }
 }

@@ -1,5 +1,7 @@
 package cwinter.codinggame.core
 
+import cwinter.codinggame.graphics.engine.Debug
+
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import cwinter.codinggame.collisions.VisionTracker
@@ -23,6 +25,8 @@ class GameSimulator(
   final val MaxDroneRadius = 60
   
 
+  val worldConfig = WorldConfig(map.size)
+
   private val visibleObjects = collection.mutable.Set.empty[WorldObject]
   private val dynamicObjects = collection.mutable.Set.empty[WorldObject]
   private val drones = collection.mutable.Set.empty[Drone]
@@ -43,6 +47,8 @@ class GameSimulator(
   private val physicsEngine = new PhysicsEngine[ConstantVelocityDynamics](
     map.size, MaxDroneRadius
   )
+
+  Debug.drawAlways(DrawRectangle(0, map.size))
 
   map.minerals.foreach(spawnMineral)
   // TODO: check map bounds
@@ -69,7 +75,7 @@ class GameSimulator(
       refineries = 3,
       storageModules = 3
     )
-    new Drone(spec, controller, player, pos, 0, 21)
+    new Drone(spec, controller, player, pos, 0, worldConfig, 21)
   }
 
   private def spawnDrone(drone: Drone): Unit = {
