@@ -45,7 +45,11 @@ abstract private[core] class ConstantVelocityDynamics(
       case (None, None) => None
     }
 
-    val result = x.filter(_._1 < timeDelta)
+    val result = x.filter(_._1 < timeDelta).map {
+      case (t, dir) =>
+        if (t < 0 && t > 1e-12) (t, dir)
+        else (t, dir)
+    }
 
     if (result.map(_._1 < 0) == Some(true)) {
       println(s"velocity=$velocity\nareaBounds=$areaBounds\ntimeDelta=$timeDelta\nctX=$ctX\nctY=$ctY\nresult=$result\npos=$pos")

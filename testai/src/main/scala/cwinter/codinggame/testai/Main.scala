@@ -33,13 +33,14 @@ abstract class BaseController(val name: Symbol) extends DroneController {
     }
   }
 
-  def canWin: Boolean = {
-    def calculateStrength(drones: Iterable[DroneHandle]): Int = {
-      val (health, attack) = drones.foldLeft(0, 0){
-        case ((h, a), d) => (h + d.hitpoints, a + d.spec.missileBatteries)
-      }
-      health * attack
+  def calculateStrength(drones: Iterable[DroneHandle]): Int = {
+    val (health, attack) = drones.foldLeft(0, 0){
+      case ((h, a), d) => (h + d.hitpoints, a + d.spec.missileBatteries)
     }
+    health * attack
+  }
+
+  def canWin: Boolean = {
     val enemyStrength = calculateStrength(dronesInSight.filter(_.isEnemy))
     val alliedStrength = calculateStrength((dronesInSight + this).filterNot(_.isEnemy))
     enemyStrength <= alliedStrength
@@ -77,6 +78,8 @@ abstract class BaseController(val name: Symbol) extends DroneController {
 
 class Mothership extends BaseController('Mothership) {
   val mothership = this
+  var defenders = List.empty[DroneHandle]
+  var defenderCooldown: Int = 150
 
   var t = 0
   var minerals = Set.empty[MineralCrystalHandle]
@@ -98,6 +101,7 @@ class Mothership extends BaseController('Mothership) {
 
   override def onTick(): Unit = {
     t += 1
+    defenderCooldown -= 1
     if (!isConstructing) {
       if (DroneCount('Harvester) < 3) {
         buildDrone(collectorSpec, new ScoutingDroneController(this))
@@ -109,6 +113,26 @@ class Mothership extends BaseController('Mothership) {
     }
 
     handleWeapons()
+  }
+
+
+  def needsDefender: Boolean = {
+    val strength = calculateStrength(defenders)
+    val enemyStrength = calculateStrength(enemies)
+    strength < enemyStrength
+  }
+
+  def registerDefender(droneHandle: DroneHandle): Unit = {
+    defenders ::= droneHandle
+    defenderCooldown = 150
+  }
+
+  def allowsDefenderRelease: Boolean = {
+    defenderCooldown <= 0 && !needsDefender
+  }
+
+  def unregisterDefender(droneHandle: DroneHandle): Unit = {
+    defenders = defenders.filter(_ != droneHandle)
   }
 
   def foundCapitalShip(drone: DroneHandle): Unit = {
@@ -223,7 +247,9 @@ class Hunter(val mothership: Mothership) extends BaseController('Hunter) {
     if (enemies.nonEmpty) {
       val closest = closestEnemy
       if (closest.spec.missileBatteries > 0) {
-        moveInDirection(position - closest.position)
+        if (!canWin) {
+          moveInDirection(position - closest.position)
+        }
       } else {
         moveInDirection(closest.position - position)
       }
@@ -237,7 +263,7 @@ class Hunter(val mothership: Mothership) extends BaseController('Hunter) {
 
 class Destroyer(val mothership: Mothership) extends BaseController('Destroyer) {
   var attack = false
-
+  var defend = false
 
   override def onSpawn(): Unit = {
     moveInDirection(Vector2(Rng.double(0, 100)))
@@ -246,21 +272,37 @@ class Destroyer(val mothership: Mothership) extends BaseController('Destroyer) {
   override def onTick(): Unit = {
     handleWeapons()
 
+    if (!defend && mothership.needsDefender) {
+      mothership.registerDefender(this)
+      defend = true
+    }
+    if (defend && mothership.allowsDefenderRelease) {
+      mothership.unregisterDefender(this)
+      defend = false
+    }
     if (mothership.t % 600 == 0) attack = true
 
     if (enemies.nonEmpty) {
       val pClosest = closestEnemy.position
-      if (canWin) {
+      if (canWin || defend) {
         moveInDirection(pClosest - position)
       } else {
         moveInDirection(position - pClosest)
         attack = false
       }
-    } else if (attack) {
+    } else if (defend) {
+      if ((position - mothership.position).magnitudeSquared < 450 * 450) {
+        moveToPosition(Rng.double(250, 450) * Rng.vector2() + mothership.position)
+      }
+    } else if (attack && mothership.lastCapitalShipSighting != None) {
       for (p <- mothership.lastCapitalShipSighting)
         moveToPosition(p)
     } else if (Rng.bernoulli(0.005)) {
-      moveInDirection(0.9 * Rng.vector2(worldSize))
+      moveToPosition(Rng.double(600, 900) * Rng.vector2() + mothership.position)
     }
+  }
+
+  override def onDeath(): Unit = {
+    if (defend) mothership.unregisterDefender(this)
   }
 }

@@ -26,13 +26,19 @@ object WorldMap {
   def apply(size: Rectangle, resourceClusters: Seq[(Int, Int)], spawns: Seq[Vector2]): WorldMap = {
     val spread = 100
     var clusterPositions = List.empty[Vector2]
+    var left = true
     def freshClusterPosition: Vector2 = {
       var cpos: Vector2 = null
+      var fairPos: Vector2 = null
       do {
         cpos = 0.75 * Rng.vector2(size)
-      } while (clusterPositions.exists(p => (p - cpos).magnitudeSquared <= 4 * 4 * spread * spread))
-      clusterPositions ::= cpos
-      cpos
+        fairPos =
+          if (left) Vector2(math.abs(cpos.x), cpos.y)
+          else Vector2(-math.abs(cpos.x), cpos.y)
+      } while (clusterPositions.exists(p => (p - fairPos).magnitudeSquared <= 4 * 4 * spread * spread))
+      clusterPositions ::= fairPos
+      left = !left
+      fairPos
     }
 
     val minerals =

@@ -9,11 +9,10 @@ object TheGameMaster {
   def startGame(mothership1: DroneController, mothership2: DroneController): Unit = {
     val worldSize = Rectangle(-4000, 4000, -2500, 2500)
     val resourceClusters = Seq(
-      (20, 1), (20, 1), (20, 1),
+      (20, 1), (20, 1), (20, 1), (20, 1),
       (20, 2), (20, 2),
       (15, 3), (15, 3),
-      (15, 4),
-      (20, 5)
+      (15, 4), (15, 4)
     )
     val map = WorldMap(worldSize, resourceClusters, Seq(Vector2(2500, 500), Vector2(-2500, -500)))
     val simulator = new GameSimulator(map, mothership1, mothership2, devEvents)
