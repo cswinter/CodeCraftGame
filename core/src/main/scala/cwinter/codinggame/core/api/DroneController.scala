@@ -1,6 +1,6 @@
 package cwinter.codinggame.core.api
 
-import cwinter.codinggame.core.errors.Errors
+import cwinter.codinggame.core.errors.{CodingGameException, Errors}
 import cwinter.codinggame.core.objects.drone._
 import cwinter.codinggame.graphics.models.DroneMissileBatteryModelBuilder
 import cwinter.codinggame.util.maths.{Rectangle, Vector2}
@@ -82,6 +82,7 @@ abstract class DroneController extends DroneHandle {
       else new EnemyDroneHandle(d, drone.player)   // TODO: maybe create drone handles once for each player
     )
   def worldSize: Rectangle = drone.worldConfig.size
+  def orientation: Double = drone.dynamics.orientation
 
 
   private[core] def initialise(drone: Drone): Unit = {

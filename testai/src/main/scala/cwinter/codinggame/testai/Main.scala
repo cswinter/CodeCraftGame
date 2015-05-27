@@ -14,6 +14,7 @@ object Main {
 
 abstract class BaseController(val name: Symbol) extends DroneController {
   val mothership: Mothership
+  var searchToken: Option[SearchToken] = None
 
   if (name != 'Mothership)
     mothership.DroneCount.increment(this.name)
@@ -44,6 +45,20 @@ abstract class BaseController(val name: Symbol) extends DroneController {
     enemyStrength <= alliedStrength
   }
 
+  def requestSearchToken(): Option[SearchToken] = {
+    mothership.getSearchToken(position)
+  }
+  def scout(): Unit = {
+    if (searchToken == None) searchToken = requestSearchToken()
+    for (t <- searchToken) {
+      if ((position - t.pos).magnitudeSquared < 1) {
+        searchToken = None
+      } else {
+        moveToPosition(t.pos)
+      }
+    }
+  }
+
   override def onMineralEntersVision(mineralCrystal: MineralCrystalHandle): Unit =
     mothership.registerMineral(mineralCrystal)
 
@@ -57,6 +72,7 @@ abstract class BaseController(val name: Symbol) extends DroneController {
   override def onDeath(): Unit = {
     mothership.DroneCount.decrement(this.name)
   }
+  override def onSpawn(): Unit = ()
 }
 
 class Mothership extends BaseController('Mothership) {
@@ -71,11 +87,13 @@ class Mothership extends BaseController('Mothership) {
   val collectorSpec = DroneSpec(4, storageModules = 2)
   val hunterSpec = DroneSpec(4, missileBatteries = 1, engines = 1)
   val destroyerSpec = DroneSpec(5, missileBatteries = 3, shieldGenerators = 1)
+  var searchTokens: Set[SearchToken] = null
 
 
   // abstract methods for event handling
   override def onSpawn(): Unit = {
     buildDrone(scoutSpec, new ScoutingDroneController(this))
+    searchTokens = genSearchTokens
   }
 
   override def onTick(): Unit = {
@@ -108,6 +126,27 @@ class Mothership extends BaseController('Mothership) {
     minerals += mineralCrystal
   }
 
+  def getSearchToken(pos: Vector2): Option[SearchToken] = {
+    if (searchTokens.isEmpty) {
+      None
+    } else {
+      val closest = searchTokens.minBy(t => (t.pos - pos).magnitudeSquared)
+      searchTokens -= closest
+      Some(closest)
+    }
+  }
+
+  private def genSearchTokens: Set[SearchToken] = {
+    val width = math.ceil(worldSize.width / DroneSpec.SightRadius).toInt
+    val height = math.ceil(worldSize.height / DroneSpec.SightRadius).toInt
+    val xOffset = (worldSize.width / DroneSpec.SightRadius / 2).toInt
+    val yOffset = (worldSize.height / DroneSpec.SightRadius / 2).toInt
+    val tokens = Seq.tabulate(width, height){
+      (x, y) => SearchToken(x - xOffset, y - yOffset)
+    }
+    for (ts <- tokens; t <- ts) yield t
+  }.toSet
+
 
   object DroneCount {
     private[this] var counts = Map.empty[Symbol, Int]
@@ -126,18 +165,17 @@ class Mothership extends BaseController('Mothership) {
   }
 }
 
+case class SearchToken(x: Int, y: Int) {
+  val pos: Vector2 = Vector2((x + 0.5) * DroneSpec.SightRadius, (y + 0.5) * DroneSpec.SightRadius)
+}
+
 class ScoutingDroneController(val mothership: Mothership) extends BaseController('Harvester) {
   var hasReturned = false
   var nextCrystal: Option[MineralCrystalHandle] = None
 
 
-  // abstract methods for event handling
-  override def onSpawn(): Unit = {
-    moveInDirection(Vector2(Rng.double(0, 100)))
-  }
-
-
   override def onTick(): Unit = {
+
     if (nextCrystal.exists(_.harvested)) nextCrystal = None
     if (nextCrystal == None) nextCrystal = mothership.findClosestMineral(availableStorage, position)
 
@@ -152,9 +190,9 @@ class ScoutingDroneController(val mothership: Mothership) extends BaseController
       if (availableStorage == 0 && !hasReturned) {
         moveToDrone(mothership)
         nextCrystal = None
-      } else if ((hasReturned && availableStorage > 0) || Rng.bernoulli(0.005) && nextCrystal == None) {
+      } else if (hasReturned && availableStorage > 0 || nextCrystal == None) {
         hasReturned = false
-        moveInDirection(Vector2(Rng.double(0, 100)))
+        scout()
       }
     }
   }
@@ -179,10 +217,6 @@ class ScoutingDroneController(val mothership: Mothership) extends BaseController
 }
 
 class Hunter(val mothership: Mothership) extends BaseController('Hunter) {
-  override def onSpawn(): Unit = {
-    moveInDirection(Vector2(Rng.double(0, 100)))
-  }
-
   override def onTick(): Unit = {
     handleWeapons()
 
@@ -195,8 +229,8 @@ class Hunter(val mothership: Mothership) extends BaseController('Hunter) {
       }
     }
 
-    if (Rng.bernoulli(0.01)) {
-      moveInDirection(Vector2(Rng.double(0, 100)))
+    if (Rng.bernoulli(0.005)) {
+      moveToPosition(0.9 * Rng.vector2(worldSize))
     }
   }
 }
@@ -225,8 +259,8 @@ class Destroyer(val mothership: Mothership) extends BaseController('Destroyer) {
     } else if (attack) {
       for (p <- mothership.lastCapitalShipSighting)
         moveToPosition(p)
-    } else if (Rng.bernoulli(0.01)) {
-      moveInDirection(Vector2(Rng.double(0, 100)))
+    } else if (Rng.bernoulli(0.005)) {
+      moveInDirection(0.9 * Rng.vector2(worldSize))
     }
   }
 }

@@ -17,6 +17,7 @@ private[core] class Drone(
   val worldConfig: WorldConfig,
   startingResources: Int = 0
 ) extends WorldObject {
+  require(worldConfig != null)
 
   var objectsInSight: Set[WorldObject] = Set.empty[WorldObject]
 

@@ -98,4 +98,5 @@ object DroneSpec {
   final val ConstructionPeriod = 100
   final val ResourceCost = 5
   final val SideLength = 40
+  final val SightRadius = 500
 }

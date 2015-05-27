@@ -21,7 +21,6 @@ class GameSimulator(
   mothershipController2: DroneController,
   eventGenerator: Int => Seq[SimulatorEvent]
 ) extends GameWorld {
-  final val SightRadius = 500
   final val MaxDroneRadius = 60
   
 
@@ -41,7 +40,7 @@ class GameSimulator(
   private val visionTracker = new VisionTracker[WorldObject](
     map.size.xMin.toInt, map.size.xMax.toInt,
     map.size.yMin.toInt, map.size.yMax.toInt,
-    SightRadius
+    DroneSpec.SightRadius
   )
 
   private val physicsEngine = new PhysicsEngine[ConstantVelocityDynamics](
