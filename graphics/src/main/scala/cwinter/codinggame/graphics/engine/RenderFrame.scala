@@ -123,7 +123,8 @@ object RenderFrame extends GLEventListener {
   }
 
   private def infoText: String =
-    s"""Hotkeys:
+    s"""Game speed target: ${gameWorld.framerateTarget}
+       |Hotkeys:
        |Move camera: WASD, arrow keys
        |Zoom in/out: QE, Page Up/Down
        |Pause/unpause: Spacebar

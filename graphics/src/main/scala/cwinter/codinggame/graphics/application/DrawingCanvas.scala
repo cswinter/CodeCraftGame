@@ -56,6 +56,14 @@ object DrawingCanvas {
         case 40 | 83 /* DOWN, S */ => camera.y -= moveSpeed * camera.zoomFactor
         case 33 | 81 /* PAGE UP, Q */ => camera.zoom -= zoomSpeed
         case 34 | 69 /* PAGE DOWN, E */ => camera.zoom += zoomSpeed
+        case 82 /* R */ =>
+          if (gameWorld.framerateTarget >= 30) gameWorld.framerateTarget -= 10
+          else if (gameWorld.framerateTarget >= 15) gameWorld.framerateTarget -= 5
+          else if (gameWorld.framerateTarget > 1) gameWorld.framerateTarget -= 1
+        case 70 /* F */ =>
+          if (gameWorld.framerateTarget < 10) gameWorld.framerateTarget += 1
+          else if (gameWorld.framerateTarget < 30) gameWorld.framerateTarget += 5
+          else gameWorld.framerateTarget += 10
         case 32 /* SPACEBAR */ => gameWorld.togglePause()
         case 77 => jframe.setBounds(0, 0, 3840, 2160)
         case 80 /* P */ =>
