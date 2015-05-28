@@ -62,9 +62,12 @@ abstract private[core] class ConstantVelocityDynamics(
     other: ConstantVelocityDynamics,
     timeDelta: Double
   ): Option[Double] = {
-    if (collisionID == other.collisionID && (!alwaysCollide || !other.alwaysCollide)) return None
+    if (
+      (!alwaysCollide && !other.alwaysCollide) ||
+      (collisionID == other.collisionID && (!alwaysCollide || !other.alwaysCollide))
+    ) return None
     
-        // need to calculate the intersection (if any), of two circles moving at constant speed
+    // need to calculate the intersection (if any), of two circles moving at constant speed
     // this is equivalent to a stationary circle with combined radius and a moving point
 
     // if the two circles are (barely) overlapping, this means they just collided

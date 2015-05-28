@@ -2,6 +2,7 @@ package cwinter.codinggame.testai
 
 import cwinter.codinggame.core.api._
 import cwinter.codinggame.util.maths.{Vector2, Rng}
+import cwinter.codinggame.worldstate.BluePlayer
 
 import scala.reflect.ClassTag
 
@@ -83,6 +84,7 @@ class Mothership extends BaseController('Mothership) {
 
   var t = 0
   var minerals = Set.empty[MineralCrystalHandle]
+  var claimedMinerals = Set.empty[MineralCrystalHandle]
   private[this] var _lastCapitalShipSighting: Option[Vector2] = None
   def lastCapitalShipSighting: Option[Vector2] = _lastCapitalShipSighting
 
@@ -91,7 +93,6 @@ class Mothership extends BaseController('Mothership) {
   val hunterSpec = DroneSpec(4, missileBatteries = 1, engines = 1)
   val destroyerSpec = DroneSpec(5, missileBatteries = 3, shieldGenerators = 1)
   var searchTokens: Set[SearchToken] = null
-
 
   // abstract methods for event handling
   override def onSpawn(): Unit = {
@@ -103,7 +104,9 @@ class Mothership extends BaseController('Mothership) {
     t += 1
     defenderCooldown -= 1
     if (!isConstructing) {
-      if (DroneCount('Harvester) < 3) {
+      if (DroneCount('Harvester) < 1 ||
+        (DroneCount('Hunter) > 0 && DroneCount('Harvester) < 3) ||
+        (DroneCount('Destroyer) > 0 && DroneCount('Hunter) > 0 && DroneCount('Harvester) < 4)) {
         buildDrone(collectorSpec, new ScoutingDroneController(this))
       } else if (2 * DroneCount('Hunter) / math.max(DroneCount('Destroyer), 1) < 1) {
         buildDrone(hunterSpec, new Hunter(this))
@@ -117,6 +120,7 @@ class Mothership extends BaseController('Mothership) {
 
 
   def needsDefender: Boolean = {
+    if (hitpoints == 0) return false
     val strength = calculateStrength(defenders)
     val enemyStrength = calculateStrength(enemies)
     strength < enemyStrength
@@ -127,9 +131,8 @@ class Mothership extends BaseController('Mothership) {
     defenderCooldown = 150
   }
 
-  def allowsDefenderRelease: Boolean = {
+  def allowsDefenderRelease: Boolean =
     defenderCooldown <= 0 && !needsDefender
-  }
 
   def unregisterDefender(droneHandle: DroneHandle): Unit = {
     defenders = defenders.filter(_ != droneHandle)
@@ -141,13 +144,22 @@ class Mothership extends BaseController('Mothership) {
 
   def findClosestMineral(maxSize: Int, position: Vector2): Option[MineralCrystalHandle] = {
     minerals = minerals.filter(!_.harvested)
-    val filtered = minerals.filter(_.size <= maxSize)
-    if (filtered.isEmpty) None
-    else Some(filtered.minBy(m => (m.position - position).magnitudeSquared))
+    val filtered = minerals.filter(m => m.size <= maxSize && !claimedMinerals.contains(m))
+    val result =
+      if (filtered.isEmpty) None
+      else Some(filtered.minBy(m => (m.position - position).magnitudeSquared))
+    for (m <- result) {
+      claimedMinerals += m
+    }
+    result
   }
 
   def registerMineral(mineralCrystal: MineralCrystalHandle): Unit = {
     minerals += mineralCrystal
+  }
+
+  def abortHarvestingMission(mineralCrystal: MineralCrystalHandle): Unit = {
+    claimedMinerals -= mineralCrystal
   }
 
   def getSearchToken(pos: Vector2): Option[SearchToken] = {
@@ -238,6 +250,12 @@ class ScoutingDroneController(val mothership: Mothership) extends BaseController
       }
     }
   }
+
+
+  override def onDeath(): Unit = {
+    for (m <- nextCrystal)
+      mothership.abortHarvestingMission(m)
+  }
 }
 
 class Hunter(val mothership: Mothership) extends BaseController('Hunter) {
@@ -291,8 +309,8 @@ class Destroyer(val mothership: Mothership) extends BaseController('Destroyer) {
         attack = false
       }
     } else if (defend) {
-      if ((position - mothership.position).magnitudeSquared < 450 * 450) {
-        moveToPosition(Rng.double(250, 450) * Rng.vector2() + mothership.position)
+      if ((position - mothership.position).magnitudeSquared > 350 * 350) {
+        moveToPosition(Rng.double(250, 350) * Rng.vector2() + mothership.position)
       }
     } else if (attack && mothership.lastCapitalShipSighting != None) {
       for (p <- mothership.lastCapitalShipSighting)

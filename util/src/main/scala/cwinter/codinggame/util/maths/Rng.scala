@@ -4,7 +4,7 @@ object Rng {
   private[this] val random = scala.util.Random
   val seed = scala.util.Random.nextInt(100)
   println(s"Rng seed: $seed")
-  scala.util.Random.setSeed(seed)
+  random.setSeed(seed)
 
 
   def int(max: Int): Int = {

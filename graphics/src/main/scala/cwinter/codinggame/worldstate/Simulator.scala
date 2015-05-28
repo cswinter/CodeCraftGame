@@ -22,7 +22,13 @@ trait Simulator {
       while (true) {
         if (!paused) {
           Debug.clear()
-          update()
+          try {
+            update()
+          } catch {
+            case e: Exception =>
+              e.printStackTrace()
+              paused = true
+          }
           t += 1
           savedWorldState = Seq(computeWorldState.toSeq: _*)
         }
