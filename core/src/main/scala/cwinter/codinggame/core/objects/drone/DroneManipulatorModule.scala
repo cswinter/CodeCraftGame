@@ -18,7 +18,7 @@ class DroneManipulatorModule(positions: Seq[Int], owner: Drone)
 
     // start new drone constructions
     for (ConstructDrone(spec, controller, pos) <- newDrone) {
-      val newDrone = new Drone(spec, controller, owner.player, pos, -1, owner.worldConfig)
+      val newDrone = new Drone(spec, controller, owner.player, pos, -1, owner.worldConfig, owner.replayRecorder)
       droneConstruction = Some((newDrone, 0))
       effects ::= DroneConstructionStarted(newDrone)
     }

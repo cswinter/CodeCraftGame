@@ -218,10 +218,6 @@ class ScoutingDroneController(val mothership: Mothership) extends BaseController
     if (enemies.nonEmpty && closestEnemy.spec.missileBatteries > 0) {
       moveInDirection(position - closestEnemy.position)
     } else {
-      for (
-        c <- nextCrystal
-        if !(c.position ~ position)
-      ) moveToPosition(c.position)
 
       if (availableStorage == 0 && !hasReturned) {
         moveToDrone(mothership)
@@ -229,6 +225,11 @@ class ScoutingDroneController(val mothership: Mothership) extends BaseController
       } else if (hasReturned && availableStorage > 0 || nextCrystal == None) {
         hasReturned = false
         scout()
+      } else {
+        for (
+          c <- nextCrystal
+          if !(c.position ~ position)
+        ) moveToPosition(c.position)
       }
     }
   }

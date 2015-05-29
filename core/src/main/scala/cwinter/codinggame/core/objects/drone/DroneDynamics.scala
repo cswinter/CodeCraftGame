@@ -19,8 +19,15 @@ private[core] class DroneDynamics(
   private[this] var _movementCommand: MovementCommand = HoldPosition
 
 
-  def movementCommand_=(value: MovementCommand): Unit =
+  def setMovementCommand(value: MovementCommand): Boolean = {
+    value match {
+      case MoveToPosition(p) if p ~ pos => return true
+      case _ =>
+    }
+    val redundant = value == _movementCommand
     _movementCommand = value
+    redundant
+  }
 
   def orientation_=(value: Double): Unit = _orientation = value
   def orientation: Double = _orientation

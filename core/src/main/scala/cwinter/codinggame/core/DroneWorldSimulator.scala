@@ -1,5 +1,6 @@
 package cwinter.codinggame.core
 
+import cwinter.codinggame.core.replay.{ConsoleReplayRecorder, ReplayRecorder}
 import cwinter.codinggame.graphics.engine.Debug
 
 import scala.concurrent.Future
@@ -22,7 +23,8 @@ class DroneWorldSimulator(
   eventGenerator: Int => Seq[SimulatorEvent]
 ) extends Simulator {
   final val MaxDroneRadius = 60
-  
+
+  val replayRecorder = new ConsoleReplayRecorder
 
   val worldConfig = WorldConfig(map.size)
 
@@ -67,7 +69,7 @@ class DroneWorldSimulator(
       refineries = 3,
       storageModules = 3
     )
-    new Drone(spec, controller, player, pos, 0, worldConfig, 21)
+    new Drone(spec, controller, player, pos, 0, worldConfig, replayRecorder, 21)
   }
 
   private def spawnDrone(drone: Drone): Unit = {
@@ -108,6 +110,8 @@ class DroneWorldSimulator(
   }
 
   override def update(): Unit = {
+    replayRecorder.newTimestep(timestep)
+
     // check win condition
     if (timestep % 30 == 0) {
       if (mothership1.hasDied) {

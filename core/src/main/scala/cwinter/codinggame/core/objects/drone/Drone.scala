@@ -4,6 +4,7 @@ import cwinter.codinggame.core._
 import cwinter.codinggame.core.api.{DroneController, DroneSpec, MineralCrystalHandle}
 import cwinter.codinggame.core.errors.Errors
 import cwinter.codinggame.core.objects.{WorldObject, MineralCrystal, EnergyGlobeObject}
+import cwinter.codinggame.core.replay.{NullReplayRecorder, ReplayRecorder}
 import cwinter.codinggame.util.maths.{Float0To1, Vector2}
 import cwinter.codinggame.worldstate.{DroneDescriptor, DroneModuleDescriptor, Player, WorldObjectDescriptor}
 
@@ -15,6 +16,7 @@ private[core] class Drone(
   initialPos: Vector2,
   time: Double,
   val worldConfig: WorldConfig,
+  val replayRecorder: ReplayRecorder = NullReplayRecorder,
   startingResources: Int = 0
 ) extends WorldObject {
   require(worldConfig != null)
@@ -156,13 +158,18 @@ private[core] class Drone(
   @inline final def !(command: DroneCommand) = executeCommand(command)
   
   def executeCommand(command: DroneCommand) = {
+    var redundant = false
     command match {
-      case mc: MovementCommand => giveMovementCommand(mc)
+      case mc: MovementCommand =>
+        redundant = giveMovementCommand(mc)
       case cd: ConstructDrone => startDroneConstruction(cd)
       case DepositMinerals(target) => depositMinerals(target)
       case FireMissiles(target) => fireWeapons(target)
       case HarvestMineral(mineral) => harvestResource(mineral)
       case ProcessMineral(mineral) => startMineralProcessing(mineral)
+    }
+    if (!redundant) {
+      replayRecorder.record(id, command)
     }
   }
   
@@ -170,12 +177,12 @@ private[core] class Drone(
   //+------------------------------+
   //+ Command implementations      +
   //+------------------------------+
-  private def giveMovementCommand(value: MovementCommand): Unit = {
+  private def giveMovementCommand(value: MovementCommand): Boolean = {
     if (droneModules.exists(_.exists(_.cancelMovement))) {
       // TODO: warning/error message? queue up command?
-      return
+      return true
     }
-    dynamics.movementCommand_=(value)
+    dynamics.setMovementCommand(value)
   }
 
   private def startDroneConstruction(command: ConstructDrone): Unit = {
