@@ -24,7 +24,7 @@ class DroneStorageModuleTest extends FlatSpec {
 
 
   it should "be able to deposit its mineral crystals in another storage module" in {
-    mockDrone2.depositMinerals(mockDrone1)
+    mockDrone2 ! DepositMinerals(mockDrone1)
 
     for (i <- 0 to 1000) {
       mockDrone2.update()

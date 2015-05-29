@@ -1,7 +1,7 @@
 package cwinter.codinggame.core
 
 import cwinter.codinggame.core.api.{DroneHandle, DroneController, DroneSpec, MineralCrystalHandle}
-import cwinter.codinggame.core.objects.drone.{DroneStorageModule, Drone}
+import cwinter.codinggame.core.objects.drone.{HarvestMineral, DroneStorageModule, Drone}
 import cwinter.codinggame.core.objects.MineralCrystal
 import cwinter.codinggame.util.maths.{Vector2, Rectangle}
 import cwinter.codinggame.worldstate.BluePlayer
@@ -25,7 +25,7 @@ class DroneWorldSimulatorTest extends FlatSpec {
 
 
   "Game simulator" must "allow for mineral harvesting" in {
-    mockDrone.harvestResource(mineral)
+    mockDrone.executeCommand(HarvestMineral(mineral))
     for (_ <- 0 until DroneStorageModule.HarvestingTime) {
       simulator.update()
     }
@@ -33,7 +33,7 @@ class DroneWorldSimulatorTest extends FlatSpec {
   }
 
   it must "prevent double harvesting of resources" in {
-    mockDrone.harvestResource(mineral)
+    mockDrone.executeCommand(HarvestMineral(mineral))
     for (_ <- 0 until DroneStorageModule.HarvestingTime) {
       simulator.update()
     }

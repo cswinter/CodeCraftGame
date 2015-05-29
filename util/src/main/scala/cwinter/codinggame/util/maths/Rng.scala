@@ -1,10 +1,9 @@
 package cwinter.codinggame.util.maths
 
 object Rng {
-  private[this] val random = scala.util.Random
-  val seed = scala.util.Random.nextInt(100)
+  val seed = 88//scala.util.Random.nextInt(100)
+  private[this] val random = new scala.util.Random(seed)
   println(s"Rng seed: $seed")
-  random.setSeed(seed)
 
 
   def int(max: Int): Int = {

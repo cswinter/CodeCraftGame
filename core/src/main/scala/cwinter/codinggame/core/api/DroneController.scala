@@ -19,7 +19,7 @@ abstract class DroneController extends DroneHandle {
 
   // drone commands
   def moveInDirection(direction: Vector2): Unit = {
-    drone.giveMovementCommand(MoveInDirection(direction))
+    drone ! MoveInDirection(direction)
   }
 
   def moveToDrone(otherDrone: DroneHandle): Unit = {
@@ -30,32 +30,32 @@ abstract class DroneController extends DroneHandle {
   }
   
   def moveToMineral(mineralCrystal: MineralCrystalHandle): Unit = {
-    drone.giveMovementCommand(MoveToPosition(mineralCrystal.position))
+    drone ! MoveToPosition(mineralCrystal.position)
   }
 
   def moveToPosition(position: Vector2): Unit = {
-    drone.giveMovementCommand(MoveToPosition(position))
+    drone ! MoveToPosition(position)
   }
 
   def harvestMineral(mineralCrystal: MineralCrystalHandle): Unit = {
-    drone.harvestResource(mineralCrystal.mineralCrystal)
+    drone ! HarvestMineral(mineralCrystal.mineralCrystal)
   }
 
   def depositMinerals(otherDrone: DroneHandle): Unit = {
-    drone.depositMinerals(otherDrone.drone)
+    drone ! DepositMinerals(otherDrone.drone)
   }
 
   def buildDrone(spec: DroneSpec, controller: DroneController): Unit = {
     val newDrone = new Drone(spec, controller, drone.player, Vector2.NullVector, -1, drone.worldConfig)
-    drone.startDroneConstruction(ConstructDrone(newDrone))
+    drone ! ConstructDrone(newDrone)
   }
 
   def processMineral(mineralCrystal: MineralCrystalHandle): Unit = {
-    drone.startMineralProcessing(mineralCrystal.mineralCrystal)
+    drone ! ProcessMineral(mineralCrystal.mineralCrystal)
   }
 
   def shootMissiles(target: DroneHandle): Unit = {
-    drone.fireWeapons(target.drone)
+    drone ! FireMissiles(target.drone)
   }
 
   // drone properties

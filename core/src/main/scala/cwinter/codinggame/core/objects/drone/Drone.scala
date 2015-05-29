@@ -84,12 +84,6 @@ private[core] class Drone(
     }
   }
 
-  def depositMineral(crystal: MineralCrystal, pos: Vector2): Unit = {
-    for {
-      s <- storage
-    } s.depositMineral(crystal, pos)
-  }
-
   override def update(): Seq[SimulatorEvent] = {
     for {
       depositee <- mineralDepositee
@@ -159,9 +153,24 @@ private[core] class Drone(
     }
   }
 
-  def hitpoints: Int = hullState.map(_.toInt).sum
+  @inline final def !(command: DroneCommand) = executeCommand(command)
+  
+  def executeCommand(command: DroneCommand) = {
+    command match {
+      case mc: MovementCommand => giveMovementCommand(mc)
+      case cd@ConstructDrone(drone) => startDroneConstruction(cd)
+      case DepositMinerals(target) => depositMinerals(target)
+      case FireMissiles(target) => fireWeapons(target)
+      case HarvestMineral(mineral) => harvestResource(mineral)
+      case ProcessMineral(mineral) => startMineralProcessing(mineral)
+    }
+  }
+  
 
-  def giveMovementCommand(value: MovementCommand): Unit = {
+  //+------------------------------+
+  //+ Command implementations      +
+  //+------------------------------+
+  private def giveMovementCommand(value: MovementCommand): Unit = {
     if (droneModules.exists(_.exists(_.cancelMovement))) {
       // TODO: warning/error message? queue up command?
       return
@@ -169,14 +178,20 @@ private[core] class Drone(
     dynamics.movementCommand_=(value)
   }
 
-  def startDroneConstruction(command: ConstructDrone): Unit = {
+  private def startDroneConstruction(command: ConstructDrone): Unit = {
     manipulator match {
       case Some(m) => m.startDroneConstruction(command)
       case None => warn("Drone construction requires a manipulator module.")
     }
   }
 
-  def startMineralProcessing(mineral: MineralCrystal): Unit = {
+  def depositMineral(crystal: MineralCrystal, pos: Vector2): Unit = {
+    for {
+      s <- storage
+    } s.depositMineral(crystal, pos)
+  }
+
+  private def startMineralProcessing(mineral: MineralCrystal): Unit = {
     if (!storage.exists(_.storedMinerals.contains(mineral))) {
       warn("Tried to process mineral not stored in this drone!")
     } else {
@@ -189,7 +204,7 @@ private[core] class Drone(
     }
   }
 
-  def fireWeapons(target: Drone): Unit = {
+  private def fireWeapons(target: Drone): Unit = {
     if (target == this) {
       warn("Drone tried to shoot itself!")
     } else {
@@ -200,17 +215,36 @@ private[core] class Drone(
     }
   }
 
-  def weaponsCooldown: Int = weapons.map(_.cooldown).getOrElse(1)
-
-  def harvestResource(mineralCrystal: MineralCrystal): Unit = {
+  private def harvestResource(mineralCrystal: MineralCrystal): Unit = {
     storage match {
       case Some(s) => s.harvestMineral(mineralCrystal)
       case None => warn("Harvesting resources requires a storage module.")
     }
   }
 
-  override def position: Vector2 = dynamics.pos
+  private def depositMinerals(other: Drone): Unit = {
+    if (other == this) {
+      warn("Drone is trying to deposit minerals into itself!")
+    } else if (other.storage == None) {
+      warn("Trying to deposit minerals into a drone without a storage module.")
+    } else {
+      mineralDepositee = Some(other)
+    }
+  }
 
+
+  //+------------------------------+
+  //| Drone properties             +
+  //+------------------------------+
+  override def position: Vector2 = dynamics.pos
+  def weaponsCooldown: Int = weapons.map(_.cooldown).getOrElse(1)
+  def hitpoints: Int = hullState.map(_.toInt).sum
+  def dronesInSight: Set[Drone] = objectsInSight.filter(_.isInstanceOf[Drone]).map { case d: Drone => d }
+  def isConstructing: Boolean = manipulator.map(_.isConstructing) == Some(true)
+  def storageCapacity = spec.storageModules
+  def processingCapacity = spec.refineries
+  def size = spec.size
+  def radius = spec.radius
 
   def availableStorage: Int = {
     for (s <- storage) yield s.availableStorage
@@ -228,45 +262,27 @@ private[core] class Drone(
     for (s <- storage) yield s.storedMinerals
   }.getOrElse(Seq())
 
-  def depositMinerals(other: Drone): Unit = {
-    if (other == this) {
-      warn("Drone is trying to deposit minerals into itself!")
-    } else if (other.storage == None) {
-      warn("Trying to deposit minerals into a drone without a storage module.")
-    } else {
-      mineralDepositee = Some(other)
-    }
-  }
-
-  def dronesInSight: Set[Drone] = objectsInSight.filter(_.isInstanceOf[Drone]).map { case d: Drone => d }
-
-  def isConstructing: Boolean = manipulator.map(_.isConstructing) == Some(true)
-
-  def storageCapacity = spec.storageModules
-  def processingCapacity = spec.refineries
-  def size = spec.size
-  def radius = spec.radius
-
-
-  override def descriptor: Seq[WorldObjectDescriptor] = {
+  override def descriptor: Seq[WorldObjectDescriptor] =
+  {
     Seq(
-    DroneDescriptor(
-      id,
-      position.x.toFloat,
-      position.y.toFloat,
-      dynamics.orientation.toFloat,
-      Seq(),//oldPositions :+ (position.x.toFloat, position.y.toFloat, dynamics.orientation.toFloat),
-      moduleDescriptors,
-      hullState,
-      shieldGenerators.map(_.hitpointPercentage),
-      spec.size,
-      player,
-      constructionProgress.map(p => Float0To1(p / spec.buildTime.toFloat))
-    )) ++ manipulator.toSeq.flatMap(_.manipulatorGraphics) ++
-    storage.toSeq.flatMap(_.energyGlobeAnimations)
+      DroneDescriptor(
+        id,
+        position.x.toFloat,
+        position.y.toFloat,
+        dynamics.orientation.toFloat,
+        Seq(), //oldPositions :+ (position.x.toFloat, position.y.toFloat, dynamics.orientation.toFloat),
+        moduleDescriptors,
+        hullState,
+        shieldGenerators.map(_.hitpointPercentage),
+        spec.size,
+        player,
+        constructionProgress.map(p => Float0To1(p / spec.buildTime.toFloat))
+      )) ++ manipulator.toSeq.flatMap(_.manipulatorGraphics) ++
+      storage.toSeq.flatMap(_.energyGlobeAnimations)
   }
 
-  private def moduleDescriptors: Seq[DroneModuleDescriptor] = {
+  private def moduleDescriptors: Seq[DroneModuleDescriptor] =
+  {
     for {
       Some(m) <- droneModules
       descr <- m.descriptors
@@ -295,13 +311,18 @@ case class DroneEntersSightRadius(drone: Drone) extends DroneEvent
 
 
 sealed trait DroneCommand
+case class ConstructDrone(drone: Drone) extends DroneCommand
+case class ProcessMineral(mineralCrystal: MineralCrystal) extends DroneCommand
+case class FireMissiles(target: Drone) extends DroneCommand
+case class DepositMinerals(target: Drone) extends DroneCommand
+case class HarvestMineral(mineral: MineralCrystal) extends DroneCommand
 
 sealed trait MovementCommand extends DroneCommand
 case class MoveInDirection(direction: Vector2) extends MovementCommand
 case class MoveToPosition(position: Vector2) extends MovementCommand
 case object HoldPosition extends MovementCommand
 
-sealed trait ConstructionCommand extends DroneCommand
-case class ConstructDrone(drone: Drone) extends ConstructionCommand
+
+
 
 
