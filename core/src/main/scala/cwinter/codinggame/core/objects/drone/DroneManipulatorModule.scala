@@ -1,13 +1,13 @@
 package cwinter.codinggame.core.objects.drone
 
 import cwinter.codinggame.core._
-import cwinter.codinggame.util.maths.{Vector2, Rng}
+import cwinter.codinggame.util.maths.Vector2
 import cwinter.codinggame.worldstate.{DroneModuleDescriptor, ManipulatorDescriptor, ManipulatorArm}
 
 class DroneManipulatorModule(positions: Seq[Int], owner: Drone)
   extends DroneModule(positions, owner) {
 
-  private[this] var newDrone: Option[Drone] = None
+  private[this] var newDrone: Option[ConstructDrone] = None
   private[this] var droneConstruction: Option[(Drone, Int)] = None
 
 
@@ -17,10 +17,10 @@ class DroneManipulatorModule(positions: Seq[Int], owner: Drone)
     var resourceDepletions = List.empty[Vector2]
 
     // start new drone constructions
-    for (drone <- newDrone) {
-      droneConstruction = Some((drone, 0))
-      drone.dynamics.setPosition(owner.position - 110 * Rng.vector2())
-      effects ::= DroneConstructionStarted(drone)
+    for (ConstructDrone(spec, controller, pos) <- newDrone) {
+      val newDrone = new Drone(spec, controller, owner.player, pos, -1, owner.worldConfig)
+      droneConstruction = Some((newDrone, 0))
+      effects ::= DroneConstructionStarted(newDrone)
     }
     newDrone = None
 
@@ -64,7 +64,7 @@ class DroneManipulatorModule(positions: Seq[Int], owner: Drone)
 
   def startDroneConstruction(command: ConstructDrone): Unit = {
     if (droneConstruction == None) {
-      newDrone = Some(command.drone)
+      newDrone = Some(command)
     }
   }
 

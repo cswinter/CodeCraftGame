@@ -3,7 +3,7 @@ package cwinter.codinggame.core.api
 import cwinter.codinggame.core.errors.{CodingGameException, Errors}
 import cwinter.codinggame.core.objects.drone._
 import cwinter.codinggame.graphics.models.DroneMissileBatteryModelBuilder
-import cwinter.codinggame.util.maths.{Rectangle, Vector2}
+import cwinter.codinggame.util.maths.{Rng, Rectangle, Vector2}
 import cwinter.codinggame.worldstate.Player
 
 abstract class DroneController extends DroneHandle {
@@ -46,8 +46,7 @@ abstract class DroneController extends DroneHandle {
   }
 
   def buildDrone(spec: DroneSpec, controller: DroneController): Unit = {
-    val newDrone = new Drone(spec, controller, drone.player, Vector2.NullVector, -1, drone.worldConfig)
-    drone ! ConstructDrone(newDrone)
+    drone ! ConstructDrone(spec, controller, drone.position - 110 * Rng.vector2())
   }
 
   def processMineral(mineralCrystal: MineralCrystalHandle): Unit = {

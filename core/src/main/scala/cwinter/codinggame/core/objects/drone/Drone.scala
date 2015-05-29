@@ -158,7 +158,7 @@ private[core] class Drone(
   def executeCommand(command: DroneCommand) = {
     command match {
       case mc: MovementCommand => giveMovementCommand(mc)
-      case cd@ConstructDrone(drone) => startDroneConstruction(cd)
+      case cd: ConstructDrone => startDroneConstruction(cd)
       case DepositMinerals(target) => depositMinerals(target)
       case FireMissiles(target) => fireWeapons(target)
       case HarvestMineral(mineral) => harvestResource(mineral)
@@ -311,7 +311,7 @@ case class DroneEntersSightRadius(drone: Drone) extends DroneEvent
 
 
 sealed trait DroneCommand
-case class ConstructDrone(drone: Drone) extends DroneCommand
+case class ConstructDrone(spec: DroneSpec, controller: DroneController, position: Vector2) extends DroneCommand
 case class ProcessMineral(mineralCrystal: MineralCrystal) extends DroneCommand
 case class FireMissiles(target: Drone) extends DroneCommand
 case class DepositMinerals(target: Drone) extends DroneCommand
