@@ -41,7 +41,7 @@ object TheGameMaster {
     val map = WorldMap(worldSize, resourceClusters, spawns)
     val mothership1 = new DummyDroneController
     val mothership2 = new DummyDroneController
-    val simulator = new DroneWorldSimulator(map, mothership1, mothership2, devEvents)
+    val simulator = new DroneWorldSimulator(map, mothership1, mothership2, devEvents, Some(replayer))
     DrawingCanvas.run(simulator)
   }
 

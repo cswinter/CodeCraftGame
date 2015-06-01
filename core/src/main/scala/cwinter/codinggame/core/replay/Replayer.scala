@@ -1,13 +1,14 @@
 package cwinter.codinggame.core.replay
 
-import cwinter.codinggame.util.maths.{Rng, Vector2}
+import cwinter.codinggame.core.objects.drone.{Drone, DroneCommand}
+import cwinter.codinggame.util.maths.Vector2
 
 
 class Replayer(lines: Iterator[String]) {
   def readLine: String = lines.next()
 
   final val KeyValueRegex = "(\\w*?)=(.*)".r
-
+  final val CommandRegex = "(\\d*?)!(.*)".r
 
 
   private[this] var currLine: String = null
@@ -39,7 +40,21 @@ class Replayer(lines: Iterator[String]) {
   val spawns = Seq(spawn1, spawn2)
 
 
+  private[this] var currTime: Int = 0
+  private[core] def run(timestep: Int, droneRegistry: Map[Int, Drone]): Unit = {
+    while (currTime <= timestep && lines.hasNext) {
+      nextLine match {
+        case KeyValueRegex("Timestep", AsInt(t)) => currTime = t
+        case CommandRegex(AsInt(droneID), DroneCommand(d)) =>
+          println(s"parsed command: $d")
+          droneRegistry(droneID).executeCommand(d)
+        case t => throw new Exception(s"Could not parse line: $t")
+      }
+    }
+  }
 
+
+  def finished = !lines.hasNext
 }
 
 

@@ -4,7 +4,7 @@ import cwinter.codinggame.core._
 import cwinter.codinggame.core.api.{DroneController, DroneSpec, MineralCrystalHandle}
 import cwinter.codinggame.core.errors.Errors
 import cwinter.codinggame.core.objects.{WorldObject, MineralCrystal, EnergyGlobeObject}
-import cwinter.codinggame.core.replay.{NullReplayRecorder, ReplayRecorder}
+import cwinter.codinggame.core.replay.{DummyDroneController, NullReplayRecorder, ReplayRecorder}
 import cwinter.codinggame.util.maths.{Float0To1, Vector2}
 import cwinter.codinggame.worldstate.{DroneDescriptor, DroneModuleDescriptor, Player, WorldObjectDescriptor}
 
@@ -330,6 +330,48 @@ case class MoveToPosition(position: Vector2) extends MovementCommand
 case object HoldPosition extends MovementCommand
 
 
+object DroneCommand {
+  final val CaseClassRegex = """(\w*?)\((.*)\)""".r
 
+  def unapply(string: String): Option[DroneCommand] = string match {
+    case CaseClassRegex("ConstructDrone", params) =>
+      val p = smartSplit(params)
+      println(p)
+      val CaseClassRegex("DroneSpec", specParamsStr) = p(0)
+      val specParams = specParamsStr.split(",")
+      val spec = new DroneSpec(specParams(0).toInt, specParams(1).toInt, specParams(2).toInt, specParams(3).toInt, specParams(4).toInt, specParams(5).toInt, specParams(6).toInt)
+      val controller = new DummyDroneController
+      val Vector2(position) = p(2) // TODO: ugly, fix
+      Some(ConstructDrone(spec, controller, position))
+    case _ => None
+  }
+
+  private def smartSplit(string: String): IndexedSeq[String] = {
+    val result = new collection.mutable.ArrayBuffer[String]
+    var pcount = 0
+    var i = 0
+    val currString = new StringBuilder
+    while (i < string.length) {
+      val char = string.charAt(i)
+      if (char == '(') {
+        pcount += 1
+      } else if (char == ')') {
+        pcount -= 1
+      }
+
+      if (char == ',' && pcount == 0) {
+        result += currString.toString
+        currString.clear()
+      } else {
+        currString.append(char)
+      }
+
+      i += 1
+    }
+    result += currString.toString
+
+    result
+  }
+}
 
 
