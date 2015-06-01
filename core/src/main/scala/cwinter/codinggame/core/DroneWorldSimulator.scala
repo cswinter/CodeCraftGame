@@ -1,6 +1,6 @@
 package cwinter.codinggame.core
 
-import cwinter.codinggame.core.replay.{ConsoleReplayRecorder, ReplayRecorder}
+import cwinter.codinggame.core.replay.{FileReplayRecorder, ConsoleReplayRecorder, ReplayRecorder}
 import cwinter.codinggame.graphics.engine.Debug
 
 import scala.concurrent.Future
@@ -24,7 +24,7 @@ class DroneWorldSimulator(
 ) extends Simulator {
   final val MaxDroneRadius = 60
 
-  val replayRecorder = new ConsoleReplayRecorder
+  val replayRecorder = new FileReplayRecorder("/home/clemens/replay.txt")
 
   val worldConfig = WorldConfig(map.size)
 

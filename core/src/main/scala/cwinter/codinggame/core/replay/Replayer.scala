@@ -3,8 +3,8 @@ package cwinter.codinggame.core.replay
 import cwinter.codinggame.util.maths.{Rng, Vector2}
 
 
-trait Replayer {
-  def readLine: String
+class Replayer(lines: Iterator[String]) {
+  def readLine: String = lines.next()
 
   final val KeyValueRegex = "(\\w*?)=(.*)".r
 
@@ -29,10 +29,15 @@ trait Replayer {
   assert(nextLine == "Spawn")
   assert(nextLine.startsWith("Spec"))
   val KeyValueRegex("Position", Vector2(spawn1)) = nextLine
+  assert(nextLine.startsWith("Player"))
+
   assert(nextLine == "Spawn")
   assert(nextLine.startsWith("Spec"))
   val KeyValueRegex("Position", Vector2(spawn2)) = nextLine
+  assert(nextLine.startsWith("Player"))
+
   val spawns = Seq(spawn1, spawn2)
+
 
 
 }

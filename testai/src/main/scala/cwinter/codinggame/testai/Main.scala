@@ -1,6 +1,7 @@
 package cwinter.codinggame.testai
 
 import cwinter.codinggame.core.api._
+import cwinter.codinggame.core.replay.Replayer
 import cwinter.codinggame.util.maths.{Vector2, Rng}
 import cwinter.codinggame.worldstate.BluePlayer
 
@@ -8,8 +9,9 @@ import scala.reflect.ClassTag
 
 object Main {
   def main(args: Array[String]): Unit = {
-    //TheGameMaster.runLevel1(new Mothership)
-    TheGameMaster.startGame(new Mothership, new Mothership)
+    // TheGameMaster.runLevel1(new Mothership)
+    // TheGameMaster.startGame(new Mothership, new Mothership)
+    TheGameMaster.runReplay(new Replayer(scala.io.Source.fromFile("/home/clemens/replay.txt").getLines()))
   }
 }
 
