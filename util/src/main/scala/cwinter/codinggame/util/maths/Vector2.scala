@@ -57,5 +57,11 @@ object Vector2 {
   def apply(vertexXY: VertexXY): Vector2 =
     Vector2(vertexXY.x, vertexXY.y)
 
+  final val Vector2Regex = """Vector2\((.*?),(.*?)\)""".r
+  def unapply(string: String): Option[Vector2] = string match {
+    case Vector2Regex(xStr, yStr) => Some(Vector2(xStr.toDouble, yStr.toDouble))
+    case _ => None
+  }
+
   val NullVector = Vector2(0, 0)
 }
