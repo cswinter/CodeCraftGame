@@ -54,6 +54,12 @@ object Vector2 {
   def apply(angle: Double): Vector2 =
     Vector2(math.cos(angle).toFloat, math.sin(angle).toFloat)
 
+  def apply(string: String): Vector2 = {
+    string match {
+      case Vector2Regex(xStr, yStr) => Vector2(xStr.toDouble, yStr.toDouble)
+    }
+  }
+
   def apply(vertexXY: VertexXY): Vector2 =
     Vector2(vertexXY.x, vertexXY.y)
 

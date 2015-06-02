@@ -27,6 +27,8 @@ private[core] class MineralCrystal(
   override private[core] def hasDied = false
 
   override def update(): Seq[SimulatorEvent] = Seq.empty[SimulatorEvent]
+
+  override def toString = id.toString
 }
 
 object MineralCrystal {

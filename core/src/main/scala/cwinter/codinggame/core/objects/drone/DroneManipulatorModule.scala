@@ -7,7 +7,7 @@ import cwinter.codinggame.worldstate.{DroneModuleDescriptor, ManipulatorDescript
 class DroneManipulatorModule(positions: Seq[Int], owner: Drone)
   extends DroneModule(positions, owner) {
 
-  private[this] var newDrone: Option[ConstructDrone] = None
+  private[this] var newDrone: Option[Drone] = None
   private[this] var droneConstruction: Option[(Drone, Int)] = None
 
 
@@ -17,8 +17,7 @@ class DroneManipulatorModule(positions: Seq[Int], owner: Drone)
     var resourceDepletions = List.empty[Vector2]
 
     // start new drone constructions
-    for (ConstructDrone(spec, controller, pos) <- newDrone) {
-      val newDrone = new Drone(spec, controller, owner.player, pos, -1, owner.worldConfig, owner.replayRecorder)
+    for (newDrone <- newDrone) {
       droneConstruction = Some((newDrone, 0))
       effects ::= DroneConstructionStarted(newDrone)
     }
@@ -64,7 +63,9 @@ class DroneManipulatorModule(positions: Seq[Int], owner: Drone)
 
   def startDroneConstruction(command: ConstructDrone): Unit = {
     if (droneConstruction == None) {
-      newDrone = Some(command)
+      val ConstructDrone(spec, controller, pos) = command
+      val d = new Drone(spec, controller, owner.player, pos, -1, owner.worldConfig, owner.replayRecorder)
+      newDrone = Some(d)
     }
   }
 

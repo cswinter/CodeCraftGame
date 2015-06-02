@@ -11,7 +11,7 @@ object Main {
   def main(args: Array[String]): Unit = {
     // TheGameMaster.runLevel1(new Mothership)
     // TheGameMaster.startGame(new Mothership, new Mothership)
-    TheGameMaster.runReplay(new Replayer(scala.io.Source.fromFile("/home/clemens/replay.txt").getLines()))
+     TheGameMaster.runReplay(new Replayer(scala.io.Source.fromFile("/home/clemens/replay.txt").getLines()))
   }
 }
 

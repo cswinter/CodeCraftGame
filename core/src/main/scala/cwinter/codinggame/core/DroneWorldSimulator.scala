@@ -139,7 +139,9 @@ class DroneWorldSimulator(
 
 
     for (r <- replayer) {
-      r.run(timestep, drones.map(d => (d.id, d)).toMap)
+      implicit val droneRegistry = drones.map(d => (d.id, d)).toMap
+      implicit val mineralRegistry = map.minerals.map(m => (m.id, m)).toMap
+      r.run(timestep)
     }
 
     // handle all drone events (execute user code)

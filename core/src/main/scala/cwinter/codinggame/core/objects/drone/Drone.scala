@@ -4,7 +4,7 @@ import cwinter.codinggame.core._
 import cwinter.codinggame.core.api.{DroneController, DroneSpec, MineralCrystalHandle}
 import cwinter.codinggame.core.errors.Errors
 import cwinter.codinggame.core.objects.{WorldObject, MineralCrystal, EnergyGlobeObject}
-import cwinter.codinggame.core.replay.{DummyDroneController, NullReplayRecorder, ReplayRecorder}
+import cwinter.codinggame.core.replay.{AsInt, DummyDroneController, NullReplayRecorder, ReplayRecorder}
 import cwinter.codinggame.util.maths.{Float0To1, Vector2}
 import cwinter.codinggame.worldstate.{DroneDescriptor, DroneModuleDescriptor, Player, WorldObjectDescriptor}
 
@@ -333,7 +333,7 @@ case object HoldPosition extends MovementCommand
 object DroneCommand {
   final val CaseClassRegex = """(\w*?)\((.*)\)""".r
 
-  def unapply(string: String): Option[DroneCommand] = string match {
+  def unapply(string: String)(implicit mineralRegister: Map[Int, MineralCrystal]): Option[DroneCommand] = string match {
     case CaseClassRegex("ConstructDrone", params) =>
       val p = smartSplit(params)
       println(p)
@@ -341,8 +341,12 @@ object DroneCommand {
       val specParams = specParamsStr.split(",")
       val spec = new DroneSpec(specParams(0).toInt, specParams(1).toInt, specParams(2).toInt, specParams(3).toInt, specParams(4).toInt, specParams(5).toInt, specParams(6).toInt)
       val controller = new DummyDroneController
-      val Vector2(position) = p(2) // TODO: ugly, fix
+      val position = Vector2(p(2)) // TODO: ugly, fix
       Some(ConstructDrone(spec, controller, position))
+    case CaseClassRegex("MoveToPosition", params) =>
+      Some(MoveToPosition(Vector2(params)))
+    case CaseClassRegex("HarvestMineral", AsInt(id)) =>
+      Some(HarvestMineral(mineralRegister(id)))
     case _ => None
   }
 

@@ -1,5 +1,6 @@
 package cwinter.codinggame.core.replay
 
+import cwinter.codinggame.core.objects.MineralCrystal
 import cwinter.codinggame.core.objects.drone.{Drone, DroneCommand}
 import cwinter.codinggame.util.maths.Vector2
 
@@ -41,7 +42,7 @@ class Replayer(lines: Iterator[String]) {
 
 
   private[this] var currTime: Int = 0
-  private[core] def run(timestep: Int, droneRegistry: Map[Int, Drone]): Unit = {
+  private[core] def run(timestep: Int)(implicit droneRegistry: Map[Int, Drone], mineralRegistry: Map[Int, MineralCrystal]): Unit = {
     while (currTime <= timestep && lines.hasNext) {
       nextLine match {
         case KeyValueRegex("Timestep", AsInt(t)) => currTime = t
