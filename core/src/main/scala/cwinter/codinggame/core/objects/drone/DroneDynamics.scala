@@ -1,7 +1,9 @@
 package cwinter.codinggame.core.objects.drone
 
+import cwinter.codinggame.core.errors.Errors
 import cwinter.codinggame.core.objects.{ConstantVelocityDynamics, MissileDynamics}
-import cwinter.codinggame.util.maths.{Rectangle, Vector2}
+import cwinter.codinggame.graphics.engine.Debug
+import cwinter.codinggame.util.maths.{ColorRGBA, Rectangle, Vector2}
 
 
 private[core] class DroneDynamics(
@@ -77,43 +79,47 @@ private[core] class DroneDynamics(
 
 
   override def update(): Unit = {
-    if (isStunned) {
-      velocity = 0.9f * velocity
-      if (velocity.size <= maxSpeed * 0.05f) {
-        isStunned = false
-        velocity = Vector2.NullVector
-      }
-    } else {
-      _movementCommand match {
-        case MoveInDirection(direction) =>
-          val targetOrientation = direction.orientation
-          adjustOrientation(targetOrientation)
-          if (targetOrientation == orientation) {
-            velocity = maxSpeed * Vector2(orientation)
-          } else {
-            velocity = Vector2.NullVector
-          }
-        case MoveToPosition(position) =>
-          val dist = position - this.pos
-          if (dist ~ Vector2.NullVector) {
-            velocity = Vector2.NullVector
-          } else {
-            val targetOrientation = dist.orientation
+    velocity =
+      if (isStunned) {
+        if (velocity.size <= maxSpeed * 0.05f) {
+          isStunned = false
+          Vector2.NullVector
+        } else velocity * 0.9f
+      } else {
+        _movementCommand match {
+          case MoveInDirection(direction) =>
+            val targetOrientation = direction.orientation
             adjustOrientation(targetOrientation)
+
             if (targetOrientation == orientation) {
-              val speed = maxSpeed / 30 // TODO: improve this
-              if ((dist dot dist) > speed * speed) {
-                velocity = maxSpeed * dist.normalized
+              maxSpeed * Vector2(orientation)
+            } else {
+              Vector2.NullVector
+            }
+          case MoveToPosition(position) =>
+            val dist = position - this.pos
+
+            if (dist ~ Vector2.NullVector) {
+              Vector2.NullVector
+            } else {
+              val targetOrientation = dist.orientation
+              adjustOrientation(targetOrientation)
+              if (targetOrientation == orientation) {
+                val speed = maxSpeed / 30 // TODO: improve this
+                if ((dist dot dist) > speed * speed) {
+                  maxSpeed * dist.normalized
+                } else {
+                  val distance = dist.size
+                  distance * 30 * dist.normalized
+                }
               } else {
-                val distance = dist.size
-                velocity = distance * 30 * dist.normalized
+                Vector2.NullVector
               }
             }
-          }
-        case HoldPosition =>
-          halt()
+          case HoldPosition =>
+            Vector2.NullVector
+        }
       }
-    }
   }
 
   override def handleWallCollision(areaBounds: Rectangle): Unit = {

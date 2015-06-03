@@ -11,7 +11,7 @@ import cwinter.codinggame.core.objects.drone._
 import cwinter.codinggame.core.errors.Errors
 import cwinter.codinggame.core.objects._
 import cwinter.codinggame.physics.PhysicsEngine
-import cwinter.codinggame.util.maths.{Rng, Vector2}
+import cwinter.codinggame.util.maths.{ColorRGBA, Rng, Vector2}
 import cwinter.codinggame.util.modules.ModulePosition
 import cwinter.codinggame.worldstate._
 
@@ -136,7 +136,6 @@ class DroneWorldSimulator(
         }
       }
     }
-
 
     for (r <- replayer) {
       implicit val droneRegistry = drones.map(d => (d.id, d)).toMap

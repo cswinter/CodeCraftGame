@@ -306,6 +306,8 @@ private[core] class Drone(
 
 
   override def hasDied = _hasDied
+
+  override def toString = id.toString
 }
 
 
@@ -333,7 +335,8 @@ case object HoldPosition extends MovementCommand
 object DroneCommand {
   final val CaseClassRegex = """(\w*?)\((.*)\)""".r
 
-  def unapply(string: String)(implicit mineralRegister: Map[Int, MineralCrystal]): Option[DroneCommand] = string match {
+  def unapply(string: String)
+      (implicit droneRegister: Map[Int, Drone], mineralRegister: Map[Int, MineralCrystal]): Option[DroneCommand] = string match {
     case CaseClassRegex("ConstructDrone", params) =>
       val p = smartSplit(params)
       println(p)
@@ -347,6 +350,12 @@ object DroneCommand {
       Some(MoveToPosition(Vector2(params)))
     case CaseClassRegex("HarvestMineral", AsInt(id)) =>
       Some(HarvestMineral(mineralRegister(id)))
+    case CaseClassRegex("DepositMinerals", AsInt(droneID)) =>
+      Some(DepositMinerals(droneRegister(droneID)))
+    case CaseClassRegex("FireMissiles", AsInt(targetID)) =>
+      Some(FireMissiles(droneRegister(targetID)))
+    case CaseClassRegex("MoveInDirection", Vector2(direction)) =>
+      Some(MoveInDirection(direction))
     case _ => None
   }
 
