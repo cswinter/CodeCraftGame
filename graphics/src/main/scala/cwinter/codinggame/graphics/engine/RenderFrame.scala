@@ -114,9 +114,10 @@ object RenderFrame extends GLEventListener {
 
     textRenderer.setColor(1, 1, 1, 0.7f)
     var yPos = height - 15
+    val minHeight = textRenderer.getBounds("A").getHeight.toInt
     for (line <- infoText.split("\n")) {
       textRenderer.draw(line, 0, yPos)
-      yPos = yPos - textRenderer.getBounds(line).getHeight.toInt
+      yPos = yPos - math.max(textRenderer.getBounds(line).getHeight.toInt, minHeight)
     }
 
     textRenderer.endRendering()
@@ -124,10 +125,11 @@ object RenderFrame extends GLEventListener {
 
   private def infoText: String =
     s"""Game speed target: ${gameWorld.framerateTarget}
-       |Hotkeys:
+       |
        |Move camera: WASD, arrow keys
        |Zoom in/out: QE, Page Up/Down
-       |Pause/unpause: Spacebar
+       |${if (gameWorld.isPaused) "Resume game" else "Pause game"}: Spacebar
+       |Increase/decrease game speed: F/R
        |Slow mode: P
      """.stripMargin
 

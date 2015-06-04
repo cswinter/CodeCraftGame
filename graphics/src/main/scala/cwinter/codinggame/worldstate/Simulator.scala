@@ -53,7 +53,7 @@ trait Simulator {
   }
   def framerateTarget: Int = targetFPS
   def worldState: Seq[WorldObjectDescriptor] = savedWorldState
-
+  def isPaused: Boolean = paused
 
   def computeWorldState: Iterable[WorldObjectDescriptor]
 }
