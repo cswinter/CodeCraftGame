@@ -69,7 +69,7 @@ object DrawingCanvas {
         case 80 /* P */ =>
           if (gameWorld.framerateTarget == 5) gameWorld.framerateTarget = 30
           else gameWorld.framerateTarget = 5
-        case _ => //println(s"keyPressed($keyEvent)")
+        case _ => gameWorld.handleKeypress(keyEvent)
       }
 
       override def keyReleased(keyEvent: KeyEvent): Unit = ()

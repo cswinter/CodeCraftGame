@@ -2,7 +2,7 @@ package cwinter.codinggame.graphics.models
 
 import cwinter.codinggame.graphics.engine.RenderStack
 import cwinter.codinggame.graphics.matrices.{IdentityMatrix4x4, RotationZMatrix4x4, TranslationXYMatrix4x4}
-import cwinter.codinggame.graphics.model.ClosedModel
+import cwinter.codinggame.graphics.model.{PolygonRing, ClosedModel}
 import cwinter.codinggame.util.maths.VertexXY
 import cwinter.codinggame.worldstate._
 
@@ -52,6 +52,13 @@ object TheWorldObjectModelFactory {
       case circle: DrawCircle => new ClosedModel[Unit](
         Unit,
         CircleModelBuilder(circle.radius, circle.identifier).getModel,
+        modelview)
+      case DrawCircleOutline(x, y, radius, color) => new ClosedModel[Unit](
+        Unit,
+        new PolygonRing(
+          renderStack.MaterialXYRGB, 40, Seq.fill(40)(color), Seq.fill(40)(color),
+          radius - 2, radius, VertexXY(0, 0), 0, 0
+        ).noCaching.getModel,
         modelview)
       case rectangle: DrawRectangle => new ClosedModel[Unit](
         Unit,

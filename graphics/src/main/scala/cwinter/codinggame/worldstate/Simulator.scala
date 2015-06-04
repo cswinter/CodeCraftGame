@@ -1,5 +1,7 @@
 package cwinter.codinggame.worldstate
 
+import java.awt.event.KeyEvent
+
 import cwinter.codinggame.graphics.engine.Debug
 
 import scala.concurrent.Future
@@ -54,6 +56,8 @@ trait Simulator {
   def framerateTarget: Int = targetFPS
   def worldState: Seq[WorldObjectDescriptor] = savedWorldState
   def isPaused: Boolean = paused
+  def handleKeypress(event: KeyEvent): Unit = ()
+  def additionalInfoText: String = ""
 
   def computeWorldState: Iterable[WorldObjectDescriptor]
 }

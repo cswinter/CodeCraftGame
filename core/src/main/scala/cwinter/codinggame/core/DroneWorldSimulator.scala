@@ -1,5 +1,7 @@
 package cwinter.codinggame.core
 
+import java.awt.event.KeyEvent
+
 import cwinter.codinggame.core.replay._
 import cwinter.codinggame.graphics.engine.Debug
 
@@ -11,7 +13,7 @@ import cwinter.codinggame.core.objects.drone._
 import cwinter.codinggame.core.errors.Errors
 import cwinter.codinggame.core.objects._
 import cwinter.codinggame.physics.PhysicsEngine
-import cwinter.codinggame.util.maths.{ColorRGBA, Rng, Vector2}
+import cwinter.codinggame.util.maths.{ColorRGB, ColorRGBA, Rng, Vector2}
 import cwinter.codinggame.util.modules.ModulePosition
 import cwinter.codinggame.worldstate._
 
@@ -24,6 +26,9 @@ class DroneWorldSimulator(
   replayer: Option[Replayer] = None
 ) extends Simulator {
   final val MaxDroneRadius = 60
+
+  private var showSightRadius = false
+  private var showMissileRadius = false
 
   val replayRecorder =
     if (replayer == None) new FileReplayRecorder("/home/clemens/replay.txt")
@@ -117,6 +122,21 @@ class DroneWorldSimulator(
 
   override def update(): Unit = {
     replayRecorder.newTimestep(timestep)
+
+
+    if (showMissileRadius) {
+      for (
+        d <- drones
+        if d.spec.missileBatteries > 0
+      ) {
+        Debug.draw(DrawCircleOutline(d.position.x.toFloat, d.position.y.toFloat, DroneConstants.MissileLockOnRadius, ColorRGB(1, 0, 0)))
+      }
+    }
+    if (showSightRadius) {
+      for (d <- drones) {
+        Debug.draw(DrawCircleOutline(d.position.x.toFloat, d.position.y.toFloat, DroneSpec.SightRadius, ColorRGB(0, 1, 0)))
+      }
+    }
 
     if (replayer.exists(_.finished)) return
 
@@ -229,6 +249,21 @@ class DroneWorldSimulator(
   override def computeWorldState: Iterable[WorldObjectDescriptor] = {
     visibleObjects.flatMap(_.descriptor)
   }
+
+
+  override def handleKeypress(keyEvent: KeyEvent): Unit = {
+    keyEvent.getKeyChar match {
+      case '1' => showSightRadius = !showSightRadius
+      case '2' => showMissileRadius = !showMissileRadius
+      case _ =>
+    }
+  }
+
+
+  override def additionalInfoText: String =
+    s"""${if (showSightRadius) "Hide" else "Show"} sight radius: 1
+       |${if (showMissileRadius) "Hide" else "Show"} missile range: 2
+     """.stripMargin
 }
 
 

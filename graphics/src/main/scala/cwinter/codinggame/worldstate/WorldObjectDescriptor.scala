@@ -1,7 +1,7 @@
 package cwinter.codinggame.worldstate
 
 import cwinter.codinggame.util.maths
-import cwinter.codinggame.util.maths.{Float0To1, VertexXY}
+import cwinter.codinggame.util.maths.{ColorRGB, Float0To1, VertexXY}
 
 
 
@@ -121,6 +121,16 @@ case class DrawCircle(
   yPos: Float,
   radius: Float
 ) extends WorldObjectDescriptor {
+  val orientation = 0.0f
+}
+
+case class DrawCircleOutline(
+  xPos: Float,
+  yPos: Float,
+  radius: Float,
+  color: ColorRGB = ColorRGB(1, 1, 1)
+) extends WorldObjectDescriptor {
+  val identifier = -1
   val orientation = 0.0f
 }
 

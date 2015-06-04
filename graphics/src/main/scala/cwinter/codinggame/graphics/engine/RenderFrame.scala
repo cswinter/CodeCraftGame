@@ -131,7 +131,7 @@ object RenderFrame extends GLEventListener {
        |${if (gameWorld.isPaused) "Resume game" else "Pause game"}: Spacebar
        |Increase/decrease game speed: F/R
        |Slow mode: P
-     """.stripMargin
+       |""".stripMargin + gameWorld.additionalInfoText
 
   private def update(): Unit = {
     step += 1
