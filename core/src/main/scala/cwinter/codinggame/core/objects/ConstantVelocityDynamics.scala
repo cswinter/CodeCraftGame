@@ -10,7 +10,7 @@ abstract private[core] class ConstantVelocityDynamics(
   initialPosition: Vector2,
   initialTime: Double
 ) extends DynamicObject[ConstantVelocityDynamics](initialPosition, initialTime) {
-  protected var velocity: Vector2 = Vector2.NullVector
+  protected var velocity: Vector2 = Vector2.Null
 
 
   def update(): Unit
@@ -78,7 +78,7 @@ abstract private[core] class ConstantVelocityDynamics(
       assert(math.abs(diff dot diff) - (this.radius + other.radius) * (this.radius + other.radius) <= 0.0000001)
       return None
     }
-    if (this.velocity == Vector2.NullVector && other.velocity == Vector2.NullVector) {
+    if (this.velocity == Vector2.Null && other.velocity == Vector2.Null) {
       return None
     }
 

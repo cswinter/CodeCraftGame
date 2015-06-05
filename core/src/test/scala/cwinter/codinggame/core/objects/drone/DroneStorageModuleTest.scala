@@ -8,9 +8,9 @@ import cwinter.codinggame.worldstate.BluePlayer
 import org.scalatest.FlatSpec
 
 class DroneStorageModuleTest extends FlatSpec {
-  val mockDrone1 = new Drone(DroneSpec(5, storageModules = 4), null, BluePlayer, Vector2.NullVector, 0, WorldConfig(Rectangle(-100, 100, -100, 100)))
-  val mockDrone2 = new Drone(DroneSpec(4, storageModules = 2), null, BluePlayer, Vector2.NullVector, 0, WorldConfig(Rectangle(-100, 100, -100, 100)))
-  val mineralCrystal = new MineralCrystal(2, Vector2.NullVector)
+  val mockDrone1 = new Drone(DroneSpec(5, storageModules = 4), null, BluePlayer, Vector2.Null, 0, WorldConfig(Rectangle(-100, 100, -100, 100)))
+  val mockDrone2 = new Drone(DroneSpec(4, storageModules = 2), null, BluePlayer, Vector2.Null, 0, WorldConfig(Rectangle(-100, 100, -100, 100)))
+  val mineralCrystal = new MineralCrystal(2, Vector2.Null)
   val storageModule1 = mockDrone1.storage.get
   val storageModule2 = mockDrone2.storage.get
 

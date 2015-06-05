@@ -44,7 +44,7 @@ private[core] class DroneDynamics(
 
   private def halt(): Unit = {
     assert(!isStunned)
-    velocity = Vector2.NullVector
+    velocity = Vector2.Null
     _movementCommand = HoldPosition
   }
 
@@ -83,7 +83,7 @@ private[core] class DroneDynamics(
       if (isStunned) {
         if (velocity.size <= maxSpeed * 0.05f) {
           isStunned = false
-          Vector2.NullVector
+          Vector2.Null
         } else velocity * 0.9f
       } else {
         _movementCommand match {
@@ -94,13 +94,13 @@ private[core] class DroneDynamics(
             if (targetOrientation == orientation) {
               maxSpeed * Vector2(orientation)
             } else {
-              Vector2.NullVector
+              Vector2.Null
             }
           case MoveToPosition(position) =>
             val dist = position - this.pos
 
-            if (dist ~ Vector2.NullVector) {
-              Vector2.NullVector
+            if (dist ~ Vector2.Null) {
+              Vector2.Null
             } else {
               val targetOrientation = dist.orientation
               adjustOrientation(targetOrientation)
@@ -113,11 +113,11 @@ private[core] class DroneDynamics(
                   distance * 30 * dist.normalized
                 }
               } else {
-                Vector2.NullVector
+                Vector2.Null
               }
             }
           case HoldPosition =>
-            Vector2.NullVector
+            Vector2.Null
         }
       }
   }

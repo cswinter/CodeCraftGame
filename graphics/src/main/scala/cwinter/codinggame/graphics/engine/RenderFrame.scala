@@ -159,6 +159,7 @@ object RenderFrame extends GLEventListener {
     fbo = new FramebufferObject
     renderStack = new RenderStack
     textRenderer = new TextRenderer(new Font("SansSerif", Font.BOLD, 14))
+    camera.position = (gameWorld.initialCameraPos.x.toInt, gameWorld.initialCameraPos.y.toInt)
     gameWorld.run()
   }
 

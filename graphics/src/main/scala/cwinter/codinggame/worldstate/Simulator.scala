@@ -3,6 +3,7 @@ package cwinter.codinggame.worldstate
 import java.awt.event.KeyEvent
 
 import cwinter.codinggame.graphics.engine.Debug
+import cwinter.codinggame.util.maths.Vector2
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -58,7 +59,8 @@ trait Simulator {
   def isPaused: Boolean = paused
   def handleKeypress(event: KeyEvent): Unit = ()
   def additionalInfoText: String = ""
-
+  def initialCameraPos: Vector2 = Vector2.Null
+  
   def computeWorldState: Iterable[WorldObjectDescriptor]
 }
 

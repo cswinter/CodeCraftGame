@@ -251,6 +251,9 @@ class DroneWorldSimulator(
   }
 
 
+  override def initialCameraPos: Vector2 = map.spawns.head
+
+
   override def handleKeypress(keyEvent: KeyEvent): Unit = {
     keyEvent.getKeyChar match {
       case '1' => showSightRadius = !showSightRadius

@@ -9,7 +9,7 @@ private[core] class MineralCrystal(
   val size: Int,
   var position: Vector2,
   var harvested: Boolean = false,
-  var harvestPosition: Vector2 = Vector2.NullVector,
+  var harvestPosition: Vector2 = Vector2.Null,
   var harvestProgress: Option[Float0To1] = None
 ) extends WorldObject {
 

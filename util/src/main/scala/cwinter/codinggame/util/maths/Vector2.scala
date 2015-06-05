@@ -69,5 +69,5 @@ object Vector2 {
     case _ => None
   }
 
-  val NullVector = Vector2(0, 0)
+  val Null = Vector2(0, 0)
 }

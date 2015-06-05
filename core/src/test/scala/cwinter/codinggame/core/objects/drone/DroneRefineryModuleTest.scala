@@ -15,7 +15,7 @@ private[core] class DroneRefineryModuleTest extends FlatSpec {
 
   "A factory module" should "generate the correct amount of resources when processing a mineral crystal" in {
     for (mineralSize <- 1 to 5) {
-      processingModule.startMineralProcessing(new MineralCrystal(mineralSize, Vector2.NullVector, true))
+      processingModule.startMineralProcessing(new MineralCrystal(mineralSize, Vector2.Null, true))
       val (_, resourcesConsumed, resourcesSpawned) = runProcessingModule(processingModule, 2 * processingModule.MineralProcessingPeriod)
       assert(resourcesSpawned.size == mineralSize * processingModule.MineralResourceYield)
     }
@@ -23,7 +23,7 @@ private[core] class DroneRefineryModuleTest extends FlatSpec {
 
   it should "generate a mineral destroyed event after processing a mineral crystal" in {
     for (mineralSize <- 1 to 5) {
-      val mineralCrystal = new MineralCrystal(mineralSize, Vector2.NullVector, true)
+      val mineralCrystal = new MineralCrystal(mineralSize, Vector2.Null, true)
       processingModule.startMineralProcessing(mineralCrystal)
       val (events, _, _) = runProcessingModule(processingModule, 2 * processingModule.MineralProcessingPeriod)
       assert(events.contains(MineralCrystalDestroyed(mineralCrystal)))
