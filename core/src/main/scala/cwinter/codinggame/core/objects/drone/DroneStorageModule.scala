@@ -7,6 +7,7 @@ import cwinter.codinggame.util.modules.ModulePosition
 import cwinter.codinggame.worldstate._
 import scala.collection.{BitSet, mutable}
 
+// TODO: rework mineral slots system to find simpler and less error prone solution
 private[core] class DroneStorageModule(positions: Seq[Int], owner: Drone, startingResources: Int = 0)
   extends DroneModule(positions, owner) {
 
@@ -27,7 +28,7 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: Drone, starti
       s <- _storedMinerals
       e <- s.contents.effect
     } effects ::= e
-    _storedMinerals = _storedMinerals.map(_.updated)
+    _storedMinerals = _storedMinerals.map(_.updated).filterNot(_.contents == NoContents)
 
     storedEnergyGlobes = storedEnergyGlobes.map(_.updated())
 
@@ -35,7 +36,18 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: Drone, starti
   }
 
   def removeMineralCrystal(m: MineralCrystal): Unit = {
-    _storedMinerals = _storedMinerals.filterNot(_.contents.mineralCrystal == m)
+    _storedMinerals = _storedMinerals.map { slot =>
+      if (slot.contents.mineralCrystalOption == Some(m)) {
+        if (m.size > 1) {
+          new MineralSlot(Seq(), Unmerging(m.size, UnmergingTime))
+        } else {
+          new MineralSlot(Seq(), NoContents)
+        }
+      } else {
+        slot
+      }
+    }
+    _storedMinerals = _storedMinerals.filterNot(_.contents == NoContents)
     reassignMineralStorageIndices()
   }
 
@@ -47,10 +59,11 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: Drone, starti
   }
 
   private def createMineralSlot(contents: MineralSlotContents): MineralSlot = {
+    _storedMinerals = _storedMinerals.filterNot(_.contents.isInstanceOf[Unmerging])
     val newSlot = new MineralSlot(Seq(), contents)
     _storedMinerals :+= newSlot
     _storedMinerals = _storedMinerals.sortBy(_.size)
-  reassignMineralStorageIndices()
+    reassignMineralStorageIndices()
     newSlot
   }
 
@@ -59,7 +72,7 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: Drone, starti
 
     for {
       slot <- mineral
-      m = slot.contents.mineralCrystal
+      m <- slot.contents.mineralCrystalOption
       pos = calculateAbsoluteMineralPosition(m)
     } yield {
       removeMineralCrystal(m)
@@ -101,7 +114,7 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: Drone, starti
     val targetPos = calculateAbsoluteMineralPosition(mineralCrystal)
     removeMineralCrystal(mineralCrystal)
 
-    val depositing = new DepositsMineral(mineralCrystal, MineralDepositTime, targetPos, position)
+    val depositing = new ReceivesMineral(mineralCrystal, MineralDepositTime, targetPos, position)
     createMineralSlot(depositing)
   }
 
@@ -121,17 +134,21 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: Drone, starti
     }
   }
 
-  def storedMinerals: Set[MineralCrystal] = _storedMinerals.map(_.contents.mineralCrystal).toSet // TODO: improve
+  def storedMinerals: Set[MineralCrystal] = allMineralsSorted.toSet // TODO: improve
 
   def availableResources: Int = storedEnergyGlobes.size
 
   def availableStorage: Int =
-    positions.size - _storedMinerals.foldLeft(0)(_ + _.size) - (availableResources + 6) / 7
+    positions.size -
+      _storedMinerals.foldLeft(0)(_ + _.contents.mineralCrystalOption.map(_.size).getOrElse(0)) -
+      (availableResources + 6) / 7
 
-  private def allMineralsSorted = _storedMinerals.map(_.contents.mineralCrystal)
+  private def allMineralsSorted =
+    for (slot <- _storedMinerals; m <- slot.contents.mineralCrystalOption)
+      yield m
 
   private def calculateAbsoluteMineralPosition(mineralCrystal: MineralCrystal): Vector2 = {
-    val slot = _storedMinerals.find(_.contents.mineralCrystal == mineralCrystal).get
+    val slot = _storedMinerals.find(_.contents.mineralCrystalOption == Some(mineralCrystal)).get
     ModulePosition.center(owner.size, slot.positions).toVector2.rotated(owner.dynamics.orientation) +
       owner.position
   }
@@ -144,9 +161,11 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: Drone, starti
           if (p == 0) StorageModuleDescriptor(sm.positions, MineralStorage)
           else if (p < HarvestingTime / 2) StorageModuleDescriptor(sm.positions, EmptyStorage)
           else StorageModuleDescriptor(sm.positions, EmptyStorage, Some(2 * (HarvestingTime - p) / HarvestingTime.toFloat))
-        case DepositsMineral(m, p) =>
+        case ReceivesMineral(m, p) =>
           if (p * 2 >= MineralDepositTime) StorageModuleDescriptor(sm.positions, EmptyStorage, Some(2 * (MineralDepositTime - p) / MineralDepositTime.toFloat))
           else StorageModuleDescriptor(sm.positions, EmptyStorage)
+        case Unmerging(s, p) =>
+          StorageModuleDescriptor(sm.positions, EmptyStorage, Some(p.toFloat / UnmergingTime))
       }
 
     val globeStorageIndices: Seq[Int] = positions.drop(_storedMinerals.foldLeft(0)(_ + _.size)).reverse
@@ -183,24 +202,41 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: Drone, starti
   ) {
     def updated = new MineralSlot(positions, contents.updated)
 
-    def size = contents.mineralCrystal.size
+    def size = contents.size
 
     override def toString: String = contents.toString
   }
 
 
   sealed trait MineralSlotContents {
-    val mineralCrystal: MineralCrystal
+    val mineralCrystalOption: Option[MineralCrystal]
 
+    def size: Int = mineralCrystalOption.get.size
     def updated: MineralSlotContents = this
-
     def effect: Option[SimulatorEvent] = None
     def willHarvest: Boolean = false
   }
 
-  case class StoresMineral(mineralCrystal: MineralCrystal) extends MineralSlotContents
+  case class StoresMineral(mineralCrystal: MineralCrystal) extends MineralSlotContents {
+    val mineralCrystalOption = Some(mineralCrystal)
+  }
+
+  case class Unmerging(override val size: Int, tta: Int) extends MineralSlotContents {
+    val mineralCrystalOption = None
+
+    override def updated: MineralSlotContents =
+      if (tta == 0) NoContents
+      else Unmerging(size, tta - 1)
+  }
+
+  case object NoContents extends MineralSlotContents {
+    val mineralCrystalOption = None
+  }
+
 
   case class HarvestsMineral(mineralCrystal: MineralCrystal, tta: Int) extends MineralSlotContents {
+    val mineralCrystalOption = Some(mineralCrystal)
+
     override def willHarvest: Boolean = tta == 1
 
     override def updated: MineralSlotContents = {
@@ -218,12 +254,13 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: Drone, starti
       else None
   }
 
-  class DepositsMineral(
+  class ReceivesMineral(
     val mineralCrystal: MineralCrystal,
     private var tta: Int,
     targetPos: Vector2,
     startingPos: Vector2
   ) extends MineralSlotContents {
+    val mineralCrystalOption = Some(mineralCrystal)
     val velocity = (targetPos - startingPos) / tta
     var pos = startingPos - owner.position
     mineralCrystal.position = startingPos
@@ -243,10 +280,10 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: Drone, starti
       else None
   }
 
-  object DepositsMineral {
+  object ReceivesMineral {
     def unapply(mineralSlotContents: MineralSlotContents): Option[(MineralCrystal, Int)] =
       mineralSlotContents match {
-        case depositsMineral: DepositsMineral => Some((depositsMineral.mineralCrystal, depositsMineral.tta))
+        case depositsMineral: ReceivesMineral => Some((depositsMineral.mineralCrystal, depositsMineral.tta))
         case _ => None
       }
   }
@@ -256,6 +293,7 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: Drone, starti
 object DroneStorageModule {
   final val HarvestingTime = 100
   final val MineralDepositTime = 45
+  final val UnmergingTime = 20
 }
 
 
