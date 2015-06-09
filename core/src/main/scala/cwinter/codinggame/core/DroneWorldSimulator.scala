@@ -31,7 +31,7 @@ class DroneWorldSimulator(
   private var showMissileRadius = false
 
   val replayRecorder =
-    if (replayer == None) new FileReplayRecorder("/home/clemens/replay.txt")
+    if (replayer.isEmpty) new FileReplayRecorder(System.getProperty("user.home") + "/.codecraft/replays")
     else NullReplayRecorder
 
   val worldConfig = WorldConfig(map.size)
@@ -266,6 +266,7 @@ class DroneWorldSimulator(
   override def additionalInfoText: String =
     s"""${if (showSightRadius) "Hide" else "Show"} sight radius: 1
        |${if (showMissileRadius) "Hide" else "Show"} missile range: 2
+       |${replayRecorder match { case frr: FileReplayRecorder => "Replay path: " + frr.filename case _ => ""}}
      """.stripMargin
 }
 
