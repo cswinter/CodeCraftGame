@@ -14,7 +14,6 @@ class SquareGrid[T: Positionable](
 
   val xMax = math.ceil((xMaxA - xMin).toDouble / cellWidth).toInt * cellWidth + xMin
   val yMax = math.ceil((yMaxA - yMin).toDouble / cellWidth).toInt * cellWidth + yMin
-  println(s"$xMaxA, $xMax, $yMaxA, $yMax")
 
   val width = (xMax - xMin) / cellWidth
   val height = (yMax - yMin) / cellWidth

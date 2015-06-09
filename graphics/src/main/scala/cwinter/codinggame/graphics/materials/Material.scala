@@ -181,9 +181,7 @@ class Material[TPosition <: Vertex, TColor <: Vertex, TParams](
     // Check compile status.
     val compiled = new Array[Int](1)
     glGetShaderiv(shaderHandle, GL_COMPILE_STATUS, compiled, 0)
-    if (compiled(0) != 0) {
-      println("Horray! shader compiled")
-    } else {
+    if (compiled(0) == 0) {
       println("Error compiling shader:")
       checkShaderInfoLog(shaderHandle)
     }

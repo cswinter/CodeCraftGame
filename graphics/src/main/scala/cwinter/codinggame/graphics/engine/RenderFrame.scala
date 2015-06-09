@@ -168,7 +168,7 @@ object RenderFrame extends GLEventListener {
 
     fbo.resize(width, height)(gl)
 
-    println(s"reshape($x, $y, $width, $height)")
+    textRenderer = new TextRenderer(new Font("SansSerif", Font.BOLD, 14))
   }
 
   def getGL(drawable: GLAutoDrawable): GL4 =
