@@ -24,16 +24,7 @@ trait Simulator {
     Future {
       while (true) {
         if (!paused) {
-          Debug.clear()
-          try {
-            update()
-          } catch {
-            case e: Exception =>
-              e.printStackTrace()
-              paused = true
-          }
-          t += 1
-          savedWorldState = Seq(computeWorldState.toSeq: _*)
+          performUpdate()
         }
 
         val nanos = System.nanoTime()
@@ -47,7 +38,26 @@ trait Simulator {
     }
   }
 
-  def update(): Unit
+  private def performUpdate(): Unit = {
+    Debug.clear()
+    try {
+      update()
+    } catch {
+      case e: Exception =>
+        e.printStackTrace()
+        paused = true
+    }
+    t += 1
+    savedWorldState = Seq(computeWorldState.toSeq: _*)
+  }
+
+  def run(steps: Int): Unit = {
+    for (i <- 0 until steps) {
+      performUpdate()
+    }
+  }
+
+  protected def update(): Unit
   def timestep: Int = t
   def togglePause(): Unit = paused = !paused
   def framerateTarget_=(value: Int): Unit = {
