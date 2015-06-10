@@ -9,8 +9,8 @@ import cwinter.codinggame.util.maths.{ColorRGBA, VertexXYZ}
 class GaussianGlow(implicit gl: GL4)
   extends Material[VertexXYZ, ColorRGBA, Unit](
     gl = gl,
-    vsPath = "graphics/src/main/shaders/xyz_rgba_vs.glsl",
-    fsPath = "graphics/src/main/shaders/rgba_gaussian_fs.glsl",
+    vsPath = "xyz_rgba_vs.glsl",
+    fsPath = "rgba_gaussian_fs.glsl",
     "vertexPos",
     Some("vertexCol"),
     GL_BLEND

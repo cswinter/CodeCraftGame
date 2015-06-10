@@ -157,12 +157,12 @@ class Material[TPosition <: Vertex, TColor <: Vertex, TParams](
 
   /**
    * Compile a shader and attach to a program.
-   * @param filepath The source code for the shader.
+   * @param filename The source code for the shader.
    * @param shaderType The type of shader (`GL2ES2.GL_VERTEX_SHADER` or `GL2ES2.GL_FRAGMENT_SHADER`)
    * @param programID The handle to the program.
    * @return
    */
-  protected def compileShader(filepath: String, shaderType: Int, programID: Int): Int = {
+  protected def compileShader(filename: String, shaderType: Int, programID: Int): Int = {
     // Create GPU shader handles
     // OpenGL returns an index id to be stored for future reference.
     val shaderHandle = glCreateShader(shaderType)
@@ -172,7 +172,9 @@ class Material[TPosition <: Vertex, TColor <: Vertex, TParams](
 
 
     // Load shader source code and compile into a program
-    val lines = Array(Source.fromFile(filepath).mkString)
+    val stream = getClass.getResourceAsStream("/" + filename)
+    if (stream == null) println("Couldn't get shader resource: " + filename)
+    val lines = Array(Source.fromInputStream(stream).mkString)
     val lengths = lines.map(_.length)
     glShaderSource(shaderHandle, lines.length, lines, lengths, 0)
     glCompileShader(shaderHandle)

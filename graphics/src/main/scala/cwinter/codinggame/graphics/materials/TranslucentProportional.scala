@@ -10,8 +10,8 @@ import cwinter.codinggame.util.maths.{ColorRGBA, VertexXYZ}
 class TranslucentProportional(implicit gl: GL4)
   extends Material[VertexXYZ, ColorRGBA, Unit](
     gl = gl,
-    vsPath = "graphics/src/main/shaders/xyz_rgba_vs.glsl",
-    fsPath = "graphics/src/main/shaders/rgba_fs.glsl",
+    vsPath = "xyz_rgba_vs.glsl",
+    fsPath = "rgba_fs.glsl",
     "vertexPos",
     Some("vertexCol"),
     GL_BLEND

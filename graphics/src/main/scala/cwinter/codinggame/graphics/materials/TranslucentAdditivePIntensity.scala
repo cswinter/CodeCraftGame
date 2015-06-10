@@ -11,8 +11,8 @@ import cwinter.codinggame.util.maths.{ColorRGBA, VertexXYZ}
 class TranslucentAdditivePIntensity(implicit gl: GL4)
   extends Material[VertexXYZ, ColorRGBA, Intensity](
     gl = gl,
-    vsPath = "graphics/src/main/shaders/xyz_rgba_vs.glsl",
-    fsPath = "graphics/src/main/shaders/rgba_pint_fs.glsl",
+    vsPath = "xyz_rgba_vs.glsl",
+    fsPath = "rgba_pint_fs.glsl",
     "vertexPos",
     Some("vertexCol"),
     GL_BLEND
