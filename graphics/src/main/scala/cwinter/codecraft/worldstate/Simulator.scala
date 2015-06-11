@@ -48,7 +48,6 @@ trait Simulator {
         paused = true
     }
     t += 1
-    println(s"t=$t, paused=$paused")
     savedWorldState = Seq(computeWorldState.toSeq: _*)
   }
 

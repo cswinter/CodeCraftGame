@@ -71,7 +71,7 @@ private[core] class DroneDynamics(
     if (orientation > 2 * math.Pi) orientation -= 2 * math.Pi
   }
 
-  def arrivalEvent: Option[DroneEvent] = {println(_movementCommand); _movementCommand match {
+  def arrivalEvent: Option[DroneEvent] = _movementCommand match {
     case MoveToPosition(position) if position ~ this.pos =>
       halt()
       Some(ArrivedAtPosition)
@@ -79,7 +79,6 @@ private[core] class DroneDynamics(
       halt()
       Some(ArrivedAtMineral(mc))
     case MoveToDrone(other) =>
-     // try {
         val r = other.radius + drone.radius + 10 + Vector2.epsilon
         println("something")
         if ((other.position - pos).magnitudeSquared <= r * r) {
@@ -88,11 +87,8 @@ private[core] class DroneDynamics(
           println("halted")
           Some(ArrivedAtDrone(other))
         } else None
-      //} catch {
-      //  case e: Throwable => println("exception"); None
-      //}
     case _ => None
-  }}
+  }
 
   private def moveToPosition(position: Vector2): Vector2 = {
     val dist = position - this.pos
