@@ -92,15 +92,21 @@ private[core] class Drone(
   }
 
   override def update(): Seq[SimulatorEvent] = {
-    for {
-      depositee <- mineralDepositee
-      capacity = depositee.availableStorage
-      s <- storage
-      (min, pos) <- s.popMineralCrystal(capacity)
-    } {
-      depositee.depositMineral(min, pos)
-      if (s.storedMinerals.isEmpty) {
-        mineralDepositee = None
+    for (depositee <- mineralDepositee) {
+      val capacity = depositee.availableStorage
+      val required = storedMinerals.minBy(_.size).size
+      if (capacity < required) {
+        inform(s"Cannot deposit minerals - only $capacity free storage available. Required: $required")
+      } else {
+        for {
+          s <- storage
+          (min, pos) <- s.popMineralCrystal(capacity)
+        } {
+          depositee.depositMineral(min, pos)
+          if (s.storedMinerals.isEmpty) {
+            mineralDepositee = None
+          }
+        }
       }
     }
 
@@ -193,7 +199,8 @@ private[core] class Drone(
     }
   }
 
-  def immobile = droneModules.exists(_.exists(_.cancelMovement))
+  def immobile = droneModules.exists(_.exists(_.cancelMovement)) || mineralDepositee.isDefined
+
 
   def depositMineral(crystal: MineralCrystal, pos: Vector2): Unit = {
     for {
@@ -235,7 +242,7 @@ private[core] class Drone(
   private def depositMinerals(other: Drone): Unit = {
     if (other == this) {
       warn("Drone is trying to deposit minerals into itself!")
-    } else if (other.storage == None) {
+    } else if (other.storage.isEmpty) {
       warn("Trying to deposit minerals into a drone without a storage module.")
     } else {
       mineralDepositee = Some(other)
@@ -250,7 +257,7 @@ private[core] class Drone(
   def weaponsCooldown: Int = weapons.map(_.cooldown).getOrElse(1)
   def hitpoints: Int = hullState.map(_.toInt).sum
   def dronesInSight: Set[Drone] = objectsInSight.filter(_.isInstanceOf[Drone]).map { case d: Drone => d }
-  def isConstructing: Boolean = manipulator.map(_.isConstructing) == Some(true)
+  def isConstructing: Boolean = manipulator.exists(_.isConstructing)
   def storageCapacity = spec.storageModules
   def processingCapacity = spec.refineries
   def size = spec.size
@@ -307,6 +314,12 @@ private[core] class Drone(
     }
   }
 
+  def inform(message: String): Unit = {
+    if (messageCooldown <= 0) {
+      messageCooldown = MessageCooldown
+      Errors.inform(message, position)
+    }
+  }
 
   override def hasDied = _hasDied
 

@@ -1,9 +1,7 @@
 package cwinter.codecraft.testai
 
 import cwinter.codecraft.core.api._
-import cwinter.codecraft.core.replay.Replayer
 import cwinter.codecraft.util.maths.{Vector2, Rng}
-import cwinter.codecraft.worldstate.BluePlayer
 
 import scala.reflect.ClassTag
 
@@ -216,7 +214,7 @@ class ScoutingDroneController(val mothership: Mothership) extends BaseController
   override def onTick(): Unit = {
 
     if (nextCrystal.exists(_.harvested)) nextCrystal = None
-    if (nextCrystal == None) nextCrystal = mothership.findClosestMineral(availableStorage, position)
+    if (nextCrystal.isEmpty) nextCrystal = mothership.findClosestMineral(availableStorage, position)
 
     if (enemies.nonEmpty && closestEnemy.spec.missileBatteries > 0) {
       moveInDirection(position - closestEnemy.position)
@@ -225,7 +223,7 @@ class ScoutingDroneController(val mothership: Mothership) extends BaseController
       if (availableStorage == 0 && !hasReturned) {
         moveTo(mothership)
         nextCrystal = None
-      } else if (hasReturned && availableStorage > 0 || nextCrystal == None) {
+      } else if (hasReturned && availableStorage > 0 || nextCrystal.isEmpty) {
         hasReturned = false
         scout()
       } else {
@@ -242,7 +240,7 @@ class ScoutingDroneController(val mothership: Mothership) extends BaseController
       depositMinerals(mothership)
       hasReturned = true
     } else {
-      if (nextCrystal.map(_.harvested) == Some(true)) {
+      if (nextCrystal.exists(_.harvested)) {
         nextCrystal = None
       }
       for (
@@ -320,7 +318,7 @@ class Destroyer(val mothership: Mothership) extends BaseController('Destroyer) {
       if ((position - mothership.position).magnitudeSquared > 350 * 350) {
         moveTo(Rng.double(250, 350) * Rng.vector2() + mothership.position)
       }
-    } else if (attack && mothership.lastCapitalShipSighting != None) {
+    } else if (attack && mothership.lastCapitalShipSighting.isDefined) {
       for (p <- mothership.lastCapitalShipSighting)
         moveTo(p)
     } else if (Rng.bernoulli(0.005)) {
