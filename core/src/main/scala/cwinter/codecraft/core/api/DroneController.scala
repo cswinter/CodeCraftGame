@@ -10,12 +10,12 @@ abstract class DroneController extends DroneHandle {
   private[this] var _drone: Drone = null
 
   // abstract methods for event handling
-  def onSpawn(): Unit
-  def onDeath(): Unit
-  def onTick(): Unit
-  def onMineralEntersVision(mineralCrystal: MineralCrystalHandle): Unit
-  def onDroneEntersVision(drone: DroneHandle): Unit
-  def onArrival(): Unit
+  def onSpawn(): Unit = ()
+  def onDeath(): Unit = ()
+  def onTick(): Unit = ()
+  def onMineralEntersVision(mineralCrystal: MineralCrystalHandle): Unit = ()
+  def onDroneEntersVision(drone: DroneHandle): Unit = ()
+  def onArrival(): Unit = ()
 
   // drone commands
   def moveInDirection(direction: Vector2): Unit = {
