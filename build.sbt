@@ -64,10 +64,10 @@ lazy val demos = (project in file("demos")).
 lazy val core = (project in file("core")).
   settings(Commons.settings: _*).
   settings(
-    name := "cg.core",
+    name := "codecraft",
     libraryDependencies ++= commonDependencies,
     assemblyMergeStrategy in assembly := {
-      case x if (x.endsWith(".so") || x.endsWith(".dll") || x.endsWith(".jnilib")) =>
+      case x if x.endsWith(".so") || x.endsWith(".dll") || x.endsWith(".jnilib") =>
         jogl_merge_strategy
       case x =>
         val oldStrategy = (assemblyMergeStrategy in assembly).value
