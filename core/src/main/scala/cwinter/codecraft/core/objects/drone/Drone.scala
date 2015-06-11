@@ -61,8 +61,8 @@ private[core] class Drone(
       }
     }
 
-    if (dynamics.hasArrived) {
-      enqueueEvent(ArrivedAtPosition)
+    for (event <- dynamics.arrivalEvent) {
+      enqueueEvent(event)
     }
 
     if (hasDied) {
@@ -74,7 +74,12 @@ private[core] class Drone(
         case Destroyed => controller.onDeath()
         case MineralEntersSightRadius(mineral) =>
           controller.onMineralEntersVision(new MineralCrystalHandle(mineral, player))
-        case ArrivedAtPosition => controller.onArrival()
+        case ArrivedAtPosition => controller.onArrivesAtPosition()
+        case ArrivedAtDrone(drone) =>
+          val droneHandle = if (drone.player == player) drone.controller else new EnemyDroneHandle(drone, player)
+          controller.onArrivesAtDrone(droneHandle)
+        case ArrivedAtMineral(mineral) =>
+          controller.onArrivesAtMineral(new MineralCrystalHandle(mineral, player))
         case DroneEntersSightRadius(drone) => controller.onDroneEntersVision(
           if (drone.player == player) drone.controller
           else new EnemyDroneHandle(drone, player)
@@ -316,6 +321,8 @@ case object Spawned extends DroneEvent
 case object Destroyed extends DroneEvent
 case class MineralEntersSightRadius(mineralCrystal: MineralCrystal) extends DroneEvent
 case object ArrivedAtPosition extends DroneEvent
+case class ArrivedAtMineral(mineral: MineralCrystal) extends DroneEvent
+case class ArrivedAtDrone(drone: Drone) extends DroneEvent
 case class DroneEntersSightRadius(drone: Drone) extends DroneEvent
 
 
@@ -329,6 +336,8 @@ case class HarvestMineral(mineral: MineralCrystal) extends DroneCommand
 sealed trait MovementCommand extends DroneCommand
 case class MoveInDirection(direction: Double) extends MovementCommand
 case class MoveToPosition(position: Vector2) extends MovementCommand
+case class MoveToMineralCrystal(mineralCrystal: MineralCrystal) extends MovementCommand
+case class MoveToDrone(drone: Drone) extends MovementCommand
 case object HoldPosition extends MovementCommand
 
 
@@ -336,10 +345,9 @@ object DroneCommand {
   final val CaseClassRegex = """(\w*?)\((.*)\)""".r
 
   def unapply(string: String)
-      (implicit droneRegister: Map[Int, Drone], mineralRegister: Map[Int, MineralCrystal]): Option[DroneCommand] = string match {
+      (implicit droneRegistry: Map[Int, Drone], mineralRegistry: Map[Int, MineralCrystal]): Option[DroneCommand] = string match {
     case CaseClassRegex("ConstructDrone", params) =>
       val p = smartSplit(params)
-      println(p)
       val CaseClassRegex("DroneSpec", specParamsStr) = p(0)
       val specParams = specParamsStr.split(",")
       val spec = new DroneSpec(specParams(0).toInt, specParams(1).toInt, specParams(2).toInt, specParams(3).toInt, specParams(4).toInt, specParams(5).toInt, specParams(6).toInt)
@@ -348,12 +356,16 @@ object DroneCommand {
       Some(ConstructDrone(spec, controller, position))
     case CaseClassRegex("MoveToPosition", params) =>
       Some(MoveToPosition(Vector2(params)))
+    case CaseClassRegex("MoveToDrone", AsInt(id)) =>
+      Some(MoveToDrone(droneRegistry(id)))
+    case CaseClassRegex("MoveToMineralCrystal", AsInt(id)) =>
+      Some(MoveToMineralCrystal(mineralRegistry(id)))
     case CaseClassRegex("HarvestMineral", AsInt(id)) =>
-      Some(HarvestMineral(mineralRegister(id)))
+      Some(HarvestMineral(mineralRegistry(id)))
     case CaseClassRegex("DepositMinerals", AsInt(droneID)) =>
-      Some(DepositMinerals(droneRegister(droneID)))
+      Some(DepositMinerals(droneRegistry(droneID)))
     case CaseClassRegex("FireMissiles", AsInt(targetID)) =>
-      Some(FireMissiles(droneRegister(targetID)))
+      Some(FireMissiles(droneRegistry(targetID)))
     case CaseClassRegex("MoveInDirection", AsDouble(direction)) =>
       Some(MoveInDirection(direction))
     case _ => None

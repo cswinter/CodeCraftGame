@@ -123,7 +123,6 @@ class DroneWorldSimulator(
   override def update(): Unit = {
     replayRecorder.newTimestep(timestep)
 
-
     if (showMissileRadius) {
       for (
         d <- drones
@@ -180,7 +179,6 @@ class DroneWorldSimulator(
     } ++ eventGenerator(timestep)
 
 
-
     simulatorEvents.foreach {
       case MineralCrystalHarvested(mineralCrystal) =>
         visibleObjects.remove(mineralCrystal)
@@ -223,7 +221,6 @@ class DroneWorldSimulator(
     }
 
     physicsEngine.update()
-
 
     // COLLECT ALL EVENTS FROM PHYSICS SIMULATION
 

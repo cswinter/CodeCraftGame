@@ -38,13 +38,14 @@ private[core] class DroneDynamics(
 
 
   def limitSpeed(limit: Double): Unit = {
-    assert(limit <= maxSpeed)
+    require(limit <= maxSpeed)
     speed = limit
   }
 
   private def halt(): Unit = {
-    assert(!isStunned)
-    velocity = Vector2.Null
+    if (!isStunned) {
+      velocity = Vector2.Null
+    }
     _movementCommand = HoldPosition
   }
 
@@ -70,13 +71,50 @@ private[core] class DroneDynamics(
     if (orientation > 2 * math.Pi) orientation -= 2 * math.Pi
   }
 
-  def hasArrived: Boolean = _movementCommand match {
+  def arrivalEvent: Option[DroneEvent] = {println(_movementCommand); _movementCommand match {
     case MoveToPosition(position) if position ~ this.pos =>
       halt()
-      true
-    case _ => false
-  }
+      Some(ArrivedAtPosition)
+    case MoveToMineralCrystal(mc) if mc.position ~ this.pos =>
+      halt()
+      Some(ArrivedAtMineral(mc))
+    case MoveToDrone(other) =>
+     // try {
+        val r = other.radius + drone.radius + 10 + Vector2.epsilon
+        println("something")
+        if ((other.position - pos).magnitudeSquared <= r * r) {
+          println("halt now")
+          halt()
+          println("halted")
+          Some(ArrivedAtDrone(other))
+        } else None
+      //} catch {
+      //  case e: Throwable => println("exception"); None
+      //}
+    case _ => None
+  }}
 
+  private def moveToPosition(position: Vector2): Vector2 = {
+    val dist = position - this.pos
+
+    if (dist ~ Vector2.Null) {
+      Vector2.Null
+    } else {
+      val targetOrientation = dist.orientation
+      adjustOrientation(targetOrientation)
+      if (targetOrientation == orientation) {
+        val speed = maxSpeed / 30 // TODO: improve this
+        if ((dist dot dist) > speed * speed) {
+          maxSpeed * dist.normalized
+        } else {
+          val distance = dist.size
+          distance * 30 * dist.normalized
+        }
+      } else {
+        Vector2.Null
+      }
+    }
+  }
 
   override def update(): Unit = {
     velocity =
@@ -97,25 +135,13 @@ private[core] class DroneDynamics(
               Vector2.Null
             }
           case MoveToPosition(position) =>
-            val dist = position - this.pos
-
-            if (dist ~ Vector2.Null) {
-              Vector2.Null
-            } else {
-              val targetOrientation = dist.orientation
-              adjustOrientation(targetOrientation)
-              if (targetOrientation == orientation) {
-                val speed = maxSpeed / 30 // TODO: improve this
-                if ((dist dot dist) > speed * speed) {
-                  maxSpeed * dist.normalized
-                } else {
-                  val distance = dist.size
-                  distance * 30 * dist.normalized
-                }
-              } else {
-                Vector2.Null
-              }
-            }
+            moveToPosition(position)
+          case MoveToMineralCrystal(mc) =>
+            moveToPosition(mc.position)
+          case MoveToDrone(other) =>
+            val targetDirection = (other.position - pos).normalized
+            val targetPos = other.position - (other.radius + drone.radius + 10) * targetDirection
+            moveToPosition(targetPos)
           case HoldPosition =>
             Vector2.Null
         }

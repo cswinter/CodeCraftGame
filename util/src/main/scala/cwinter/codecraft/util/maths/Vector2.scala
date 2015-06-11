@@ -1,6 +1,7 @@
 package cwinter.codecraft.util.maths
 
 case class Vector2(x: Double, y: Double) {
+  import Vector2._
   assert(isValid)
 
   def dot(rhs: Vector2): Double = x * rhs.x + y * rhs.y
@@ -29,7 +30,6 @@ case class Vector2(x: Double, y: Double) {
     !x.isNaN && !y.isNaN && !x.isInfinity && !y.isInfinity
   }
 
-  final val epsilon: Double = 0.00000000001
   def ~(rhs: Vector2): Boolean =
     math.abs(x - rhs.x) < epsilon && math.abs(y - rhs.y) < epsilon
   def !~(rhs: Vector2): Boolean =
@@ -39,6 +39,8 @@ case class Vector2(x: Double, y: Double) {
 }
 
 object Vector2 {
+  final val epsilon: Double = 0.00000000001
+
   implicit class ScalarD(val d: Double) extends AnyVal {
     def *(rhs: Vector2): Vector2 = rhs * d
   }

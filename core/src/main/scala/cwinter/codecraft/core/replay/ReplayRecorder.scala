@@ -16,7 +16,7 @@ trait ReplayRecorder {
   }
 
   def recordVersion(): Unit = {
-    writeLine("Version=0.1")
+    writeLine("Version=0.2")
   }
 
   def record(droneID: Int, droneCommand: DroneCommand): Unit = {

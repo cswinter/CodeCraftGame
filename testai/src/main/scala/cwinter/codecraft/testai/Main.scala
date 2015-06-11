@@ -9,7 +9,8 @@ import scala.reflect.ClassTag
 
 object Main {
   def main(args: Array[String]): Unit = {
-    // TheGameMaster.runLevel1(new Mothership)
+    //TheGameMaster.runReplay(new Replayer(scala.io.Source.fromFile("C://users/clemens/.codecraft/replays/150611-172143.replay").getLines()))
+    //TheGameMaster.runLevel1(new Mothership)
     TheGameMaster.startGame(new Mothership, new Mothership)
     //TheGameMaster.runReplay(new Replayer(scala.io.Source.fromFile("/home/clemens/replay.txt").getLines()))
   }
@@ -58,7 +59,7 @@ abstract class BaseController(val name: Symbol) extends DroneController {
       if ((position - t.pos).magnitudeSquared < 1) {
         searchToken = None
       } else {
-        moveToPosition(t.pos)
+        moveTo(t.pos)
       }
     }
   }
@@ -66,7 +67,7 @@ abstract class BaseController(val name: Symbol) extends DroneController {
   override def onMineralEntersVision(mineralCrystal: MineralCrystalHandle): Unit =
     mothership.registerMineral(mineralCrystal)
 
-  override def onArrival(): Unit = ()
+  override def onArrivesAtPosition(): Unit = ()
   override def onDroneEntersVision(drone: DroneHandle): Unit = {
     if (drone.isEnemy)
     if (drone.isEnemy && drone.spec.size > 6) {
@@ -222,7 +223,7 @@ class ScoutingDroneController(val mothership: Mothership) extends BaseController
     } else {
 
       if (availableStorage == 0 && !hasReturned) {
-        moveToDrone(mothership)
+        moveTo(mothership)
         nextCrystal = None
       } else if (hasReturned && availableStorage > 0 || nextCrystal == None) {
         hasReturned = false
@@ -231,12 +232,12 @@ class ScoutingDroneController(val mothership: Mothership) extends BaseController
         for (
           c <- nextCrystal
           if !(c.position ~ position)
-        ) moveToPosition(c.position)
+        ) moveTo(c.position)
       }
     }
   }
 
-  override def onArrival(): Unit = {
+  override def onArrivesAtPosition(): Unit = {
     if (availableStorage == 0) {
       depositMinerals(mothership)
       hasReturned = true
@@ -254,6 +255,10 @@ class ScoutingDroneController(val mothership: Mothership) extends BaseController
     }
   }
 
+  override def onArrivesAtDrone(drone: DroneHandle): Unit = {
+    depositMinerals(drone)
+    hasReturned = true
+  }
 
   override def onDeath(): Unit = {
     for (m <- nextCrystal)
@@ -277,7 +282,7 @@ class Hunter(val mothership: Mothership) extends BaseController('Hunter) {
     }
 
     if (Rng.bernoulli(0.005)) {
-      moveToPosition(0.9 * Rng.vector2(worldSize))
+      moveTo(0.9 * Rng.vector2(worldSize))
     }
   }
 }
@@ -313,13 +318,13 @@ class Destroyer(val mothership: Mothership) extends BaseController('Destroyer) {
       }
     } else if (defend) {
       if ((position - mothership.position).magnitudeSquared > 350 * 350) {
-        moveToPosition(Rng.double(250, 350) * Rng.vector2() + mothership.position)
+        moveTo(Rng.double(250, 350) * Rng.vector2() + mothership.position)
       }
     } else if (attack && mothership.lastCapitalShipSighting != None) {
       for (p <- mothership.lastCapitalShipSighting)
-        moveToPosition(p)
+        moveTo(p)
     } else if (Rng.bernoulli(0.005)) {
-      moveToPosition(Rng.double(600, 900) * Rng.vector2() + mothership.position)
+      moveTo(Rng.double(600, 900) * Rng.vector2() + mothership.position)
     }
   }
 

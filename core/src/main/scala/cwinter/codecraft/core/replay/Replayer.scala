@@ -21,7 +21,7 @@ class Replayer(lines: Iterator[String]) {
 
   // parse version
   val header = nextLine
-  assert(header == "Version=0.1")
+  assert(header == "Version=0.2")
 
   // parse rng seed
   val KeyValueRegex("Seed", AsInt(seed)) = nextLine
@@ -47,7 +47,6 @@ class Replayer(lines: Iterator[String]) {
       nextLine match {
         case KeyValueRegex("Timestep", AsInt(t)) => currTime = t
         case CommandRegex(AsInt(droneID), DroneCommand(d)) =>
-          println(s"parsed command: $d")
           droneRegistry(droneID).executeCommand(d)
         case t => throw new Exception(s"Could not parse line: $t")
       }

@@ -15,7 +15,9 @@ abstract class DroneController extends DroneHandle {
   def onTick(): Unit = ()
   def onMineralEntersVision(mineralCrystal: MineralCrystalHandle): Unit = ()
   def onDroneEntersVision(drone: DroneHandle): Unit = ()
-  def onArrival(): Unit = ()
+  def onArrivesAtPosition(): Unit = ()
+  def onArrivesAtMineral(mineralCrystal: MineralCrystalHandle): Unit = ()
+  def onArrivesAtDrone(drone: DroneHandle): Unit = ()
 
   // drone commands
   def moveInDirection(directionVector: Vector2): Unit = {
@@ -26,18 +28,15 @@ abstract class DroneController extends DroneHandle {
     drone ! MoveInDirection(direction)
   }
 
-  def moveToDrone(otherDrone: DroneHandle): Unit = {
-    val other = otherDrone.drone
-    val targetDirection = (other.position - position).normalized
-    val targetPos = other.position - (other.radius + drone.radius + 10) * targetDirection
-    moveToPosition(targetPos)
+  def moveTo(otherDrone: DroneHandle): Unit = {
+    drone ! MoveToDrone(otherDrone.drone)
   }
   
   def moveToMineral(mineralCrystal: MineralCrystalHandle): Unit = {
-    drone ! MoveToPosition(mineralCrystal.position)
+    drone ! MoveToMineralCrystal(mineralCrystal.mineralCrystal)
   }
 
-  def moveToPosition(position: Vector2): Unit = {
+  def moveTo(position: Vector2): Unit = {
     drone ! MoveToPosition(position)
   }
 

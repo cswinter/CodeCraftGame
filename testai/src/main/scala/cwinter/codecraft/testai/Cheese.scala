@@ -10,14 +10,14 @@ class CheesyMothership extends DroneController {
   }
   override def onMineralEntersVision(mineralCrystal: MineralCrystalHandle): Unit = ()
   override def onTick(): Unit = ()
-  override def onArrival(): Unit = ()
+  override def onArrivesAtPosition(): Unit = ()
   override def onDeath(): Unit = ()
   override def onDroneEntersVision(drone: DroneHandle): Unit = ()
 }
 
 class CheesyDestroyer(targetPos: Vector2) extends DroneController {
   override def onSpawn(): Unit = {
-    moveToPosition(targetPos)
+    moveTo(targetPos)
   }
   override def onMineralEntersVision(mineralCrystal: MineralCrystalHandle): Unit = ()
   override def onTick(): Unit = {
@@ -25,7 +25,7 @@ class CheesyDestroyer(targetPos: Vector2) extends DroneController {
       shootMissiles(d)
     }
   }
-  override def onArrival(): Unit = ()
+  override def onArrivesAtPosition(): Unit = ()
   override def onDeath(): Unit = ()
   override def onDroneEntersVision(drone: DroneHandle): Unit = ()
 }

@@ -17,7 +17,7 @@ class DroneWorldSimulatorTest extends FlatSpec {
 
       override def onTick(): Unit = ()
 
-      override def onArrival(): Unit = ()
+      override def onArrivesAtPosition(): Unit = ()
 
       override def onDeath(): Unit = ()
 

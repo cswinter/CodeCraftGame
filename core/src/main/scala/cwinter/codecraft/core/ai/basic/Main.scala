@@ -47,7 +47,7 @@ private[core] class Mothership extends DroneController {
     dronesInSight.filter(_.player != player)
 
   override def onMineralEntersVision(mineralCrystal: MineralCrystalHandle): Unit = ()
-  override def onArrival(): Unit = ()
+  override def onArrivesAtPosition(): Unit = ()
   override def onDroneEntersVision(drone: DroneHandle): Unit = ()
   override def onDeath(): Unit = ()
 }
@@ -66,21 +66,21 @@ private[core] class ScoutingDroneController(val mothership: Mothership) extends 
 
   override def onMineralEntersVision(mineralCrystal: MineralCrystalHandle): Unit = {
     if (nextCrystal.isEmpty && mineralCrystal.size <= availableStorage) {
-      moveToPosition(mineralCrystal.position)
+      moveTo(mineralCrystal.position)
       nextCrystal = Some(mineralCrystal)
     }
   }
 
   override def onTick(): Unit = {
     if (availableStorage == 0 && !hasReturned) {
-      moveToDrone(mothership)
+      moveTo(mothership)
     } else if ((hasReturned && availableStorage > 0) || Rng.bernoulli(0.005) && nextCrystal == None) {
       hasReturned = false
       moveInDirection(Vector2(Rng.double(0, 100)))
     }
   }
 
-  override def onArrival(): Unit = {
+  override def onArrivesAtPosition(): Unit = {
     if (availableStorage == 0) {
       depositMinerals(mothership)
       hasReturned = true
@@ -96,6 +96,11 @@ private[core] class ScoutingDroneController(val mothership: Mothership) extends 
         nextCrystal = None
       }
     }
+  }
+
+  override def onArrivesAtDrone(drone: DroneHandle): Unit = {
+    depositMinerals(drone)
+    hasReturned = true
   }
 
   override def onDroneEntersVision(drone: DroneHandle): Unit = ()
@@ -122,7 +127,7 @@ private[core] class AttackDroneController extends DroneController {
   def enemies: Set[DroneHandle] =
     dronesInSight.filter(_.player != player)
 
-  override def onArrival(): Unit = ()
+  override def onArrivesAtPosition(): Unit = ()
 
   override def onDroneEntersVision(drone: DroneHandle): Unit = ()
   override def onDeath(): Unit = ()
