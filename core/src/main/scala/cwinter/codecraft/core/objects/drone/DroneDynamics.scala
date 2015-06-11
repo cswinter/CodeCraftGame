@@ -116,6 +116,8 @@ private[core] class DroneDynamics(
           isStunned = false
           Vector2.Null
         } else velocity * 0.9f
+      } else if (drone.immobile) {
+        Vector2.Null
       } else {
         _movementCommand match {
           case MoveInDirection(direction) =>

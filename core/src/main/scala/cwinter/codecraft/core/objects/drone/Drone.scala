@@ -183,10 +183,6 @@ private[core] class Drone(
   //+ Command implementations      +
   //+------------------------------+
   private def giveMovementCommand(value: MovementCommand): Boolean = {
-    if (droneModules.exists(_.exists(_.cancelMovement))) {
-      // TODO: warning/error message? queue up command?
-      return true
-    }
     dynamics.setMovementCommand(value)
   }
 
@@ -196,6 +192,8 @@ private[core] class Drone(
       case None => warn("Drone construction requires a manipulator module.")
     }
   }
+
+  def immobile = droneModules.exists(_.exists(_.cancelMovement))
 
   def depositMineral(crystal: MineralCrystal, pos: Vector2): Unit = {
     for {
