@@ -88,7 +88,7 @@ private[core] class DroneDynamics(
       } else {
         _movementCommand match {
           case MoveInDirection(direction) =>
-            val targetOrientation = direction.orientation
+            val targetOrientation = direction
             adjustOrientation(targetOrientation)
 
             if (targetOrientation == orientation) {

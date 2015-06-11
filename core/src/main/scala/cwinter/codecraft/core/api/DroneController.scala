@@ -18,7 +18,11 @@ abstract class DroneController extends DroneHandle {
   def onArrival(): Unit = ()
 
   // drone commands
-  def moveInDirection(direction: Vector2): Unit = {
+  def moveInDirection(directionVector: Vector2): Unit = {
+    drone ! MoveInDirection(directionVector.orientation)
+  }
+
+  def moveInDirection(direction: Double): Unit = {
     drone ! MoveInDirection(direction)
   }
 

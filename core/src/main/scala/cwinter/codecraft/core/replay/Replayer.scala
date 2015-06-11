@@ -67,3 +67,12 @@ object AsInt {
     case e: NumberFormatException => None
   }
 }
+
+
+object AsDouble {
+  def unapply(s: String) = try {
+    Some(s.toDouble)
+  } catch {
+    case e: NumberFormatException => None
+  }
+}

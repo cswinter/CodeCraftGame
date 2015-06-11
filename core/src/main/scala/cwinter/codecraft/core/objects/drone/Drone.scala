@@ -4,7 +4,7 @@ import cwinter.codecraft.core._
 import cwinter.codecraft.core.api.{DroneController, DroneSpec, MineralCrystalHandle}
 import cwinter.codecraft.core.errors.Errors
 import cwinter.codecraft.core.objects.{WorldObject, MineralCrystal, EnergyGlobeObject}
-import cwinter.codecraft.core.replay.{AsInt, DummyDroneController, NullReplayRecorder, ReplayRecorder}
+import cwinter.codecraft.core.replay._
 import cwinter.codecraft.util.maths.{Float0To1, Vector2}
 import cwinter.codecraft.worldstate.{DroneDescriptor, DroneModuleDescriptor, Player, WorldObjectDescriptor}
 
@@ -327,7 +327,7 @@ case class DepositMinerals(target: Drone) extends DroneCommand
 case class HarvestMineral(mineral: MineralCrystal) extends DroneCommand
 
 sealed trait MovementCommand extends DroneCommand
-case class MoveInDirection(direction: Vector2) extends MovementCommand
+case class MoveInDirection(direction: Double) extends MovementCommand
 case class MoveToPosition(position: Vector2) extends MovementCommand
 case object HoldPosition extends MovementCommand
 
@@ -354,7 +354,7 @@ object DroneCommand {
       Some(DepositMinerals(droneRegister(droneID)))
     case CaseClassRegex("FireMissiles", AsInt(targetID)) =>
       Some(FireMissiles(droneRegister(targetID)))
-    case CaseClassRegex("MoveInDirection", Vector2(direction)) =>
+    case CaseClassRegex("MoveInDirection", AsDouble(direction)) =>
       Some(MoveInDirection(direction))
     case _ => None
   }
