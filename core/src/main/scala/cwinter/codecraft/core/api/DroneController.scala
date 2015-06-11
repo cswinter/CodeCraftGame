@@ -32,7 +32,7 @@ abstract class DroneController extends DroneHandle {
     drone ! MoveToDrone(otherDrone.drone)
   }
   
-  def moveToMineral(mineralCrystal: MineralCrystalHandle): Unit = {
+  def moveTo(mineralCrystal: MineralCrystalHandle): Unit = {
     drone ! MoveToMineralCrystal(mineralCrystal.mineralCrystal)
   }
 
