@@ -80,11 +80,8 @@ private[core] class DroneDynamics(
       Some(ArrivedAtMineral(mc))
     case MoveToDrone(other) =>
         val r = other.radius + drone.radius + 10 + Vector2.epsilon
-        println("something")
         if ((other.position - pos).magnitudeSquared <= r * r) {
-          println("halt now")
           halt()
-          println("halted")
           Some(ArrivedAtDrone(other))
         } else None
     case _ => None
