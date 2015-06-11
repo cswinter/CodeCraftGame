@@ -249,7 +249,7 @@ class ScoutingDroneController(val mothership: Mothership) extends BaseController
         mineral <- nextCrystal
         if mineral.position ~ position
       ) {
-        harvestMineral(mineral)
+        harvest(mineral)
         nextCrystal = None
       }
     }

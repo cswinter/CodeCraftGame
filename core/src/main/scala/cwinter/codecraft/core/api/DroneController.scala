@@ -40,7 +40,7 @@ abstract class DroneController extends DroneHandle {
     drone ! MoveToPosition(position)
   }
 
-  def harvestMineral(mineralCrystal: MineralCrystalHandle): Unit = {
+  def harvest(mineralCrystal: MineralCrystalHandle): Unit = {
     drone ! HarvestMineral(mineralCrystal.mineralCrystal)
   }
 
