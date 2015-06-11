@@ -31,7 +31,6 @@ lazy val graphics = (project in file("graphics")).
     libraryDependencies ++= graphicsDependencies
   ).dependsOn(util)
 
-
 lazy val collisions = (project in file("collisions")).
   settings(Commons.settings: _*).
   settings(

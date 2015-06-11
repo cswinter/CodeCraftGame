@@ -1,4 +1,4 @@
-import cwinter.codinggame.graphics.matrices.{IdentityMatrix4x4, Matrix4x4}
+import cwinter.codecraft.graphics.matrices.{IdentityMatrix4x4, Matrix4x4}
 import org.scalatest.FlatSpec
 
 
