@@ -361,9 +361,9 @@ object DroneCommand {
       val p = smartSplit(params)
       val CaseClassRegex("DroneSpec", specParamsStr) = p(0)
       val specParams = specParamsStr.split(",")
-      val spec = new DroneSpec(specParams(0).toInt, specParams(1).toInt, specParams(2).toInt, specParams(3).toInt, specParams(4).toInt, specParams(5).toInt, specParams(6).toInt)
+      val spec = new DroneSpec(specParams(0).toInt, specParams(1).toInt, specParams(2).toInt, specParams(3).toInt, specParams(4).toInt, specParams(5).toInt)
       val controller = new DummyDroneController
-      val position = Vector2(p(2)) // TODO: ugly, fix
+      val position = Vector2(p(2))
       Some(ConstructDrone(spec, controller, position))
     case CaseClassRegex("MoveToPosition", params) =>
       Some(MoveToPosition(Vector2(params)))

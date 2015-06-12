@@ -86,10 +86,10 @@ class Mothership extends BaseController('Mothership) {
   private[this] var _lastCapitalShipSighting: Option[Vector2] = None
   def lastCapitalShipSighting: Option[Vector2] = _lastCapitalShipSighting
 
-  val scoutSpec = DroneSpec(3, storageModules = 1)
-  val collectorSpec = DroneSpec(4, storageModules = 2)
-  val hunterSpec = DroneSpec(4, missileBatteries = 1, engines = 1)
-  val destroyerSpec = DroneSpec(5, missileBatteries = 3, shieldGenerators = 1)
+  val scoutSpec = DroneSpec(storageModules = 1)
+  val collectorSpec = DroneSpec(storageModules = 2)
+  val hunterSpec = DroneSpec(missileBatteries = 1, engines = 1)
+  val destroyerSpec = DroneSpec(missileBatteries = 3, shieldGenerators = 1)
   var searchTokens: Set[SearchToken] = null
 
   // abstract methods for event handling

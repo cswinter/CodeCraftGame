@@ -26,7 +26,7 @@ class DroneWorldSimulatorTest extends FlatSpec {
       override def onSpawn(): Unit = ()
     }
   }
-  val mockDroneSpec = new DroneSpec(4, storageModules = 2)
+  val mockDroneSpec = new DroneSpec(storageModules = 2)
   val mockDrone = new Drone(mockDroneSpec, emptyController, BluePlayer, Vector2(0, 0), 0, WorldConfig(Rectangle(-100, 100, -100, 100)))
 
   val simulator = new DroneWorldSimulator(map, emptyController, emptyController, t => if (t == 0) Seq(SpawnDrone(mockDrone)) else Seq() )

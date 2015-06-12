@@ -6,7 +6,7 @@ import cwinter.codecraft.util.maths.Vector2
 
 class CheesyMothership extends DroneController {
   override def onSpawn(): Unit = {
-    buildDrone(new DroneSpec(5, 0, 3, 0, 0, 0, 1), new CheesyDestroyer(-position))
+    buildDrone(new DroneSpec(0, 3, 0, 0, 0, 1), new CheesyDestroyer(-position))
   }
   override def onMineralEntersVision(mineralCrystal: MineralCrystalHandle): Unit = ()
   override def onTick(): Unit = ()

@@ -5,7 +5,6 @@ import cwinter.codecraft.util.maths.{Geometry, Vector2}
 import cwinter.codecraft.util.modules.ModulePosition
 
 /**
- * @param size The size of the drone (number of sides/edges). Allowed values are from 3 to 7.
  * @param storageModules Number of storage modules. Allows for storage of mineral crystals and energy globes.
  * @param missileBatteries Number of missile batteries. Allows for firing homing missiles.
  * @param refineries Number of refineries. Allows for processing mineral crystals into energy globes.
@@ -14,7 +13,6 @@ import cwinter.codecraft.util.modules.ModulePosition
  * @param shieldGenerators Number of shield generators. Create shield that absorbs damage and regenerates over time.
  */
 case class DroneSpec(
-  size: Int,
   storageModules: Int = 0,
   missileBatteries: Int = 0,
   refineries: Int = 0,
@@ -33,7 +31,9 @@ case class DroneSpec(
     storageModules + missileBatteries + refineries +
       manipulators + engines + shieldGenerators
 
-  require(ModulePosition.moduleCount(size) == moduleCount)
+  require(moduleCount <= ModulePosition.MaxModules, s"A drone cannot have more than ${ModulePosition.MaxModules} modules")
+
+  val size = ModulePosition.size(moduleCount)
 
 
 

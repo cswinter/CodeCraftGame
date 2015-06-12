@@ -3,7 +3,6 @@ package cwinter.codecraft.util.maths
 object Rng {
   val seed = scala.util.Random.nextInt(100000)
   private[this] val random = new scala.util.Random(seed)
-  println(s"Rng seed: $seed")
 
 
   def int(max: Int): Int = {

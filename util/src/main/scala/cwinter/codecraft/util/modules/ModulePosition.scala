@@ -45,6 +45,9 @@ object ModulePosition {
 
   def moduleCount(size: Int): Int = ModulePosition(size).length
 
+  def size(moduleCount: Int): Int = ModulePosition.filter(_._2.length >= moduleCount).minBy(_._2.length)._1
+
+  final val MaxModules = ModulePosition.map(_._2.length).max
 
   private def permutation[T](set: IndexedSeq[T], indices: IndexedSeq[Int]): IndexedSeq[T] = {
     IndexedSeq.tabulate(set.size)(i => set(indices(i)))

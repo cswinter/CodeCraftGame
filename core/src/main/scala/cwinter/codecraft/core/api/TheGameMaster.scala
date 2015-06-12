@@ -52,7 +52,7 @@ object TheGameMaster {
   def runLastReplay(): Unit = {
     val dir = new File(System.getProperty("user.home") + "/.codecraft/replays")
     val latest = dir.listFiles().maxBy(_.lastModified())
-    runReplay(latest.getCanonicalPath)
+    runReplay(latest.getPath)
   }
 
   private var devEvents: Int => Seq[SimulatorEvent] = t => Seq()

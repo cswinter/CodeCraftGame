@@ -73,7 +73,6 @@ class DroneWorldSimulator(
 
   private def mothership(player: Player, controller: DroneController, pos: Vector2): Drone = {
     val spec = new DroneSpec(
-      size = 7,
       missileBatteries = 2,
       manipulators = 2,
       refineries = 3,
