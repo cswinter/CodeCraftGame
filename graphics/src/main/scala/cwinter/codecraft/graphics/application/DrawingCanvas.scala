@@ -13,6 +13,8 @@ import cwinter.codecraft.worldstate.Simulator
 
 object DrawingCanvas {
   def run(gameWorld: Simulator, fps: Int = 60): Unit = {
+    println("Initialising...")
+
     RenderFrame.gameWorld = gameWorld
 
     // Setup code
