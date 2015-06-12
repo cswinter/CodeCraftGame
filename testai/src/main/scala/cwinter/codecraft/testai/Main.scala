@@ -1,9 +1,7 @@
 package cwinter.codecraft.testai
 
 import cwinter.codecraft.core.api._
-import cwinter.codecraft.util.maths.{Vector2, Rng}
-
-import scala.reflect.ClassTag
+import cwinter.codecraft.util.maths.{Rng, Vector2}
 
 object Main {
   def main(args: Array[String]): Unit = {
@@ -51,7 +49,7 @@ abstract class BaseController(val name: Symbol) extends DroneController {
     mothership.getSearchToken(position)
   }
   def scout(): Unit = {
-    if (searchToken == None) searchToken = requestSearchToken()
+    if (searchToken.isEmpty) searchToken = requestSearchToken()
     for (t <- searchToken) {
       if ((position - t.pos).lengthSquared < 1) {
         searchToken = None
