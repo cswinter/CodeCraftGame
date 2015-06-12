@@ -1,5 +1,7 @@
 package cwinter.codecraft.core.api
 
+import java.io.File
+
 import cwinter.codecraft.core.replay.{Replayer, DummyDroneController}
 import cwinter.codecraft.core.{DroneWorldSimulator, SimulatorEvent, WorldMap, ai}
 import cwinter.codecraft.graphics.application.DrawingCanvas
@@ -34,7 +36,9 @@ object TheGameMaster {
   }
 
 
-  def runReplay(replayer: Replayer): Unit = {
+  def runReplay(filepath: String): Unit = {
+    val replayer =
+      new Replayer(scala.io.Source.fromFile(filepath).getLines())
     val worldSize = DefaultWorldSize
     val resourceClusters = DefaultResourceDistribution
     val spawns = replayer.spawns
@@ -45,6 +49,11 @@ object TheGameMaster {
     DrawingCanvas.run(simulator)
   }
 
+  def runLastReplay(): Unit = {
+    val dir = new File(System.getProperty("user.home") + "/.codecraft/replays")
+    val latest = dir.listFiles().maxBy(_.lastModified())
+    runReplay(latest.getCanonicalPath)
+  }
 
   private var devEvents: Int => Seq[SimulatorEvent] = t => Seq()
   private[cwinter] def setDevEvents(generator: Int => Seq[SimulatorEvent]): Unit = {

@@ -7,10 +7,9 @@ import scala.reflect.ClassTag
 
 object Main {
   def main(args: Array[String]): Unit = {
-    //TheGameMaster.runReplay(new Replayer(scala.io.Source.fromFile("C://users/clemens/.codecraft/replays/150611-172143.replay").getLines()))
     //TheGameMaster.runLevel1(new Mothership)
     TheGameMaster.startGame(new Mothership, new Mothership)
-    //TheGameMaster.runReplay(new Replayer(scala.io.Source.fromFile("/home/clemens/replay.txt").getLines()))
+    //TheGameMaster.runLastReplay()
   }
 }
 
