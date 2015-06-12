@@ -71,7 +71,7 @@ abstract class DroneController extends DroneHandle {
   @inline final override private[core] def drone: Drone = _drone
 
   def isInMissileRange(droneHandle: DroneHandle): Boolean =
-    (droneHandle.position - drone.position).magnitudeSquared <=
+    (droneHandle.position - drone.position).lengthSquared <=
       DroneConstants.MissileLockOnRadius * DroneConstants.MissileLockOnRadius
   def isConstructing: Boolean = drone.isConstructing
   def availableStorage: Int = drone.availableStorage

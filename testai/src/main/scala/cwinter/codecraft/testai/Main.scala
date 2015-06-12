@@ -24,7 +24,7 @@ abstract class BaseController(val name: Symbol) extends DroneController {
   def enemies: Set[DroneHandle] =
     dronesInSight.filter(_.player != player)
 
-  def closestEnemy: DroneHandle = enemies.minBy(x => (x.position - position).magnitudeSquared)
+  def closestEnemy: DroneHandle = enemies.minBy(x => (x.position - position).lengthSquared)
 
   def handleWeapons(): Unit = {
     if (weaponsCooldown <= 0 && enemies.nonEmpty) {
@@ -54,7 +54,7 @@ abstract class BaseController(val name: Symbol) extends DroneController {
   def scout(): Unit = {
     if (searchToken == None) searchToken = requestSearchToken()
     for (t <- searchToken) {
-      if ((position - t.pos).magnitudeSquared < 1) {
+      if ((position - t.pos).lengthSquared < 1) {
         searchToken = None
       } else {
         moveTo(t.pos)
@@ -148,7 +148,7 @@ class Mothership extends BaseController('Mothership) {
     val filtered = minerals.filter(m => m.size <= maxSize && !claimedMinerals.contains(m))
     val result =
       if (filtered.isEmpty) None
-      else Some(filtered.minBy(m => (m.position - position).magnitudeSquared))
+      else Some(filtered.minBy(m => (m.position - position).lengthSquared))
     for (m <- result) {
       claimedMinerals += m
     }
@@ -167,7 +167,7 @@ class Mothership extends BaseController('Mothership) {
     if (searchTokens.isEmpty) {
       None
     } else {
-      val closest = searchTokens.minBy(t => (t.pos - pos).magnitudeSquared)
+      val closest = searchTokens.minBy(t => (t.pos - pos).lengthSquared)
       searchTokens -= closest
       Some(closest)
     }
@@ -315,7 +315,7 @@ class Destroyer(val mothership: Mothership) extends BaseController('Destroyer) {
         attack = false
       }
     } else if (defend) {
-      if ((position - mothership.position).magnitudeSquared > 350 * 350) {
+      if ((position - mothership.position).lengthSquared > 350 * 350) {
         moveTo(Rng.double(250, 350) * Rng.vector2() + mothership.position)
       }
     } else if (attack && mothership.lastCapitalShipSighting.isDefined) {

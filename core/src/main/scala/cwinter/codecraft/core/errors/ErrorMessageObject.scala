@@ -12,7 +12,7 @@ private[core] class ErrorMessageObject(
   private[this] var age = 0
 
   def update(): Unit = {
-    val color = ColorRGBA(errorLevel.color, 1 - (age.toFloat / lifetime))
+    val color = ColorRGBA(errorLevel.color, 1 - (age.toFloat * age / (lifetime * lifetime)))
     Debug.drawText(message, position.x.toFloat, position.y.toFloat, color)
     position += Vector2(0, 1)
     age += 1

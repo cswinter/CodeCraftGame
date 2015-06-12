@@ -80,7 +80,7 @@ private[core] class DroneDynamics(
       Some(ArrivedAtMineral(mc))
     case MoveToDrone(other) =>
         val r = other.radius + drone.radius + 10 + Vector2.epsilon
-        if ((other.position - pos).magnitudeSquared <= r * r) {
+        if ((other.position - pos).lengthSquared <= r * r) {
           halt()
           Some(ArrivedAtDrone(other))
         } else None
@@ -100,7 +100,7 @@ private[core] class DroneDynamics(
         if ((dist dot dist) > speed * speed) {
           maxSpeed * dist.normalized
         } else {
-          val distance = dist.size
+          val distance = dist.length
           distance * 30 * dist.normalized
         }
       } else {
@@ -112,7 +112,7 @@ private[core] class DroneDynamics(
   override def update(): Unit = {
     velocity =
       if (isStunned) {
-        if (velocity.size <= maxSpeed * 0.05f) {
+        if (velocity.length <= maxSpeed * 0.05f) {
           isStunned = false
           Vector2.Null
         } else velocity * 0.9f
@@ -166,8 +166,8 @@ private[core] class DroneDynamics(
         val x2 = other.pos
         val w1 = weight
         val w2 = other.weight
-        velocity = v1 - 2 * w2 / (w1 + w2) * (v1 - v2 dot x1 - x2) / (x1 - x2).magnitudeSquared * (x1 - x2)
-        other.velocity = v2 - 2 * w1 / (w1 + w2) * (v2 - v1 dot x2 - x1) / (x2 - x1).magnitudeSquared * (x2 - x1)
+        velocity = v1 - 2 * w2 / (w1 + w2) * (v1 - v2 dot x1 - x2) / (x1 - x2).lengthSquared * (x1 - x2)
+        other.velocity = v2 - 2 * w1 / (w1 + w2) * (v2 - v1 dot x2 - x1) / (x2 - x1).lengthSquared * (x2 - x1)
         isStunned = true
         other.isStunned = true
       case missile: MissileDynamics =>

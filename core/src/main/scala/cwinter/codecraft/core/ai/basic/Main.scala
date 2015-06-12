@@ -36,7 +36,7 @@ private[core] class Mothership extends DroneController {
     }
 
     if (weaponsCooldown <= 0 && enemies.nonEmpty) {
-      val enemy = enemies.minBy(x => (x.position - position).magnitudeSquared)
+      val enemy = enemies.minBy(x => (x.position - position).lengthSquared)
       if (isInMissileRange(enemy)) {
         shootMissiles(enemy)
       }
@@ -114,7 +114,7 @@ private[core] class AttackDroneController extends DroneController {
 
   override def onTick(): Unit = {
     if (weaponsCooldown <= 0 && enemies.nonEmpty) {
-      val enemy = enemies.minBy(x => (x.position - position).magnitudeSquared)
+      val enemy = enemies.minBy(x => (x.position - position).lengthSquared)
       if (isInMissileRange(enemy)) {
         shootMissiles(enemy)
       }

@@ -24,7 +24,7 @@ private[core] class DroneMissileBatteryModule(positions: Seq[Int], owner: Drone)
 
 
   def fire(target: Drone): Unit = {
-    if ((target.position - owner.position).size > MissileLockOnRadius) {
+    if ((target.position - owner.position).length > MissileLockOnRadius) {
       owner.warn(s"Cannot fire homing missiles unless the target is within lock-on range ($MissileLockOnRadius)")
     } else {
       if (_cooldown <= 0) {

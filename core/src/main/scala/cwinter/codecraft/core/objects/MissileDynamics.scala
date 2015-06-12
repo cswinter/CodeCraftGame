@@ -30,7 +30,7 @@ private[core] class MissileDynamics(
 
   override def update(): Unit = {
     val targetDirection = target.pos - pos
-    if (!target.removed && targetDirection.size >= 0.0001) {
+    if (!target.removed && targetDirection.length >= 0.0001) {
       velocity = speed * targetDirection.normalized
     }
   }

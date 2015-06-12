@@ -11,14 +11,18 @@ case class Vector2(x: Double, y: Double) {
   def *(rhs: Float): Vector2 = Vector2(x * rhs, y * rhs)
   def *(rhs: Int): Vector2 = Vector2(x * rhs, y * rhs)
   def /(rhs: Double): Vector2 = this * (1.0 / rhs)
-  def magnitudeSquared = x * x + y * y
-  def size: Double = math.sqrt(x * x + y * y)
-  def normalized: Vector2 = this / size
+  def lengthSquared = x * x + y * y
+  def length: Double = math.sqrt(x * x + y * y)
+  def normalized: Vector2 = this / length
   def rotated(angle: Double): Vector2 = {
     val sina = math.sin(angle)
     val cosa = math.cos(angle)
     Vector2(cosa * x - sina * y, sina * x + cosa * y)
   }
+
+  def plus(rhs: Vector2): Vector2 = this + rhs
+  def minus(rhs: Vector2): Vector2 = this - rhs
+  def times(rhs: Double): Vector2 = this * rhs
 
   def orientation = {
     assert(x != 0 || y != 0, s"x=$x, y=$y")
