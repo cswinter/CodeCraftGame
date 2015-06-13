@@ -3,6 +3,7 @@ package cwinter.codecraft.core.api
 import cwinter.codecraft.core.objects.drone._
 import cwinter.codecraft.util.maths.{Rectangle, Rng, Vector2}
 import cwinter.codecraft.worldstate.Player
+import scala.collection.JavaConverters._
 
 abstract class DroneController extends DroneHandle {
   private[this] var _drone: Drone = null
@@ -75,12 +76,12 @@ abstract class DroneController extends DroneHandle {
   def availableStorage: Int = drone.availableStorage
   def availableFactories: Int = drone.availableFactories
   // TODO: make this O(1)
-  def storedMinerals: Seq[MineralCrystalHandle] =
-    drone.storedMinerals.toSeq.map(new MineralCrystalHandle(_, player))
-  def dronesInSight: Set[DroneHandle] = drone.dronesInSight.map( d =>
+  def storedMinerals: java.util.List[MineralCrystalHandle] =
+    drone.storedMinerals.toSeq.map(new MineralCrystalHandle(_, player)).asJava
+  def dronesInSight: java.util.Set[DroneHandle] = drone.dronesInSight.map( d =>
       if (d.player == drone.player) d.controller
       else new EnemyDroneHandle(d, drone.player)   // TODO: maybe create drone handles once for each player
-    )
+    ).asJava
   def worldSize: Rectangle = drone.worldConfig.size
   def orientation: Double = drone.dynamics.orientation
 
