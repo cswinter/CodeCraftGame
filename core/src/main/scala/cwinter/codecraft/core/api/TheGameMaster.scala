@@ -2,10 +2,10 @@ package cwinter.codecraft.core.api
 
 import java.io.File
 
-import cwinter.codecraft.core.replay.{Replayer, DummyDroneController}
+import cwinter.codecraft.core.replay.{DummyDroneController, Replayer}
 import cwinter.codecraft.core.{DroneWorldSimulator, SimulatorEvent, WorldMap, ai}
 import cwinter.codecraft.graphics.application.DrawingCanvas
-import cwinter.codecraft.util.maths.{Vector2, Rectangle}
+import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 
 
 object TheGameMaster {
@@ -18,7 +18,7 @@ object TheGameMaster {
     )
 
 
-  def startGame(mothership1: DroneController, mothership2: DroneController): Unit = {
+  def startGame(mothership1: DroneControllerBase, mothership2: DroneControllerBase): Unit = {
     val worldSize = DefaultWorldSize
     val resourceClusters = DefaultResourceDistribution
     val map = WorldMap(worldSize, resourceClusters, Seq(Vector2(2500, 500), Vector2(-2500, -500)))
@@ -27,7 +27,7 @@ object TheGameMaster {
   }
 
 
-  def runLevel1(mothership1: DroneController): Unit = {
+  def runLevel1(mothership1: DroneControllerBase): Unit = {
     val worldSize = Rectangle(-2000, 2000, -1000, 1000)
     val map = WorldMap(worldSize, 100, Seq(Vector2(1000, 200), Vector2(-1000, -200)))
     val opponent = new ai.basic.Mothership()

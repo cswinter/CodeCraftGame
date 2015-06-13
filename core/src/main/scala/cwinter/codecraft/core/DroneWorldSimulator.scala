@@ -9,7 +9,7 @@ import cwinter.codecraft.graphics.engine.Debug
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import cwinter.codecraft.collisions.VisionTracker
-import cwinter.codecraft.core.api.{DroneController, DroneSpec}
+import cwinter.codecraft.core.api.{DroneControllerBase, DroneController, DroneSpec}
 import cwinter.codecraft.core.objects.drone._
 import cwinter.codecraft.core.errors.Errors
 import cwinter.codecraft.core.objects._
@@ -20,8 +20,8 @@ import cwinter.codecraft.worldstate._
 
 class DroneWorldSimulator(
   val map: WorldMap,
-  mothershipController1: DroneController,
-  mothershipController2: DroneController,
+  mothershipController1: DroneControllerBase,
+  mothershipController2: DroneControllerBase,
   eventGenerator: Int => Seq[SimulatorEvent],
   replayer: Option[Replayer] = None
 ) extends Simulator {
@@ -71,7 +71,7 @@ class DroneWorldSimulator(
   }
 
 
-  private def mothership(player: Player, controller: DroneController, pos: Vector2): Drone = {
+  private def mothership(player: Player, controller: DroneControllerBase, pos: Vector2): Drone = {
     val spec = new DroneSpec(
       missileBatteries = 2,
       manipulators = 2,

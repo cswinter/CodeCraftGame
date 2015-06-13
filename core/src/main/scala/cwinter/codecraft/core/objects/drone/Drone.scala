@@ -1,9 +1,9 @@
 package cwinter.codecraft.core.objects.drone
 
 import cwinter.codecraft.core._
-import cwinter.codecraft.core.api.{DroneController, DroneSpec, MineralCrystalHandle}
+import cwinter.codecraft.core.api.{DroneControllerBase, DroneSpec, MineralCrystalHandle}
 import cwinter.codecraft.core.errors.Errors
-import cwinter.codecraft.core.objects.{WorldObject, MineralCrystal, EnergyGlobeObject}
+import cwinter.codecraft.core.objects.{EnergyGlobeObject, MineralCrystal, WorldObject}
 import cwinter.codecraft.core.replay._
 import cwinter.codecraft.util.maths.{Float0To1, Vector2}
 import cwinter.codecraft.worldstate.{DroneDescriptor, DroneModuleDescriptor, Player, WorldObjectDescriptor}
@@ -11,7 +11,7 @@ import cwinter.codecraft.worldstate.{DroneDescriptor, DroneModuleDescriptor, Pla
 
 private[core] class Drone(
   val spec: DroneSpec,
-  val controller: DroneController,
+  val controller: DroneControllerBase,
   val player: Player,
   initialPos: Vector2,
   time: Double,
@@ -338,7 +338,7 @@ case class DroneEntersSightRadius(drone: Drone) extends DroneEvent
 
 
 sealed trait DroneCommand
-case class ConstructDrone(spec: DroneSpec, controller: DroneController, position: Vector2) extends DroneCommand
+case class ConstructDrone(spec: DroneSpec, controller: DroneControllerBase, position: Vector2) extends DroneCommand
 case class ProcessMineral(mineralCrystal: MineralCrystal) extends DroneCommand
 case class FireMissiles(target: Drone) extends DroneCommand
 case class DepositMinerals(target: Drone) extends DroneCommand
