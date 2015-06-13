@@ -244,6 +244,8 @@ private[core] class Drone(
       warn("Drone is trying to deposit minerals into itself!")
     } else if (other.storage.isEmpty) {
       warn("Trying to deposit minerals into a drone without a storage module.")
+    } else if (storedMinerals.isEmpty) {
+      warn("Drone has no minerals to deposit.")
     } else {
       mineralDepositee = Some(other)
     }

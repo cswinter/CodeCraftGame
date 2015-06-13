@@ -59,10 +59,10 @@ class DroneManipulatorModule(positions: Seq[Int], owner: Drone)
     (effects, resourceDepletions, Seq.empty[Vector2])
   }
 
-  def isConstructing: Boolean = droneConstruction != None || newDrone != None
+  def isConstructing: Boolean = droneConstruction.isDefined || newDrone.isDefined
 
   def startDroneConstruction(command: ConstructDrone): Unit = {
-    if (droneConstruction == None) {
+    if (droneConstruction.isEmpty) {
       val ConstructDrone(spec, controller, pos) = command
       val d = new Drone(spec, controller, owner.player, pos, -1, owner.worldConfig, owner.replayRecorder)
       newDrone = Some(d)
