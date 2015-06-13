@@ -1,9 +1,7 @@
 package cwinter.codecraft.core.api
 
-import cwinter.codecraft.core.errors.{CodingGameException, Errors}
 import cwinter.codecraft.core.objects.drone._
-import cwinter.codecraft.graphics.models.DroneMissileBatteryModelBuilder
-import cwinter.codecraft.util.maths.{Rng, Rectangle, Vector2}
+import cwinter.codecraft.util.maths.{Rectangle, Rng, Vector2}
 import cwinter.codecraft.worldstate.Player
 
 abstract class DroneController extends DroneHandle {
@@ -44,7 +42,7 @@ abstract class DroneController extends DroneHandle {
     drone ! HarvestMineral(mineralCrystal.mineralCrystal)
   }
 
-  def depositMinerals(otherDrone: DroneHandle): Unit = {
+  def giveMineralsTo(otherDrone: DroneHandle): Unit = {
     drone ! DepositMinerals(otherDrone.drone)
   }
 

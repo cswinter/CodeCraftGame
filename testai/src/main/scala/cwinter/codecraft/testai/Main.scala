@@ -234,7 +234,7 @@ class ScoutingDroneController(val mothership: Mothership) extends BaseController
 
   override def onArrivesAtPosition(): Unit = {
     if (availableStorage == 0) {
-      depositMinerals(mothership)
+      giveMineralsTo(mothership)
       hasReturned = true
     } else {
       if (nextCrystal.exists(_.harvested)) {
@@ -251,7 +251,7 @@ class ScoutingDroneController(val mothership: Mothership) extends BaseController
   }
 
   override def onArrivesAtDrone(drone: DroneHandle): Unit = {
-    depositMinerals(drone)
+    giveMineralsTo(drone)
     hasReturned = true
   }
 
