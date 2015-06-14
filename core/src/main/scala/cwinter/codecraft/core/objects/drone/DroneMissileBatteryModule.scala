@@ -4,7 +4,7 @@ import cwinter.codecraft.core.{SimulatorEvent, SpawnHomingMissile}
 import cwinter.codecraft.util.maths.Vector2
 import cwinter.codecraft.worldstate.{DroneModuleDescriptor, MissileBatteryDescriptor}
 
-private[core] class DroneMissileBatteryModule(positions: Seq[Int], owner: Drone)
+private[core] class DroneMissileBatteryModule(positions: Seq[Int], owner: DroneImpl)
   extends DroneModule(positions, owner) {
   import DroneConstants._
 
@@ -23,7 +23,7 @@ private[core] class DroneMissileBatteryModule(positions: Seq[Int], owner: Drone)
   }
 
 
-  def fire(target: Drone): Unit = {
+  def fire(target: DroneImpl): Unit = {
     if ((target.position - owner.position).length > MissileLockOnRadius) {
       owner.warn(s"Cannot fire homing missiles unless the target is within lock-on range ($MissileLockOnRadius)")
     } else {

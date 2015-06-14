@@ -8,7 +8,7 @@ import cwinter.codecraft.worldstate.DroneModuleDescriptor
 
 abstract class DroneModule(
   val positions: Seq[Int],
-  val owner: Drone
+  val owner: DroneImpl
 ) {
   /**
    * Perform all module actions.

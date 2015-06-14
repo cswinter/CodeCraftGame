@@ -1,10 +1,10 @@
 package cwinter.codecraft.core
 
-import cwinter.codecraft.core.objects.MineralCrystal
+import cwinter.codecraft.core.objects.MineralCrystalImpl
 import cwinter.codecraft.util.maths.{Rng, Rectangle, Vector2}
 
 case class WorldMap(
-  minerals: Seq[MineralCrystal],
+  minerals: Seq[MineralCrystalImpl],
   size: Rectangle,
   spawns: Seq[Vector2]
 )
@@ -14,7 +14,7 @@ object WorldMap {
   def apply(size: Rectangle, resourceCount: Int, spawns: Seq[Vector2]): WorldMap = {
     val minerals =
       for (i <- 0 to resourceCount) yield
-      new MineralCrystal(
+      new MineralCrystalImpl(
         Rng.int(1, 2),
         new Vector2(Rng.double(size.xMin, size.xMax), Rng.double(size.yMin, size.yMax))
       )
@@ -52,8 +52,8 @@ object WorldMap {
 
 
 
-  private def generateResourceCluster(midpoint: Vector2, minDist: Double, spread: Double, amount: Int, maxSize: Int): Seq[MineralCrystal] = {
-    var minerals = Seq.empty[MineralCrystal]
+  private def generateResourceCluster(midpoint: Vector2, minDist: Double, spread: Double, amount: Int, maxSize: Int): Seq[MineralCrystalImpl] = {
+    var minerals = Seq.empty[MineralCrystalImpl]
 
     while (minerals.size < amount) {
       val pos = midpoint + spread * Rng.gaussian2D()
@@ -61,7 +61,7 @@ object WorldMap {
       val p = math.sqrt(math.exp(-dist * dist / 100000))
       val size = (Rng.double(0, p) * 3 * maxSize).toInt + 1
       if (!minerals.exists(m => (m.position - pos).lengthSquared <= minDist * minDist * size)) {
-        minerals :+= new MineralCrystal(size, pos)
+        minerals :+= new MineralCrystalImpl(size, pos)
       }
     }
 

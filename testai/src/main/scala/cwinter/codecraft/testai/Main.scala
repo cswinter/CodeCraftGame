@@ -18,10 +18,10 @@ abstract class BaseController(val name: Symbol) extends DroneController {
   if (name != 'Mothership)
     mothership.DroneCount.increment(this.name)
 
-  def enemies: Set[DroneHandle] =
+  def enemies: Set[Drone] =
     dronesInSight.filter(_.player != player)
 
-  def closestEnemy: DroneHandle = enemies.minBy(x => (x.position - position).lengthSquared)
+  def closestEnemy: Drone = enemies.minBy(x => (x.position - position).lengthSquared)
 
   def handleWeapons(): Unit = {
     if (weaponsCooldown <= 0 && enemies.nonEmpty) {
@@ -32,7 +32,7 @@ abstract class BaseController(val name: Symbol) extends DroneController {
     }
   }
 
-  def calculateStrength(drones: Iterable[DroneHandle]): Int = {
+  def calculateStrength(drones: Iterable[Drone]): Int = {
     val (health, attack) = drones.foldLeft(0, 0){
       case ((h, a), d) => (h + d.hitpoints, a + d.spec.missileBatteries)
     }
@@ -59,11 +59,11 @@ abstract class BaseController(val name: Symbol) extends DroneController {
     }
   }
 
-  override def onMineralEntersVision(mineralCrystal: MineralCrystalHandle): Unit =
+  override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit =
     mothership.registerMineral(mineralCrystal)
 
   override def onArrivesAtPosition(): Unit = ()
-  override def onDroneEntersVision(drone: DroneHandle): Unit = {
+  override def onDroneEntersVision(drone: Drone): Unit = {
     if (drone.isEnemy)
     if (drone.isEnemy && drone.spec.size > 6) {
       mothership.foundCapitalShip(drone)
@@ -77,12 +77,12 @@ abstract class BaseController(val name: Symbol) extends DroneController {
 
 class Mothership extends BaseController('Mothership) {
   val mothership = this
-  var defenders = List.empty[DroneHandle]
+  var defenders = List.empty[Drone]
   var defenderCooldown: Int = 150
 
   var t = 0
-  var minerals = Set.empty[MineralCrystalHandle]
-  var claimedMinerals = Set.empty[MineralCrystalHandle]
+  var minerals = Set.empty[MineralCrystal]
+  var claimedMinerals = Set.empty[MineralCrystal]
   private[this] var _lastCapitalShipSighting: Option[Vector2] = None
   def lastCapitalShipSighting: Option[Vector2] = _lastCapitalShipSighting
 
@@ -124,7 +124,7 @@ class Mothership extends BaseController('Mothership) {
     strength < enemyStrength
   }
 
-  def registerDefender(droneHandle: DroneHandle): Unit = {
+  def registerDefender(droneHandle: Drone): Unit = {
     defenders ::= droneHandle
     defenderCooldown = 150
   }
@@ -132,15 +132,15 @@ class Mothership extends BaseController('Mothership) {
   def allowsDefenderRelease: Boolean =
     defenderCooldown <= 0 && !needsDefender
 
-  def unregisterDefender(droneHandle: DroneHandle): Unit = {
+  def unregisterDefender(droneHandle: Drone): Unit = {
     defenders = defenders.filter(_ != droneHandle)
   }
 
-  def foundCapitalShip(drone: DroneHandle): Unit = {
+  def foundCapitalShip(drone: Drone): Unit = {
     _lastCapitalShipSighting = Some(drone.position)
   }
 
-  def findClosestMineral(maxSize: Int, position: Vector2): Option[MineralCrystalHandle] = {
+  def findClosestMineral(maxSize: Int, position: Vector2): Option[MineralCrystal] = {
     minerals = minerals.filter(!_.harvested)
     val filtered = minerals.filter(m => m.size <= maxSize && !claimedMinerals.contains(m))
     val result =
@@ -152,11 +152,11 @@ class Mothership extends BaseController('Mothership) {
     result
   }
 
-  def registerMineral(mineralCrystal: MineralCrystalHandle): Unit = {
+  def registerMineral(mineralCrystal: MineralCrystal): Unit = {
     minerals += mineralCrystal
   }
 
-  def abortHarvestingMission(mineralCrystal: MineralCrystalHandle): Unit = {
+  def abortHarvestingMission(mineralCrystal: MineralCrystal): Unit = {
     claimedMinerals -= mineralCrystal
   }
 
@@ -205,7 +205,7 @@ case class SearchToken(x: Int, y: Int) {
 
 class ScoutingDroneController(val mothership: Mothership) extends BaseController('Harvester) {
   var hasReturned = false
-  var nextCrystal: Option[MineralCrystalHandle] = None
+  var nextCrystal: Option[MineralCrystal] = None
 
 
   override def onTick(): Unit = {
@@ -250,7 +250,7 @@ class ScoutingDroneController(val mothership: Mothership) extends BaseController
     }
   }
 
-  override def onArrivesAtDrone(drone: DroneHandle): Unit = {
+  override def onArrivesAtDrone(drone: Drone): Unit = {
     giveMineralsTo(drone)
     hasReturned = true
   }

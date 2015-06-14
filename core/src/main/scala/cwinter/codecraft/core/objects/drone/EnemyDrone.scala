@@ -1,6 +1,6 @@
 package cwinter.codecraft.core.objects.drone
 
-import cwinter.codecraft.core.api.{DroneHandle, DroneSpec}
+import cwinter.codecraft.core.api.{Drone, DroneSpec}
 import cwinter.codecraft.core.errors.{ObjectNotVisibleException, Errors}
 import cwinter.codecraft.util.maths.Vector2
 import cwinter.codecraft.worldstate.Player
@@ -8,10 +8,10 @@ import cwinter.codecraft.worldstate.Player
 /**
  * Wrapper around drone class to allow users to query a subset of properties of enemy drones.
  */
-class EnemyDroneHandle(
-  private[core] val drone: Drone,
+class EnemyDrone(
+  private[core] val drone: DroneImpl,
   private val holder: Player // the player to whom the handle is given
-) extends DroneHandle {
+) extends Drone {
   private[this] var _lastKnownPosition: Vector2 = drone.position // TODO: implement
 
 
@@ -50,7 +50,7 @@ class EnemyDroneHandle(
   def isVisible: Boolean = {
     drone.player == holder ||
     drone.objectsInSight.exists {
-      case drone: Drone => drone.player == holder
+      case drone: DroneImpl => drone.player == holder
       case _ => false
     }
   }

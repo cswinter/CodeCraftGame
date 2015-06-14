@@ -1,19 +1,19 @@
 package cwinter.codecraft.core.objects.drone
 
-import cwinter.codecraft.core.objects.MineralCrystal
+import cwinter.codecraft.core.objects.MineralCrystalImpl
 import cwinter.codecraft.worldstate.{DroneModuleDescriptor, ProcessingModuleDescriptor}
 import cwinter.codecraft.core._
 import cwinter.codecraft.util.maths.{Vector2, Rng}
 
-private[core] class DroneRefineryModule(positions: Seq[Int], owner: Drone)
+private[core] class DroneRefineryModule(positions: Seq[Int], owner: DroneImpl)
     extends DroneModule(positions, owner) {
 
   final val MineralProcessingPeriod = 100
   final val MineralResourceYield = 2
 
 
-  private[this] var newMinerals = List.empty[MineralCrystal]
-  private[this] var mineralProcessing = List.empty[(MineralCrystal, Int)]
+  private[this] var newMinerals = List.empty[MineralCrystalImpl]
+  private[this] var mineralProcessing = List.empty[(MineralCrystalImpl, Int)]
 
 
   override def update(availableResources: Int): (Seq[SimulatorEvent], Seq[Vector2], Seq[Vector2]) = {
@@ -26,7 +26,7 @@ private[core] class DroneRefineryModule(positions: Seq[Int], owner: Drone)
       mineralProcessing = mineralProcessing.sortBy(-_._1.size)
       effects ::= MineralCrystalActivated(mineral)
     }
-    newMinerals = List.empty[MineralCrystal]
+    newMinerals = List.empty[MineralCrystalImpl]
 
 
     // determine factory positions
@@ -55,7 +55,7 @@ private[core] class DroneRefineryModule(positions: Seq[Int], owner: Drone)
   }
 
 
-  def startMineralProcessing(mineral: MineralCrystal): Unit = {
+  def startMineralProcessing(mineral: MineralCrystalImpl): Unit = {
     if (mineral.size > currentCapacity) {
       owner.warn(s"Mineral size (${mineral.size}) exceeds current processing capacity ($currentCapacity)")
     } else {
@@ -76,6 +76,6 @@ private[core] class DroneRefineryModule(positions: Seq[Int], owner: Drone)
     (processingMinerals ++ idle).map(ProcessingModuleDescriptor(_))
   }
 
-  def mineralCrystals: Seq[MineralCrystal] = newMinerals ::: mineralProcessing.map(_._1)
+  def mineralCrystals: Seq[MineralCrystalImpl] = newMinerals ::: mineralProcessing.map(_._1)
 }
 

@@ -5,11 +5,11 @@ import cwinter.codecraft.core.api.DroneSpec
 import cwinter.codecraft.util.maths.Vector2
 import cwinter.codecraft.worldstate.{DroneModuleDescriptor, ManipulatorDescriptor, ManipulatorArm}
 
-class DroneManipulatorModule(positions: Seq[Int], owner: Drone)
+class DroneManipulatorModule(positions: Seq[Int], owner: DroneImpl)
   extends DroneModule(positions, owner) {
 
-  private[this] var newDrone: Option[Drone] = None
-  private[this] var droneConstruction: Option[(Drone, Int)] = None
+  private[this] var newDrone: Option[DroneImpl] = None
+  private[this] var droneConstruction: Option[(DroneImpl, Int)] = None
   private[this] val constructorEnergy = new Array[Int](positions.length)
 
 
@@ -57,7 +57,6 @@ class DroneManipulatorModule(positions: Seq[Int], owner: Drone)
         progress < drone.spec.buildTime
     }
 
-    println(resourceDepletions.length)
     (effects, resourceDepletions, Seq.empty[Vector2])
   }
 
@@ -66,7 +65,7 @@ class DroneManipulatorModule(positions: Seq[Int], owner: Drone)
   def startDroneConstruction(command: ConstructDrone): Unit = {
     if (droneConstruction.isEmpty) {
       val ConstructDrone(spec, controller, pos) = command
-      val d = new Drone(spec, controller, owner.player, pos, -1, owner.worldConfig, owner.replayRecorder)
+      val d = new DroneImpl(spec, controller, owner.player, pos, -1, owner.worldConfig, owner.replayRecorder)
       newDrone = Some(d)
     }
   }
@@ -93,7 +92,7 @@ class DroneManipulatorModule(positions: Seq[Int], owner: Drone)
   override def descriptors: Seq[DroneModuleDescriptor] = positions.map(ManipulatorDescriptor)
 
 
-  def droneInConstruction: Option[Drone] = droneConstruction.map(_._1)
+  def droneInConstruction: Option[DroneImpl] = droneConstruction.map(_._1)
 }
 
 

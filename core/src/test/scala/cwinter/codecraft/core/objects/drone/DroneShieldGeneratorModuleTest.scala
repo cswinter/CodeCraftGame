@@ -8,7 +8,7 @@ import org.scalatest.FlatSpec
 
 class DroneShieldGeneratorModuleTest extends FlatSpec {
   val mockDroneSpec = DroneSpec(5, missileBatteries = 2, shieldGenerators = 1, engines = 1)
-  val mockDrone = new Drone(mockDroneSpec, null, BluePlayer, Vector2(0, 0), 0, WorldConfig(Rectangle(-100, 100, -100, 100)))
+  val mockDrone = new DroneImpl(mockDroneSpec, null, BluePlayer, Vector2(0, 0), 0, WorldConfig(Rectangle(-100, 100, -100, 100)))
   val shieldGenerator = new DroneShieldGeneratorModule(Seq(2), mockDrone)
 
 

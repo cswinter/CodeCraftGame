@@ -5,7 +5,7 @@ import cwinter.codecraft.util.maths.{Float0To1, Vector2}
 import cwinter.codecraft.worldstate.MineralDescriptor
 
 
-private[core] class MineralCrystal(
+private[core] class MineralCrystalImpl(
   val size: Int,
   var position: Vector2,
   var harvested: Boolean = false,
@@ -31,7 +31,7 @@ private[core] class MineralCrystal(
   override def toString = id.toString
 }
 
-object MineralCrystal {
-  def unapply(mineralCrystal: MineralCrystal): Option[(Int, Vector2)] =
+object MineralCrystalImpl {
+  def unapply(mineralCrystal: MineralCrystalImpl): Option[(Int, Vector2)] =
     Some((mineralCrystal.size, mineralCrystal.position))
 }

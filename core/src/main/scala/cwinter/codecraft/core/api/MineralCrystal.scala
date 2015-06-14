@@ -1,15 +1,15 @@
 package cwinter.codecraft.core.api
 
-import cwinter.codecraft.core.objects.MineralCrystal
+import cwinter.codecraft.core.objects.MineralCrystalImpl
 import cwinter.codecraft.util.maths.Vector2
 import cwinter.codecraft.worldstate.Player
 
 
 /**
- * Wrapper around mineral class to allow for restricted access to mineral properties.
+ * A mineral crystal. Can be harvested and processed to generate resources.
  */
-class MineralCrystalHandle(
-  private[core] val mineralCrystal: MineralCrystal,
+class MineralCrystal(
+  private[core] val mineralCrystal: MineralCrystalImpl,
   private[core] val holder: Player
 ) {
   // TODO: implement isVisible and use to restrict access

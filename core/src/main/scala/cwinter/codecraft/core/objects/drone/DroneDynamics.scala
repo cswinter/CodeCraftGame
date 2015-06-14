@@ -7,7 +7,7 @@ import cwinter.codecraft.util.maths.{ColorRGBA, Rectangle, Vector2}
 
 
 private[core] class DroneDynamics(
-  val drone: Drone,
+  val drone: DroneImpl,
   val maxSpeed: Double,
   val weight: Double,
   radius: Double,

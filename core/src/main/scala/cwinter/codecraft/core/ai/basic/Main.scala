@@ -1,6 +1,6 @@
 package cwinter.codecraft.core.ai.basic
 
-import cwinter.codecraft.core.api.{DroneController, DroneHandle, DroneSpec, MineralCrystalHandle}
+import cwinter.codecraft.core.api.{DroneController, Drone, DroneSpec, MineralCrystal}
 import cwinter.codecraft.util.maths.{Rng, Vector2}
 
 
@@ -27,7 +27,7 @@ private[core] class Mothership extends DroneController {
       }
     } else {
       for (mineralCrystal <- storedMinerals) {
-        if (availableFactories >= mineralCrystal.size) {
+        if (availableRefineries >= mineralCrystal.size) {
           processMineral(mineralCrystal)
         }
       }
@@ -41,18 +41,18 @@ private[core] class Mothership extends DroneController {
     }
   }
 
-  def enemies: Set[DroneHandle] =
+  def enemies: Set[Drone] =
     dronesInSight.filter(_.player != player)
 
-  override def onMineralEntersVision(mineralCrystal: MineralCrystalHandle): Unit = ()
+  override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = ()
   override def onArrivesAtPosition(): Unit = ()
-  override def onDroneEntersVision(drone: DroneHandle): Unit = ()
+  override def onDroneEntersVision(drone: Drone): Unit = ()
   override def onDeath(): Unit = ()
 }
 
 private[core] class ScoutingDroneController(val mothership: Mothership) extends DroneController {
   var hasReturned = false
-  var nextCrystal: Option[MineralCrystalHandle] = None
+  var nextCrystal: Option[MineralCrystal] = None
 
 
   // abstract methods for event handling
@@ -62,7 +62,7 @@ private[core] class ScoutingDroneController(val mothership: Mothership) extends 
 
   override def onDeath(): Unit = mothership.collectors -= 1
 
-  override def onMineralEntersVision(mineralCrystal: MineralCrystalHandle): Unit = {
+  override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = {
     if (nextCrystal.isEmpty && mineralCrystal.size <= availableStorage) {
       moveTo(mineralCrystal.position)
       nextCrystal = Some(mineralCrystal)
@@ -96,19 +96,19 @@ private[core] class ScoutingDroneController(val mothership: Mothership) extends 
     }
   }
 
-  override def onArrivesAtDrone(drone: DroneHandle): Unit = {
+  override def onArrivesAtDrone(drone: Drone): Unit = {
     giveMineralsTo(drone)
     hasReturned = true
   }
 
-  override def onDroneEntersVision(drone: DroneHandle): Unit = ()
+  override def onDroneEntersVision(drone: Drone): Unit = ()
 }
 
 private[core] class AttackDroneController extends DroneController {
   // abstract methods for event handling
   override def onSpawn(): Unit = ()
 
-  override def onMineralEntersVision(mineralCrystal: MineralCrystalHandle): Unit = ()
+  override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = ()
 
   override def onTick(): Unit = {
     if (weaponsCooldown <= 0 && enemies.nonEmpty) {
@@ -122,12 +122,12 @@ private[core] class AttackDroneController extends DroneController {
     }
   }
 
-  def enemies: Set[DroneHandle] =
+  def enemies: Set[Drone] =
     dronesInSight.filter(_.player != player)
 
   override def onArrivesAtPosition(): Unit = ()
 
-  override def onDroneEntersVision(drone: DroneHandle): Unit = ()
+  override def onDroneEntersVision(drone: Drone): Unit = ()
   override def onDeath(): Unit = ()
 }
 

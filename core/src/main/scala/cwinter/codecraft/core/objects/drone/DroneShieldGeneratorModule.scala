@@ -4,7 +4,7 @@ import cwinter.codecraft.core.SimulatorEvent
 import cwinter.codecraft.util.maths.Vector2
 import cwinter.codecraft.worldstate.{DroneModuleDescriptor, ShieldGeneratorDescriptor}
 
-class DroneShieldGeneratorModule(positions: Seq[Int], owner: Drone)
+class DroneShieldGeneratorModule(positions: Seq[Int], owner: DroneImpl)
   extends DroneModule(positions, owner) {
 
   final val ShieldRegenPeriod = 100

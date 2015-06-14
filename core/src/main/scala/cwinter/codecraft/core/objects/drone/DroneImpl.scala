@@ -1,15 +1,15 @@
 package cwinter.codecraft.core.objects.drone
 
 import cwinter.codecraft.core._
-import cwinter.codecraft.core.api.{DroneControllerBase, DroneSpec, MineralCrystalHandle}
+import cwinter.codecraft.core.api.{DroneControllerBase, DroneSpec, MineralCrystal}
 import cwinter.codecraft.core.errors.Errors
-import cwinter.codecraft.core.objects.{EnergyGlobeObject, MineralCrystal, WorldObject}
+import cwinter.codecraft.core.objects.{MineralCrystalImpl, EnergyGlobeObject, WorldObject}
 import cwinter.codecraft.core.replay._
 import cwinter.codecraft.util.maths.{Float0To1, Vector2}
 import cwinter.codecraft.worldstate.{DroneDescriptor, DroneModuleDescriptor, Player, WorldObjectDescriptor}
 
 
-private[core] class Drone(
+private[core] class DroneImpl(
   val spec: DroneSpec,
   val controller: DroneControllerBase,
   val player: Player,
@@ -26,7 +26,7 @@ private[core] class Drone(
   private[this] val eventQueue = collection.mutable.Queue[DroneEvent](Spawned)
   private[this] var hullState = List.fill[Byte](spec.size - 1)(2)
   private[core] var constructionProgress: Option[Int] = None
-  private[this] var mineralDepositee: Option[Drone] = None
+  private[this] var mineralDepositee: Option[DroneImpl] = None
   private[this] var _hasDied: Boolean = false
   private[this] var automaticMineralProcessing: Boolean = true
 
@@ -73,16 +73,16 @@ private[core] class Drone(
         case Spawned => controller.onSpawn()
         case Destroyed => controller.onDeath()
         case MineralEntersSightRadius(mineral) =>
-          controller.onMineralEntersVision(new MineralCrystalHandle(mineral, player))
+          controller.onMineralEntersVision(new MineralCrystal(mineral, player))
         case ArrivedAtPosition => controller.onArrivesAtPosition()
         case ArrivedAtDrone(drone) =>
-          val droneHandle = if (drone.player == player) drone.controller else new EnemyDroneHandle(drone, player)
+          val droneHandle = if (drone.player == player) drone.controller else new EnemyDrone(drone, player)
           controller.onArrivesAtDrone(droneHandle)
         case ArrivedAtMineral(mineral) =>
-          controller.onArrivesAtMineral(new MineralCrystalHandle(mineral, player))
+          controller.onArrivesAtMineral(new MineralCrystal(mineral, player))
         case DroneEntersSightRadius(drone) => controller.onDroneEntersVision(
           if (drone.player == player) drone.controller
-          else new EnemyDroneHandle(drone, player)
+          else new EnemyDrone(drone, player)
         )
         case event => throw new Exception(s"Unhandled event! $event")
       }
@@ -113,10 +113,6 @@ private[core] class Drone(
     for (Some(m) <- droneModules) {
       val (events, resourceDepletions, resourceSpawns) = m.update(availableResources)
       simulatorEvents :::= events.toList
-      if (m.isInstanceOf[DroneManipulatorModule]) {
-        println(time)
-        println(resourceDepletions.length)
-      }
       for {
         s <- storage
         rd <- resourceDepletions
@@ -199,20 +195,20 @@ private[core] class Drone(
   private def startDroneConstruction(command: ConstructDrone): Unit = {
     manipulator match {
       case Some(m) => m.startDroneConstruction(command)
-      case None => warn("Drone construction requires a manipulator module.")
+      case None => warn("Drone construction requires a constructor module.")
     }
   }
 
   def immobile = droneModules.exists(_.exists(_.cancelMovement)) || mineralDepositee.isDefined
 
 
-  def depositMineral(crystal: MineralCrystal, pos: Vector2): Unit = {
+  def depositMineral(crystal: MineralCrystalImpl, pos: Vector2): Unit = {
     for {
       s <- storage
     } s.depositMineral(crystal, pos)
   }
 
-  private def startMineralProcessing(mineral: MineralCrystal): Unit = {
+  private def startMineralProcessing(mineral: MineralCrystalImpl): Unit = {
     if (!storage.exists(_.storedMinerals.contains(mineral))) {
       warn("Tried to process mineral not stored in this drone!")
     } else {
@@ -225,7 +221,7 @@ private[core] class Drone(
     }
   }
 
-  private def fireWeapons(target: Drone): Unit = {
+  private def fireWeapons(target: DroneImpl): Unit = {
     if (target == this) {
       warn("Drone tried to shoot itself!")
     } else {
@@ -236,14 +232,14 @@ private[core] class Drone(
     }
   }
 
-  private def harvestResource(mineralCrystal: MineralCrystal): Unit = {
+  private def harvestResource(mineralCrystal: MineralCrystalImpl): Unit = {
     storage match {
       case Some(s) => s.harvestMineral(mineralCrystal)
       case None => warn("Harvesting resources requires a storage module.")
     }
   }
 
-  private def depositMinerals(other: Drone): Unit = {
+  private def depositMinerals(other: DroneImpl): Unit = {
     if (other == this) {
       warn("Drone is trying to deposit minerals into itself!")
     } else if (other.storage.isEmpty) {
@@ -264,7 +260,7 @@ private[core] class Drone(
   override def position: Vector2 = dynamics.pos
   def weaponsCooldown: Int = weapons.map(_.cooldown).getOrElse(1)
   def hitpoints: Int = hullState.map(_.toInt).sum
-  def dronesInSight: Set[Drone] = objectsInSight.filter(_.isInstanceOf[Drone]).map { case d: Drone => d }
+  def dronesInSight: Set[DroneImpl] = objectsInSight.filter(_.isInstanceOf[DroneImpl]).map { case d: DroneImpl => d }
   def isConstructing: Boolean = manipulator.exists(_.isConstructing)
   def storageCapacity = spec.storageModules
   def processingCapacity = spec.refineries
@@ -283,7 +279,7 @@ private[core] class Drone(
     for (s <- storage) yield s.availableResources
   }.getOrElse(0)
 
-  def storedMinerals: Iterable[MineralCrystal] = {
+  def storedMinerals: Iterable[MineralCrystalImpl] = {
     for (s <- storage) yield s.storedMinerals
   }.getOrElse(Seq())
 
@@ -338,25 +334,25 @@ private[core] class Drone(
 sealed trait DroneEvent
 case object Spawned extends DroneEvent
 case object Destroyed extends DroneEvent
-case class MineralEntersSightRadius(mineralCrystal: MineralCrystal) extends DroneEvent
+case class MineralEntersSightRadius(mineralCrystal: MineralCrystalImpl) extends DroneEvent
 case object ArrivedAtPosition extends DroneEvent
-case class ArrivedAtMineral(mineral: MineralCrystal) extends DroneEvent
-case class ArrivedAtDrone(drone: Drone) extends DroneEvent
-case class DroneEntersSightRadius(drone: Drone) extends DroneEvent
+case class ArrivedAtMineral(mineral: MineralCrystalImpl) extends DroneEvent
+case class ArrivedAtDrone(drone: DroneImpl) extends DroneEvent
+case class DroneEntersSightRadius(drone: DroneImpl) extends DroneEvent
 
 
 sealed trait DroneCommand
 case class ConstructDrone(spec: DroneSpec, controller: DroneControllerBase, position: Vector2) extends DroneCommand
-case class ProcessMineral(mineralCrystal: MineralCrystal) extends DroneCommand
-case class FireMissiles(target: Drone) extends DroneCommand
-case class DepositMinerals(target: Drone) extends DroneCommand
-case class HarvestMineral(mineral: MineralCrystal) extends DroneCommand
+case class ProcessMineral(mineralCrystal: MineralCrystalImpl) extends DroneCommand
+case class FireMissiles(target: DroneImpl) extends DroneCommand
+case class DepositMinerals(target: DroneImpl) extends DroneCommand
+case class HarvestMineral(mineral: MineralCrystalImpl) extends DroneCommand
 
 sealed trait MovementCommand extends DroneCommand
 case class MoveInDirection(direction: Double) extends MovementCommand
 case class MoveToPosition(position: Vector2) extends MovementCommand
-case class MoveToMineralCrystal(mineralCrystal: MineralCrystal) extends MovementCommand
-case class MoveToDrone(drone: Drone) extends MovementCommand
+case class MoveToMineralCrystal(mineralCrystal: MineralCrystalImpl) extends MovementCommand
+case class MoveToDrone(drone: DroneImpl) extends MovementCommand
 case object HoldPosition extends MovementCommand
 
 
@@ -364,7 +360,7 @@ object DroneCommand {
   final val CaseClassRegex = """(\w*?)\((.*)\)""".r
 
   def unapply(string: String)
-      (implicit droneRegistry: Map[Int, Drone], mineralRegistry: Map[Int, MineralCrystal]): Option[DroneCommand] = string match {
+      (implicit droneRegistry: Map[Int, DroneImpl], mineralRegistry: Map[Int, MineralCrystalImpl]): Option[DroneCommand] = string match {
     case CaseClassRegex("ConstructDrone", params) =>
       val p = smartSplit(params)
       val CaseClassRegex("DroneSpec", specParamsStr) = p(0)

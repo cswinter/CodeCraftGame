@@ -9,9 +9,9 @@ import org.scalatest.FlatSpec
 
 class DroneMissileBatteryModuleTest extends FlatSpec {
   val mockDroneSpec = DroneSpec(missileBatteries = 3, engines = 1)
-  val mockDrone = new Drone(mockDroneSpec, null, BluePlayer, Vector2(0, 0), 0, WorldConfig(Rectangle(-100, 100, -100, 100)))
+  val mockDrone = new DroneImpl(mockDroneSpec, null, BluePlayer, Vector2(0, 0), 0, WorldConfig(Rectangle(-100, 100, -100, 100)))
   val mockEnemySpec = DroneSpec(storageModules = 1)
-  val mockEnemy = new Drone(mockEnemySpec, null, RedPlayer, Vector2(100, 100), 0, WorldConfig(Rectangle(-100, 100, -100, 100)))
+  val mockEnemy = new DroneImpl(mockEnemySpec, null, RedPlayer, Vector2(100, 100), 0, WorldConfig(Rectangle(-100, 100, -100, 100)))
 
   "A laser module" should "not generate spurious events" in {
     val missileBattery = new DroneMissileBatteryModule(Seq(0, 1, 2), mockDrone)

@@ -35,8 +35,8 @@ class DroneWorldSimulator(
 
   private val visibleObjects = collection.mutable.Set.empty[WorldObject]
   private val dynamicObjects = collection.mutable.Set.empty[WorldObject]
-  private val drones = collection.mutable.Set.empty[Drone]
-  private var deadDrones = List.empty[Drone]
+  private val drones = collection.mutable.Set.empty[DroneImpl]
+  private var deadDrones = List.empty[DroneImpl]
 
 
   private val visionTracker = new VisionTracker[WorldObject](
@@ -62,13 +62,13 @@ class DroneWorldSimulator(
 
 
 
-  private def spawnMineral(mineralCrystal: MineralCrystal): Unit = {
+  private def spawnMineral(mineralCrystal: MineralCrystalImpl): Unit = {
     visibleObjects.add(mineralCrystal)
     visionTracker.insert(mineralCrystal)
   }
 
 
-  private def mothership(player: Player, controller: DroneControllerBase, pos: Vector2): Drone = {
+  private def mothership(player: Player, controller: DroneControllerBase, pos: Vector2): DroneImpl = {
     val spec = new DroneSpec(
       missileBatteries = 2,
       constructors = 2,
@@ -76,10 +76,10 @@ class DroneWorldSimulator(
       storageModules = 3
     )
     replayRecorder.recordSpawn(spec, pos, player)
-    new Drone(spec, controller, player, pos, 0, worldConfig, replayRecorder, 21)
+    new DroneImpl(spec, controller, player, pos, 0, worldConfig, replayRecorder, 21)
   }
 
-  private def spawnDrone(drone: Drone): Unit = {
+  private def spawnDrone(drone: DroneImpl): Unit = {
     visibleObjects.add(drone)
     dynamicObjects.add(drone)
     drones.add(drone)
@@ -88,7 +88,7 @@ class DroneWorldSimulator(
     drone.initialise(physicsEngine.time)
   }
 
-  private def droneKilled(drone: Drone): Unit = {
+  private def droneKilled(drone: DroneImpl): Unit = {
     visibleObjects.remove(drone)
     dynamicObjects.remove(drone)
     drones.remove(drone)
@@ -166,7 +166,7 @@ class DroneWorldSimulator(
     for (drone <- deadDrones) {
       drone.processEvents()
     }
-    deadDrones = List.empty[Drone]
+    deadDrones = List.empty[DroneImpl]
 
     // execute game mechanics for all objects + collect resulting events
     val simulatorEvents = {
@@ -224,13 +224,13 @@ class DroneWorldSimulator(
     for (drone <- drones) drone.objectsInSight = visionTracker.getVisible(drone)
     // SPAWN NEW OBJECTS HERE???
     for {
-      (drone: Drone, events) <- visionTracker.collectEvents()
+      (drone: DroneImpl, events) <- visionTracker.collectEvents()
       event <- events
     } event match {
-      case visionTracker.EnteredSightRadius(mineral: MineralCrystal) =>
+      case visionTracker.EnteredSightRadius(mineral: MineralCrystalImpl) =>
         drone.enqueueEvent(MineralEntersSightRadius(mineral))
       case visionTracker.LeftSightRadius(obj) => // don't care (for now)
-      case visionTracker.EnteredSightRadius(other: Drone) =>
+      case visionTracker.EnteredSightRadius(other: DroneImpl) =>
         drone.enqueueEvent(DroneEntersSightRadius(other))
       case e => throw new Exception(s"AHHHH, AN UFO!!! RUN FOR YOUR LIFE!!! $e")
     }
@@ -266,18 +266,18 @@ class DroneWorldSimulator(
 
 
 sealed trait SimulatorEvent
-case class MineralCrystalHarvested(mineralCrystal: MineralCrystal) extends SimulatorEvent
-case class DroneConstructionStarted(drone: Drone) extends SimulatorEvent
-case class SpawnDrone(drone: Drone) extends SimulatorEvent
-case class MineralCrystalActivated(mineralCrystal: MineralCrystal) extends SimulatorEvent
-case class MineralCrystalInactivated(mineralCrystal: MineralCrystal) extends SimulatorEvent
-case class MineralCrystalDestroyed(mineralCrystal: MineralCrystal) extends SimulatorEvent
-case class SpawnHomingMissile(player: Player, position: Vector2, target: Drone) extends SimulatorEvent
+case class MineralCrystalHarvested(mineralCrystal: MineralCrystalImpl) extends SimulatorEvent
+case class DroneConstructionStarted(drone: DroneImpl) extends SimulatorEvent
+case class SpawnDrone(drone: DroneImpl) extends SimulatorEvent
+case class MineralCrystalActivated(mineralCrystal: MineralCrystalImpl) extends SimulatorEvent
+case class MineralCrystalInactivated(mineralCrystal: MineralCrystalImpl) extends SimulatorEvent
+case class MineralCrystalDestroyed(mineralCrystal: MineralCrystalImpl) extends SimulatorEvent
+case class SpawnHomingMissile(player: Player, position: Vector2, target: DroneImpl) extends SimulatorEvent
 case class HomingMissileFaded(missile: HomingMissile) extends SimulatorEvent
 case class MissileExplodes(homingMissile: HomingMissile) extends SimulatorEvent
 case class LightFlashDestroyed(lightFlash: LightFlash) extends SimulatorEvent
-case class DroneKilled(drone: Drone) extends SimulatorEvent
-case class DroneConstructionCancelled(drone: Drone) extends SimulatorEvent
+case class DroneKilled(drone: DroneImpl) extends SimulatorEvent
+case class DroneConstructionCancelled(drone: DroneImpl) extends SimulatorEvent
 case class SpawnEnergyGlobeAnimation(energyGlobeObject: EnergyGlobeObject) extends SimulatorEvent
 case class RemoveEnergyGlobeAnimation(energyGlobeObject: EnergyGlobeObject) extends SimulatorEvent
 

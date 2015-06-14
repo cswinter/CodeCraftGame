@@ -51,40 +51,40 @@ case class DroneSpec(
   }
 
 
-  private[core] def constructDynamics(owner: Drone, initialPos: Vector2, time: Double): DroneDynamics =
+  private[core] def constructDynamics(owner: DroneImpl, initialPos: Vector2, time: Double): DroneDynamics =
     new DroneDynamics(owner, maximumSpeed, weight, radius, initialPos, time)
 
-  private[core] def constructStorage(owner: Drone, startingResources: Int = 0): Option[DroneStorageModule] =
+  private[core] def constructStorage(owner: DroneImpl, startingResources: Int = 0): Option[DroneStorageModule] =
     if (storageModules > 0) Some(
       new DroneStorageModule(0 until storageModules, owner, startingResources)
     )
     else None
 
-  private[core] def constructMissilesBatteries(owner: Drone): Option[DroneMissileBatteryModule] =
+  private[core] def constructMissilesBatteries(owner: DroneImpl): Option[DroneMissileBatteryModule] =
     if (missileBatteries > 0) Some(
       new DroneMissileBatteryModule(storageModules until (storageModules + missileBatteries), owner)
     )
     else None
 
-  private[core] def constructRefineries(owner: Drone): Option[DroneRefineryModule] =
+  private[core] def constructRefineries(owner: DroneImpl): Option[DroneRefineryModule] =
     if (refineries > 0) {
       val startIndex = storageModules + missileBatteries
       Some(new DroneRefineryModule(startIndex until startIndex + refineries, owner))
     } else None
 
-  private[core] def constructManipulatorModules(owner: Drone): Option[DroneManipulatorModule] =
+  private[core] def constructManipulatorModules(owner: DroneImpl): Option[DroneManipulatorModule] =
     if (constructors > 0) {
       val startIndex = storageModules + missileBatteries + refineries
       Some(new DroneManipulatorModule(startIndex until startIndex + constructors, owner))
     } else None
 
-  private[core] def constructEngineModules(owner: Drone): Option[DroneEnginesModule] =
+  private[core] def constructEngineModules(owner: DroneImpl): Option[DroneEnginesModule] =
     if (engines > 0) {
       val startIndex = storageModules + missileBatteries + refineries + constructors
       Some(new DroneEnginesModule(startIndex until startIndex + engines, owner))
     } else None
 
-  private[core] def constructShieldGenerators(owner: Drone): Option[DroneShieldGeneratorModule] =
+  private[core] def constructShieldGenerators(owner: DroneImpl): Option[DroneShieldGeneratorModule] =
     if (shieldGenerators > 0) {
       val startIndex = storageModules + missileBatteries + refineries +
         constructors + engines

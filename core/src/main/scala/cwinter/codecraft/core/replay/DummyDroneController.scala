@@ -1,12 +1,12 @@
 package cwinter.codecraft.core.replay
 
-import cwinter.codecraft.core.api.{MineralCrystalHandle, DroneHandle, DroneController}
+import cwinter.codecraft.core.api.{MineralCrystal, Drone, DroneController}
 
 class DummyDroneController extends DroneController {
   override def onSpawn(): Unit = ()
-  override def onMineralEntersVision(mineralCrystal: MineralCrystalHandle): Unit = ()
+  override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = ()
   override def onTick(): Unit = ()
   override def onArrivesAtPosition(): Unit = ()
   override def onDeath(): Unit = ()
-  override def onDroneEntersVision(drone: DroneHandle): Unit = ()
+  override def onDroneEntersVision(drone: Drone): Unit = ()
 }

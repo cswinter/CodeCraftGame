@@ -1,7 +1,7 @@
 package cwinter.codecraft.core.replay
 
-import cwinter.codecraft.core.objects.MineralCrystal
-import cwinter.codecraft.core.objects.drone.{Drone, DroneCommand}
+import cwinter.codecraft.core.objects.MineralCrystalImpl
+import cwinter.codecraft.core.objects.drone.{DroneImpl, DroneCommand}
 import cwinter.codecraft.util.maths.Vector2
 
 
@@ -21,7 +21,7 @@ class Replayer(lines: Iterator[String]) {
 
   // parse version
   val header = nextLine
-  assert(header == "Version=0.2")
+  assert(header == "ReplayVersion=0.1.0")
 
   // parse rng seed
   val KeyValueRegex("Seed", AsInt(seed)) = nextLine
@@ -42,7 +42,7 @@ class Replayer(lines: Iterator[String]) {
 
 
   private[this] var currTime: Int = 0
-  private[core] def run(timestep: Int)(implicit droneRegistry: Map[Int, Drone], mineralRegistry: Map[Int, MineralCrystal]): Unit = {
+  private[core] def run(timestep: Int)(implicit droneRegistry: Map[Int, DroneImpl], mineralRegistry: Map[Int, MineralCrystalImpl]): Unit = {
     while (currTime <= timestep && lines.hasNext) {
       nextLine match {
         case KeyValueRegex("Timestep", AsInt(t)) => currTime = t
