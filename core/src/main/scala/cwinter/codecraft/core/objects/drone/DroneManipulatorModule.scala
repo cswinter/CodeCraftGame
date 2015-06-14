@@ -91,8 +91,8 @@ class DroneManipulatorModule(positions: Seq[Int], owner: DroneImpl)
 
   override def descriptors: Seq[DroneModuleDescriptor] = positions.map(ManipulatorDescriptor)
 
-
   def droneInConstruction: Option[DroneImpl] = droneConstruction.map(_._1)
+  override def cancelMovement: Boolean = isConstructing
 }
 
 

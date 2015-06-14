@@ -2,6 +2,7 @@ package cwinter.codecraft.core.api
 
 import java.io.File
 
+import cwinter.codecraft.core.ai.cheese.CheesyMothership
 import cwinter.codecraft.core.replay.{DummyDroneController, Replayer}
 import cwinter.codecraft.core.{DroneWorldSimulator, SimulatorEvent, WorldMap, ai}
 import cwinter.codecraft.graphics.application.DrawingCanvas
@@ -33,6 +34,14 @@ object TheGameMaster {
     val opponent = new ai.basic.Mothership()
     val simulator = new DroneWorldSimulator(map, mothership1, opponent, devEvents)
     DrawingCanvas.run(simulator)
+  }
+
+  def runLevel2(mothership: DroneControllerBase): Unit = {
+    startGame(mothership, new CheesyMothership)
+  }
+
+  def runLevel3(mothership: DroneControllerBase): Unit = {
+    startGame(mothership, new ai.basicplus.Mothership)
   }
 
 

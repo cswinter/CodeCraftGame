@@ -7,7 +7,7 @@ import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 import cwinter.codecraft.worldstate.Player
 
 
-trait ReplayRecorder {
+private[core] trait ReplayRecorder {
   var timestep: Long = 0
   var timestepWritten: Boolean = false
 

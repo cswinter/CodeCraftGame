@@ -118,10 +118,6 @@ private[core] abstract class DroneControllerBase extends Drone {
     drone ! ConstructDrone(spec, controller, drone.position - 110 * Rng.vector2())
   }
 
-  @deprecated("Processing starts automatically now, no need to call this method.") def processMineral(mineralCrystal: MineralCrystal): Unit = {
-    drone ! ProcessMineral(mineralCrystal.mineralCrystal)
-  }
-
   /**
    * Fires all homing missiles at `target`.
    * @param target The drone to be shot.

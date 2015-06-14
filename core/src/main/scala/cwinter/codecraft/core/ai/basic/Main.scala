@@ -25,12 +25,6 @@ private[core] class Mothership extends DroneController {
       } else {
         buildDrone(attackDroneSpec, new AttackDroneController())
       }
-    } else {
-      for (mineralCrystal <- storedMinerals) {
-        if (availableRefineries >= mineralCrystal.size) {
-          processMineral(mineralCrystal)
-        }
-      }
     }
 
     if (weaponsCooldown <= 0 && enemies.nonEmpty) {

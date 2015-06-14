@@ -7,7 +7,7 @@ import org.joda.time.format.DateTimeFormat
 
 import scala.annotation.tailrec
 
-class FileReplayRecorder(path: String) extends ReplayRecorder {
+private[core] class FileReplayRecorder(path: String) extends ReplayRecorder {
   final val format = DateTimeFormat.forPattern("YYMMdd-HHmmss")
   val replay = new StringBuilder
   val dir = new File(path).mkdirs()

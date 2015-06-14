@@ -5,7 +5,7 @@ import cwinter.codecraft.core.objects.drone.{DroneImpl, DroneCommand}
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 
 
-class Replayer(lines: Iterator[String]) {
+private[core] class Replayer(lines: Iterator[String]) {
   def readLine: String = lines.next()
 
   final val KeyValueRegex = "(\\w*?)=(.*)".r
