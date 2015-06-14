@@ -12,3 +12,12 @@ final case class Rectangle(xMin: Double, xMax: Double, yMin: Double, yMax: Doubl
   def width: Double = xMax - xMin
   def height: Double = yMax - yMin
 }
+
+
+object Rectangle {
+  private final val RectangleRegex = """Rectangle\((.*),(.*),(.*),(.*)\)""".r
+  def fromString(string: String): Rectangle = {
+    val RectangleRegex(xMin, xMax, yMin, yMax) = string
+    Rectangle(xMin.toDouble, xMax.toDouble, yMin.toDouble, yMax.toDouble)
+  }
+}

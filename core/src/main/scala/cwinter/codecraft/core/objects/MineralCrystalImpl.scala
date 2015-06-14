@@ -1,6 +1,7 @@
 package cwinter.codecraft.core.objects
 
 import cwinter.codecraft.core.SimulatorEvent
+import cwinter.codecraft.core.replay.AsInt
 import cwinter.codecraft.util.maths.{Float0To1, Vector2}
 import cwinter.codecraft.worldstate.MineralDescriptor
 
@@ -29,9 +30,17 @@ private[core] class MineralCrystalImpl(
   override def update(): Seq[SimulatorEvent] = Seq.empty[SimulatorEvent]
 
   override def toString = id.toString
+
+  def asString: String = s"MineralCrystal($size, $position)"
 }
 
 object MineralCrystalImpl {
   def unapply(mineralCrystal: MineralCrystalImpl): Option[(Int, Vector2)] =
     Some((mineralCrystal.size, mineralCrystal.position))
+
+  private final val MineralCrystalRegex = """MineralCrystal\((\d*), (.*)\)""".r
+  def fromString(string: String): MineralCrystalImpl = {
+    val MineralCrystalRegex(AsInt(size), Vector2(position)) = string
+    new MineralCrystalImpl(size, position)
+  }
 }

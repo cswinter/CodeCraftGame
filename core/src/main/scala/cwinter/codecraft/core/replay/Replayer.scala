@@ -2,7 +2,7 @@ package cwinter.codecraft.core.replay
 
 import cwinter.codecraft.core.objects.MineralCrystalImpl
 import cwinter.codecraft.core.objects.drone.{DroneImpl, DroneCommand}
-import cwinter.codecraft.util.maths.Vector2
+import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 
 
 class Replayer(lines: Iterator[String]) {
@@ -21,14 +21,23 @@ class Replayer(lines: Iterator[String]) {
 
   // parse version
   val header = nextLine
-  assert(header == "ReplayVersion=0.1.0")
+  require(header == "ReplayVersion=0.1.2", "Incorrect replay version.")
 
   // parse rng seed
   val KeyValueRegex("Seed", AsInt(seed)) = nextLine
 
+  private val KeyValueRegex("Size", worldSizeStr) = nextLine
+  val worldSize = Rectangle.fromString(worldSizeStr)
+
+  private[this] var _startingMinerals = List.empty[MineralCrystalImpl]
+  while (nextLine.startsWith("Mineral")) {
+    val KeyValueRegex("Mineral", mcStr) = currLine
+    _startingMinerals ::= MineralCrystalImpl.fromString(mcStr)
+  }
+  val startingMinerals = _startingMinerals
 
   // parse spawns
-  assert(nextLine == "Spawn")
+  assert(currLine == "Spawn")
   assert(nextLine.startsWith("Spec"))
   val KeyValueRegex("Position", Vector2(spawn1)) = nextLine
   assert(nextLine.startsWith("Player"))

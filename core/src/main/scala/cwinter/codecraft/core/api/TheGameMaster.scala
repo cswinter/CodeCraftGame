@@ -5,7 +5,7 @@ import java.io.File
 import cwinter.codecraft.core.replay.{DummyDroneController, Replayer}
 import cwinter.codecraft.core.{DroneWorldSimulator, SimulatorEvent, WorldMap, ai}
 import cwinter.codecraft.graphics.application.DrawingCanvas
-import cwinter.codecraft.util.maths.{Rectangle, Vector2}
+import cwinter.codecraft.util.maths.{Rng, Rectangle, Vector2}
 
 
 object TheGameMaster {
@@ -39,10 +39,11 @@ object TheGameMaster {
   def runReplay(filepath: String): Unit = {
     val replayer =
       new Replayer(scala.io.Source.fromFile(filepath).getLines())
-    val worldSize = DefaultWorldSize
-    val resourceClusters = DefaultResourceDistribution
+    Rng.seed = replayer.seed
+    val worldSize = replayer.worldSize
+    val mineralCrystals = replayer.startingMinerals
     val spawns = replayer.spawns
-    val map = WorldMap(worldSize, resourceClusters, spawns)
+    val map = WorldMap(mineralCrystals, worldSize, spawns)
     val mothership1 = new DummyDroneController
     val mothership2 = new DummyDroneController
     val simulator = new DroneWorldSimulator(map, mothership1, mothership2, devEvents, Some(replayer))

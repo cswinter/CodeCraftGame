@@ -53,6 +53,8 @@ class DroneWorldSimulator(
 
   replayRecorder.recordVersion()
   replayRecorder.recordRngSeed(Rng.seed)
+  replayRecorder.recordWorldSize(map.size)
+  map.minerals.foreach(replayRecorder.recordMineral)
   map.minerals.foreach(spawnMineral)
   // TODO: check map bounds
   val mothership1 = mothership(BluePlayer, mothershipController1, map.spawns(0))

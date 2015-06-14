@@ -1,9 +1,15 @@
 package cwinter.codecraft.util.maths
 
 object Rng {
-  val seed = scala.util.Random.nextInt(100000)
-  private[this] val random = new scala.util.Random(seed)
+  private[this] var _seed = scala.util.Random.nextInt(100000)
+  private[this] var random = new scala.util.Random(seed)
 
+
+  def seed: Int = _seed
+  def seed_=(value: Int): Unit = {
+    _seed = value
+    random = new scala.util.Random(seed)
+  }
 
   def int(max: Int): Int = {
     random.nextInt(max)
