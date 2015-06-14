@@ -113,6 +113,10 @@ private[core] class Drone(
     for (Some(m) <- droneModules) {
       val (events, resourceDepletions, resourceSpawns) = m.update(availableResources)
       simulatorEvents :::= events.toList
+      if (m.isInstanceOf[DroneManipulatorModule]) {
+        println(time)
+        println(resourceDepletions.length)
+      }
       for {
         s <- storage
         rd <- resourceDepletions
@@ -246,6 +250,8 @@ private[core] class Drone(
       warn("Trying to deposit minerals into a drone without a storage module.")
     } else if (storedMinerals.isEmpty) {
       warn("Drone has no minerals to deposit.")
+    } else if ((other.position - position).lengthSquared > (radius + other.radius + 12) * (radius + other.radius + 12)) {
+      warn("Too far away to deposit minerals.")
     } else {
       mineralDepositee = Some(other)
     }

@@ -2,18 +2,15 @@ package cwinter.codecraft.core
 
 import java.awt.event.KeyEvent
 
-import cwinter.codecraft.physics.PhysicsEngine
-import cwinter.codecraft.core.replay._
-import cwinter.codecraft.graphics.engine.Debug
-
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 import cwinter.codecraft.collisions.VisionTracker
-import cwinter.codecraft.core.api.{DroneControllerBase, DroneController, DroneSpec}
-import cwinter.codecraft.core.objects.drone._
+import cwinter.codecraft.core.api.{DroneControllerBase, DroneSpec}
 import cwinter.codecraft.core.errors.Errors
 import cwinter.codecraft.core.objects._
-import cwinter.codecraft.util.maths.{ColorRGB, ColorRGBA, Rng, Vector2}
+import cwinter.codecraft.core.objects.drone._
+import cwinter.codecraft.core.replay._
+import cwinter.codecraft.graphics.engine.Debug
+import cwinter.codecraft.physics.PhysicsEngine
+import cwinter.codecraft.util.maths.{ColorRGB, Rng, Vector2}
 import cwinter.codecraft.util.modules.ModulePosition
 import cwinter.codecraft.worldstate._
 
@@ -74,7 +71,7 @@ class DroneWorldSimulator(
   private def mothership(player: Player, controller: DroneControllerBase, pos: Vector2): Drone = {
     val spec = new DroneSpec(
       missileBatteries = 2,
-      manipulators = 2,
+      constructors = 2,
       refineries = 3,
       storageModules = 3
     )

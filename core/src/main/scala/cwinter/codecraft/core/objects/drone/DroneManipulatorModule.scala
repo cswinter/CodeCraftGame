@@ -1,6 +1,7 @@
 package cwinter.codecraft.core.objects.drone
 
 import cwinter.codecraft.core._
+import cwinter.codecraft.core.api.DroneSpec
 import cwinter.codecraft.util.maths.Vector2
 import cwinter.codecraft.worldstate.{DroneModuleDescriptor, ManipulatorDescriptor, ManipulatorArm}
 
@@ -9,6 +10,7 @@ class DroneManipulatorModule(positions: Seq[Int], owner: Drone)
 
   private[this] var newDrone: Option[Drone] = None
   private[this] var droneConstruction: Option[(Drone, Int)] = None
+  private[this] val constructorEnergy = new Array[Int](positions.length)
 
 
   override def update(availableResources: Int): (Seq[SimulatorEvent], Seq[Vector2], Seq[Vector2]) = {
@@ -27,22 +29,21 @@ class DroneManipulatorModule(positions: Seq[Int], owner: Drone)
     droneConstruction =
       for ((drone, progress) <- droneConstruction)
         yield {
-          val progress2 =
-            if (progress % drone.spec.resourceDepletionPeriod == 0) {
-              if (remainingResources > 0) {
-                remainingResources -= 1
-                // TODO: use all manipulator modules
-                resourceDepletions ::= absoluteModulePositions.head
-                progress + 1
-              } else {
-                progress
-              }
-            } else {
-              progress + 1
+          var furtherProgress = 0
+          for (i <- constructorEnergy.indices) {
+            if (constructorEnergy(i) == 0 && remainingResources > 0) {
+              remainingResources -= 1
+              resourceDepletions ::= absoluteModulePositions(i)
+              constructorEnergy(i) = DroneSpec.ConstructionPeriod
             }
+            if (constructorEnergy(i) > 0 && progress + furtherProgress < drone.spec.buildTime) {
+              constructorEnergy(i) -= 1
+              furtherProgress += 1
+            }
+          }
 
+          val progress2 = progress + furtherProgress
           drone.constructionProgress = Some(progress2)
-
           if (progress2 == drone.spec.buildTime) {
             effects ::= SpawnDrone(drone)
             drone.constructionProgress = None
@@ -56,6 +57,7 @@ class DroneManipulatorModule(positions: Seq[Int], owner: Drone)
         progress < drone.spec.buildTime
     }
 
+    println(resourceDepletions.length)
     (effects, resourceDepletions, Seq.empty[Vector2])
   }
 
@@ -74,7 +76,10 @@ class DroneManipulatorModule(positions: Seq[Int], owner: Drone)
     droneConstruction.toSeq.flatMap {
       case (drone, progress) =>
         var i = 0
-        absoluteModulePositions.map(pos => {
+        for (
+          (pos, energy) <- absoluteModulePositions zip constructorEnergy
+          if energy > 0
+        ) yield {
           val t = 50 * i + progress
           i += 1
           val offset = 0.8f * drone.radius * Vector2(math.sin(t / (10.0 - i)), math.cos(t / (7.1 + i)))
@@ -82,7 +87,7 @@ class DroneManipulatorModule(positions: Seq[Int], owner: Drone)
             owner.player,
             pos.x.toFloat, pos.y.toFloat,
             (offset.x + drone.position.x).toFloat, (offset.y + drone.position.y).toFloat)
-        })
+        }
     }
 
   override def descriptors: Seq[DroneModuleDescriptor] = positions.map(ManipulatorDescriptor)
@@ -90,4 +95,5 @@ class DroneManipulatorModule(positions: Seq[Int], owner: Drone)
 
   def droneInConstruction: Option[Drone] = droneConstruction.map(_._1)
 }
+
 

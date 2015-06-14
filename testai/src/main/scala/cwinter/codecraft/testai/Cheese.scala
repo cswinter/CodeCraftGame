@@ -1,12 +1,14 @@
 package cwinter.codecraft.testai
 
-import cwinter.codecraft.core.api.{DroneSpec, MineralCrystalHandle, DroneHandle, DroneController}
+import cwinter.codecraft.core.api.{DroneController, DroneHandle, DroneSpec, MineralCrystalHandle}
 import cwinter.codecraft.util.maths.Vector2
 
 
 class CheesyMothership extends DroneController {
+  final val destroyerSpec = new DroneSpec(0, 3, 0, 0, 0, 1)
+
   override def onSpawn(): Unit = {
-    buildDrone(new DroneSpec(0, 3, 0, 0, 0, 1), new CheesyDestroyer(-position))
+    buildDrone(destroyerSpec, new CheesyDestroyer(-position))
   }
   override def onMineralEntersVision(mineralCrystal: MineralCrystalHandle): Unit = ()
   override def onTick(): Unit = ()
