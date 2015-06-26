@@ -1,9 +1,9 @@
 package cwinter.codecraft.demos.physics
 
+import cwinter.codecraft.graphics.worldstate.{WorldObjectDescriptor, Simulator}
 import cwinter.codecraft.physics.{PhysicsEngine, ConstantVelocityObject}
 import cwinter.codecraft.graphics.application.DrawingCanvas
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
-import cwinter.codecraft.worldstate.{Simulator, WorldObjectDescriptor}
 
 
 object TheObjectManager extends Simulator {

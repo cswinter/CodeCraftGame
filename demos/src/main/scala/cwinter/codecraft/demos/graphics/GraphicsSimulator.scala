@@ -2,7 +2,7 @@ package cwinter.codecraft.demos.graphics
 
 import cwinter.codecraft.collisions.VisionTracker
 import cwinter.codecraft.graphics.application.DrawingCanvas
-import cwinter.codecraft.worldstate.{Simulator, TestingObject, WorldObjectDescriptor}
+import cwinter.codecraft.graphics.worldstate.{TestingObject, WorldObjectDescriptor, Simulator}
 
 
 class GraphicsSimulator(

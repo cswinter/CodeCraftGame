@@ -1,7 +1,7 @@
 package cwinter.codecraft.demos.graphics
 
+import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.util.maths.Float0To1
-import cwinter.codecraft.worldstate._
 
 object Chaos {
   val sightRadius = Some(250)

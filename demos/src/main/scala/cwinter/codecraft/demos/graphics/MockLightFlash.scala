@@ -1,6 +1,6 @@
 package cwinter.codecraft.demos.graphics
 
-import cwinter.codecraft.worldstate.LightFlashDescriptor
+import cwinter.codecraft.graphics.worldstate.LightFlashDescriptor
 
 
 class MockLightFlash(val xPos: Float, val yPos: Float) extends MockObject {

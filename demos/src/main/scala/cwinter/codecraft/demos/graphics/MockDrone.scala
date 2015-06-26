@@ -1,6 +1,6 @@
 package cwinter.codecraft.demos.graphics
 
-import cwinter.codecraft.worldstate._
+import cwinter.codecraft.graphics.worldstate._
 
 import scala.collection.mutable
 import scala.util.Random

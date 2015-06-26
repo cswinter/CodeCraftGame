@@ -1,8 +1,7 @@
 package cwinter.codecraft.demos.graphics
 
+import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.util.maths.Rng
-import cwinter.codecraft.worldstate
-import cwinter.codecraft.worldstate._
 
 import scala.util.Random
 
@@ -31,7 +30,7 @@ object Generators {
 
   def randomModule(position: Int) = rnd(
     50 -> StorageModuleDescriptor(
-      Seq(position), if (Rng.bernoulli(0.3f)) worldstate.MineralStorage else EnergyStorage(rndset(7))),
+      Seq(position), if (Rng.bernoulli(0.3f)) MineralStorage else EnergyStorage(rndset(7))),
     2 -> MissileBatteryDescriptor(position, rni(4)),
     2 -> EnginesDescriptor(position),
     2 -> ShieldGeneratorDescriptor(position),

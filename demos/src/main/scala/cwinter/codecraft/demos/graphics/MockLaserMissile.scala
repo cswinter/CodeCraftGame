@@ -1,7 +1,7 @@
 package cwinter.codecraft.demos.graphics
 
+import cwinter.codecraft.graphics.worldstate.{HomingMissileDescriptor, WorldObjectDescriptor, RedPlayer, BluePlayer}
 import cwinter.codecraft.util.maths.Rng
-import cwinter.codecraft.worldstate.{RedPlayer, BluePlayer, HomingMissileDescriptor, WorldObjectDescriptor}
 
 import scala.collection.mutable
 import scala.util.Random

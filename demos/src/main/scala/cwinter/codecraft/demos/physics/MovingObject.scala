@@ -1,8 +1,8 @@
 package cwinter.codecraft.demos.physics
 
+import cwinter.codecraft.graphics.worldstate.{DrawCircle, WorldObjectDescriptor}
 import cwinter.codecraft.physics.{ConstantVelocityObject, DynamicObject}
 import cwinter.codecraft.util.maths.{Rng, Vector2}
-import cwinter.codecraft.worldstate.{DrawCircle, WorldObjectDescriptor}
 
 
 class MovingObject[TDynamics](

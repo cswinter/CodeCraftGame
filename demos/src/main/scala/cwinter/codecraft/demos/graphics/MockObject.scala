@@ -1,8 +1,8 @@
 package cwinter.codecraft.demos.graphics
 
 import cwinter.codecraft.collisions.Positionable
+import cwinter.codecraft.graphics.worldstate.WorldObjectDescriptor
 import cwinter.codecraft.util.maths.Vector2
-import cwinter.codecraft.worldstate.WorldObjectDescriptor
 
 
 trait MockObject {

@@ -14,58 +14,65 @@ val jogl_merge_strategy = new sbtassembly.MergeStrategy {
     })
 }
 
-
-
-lazy val util = (project in file("util")).
+lazy val util = (crossProject in file("util")).
   settings(Commons.settings: _*).
   settings(
     name := "cg.util",
     libraryDependencies ++= commonDependencies
   )
+lazy val utilJVM = util.jvm
+lazy val utilJS = util.js
 
-lazy val graphics = (project in file("graphics")).
+lazy val graphics = (crossProject in file("graphics")).
   settings(Commons.settings: _*).
   settings(
     name := "cg.graphics",
-    libraryDependencies ++= commonDependencies,
-    libraryDependencies ++= graphicsDependencies
+    libraryDependencies ++= commonDependencies
+  ).jvmSettings(
+    libraryDependencies ++= graphicsJVMDependencies
   ).dependsOn(util)
+lazy val graphicsJVM = graphics.jvm
+lazy val graphicsJS = graphics.js
 
-lazy val collisions = (project in file("collisions")).
+lazy val collisions = (crossProject in file("collisions")).
   settings(Commons.settings: _*).
   settings(
     name := "cg.collisions",
     libraryDependencies ++= commonDependencies
   ).dependsOn(util)
+lazy val collisionsJVM = collisions.jvm
+lazy val collisionsJS = collisions.js
 
-lazy val physics = (project in file("physics")).
+lazy val physics = (crossProject in file("physics")).
   settings(Commons.settings: _*)
   .settings(
     name := "cg.physics",
     libraryDependencies ++= commonDependencies
   ).dependsOn(util, collisions)
+lazy val physicsJVM = physics.jvm
+lazy val physicsJS = physics.js
 
 lazy val testai = (project in file("testai")).
   settings(Commons.settings: _*).
   settings(
     name := "cg.testai",
     libraryDependencies ++= commonDependencies
-  ).dependsOn(core)
+  ).dependsOn(coreJVM)
 
 lazy val demos = (project in file("demos")).
   settings(Commons.settings: _*).
   settings(
     name := "cg.demos",
     libraryDependencies ++= commonDependencies
-  ).dependsOn(graphics, collisions, physics)
+  ).dependsOn(graphicsJVM, collisionsJVM, physicsJVM)
 
 
-
-lazy val core = (project in file("core")).
+lazy val core = (crossProject in file("core")).
   settings(Commons.settings: _*).
   settings(
     name := "codecraft",
-    libraryDependencies ++= commonDependencies,
+    libraryDependencies ++= commonDependencies
+  ).jvmSettings(
     assemblyMergeStrategy in assembly := {
       case x if x.endsWith(".so") || x.endsWith(".dll") || x.endsWith(".jnilib") =>
         jogl_merge_strategy
@@ -74,4 +81,21 @@ lazy val core = (project in file("core")).
         oldStrategy(x)
     }
   ).dependsOn(graphics, physics, collisions, util)
+lazy val coreJVM = core.jvm
+lazy val coreJS = core.js
+
+
+lazy val scalajsTest = (project in file("scalajs-test")).
+  enablePlugins(ScalaJSPlugin).
+  settings(Commons.settings: _*).
+  settings(
+    name := "scalajs-test",
+    libraryDependencies ++= commonDependencies
+  ).dependsOn(coreJS)
+
+
+
+
+
+
 

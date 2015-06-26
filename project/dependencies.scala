@@ -1,5 +1,4 @@
 import sbt._
-import Keys._
 
 object Dependencies {
   // libraryDependencies += groupID % artifactID % revision
@@ -14,7 +13,7 @@ object Dependencies {
     scalatest
   )
 
-  val graphicsDependencies: Seq[ModuleID] = Seq(
+  val graphicsJVMDependencies: Seq[ModuleID] = Seq(
     gluegen,
     jogl,
     scalaSwing,

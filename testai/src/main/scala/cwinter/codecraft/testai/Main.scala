@@ -5,7 +5,8 @@ import cwinter.codecraft.util.maths.{Rng, Vector2}
 
 object Main {
   def main(args: Array[String]): Unit = {
-    TheGameMaster.runLevel3(new Mothership)
+    TheGameMaster.runL1vL2()
+    //TheGameMaster.runLevel3(new Mothership)
     //TheGameMaster.startGame(new Mothership, new Mothership)
     //TheGameMaster.runLastReplay()
   }

@@ -6,7 +6,7 @@ object Commons {
 
   val settings: Seq[Def.Setting[_]] = Seq(
     version := appVersion,
-    scalaVersion := "2.11.4",
+    scalaVersion := "2.11.6",
     scalacOptions := Seq(
       "-Xlint",
       "-deprecation",

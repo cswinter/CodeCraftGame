@@ -1,6 +1,6 @@
 package cwinter.codecraft.demos.graphics
 
-import cwinter.codecraft.worldstate.{MineralDescriptor, WorldObjectDescriptor}
+import cwinter.codecraft.graphics.worldstate.{MineralDescriptor, WorldObjectDescriptor}
 
 
 class MockResource(

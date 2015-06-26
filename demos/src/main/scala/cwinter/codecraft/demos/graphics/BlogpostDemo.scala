@@ -1,7 +1,7 @@
 package cwinter.codecraft.demos.graphics
 
+import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.util.maths.{VertexXY, Geometry}
-import cwinter.codecraft.worldstate._
 
 object BlogpostDemo {
   def main(args: Array[String]): Unit = {
