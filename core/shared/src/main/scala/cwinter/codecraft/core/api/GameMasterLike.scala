@@ -58,6 +58,10 @@ trait GameMasterLike {
     startGame(new ai.basic.Mothership, new CheesyMothership)
   }
 
+  def runL3vL3(): Unit = {
+    startGame(new ai.basicplus.Mothership, new ai.basicplus.Mothership)
+  }
+
   protected var devEvents: Int => Seq[SimulatorEvent] = t => Seq()
   protected[cwinter] def setDevEvents(generator: Int => Seq[SimulatorEvent]): Unit = {
     devEvents = generator

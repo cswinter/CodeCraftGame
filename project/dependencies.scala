@@ -9,6 +9,7 @@ object Dependencies {
   val jodaConvert = "org.joda" % "joda-convert" % "1.2"
   val scalatest = "org.scalatest" % "scalatest_2.11" % "2.2.1" % "test"
 
+
   val commonDependencies: Seq[ModuleID] = Seq(
     scalatest
   )

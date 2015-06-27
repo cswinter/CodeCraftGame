@@ -4,10 +4,12 @@
     <meta charset="UTF-8" content="text/html" http-equiv="Content-Type">
     <title>CodeCraft.js test</title>
 </head>
-<body>
+<body bgcolor="#000">
+    <pre id="canvas" style="color: white"></pre>
+
     <script type="text/javascript" src="../scalajs-test-fastopt.js"></script>
     <script type="text/javascript">
-        cwinter.codecraft.scalajs.Main().main();
+        cwinter.codecraft.scalajs.Main().main(document.getElementById('canvas'));
     </script>
 </body>
 </html>

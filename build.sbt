@@ -80,6 +80,8 @@ lazy val core = (crossProject in file("core")).
         val oldStrategy = (assemblyMergeStrategy in assembly).value
         oldStrategy(x)
     }
+  ).jsSettings(
+    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.8.0"
   ).dependsOn(graphics, physics, collisions, util)
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js
@@ -90,7 +92,8 @@ lazy val scalajsTest = (project in file("scalajs-test")).
   settings(Commons.settings: _*).
   settings(
     name := "scalajs-test",
-    libraryDependencies ++= commonDependencies
+    libraryDependencies ++= commonDependencies,
+    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.8.0"
   ).dependsOn(coreJS)
 
 
