@@ -1,11 +1,13 @@
 package cwinter.codecraft.scalajs
 
-import scala.scalajs.js.JSApp
-
 import cwinter.codecraft.core.api.TheGameMaster
 
+import scala.scalajs.js.annotation.JSExport
 
-object Main extends JSApp {
+
+@JSExport
+object Main {
+  @JSExport
   def main(): Unit = {
     TheGameMaster.runL1vL2()
   }
