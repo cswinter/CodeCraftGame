@@ -1,4 +1,4 @@
-package cwinter.codecraft.graphics.matrices
+package cwinter.codecraft.util.maths.matrices
 
 class Matrix4x4(val data: Array[Float]) {
   left =>

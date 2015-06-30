@@ -1,4 +1,4 @@
-package cwinter.codecraft.graphics.matrices
+package cwinter.codecraft.util.maths.matrices
 
 object IdentityMatrix4x4 extends Matrix4x4(
   Array[Float](

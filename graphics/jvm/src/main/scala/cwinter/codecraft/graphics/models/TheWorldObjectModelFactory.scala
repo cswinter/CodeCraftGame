@@ -1,7 +1,7 @@
 package cwinter.codecraft.graphics.models
 
 import cwinter.codecraft.graphics.engine.RenderStack
-import cwinter.codecraft.graphics.matrices.{IdentityMatrix4x4, RotationZMatrix4x4, TranslationXYMatrix4x4}
+import cwinter.codecraft.util.maths.matrices.{IdentityMatrix4x4, RotationZMatrix4x4, TranslationXYMatrix4x4}
 import cwinter.codecraft.graphics.model.{PolygonRing, ClosedModel}
 import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.util.maths.VertexXY

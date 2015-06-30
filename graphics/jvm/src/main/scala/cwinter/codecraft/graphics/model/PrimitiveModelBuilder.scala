@@ -2,8 +2,8 @@ package cwinter.codecraft.graphics.model
 
 import javax.media.opengl.GL4
 
-import cwinter.codecraft.graphics.materials.Material
 import cwinter.codecraft.util.maths.{VertexXYZ, Vertex}
+import cwinter.codecraft.graphics.materials.Material
 
 import scala.reflect.ClassTag
 

@@ -30,6 +30,8 @@ lazy val graphics = (crossProject in file("graphics")).
     libraryDependencies ++= commonDependencies
   ).jvmSettings(
     libraryDependencies ++= graphicsJVMDependencies
+  ).jsSettings(
+    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.8.0"
   ).dependsOn(util)
 lazy val graphicsJVM = graphics.jvm
 lazy val graphicsJS = graphics.js

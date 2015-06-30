@@ -4,7 +4,7 @@ import javax.media.opengl.GL._
 import javax.media.opengl.GL4
 
 import cwinter.codecraft.graphics.engine.{RenderFrame, FramebufferObject}
-import cwinter.codecraft.graphics.matrices.{Matrix4x4, IdentityMatrix4x4}
+import cwinter.codecraft.util.maths.matrices.{Matrix4x4, IdentityMatrix4x4}
 import cwinter.codecraft.graphics.model.VBO
 import cwinter.codecraft.util.maths.{ColorRGB, VertexXYZ, VertexUV, VertexXY}
 

@@ -75,3 +75,4 @@ class FramebufferObject(implicit val gl: GL4) {
     texture
   }
 }
+

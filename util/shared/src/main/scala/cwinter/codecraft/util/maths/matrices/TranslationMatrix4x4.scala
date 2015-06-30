@@ -1,4 +1,4 @@
-package cwinter.codecraft.graphics.matrices
+package cwinter.codecraft.util.maths.matrices
 
 class TranslationMatrix4x4(x: Float, y: Float, z: Float) extends Matrix4x4(
   Array[Float](

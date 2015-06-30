@@ -1,7 +1,7 @@
 package cwinter.codecraft.graphics
 
-import cwinter.codecraft.graphics.materials.Material
 import cwinter.codecraft.util.maths.Vertex
+import cwinter.codecraft.graphics.materials.Material
 
 import language.existentials
 

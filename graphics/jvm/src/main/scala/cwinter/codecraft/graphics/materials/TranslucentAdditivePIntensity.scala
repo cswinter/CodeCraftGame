@@ -3,7 +3,7 @@ package cwinter.codecraft.graphics.materials
 import javax.media.opengl.GL._
 import javax.media.opengl.GL4
 
-import cwinter.codecraft.graphics.matrices.Matrix4x4
+import cwinter.codecraft.util.maths.matrices.Matrix4x4
 import cwinter.codecraft.graphics.model.VBO
 import cwinter.codecraft.util.maths.{ColorRGBA, VertexXYZ}
 

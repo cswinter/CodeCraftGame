@@ -1,7 +1,7 @@
 package cwinter.codecraft.graphics.model
 
-import cwinter.codecraft.graphics.materials.Material
 import cwinter.codecraft.util.maths.{VertexXYZ, NullVectorXY, VertexXY, Vertex}
+import cwinter.codecraft.graphics.materials.Material
 
 import scala.reflect.ClassTag
 

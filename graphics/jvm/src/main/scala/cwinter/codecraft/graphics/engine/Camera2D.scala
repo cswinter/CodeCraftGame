@@ -1,6 +1,6 @@
 package cwinter.codecraft.graphics.engine
 
-import cwinter.codecraft.graphics.matrices.{IdentityMatrix4x4, OrthographicProjectionMatrix4x4, Matrix4x4}
+import cwinter.codecraft.util.maths.matrices.{IdentityMatrix4x4, OrthographicProjectionMatrix4x4, Matrix4x4}
 
 
 class Camera2D {

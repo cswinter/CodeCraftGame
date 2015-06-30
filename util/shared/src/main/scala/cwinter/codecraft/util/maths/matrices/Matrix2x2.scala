@@ -1,4 +1,4 @@
-package cwinter.codecraft.graphics.matrices
+package cwinter.codecraft.util.maths.matrices
 
 import cwinter.codecraft.util.maths.VertexXY
 

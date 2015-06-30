@@ -1,8 +1,9 @@
 package cwinter.codecraft.graphics.models
 
 import cwinter.codecraft.graphics.engine.RenderStack
+import cwinter.codecraft.graphics.materials.Material
 import cwinter.codecraft.graphics.materials.Intensity
-import cwinter.codecraft.graphics.matrices.{Matrix4x4, TranslationMatrix4x4}
+import cwinter.codecraft.util.maths.matrices.{Matrix4x4, TranslationMatrix4x4}
 import cwinter.codecraft.graphics.model._
 import cwinter.codecraft.graphics.models.DroneColors._
 import cwinter.codecraft.graphics.worldstate._

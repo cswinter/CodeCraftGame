@@ -7,11 +7,11 @@ import javax.media.opengl.GL._
 
 import com.jogamp.opengl.util.awt.TextRenderer
 import cwinter.codecraft.graphics.engine
-import cwinter.codecraft.graphics.materials.Material
-import cwinter.codecraft.graphics.matrices.IdentityMatrix4x4
+import cwinter.codecraft.util.maths.matrices.IdentityMatrix4x4
 import cwinter.codecraft.graphics.model.{VBO, TheModelCache, PrimitiveModelBuilder}
 import cwinter.codecraft.graphics.models.TheWorldObjectModelFactory
 import cwinter.codecraft.graphics.worldstate.Simulator
+import cwinter.codecraft.graphics.materials.Material
 import cwinter.codecraft.util.maths.{ColorRGBA, VertexXY}
 import org.joda.time.DateTime
 

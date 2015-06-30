@@ -3,7 +3,7 @@ package cwinter.codecraft.graphics.materials
 import javax.media.opengl.GL4
 import javax.media.opengl.GL._
 
-import cwinter.codecraft.graphics.matrices.Matrix4x4
+import cwinter.codecraft.util.maths.matrices.Matrix4x4
 import cwinter.codecraft.util.maths.{ColorRGBA, VertexXYZ}
 
 class GaussianGlow(implicit gl: GL4)

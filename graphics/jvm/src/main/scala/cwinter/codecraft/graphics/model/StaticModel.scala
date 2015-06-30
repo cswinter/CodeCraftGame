@@ -1,7 +1,7 @@
 package cwinter.codecraft.graphics.model
 
+import cwinter.codecraft.util.maths.matrices.Matrix4x4
 import cwinter.codecraft.graphics.materials.Material
-import cwinter.codecraft.graphics.matrices.Matrix4x4
 import cwinter.codecraft.util.maths.Vertex
 
 

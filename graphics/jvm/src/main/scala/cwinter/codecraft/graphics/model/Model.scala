@@ -1,6 +1,6 @@
 package cwinter.codecraft.graphics.model
 
-import cwinter.codecraft.graphics.matrices.{DilationXYMatrix4x4, IdentityMatrix4x4, Matrix4x4}
+import cwinter.codecraft.util.maths.matrices.{DilationXYMatrix4x4, IdentityMatrix4x4, Matrix4x4}
 
 import scala.annotation.tailrec
 

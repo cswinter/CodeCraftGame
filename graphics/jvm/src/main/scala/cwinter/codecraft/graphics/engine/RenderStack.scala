@@ -4,7 +4,7 @@ import javax.media.opengl.GL._
 import javax.media.opengl.GL4
 
 import cwinter.codecraft.graphics.materials._
-import cwinter.codecraft.graphics.matrices.IdentityMatrix4x4
+import cwinter.codecraft.util.maths.matrices.IdentityMatrix4x4
 import cwinter.codecraft.util.maths.VertexXY
 
 
