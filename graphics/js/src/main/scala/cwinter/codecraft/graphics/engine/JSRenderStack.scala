@@ -16,5 +16,7 @@ class JSRenderStack(implicit gl: GL) extends RenderStack {
   override val GaussianGlowPIntensity: Material[VertexXYZ, ColorRGBA, Intensity] = null // FIXME
   override val BloomShader: Material[VertexXYZ, ColorRGB, Unit] =  new MaterialXYZRGB // FIXME
   override val TranslucentAdditivePIntensity: Material[VertexXYZ, ColorRGBA, Intensity] = new TranslucentAdditivePIntensity
+
+  override val modelviewTranspose = true
 }
 

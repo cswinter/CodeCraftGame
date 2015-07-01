@@ -72,7 +72,7 @@ class JSMaterial[TPosition <: Vertex, TColor <: Vertex, TParams](
     gl.uniformMatrix4fv(
       uniformProjection,
       transpose=false,
-      new Float32Array(js.Array[Float](projection.transposed.data: _*)))
+      new Float32Array(js.Array[Float](projection.data: _*)))
 
     enableCaps.foreach(gl.enable)
   }
@@ -81,7 +81,7 @@ class JSMaterial[TPosition <: Vertex, TColor <: Vertex, TParams](
     Material._drawCalls += 1
 
     // upload modelview
-    gl.uniformMatrix4fv(uniformModelview, transpose=false, modelview.transposed.data)
+    gl.uniformMatrix4fv(uniformModelview, transpose=false, modelview.data)
 
     // bind vbo and enable attributes
     // gl.bindVertexArray(vbo.vao) // TODO: ???

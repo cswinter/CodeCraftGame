@@ -17,5 +17,7 @@ trait RenderStack {
   lazy val materials = List(
     SimpleMaterial, MaterialXYZRGB, BloomShader, GaussianGlow, GaussianGlowPIntensity,
     TranslucentAdditive, TranslucentProportional, TranslucentAdditivePIntensity)
+
+  val modelviewTranspose: Boolean = false
 }
 

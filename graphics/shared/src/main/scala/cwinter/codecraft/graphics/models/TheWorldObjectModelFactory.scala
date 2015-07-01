@@ -17,6 +17,9 @@ object TheWorldObjectModelFactory {
     val modelview =
       new RotationZMatrix4x4(orientation) *
         new TranslationXYMatrix4x4(xPos, yPos)
+    if (renderStack.modelviewTranspose) {
+      modelview.transpose()
+    }
 
     worldObject match {
       case mineral: MineralDescriptor => new ClosedModel[Unit](

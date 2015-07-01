@@ -30,12 +30,13 @@ class Renderer(
     gl.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT)
 
     val worldObjects = gameWorld.worldState
+    val projectionT = camera.projection.transposed
 
     for (
       material <- renderStack.materials
       if material != null
     ) {
-      material.beforeDraw(camera.projection)
+      material.beforeDraw(projectionT)
 
       for {
         worldObject <- worldObjects ++ Debug.debugObjects

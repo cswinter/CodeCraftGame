@@ -58,9 +58,10 @@ object RenderFrame extends GLEventListener {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
     val worldObjects = gameWorld.worldState
+    val projection = camera.projection
 
     for (material <- renderStack.materials) {
-      material.beforeDraw(camera.projection)
+      material.beforeDraw(projection)
 
       for {
         worldObject <- worldObjects ++ engine.Debug.debugObjects

@@ -15,9 +15,17 @@ class Matrix4x4(val data: Array[Float]) {
   }
 
 
-  def apply(row: Int, col: Int): Float = data(row + col * 4)
+  @inline final def apply(row: Int, col: Int): Float = data(row + col * 4)
 
-  def update(row: Int, col: Int, value: Float): Unit = data(row + col * 4) = value
+  @inline final def update(row: Int, col: Int, value: Float): Unit = data(row + col * 4) = value
+
+  def transpose(): Unit = {
+    for (col <- 1 to 3; row <- 0 until col) {
+      val tmp = this(col, row)
+      this(col, row) = this(row, col)
+      this(row, col) = tmp
+    }
+  }
 
   def transposed: Matrix4x4 = {
     val transpose = new Matrix4x4(new Array[Float](data.length))
