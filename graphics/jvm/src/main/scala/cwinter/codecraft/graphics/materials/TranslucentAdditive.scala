@@ -8,7 +8,7 @@ import cwinter.codecraft.util.maths.{ColorRGBA, VertexXYZ}
 
 
 class TranslucentAdditive(implicit gl: GL4)
-  extends Material[VertexXYZ, ColorRGBA, Unit](
+  extends JVMMaterial[VertexXYZ, ColorRGBA, Unit](
     gl = gl,
     vsPath = "xyz_rgba_vs.glsl",
     fsPath = "rgba_fs.glsl",

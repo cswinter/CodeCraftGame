@@ -1,24 +1,22 @@
 package cwinter.codecraft.graphics.materials
 
-import javax.media.opengl.GL4
-import javax.media.opengl.GL._
-
 import cwinter.codecraft.util.maths.matrices.Matrix4x4
 import cwinter.codecraft.util.maths.{ColorRGBA, VertexXYZ}
+import org.scalajs.dom.raw.{WebGLRenderingContext => GL}
 
-class GaussianGlow(implicit gl: GL4)
-  extends JVMMaterial[VertexXYZ, ColorRGBA, Unit](
+
+class TranslucentAdditive(implicit gl: GL)
+  extends JSMaterial[VertexXYZ, ColorRGBA, Unit](
     gl = gl,
-    vsPath = "xyz_rgba_vs.glsl",
-    fsPath = "rgba_gaussian_fs.glsl",
+    vsID = "xyz_rgba_vs",
+    fsID = "rgba_fs",
     "vertexPos",
     Some("vertexCol"),
-    GL_BLEND
+    GL.BLEND
   ) {
-  import gl._
 
   override def beforeDraw(projection: Matrix4x4): Unit = {
     super.beforeDraw(projection)
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE)
+    gl.blendFunc(GL.SRC_ALPHA, GL.ONE)
   }
 }

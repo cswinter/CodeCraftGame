@@ -4,7 +4,8 @@
     <meta charset="UTF-8" content="text/html" http-equiv="Content-Type">
     <title>CodeCraft.js test</title>
 </head>
-<body bgcolor="#000">
+<body>
+
 
     <script id="shader-fs" type="x-shader/x-fragment">
         precision mediump float;
@@ -25,9 +26,73 @@
         }
     </script>
 
+    <script id="xyz_rgb_vs" type="x-shader/x-vertex">
+        attribute vec3 vertexPos;
+        attribute vec3 vertexCol;
+
+        varying vec3 fragmentCol;
+
+        uniform mat4 modelview;
+        uniform mat4 projection;
+
+        void main (void) {
+          gl_Position = projection * modelview * vec4(vertexPos, 1.0);
+
+          fragmentCol = vertexCol;
+        }
+    </script>
+
+    <script id="rgb1_fs" type="x-shader/x-fragment">
+        precision mediump float;
+
+        varying vec3 fragmentCol;
+
+        void main(void) {
+            gl_FragColor = vec4(fragmentCol, 1);
+        }
+    </script>
+
+    <script id="xyz_rgba_vs" type="x-shader/x-vertex">
+        attribute vec3 vertexPos;
+        attribute vec4 vertexCol;
+
+        varying vec4 fragmentCol;
+
+        uniform mat4 modelview;
+        uniform mat4 projection;
+
+        void main (void) {
+          gl_Position = projection * modelview * vec4(vertexPos, 1.0);
+
+          fragmentCol = vertexCol;
+        }
+    </script>
+
+    <script id="rgba_fs" type="x-shader/x-fragment">
+        precision mediump float;
+
+        varying vec4 fragmentCol;
+
+        void main(void) {
+            gl_FragColor = fragmentCol;
+        }
+    </script>
+
+    <script id="rgba_pint_fs" type="x-shader/x-fragment">
+        precision mediump float;
+
+        varying vec4 fragmentCol;
+
+        uniform float intensity;
+
+        void main() {
+            gl_FragColor = intensity * fragmentCol;
+        }
+    </script>
+
     <pre id="canvas" style="color: white"></pre>
 
-    <canvas id="webgl-canvas" style="border: none;" width="500" height="500"></canvas>
+    <canvas id="webgl-canvas" style="border: none;" width="1000" height="750"></canvas>
 
     <script type="text/javascript" src="../scalajs-test-fastopt.js"></script>
     <script type="text/javascript">

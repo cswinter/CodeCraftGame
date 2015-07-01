@@ -5,7 +5,7 @@ import javax.media.opengl.GL4
 
 import cwinter.codecraft.graphics.engine.{RenderFrame, FramebufferObject}
 import cwinter.codecraft.util.maths.matrices.{Matrix4x4, IdentityMatrix4x4}
-import cwinter.codecraft.graphics.model.VBO
+import cwinter.codecraft.graphics.model.{VBO, JVMVBO$}
 import cwinter.codecraft.util.maths.{ColorRGB, VertexXYZ, VertexUV, VertexXY}
 
 
@@ -38,7 +38,7 @@ The rendering stages (as it concerns glow/opaque materials) are as follows:
 
  */
 class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
-  extends Material[VertexXYZ, ColorRGB, Unit](
+  extends JVMMaterial[VertexXYZ, ColorRGB, Unit](
     gl = gl,
     vsPath = "xyz_rgb_vs.glsl",
     fsPath = "rgb1_fs.glsl",
@@ -76,7 +76,7 @@ class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
 
 
   abstract class Convolution(val orientation: Int, val sourceTexture: () => Int, val destTexture: () => Int)
-    extends Material[VertexXY, VertexUV, Unit](
+    extends JVMMaterial[VertexXY, VertexUV, Unit](
       gl = gl,
       vsPath = "texture_xy_vs.glsl",
       fsPath = "convolution_fs.glsl",
@@ -111,7 +111,7 @@ class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
   object VConvolution extends Convolution(1, () => tmpTexture1, () => tmpTexture2)
 
   // TODO: make use of parameters?
-  object Addition extends Material[VertexXY, VertexUV, Unit](
+  object Addition extends JVMMaterial[VertexXY, VertexUV, Unit](
     gl = gl,
     vsPath = "texture_xy_vs.glsl",
     fsPath = "texture_xy_fs.glsl",

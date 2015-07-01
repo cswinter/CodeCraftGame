@@ -7,7 +7,7 @@ import cwinter.codecraft.util.maths.{ColorRGB, VertexXYZ}
 
 
 class MaterialXYZRGB(implicit gl: GL4)
-extends Material[VertexXYZ, ColorRGB, Unit](
+extends JVMMaterial[VertexXYZ, ColorRGB, Unit](
   gl = gl,
   vsPath = "xyz_rgb_vs.glsl",
   fsPath = "rgb0_fs.glsl",

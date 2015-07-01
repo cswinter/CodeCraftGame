@@ -4,12 +4,12 @@ import javax.media.opengl.GL._
 import javax.media.opengl.GL4
 
 import cwinter.codecraft.util.maths.matrices.Matrix4x4
-import cwinter.codecraft.graphics.model.VBO
+import cwinter.codecraft.graphics.model.{VBO, JVMVBO$}
 import cwinter.codecraft.util.maths.{ColorRGBA, VertexXYZ}
 
 
 class TranslucentAdditivePIntensity(implicit gl: GL4)
-  extends Material[VertexXYZ, ColorRGBA, Intensity](
+  extends JVMMaterial[VertexXYZ, ColorRGBA, Intensity](
     gl = gl,
     vsPath = "xyz_rgba_vs.glsl",
     fsPath = "rgba_pint_fs.glsl",

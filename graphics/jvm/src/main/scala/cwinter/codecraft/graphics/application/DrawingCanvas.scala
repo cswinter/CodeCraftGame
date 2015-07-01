@@ -30,6 +30,7 @@ object DrawingCanvas {
     val jframe = new JFrame("Graphics engine drawing canvas")
     jframe.addWindowListener( new WindowAdapter {
       override def windowClosing(windowEvent: WindowEvent): Unit = {
+        println("exiting...")
         jframe.dispose()
         System.exit(0)
       }

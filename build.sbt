@@ -1,5 +1,6 @@
 import Dependencies._
 
+
 // Required to create a fat jar containing all jogl native libraries
 // Is probably a bit of a hack
 // see: https://github.com/sbt/sbt-assembly/issues/141 and
@@ -69,7 +70,7 @@ lazy val demos = (project in file("demos")).
   ).dependsOn(graphicsJVM, collisionsJVM, physicsJVM)
 
 
-lazy val core = (crossProject in file("core")).
+val core = (crossProject in file("core")).
   settings(Commons.settings: _*).
   settings(
     name := "codecraft",

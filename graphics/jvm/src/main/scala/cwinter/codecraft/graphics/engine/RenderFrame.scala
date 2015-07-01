@@ -21,7 +21,7 @@ object RenderFrame extends GLEventListener {
 
   var gl: GL4 = null
   implicit var fbo: FramebufferObject = null
-  implicit var renderStack: RenderStack = null
+  implicit var renderStack: JVMRenderStack = null
   var camera = new Camera2D
   var textRenderer: TextRenderer = null
 
@@ -77,7 +77,7 @@ object RenderFrame extends GLEventListener {
     renderText(drawable)
 
     // dispose one-time VBOs
-    PrimitiveModelBuilder.disposeAll()
+    PrimitiveModelBuilder.disposeAll(gl)
 
     // update fps
     val now = new DateTime().getMillis
@@ -157,7 +157,7 @@ object RenderFrame extends GLEventListener {
     setSwapInterval(1)
 
     fbo = new FramebufferObject
-    renderStack = new RenderStack
+    renderStack = new JVMRenderStack
     textRenderer = new TextRenderer(new Font("SansSerif", Font.BOLD, 14))
     camera.position = (gameWorld.initialCameraPos.x.toInt, gameWorld.initialCameraPos.y.toInt)
     gameWorld.run()
@@ -178,3 +178,4 @@ object RenderFrame extends GLEventListener {
       drawable.getGL.getGL4
     }
 }
+

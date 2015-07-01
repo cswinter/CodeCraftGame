@@ -19,6 +19,14 @@ class Matrix4x4(val data: Array[Float]) {
 
   def update(row: Int, col: Int, value: Float): Unit = data(row + col * 4) = value
 
+  def transposed: Matrix4x4 = {
+    val transpose = new Matrix4x4(new Array[Float](data.length))
+    for (col <- 0 to 3; row <- 0 to 3) {
+      transpose(col, row) = this(row, col)
+    }
+    transpose
+  }
+
   override def toString: String = {
     for (col <- 0 to 3) yield {
       for (row <- 0 to 3) yield
