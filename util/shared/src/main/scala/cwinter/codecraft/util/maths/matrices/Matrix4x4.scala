@@ -13,6 +13,7 @@ class Matrix4x4(val data: Array[Float]) {
     // scala> vals.issettings.maxPrintString = 1000
     // TODO: benchmark. is this actually faster than while loop?
     // TODO: also, add mutating variant to eliminate array allocation
+    // TODO: make it a macro?
     val result = new Matrix4x4(new Array[Float](16))
     result(0, 0) = left(0, 0) * right(0, 0) + left(0, 1) * right(1, 0) + left(0, 2) * right(2, 0) + left(0, 3) * right(3, 0)
     result(1, 0) = left(1, 0) * right(0, 0) + left(1, 1) * right(1, 0) + left(1, 2) * right(2, 0) + left(1, 3) * right(3, 0)

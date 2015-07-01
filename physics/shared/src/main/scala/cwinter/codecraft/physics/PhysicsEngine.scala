@@ -105,12 +105,12 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
     })
 
 
-    while (events.size > 0) {
+    while (events.nonEmpty) {
       val collision = events.dequeue()
 
       collision match {
         case ObjectWallCollision(obj, t) =>
-          if (obj.nextCollision == Some(collision)) {
+          if (obj.nextCollision.contains(collision)) {
             _time = t
             obj.updatePosition(t)
 
@@ -124,8 +124,8 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
             }
           }
         case ObjectObjectCollision(obj1, obj2, t) =>
-          if (obj1.nextCollision == Some(collision)) {
-            if (obj2.nextCollision == Some(collision)) {
+          if (obj1.nextCollision.contains(collision)) {
+            if (obj2.nextCollision.contains(collision)) {
               _time = t
               obj1.updatePosition(t)
               obj2.updatePosition(t)
@@ -141,11 +141,11 @@ class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val m
             }
             updateNextCollision(obj1, grid.nearbyObjects(obj1.cellX, obj1.cellY))
             if (obj1.removed) remove(obj1)
-          } else if (obj2.nextCollision == Some(collision)) {
+          } else if (obj2.nextCollision.contains(collision)) {
             updateNextCollision(obj2, grid.nearbyObjects(obj2.cellX, obj2.cellY))
           }
         case Transfer(obj, t, x, y, d) =>
-          if (obj.nextTransfer == Some(collision)) {
+          if (obj.nextTransfer.contains(collision)) {
             _time = t
             obj.updatePosition(t)
 
