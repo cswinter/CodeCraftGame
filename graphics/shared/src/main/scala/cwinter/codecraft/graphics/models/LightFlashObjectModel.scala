@@ -17,8 +17,8 @@ class LightFlashModelBuilder(lightFlash: LightFlashDescriptor)(implicit val rs: 
     val flash = Polygon(
       rs.GaussianGlowPIntensity,
       25,
-      ColorRGBA(1, 1, 1, 0),
       ColorRGBA(1, 1, 1, 1),
+      ColorRGBA(1, 1, 1, 0),
       radius = 1,
       zPos = -1
     ).getModel.scalable

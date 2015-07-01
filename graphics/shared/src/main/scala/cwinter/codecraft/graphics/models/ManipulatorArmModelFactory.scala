@@ -2,9 +2,9 @@ package cwinter.codecraft.graphics.models
 
 import cwinter.codecraft.graphics.engine.RenderStack
 import cwinter.codecraft.graphics.model.LinePrimitive
+import cwinter.codecraft.graphics.models.DroneColors.White
 import cwinter.codecraft.graphics.worldstate.Player
-import cwinter.codecraft.util.maths.{ColorRGB, ColorRGBA, VertexXY}
-import DroneColors.White
+import cwinter.codecraft.util.maths.{ColorRGBA, VertexXY}
 
 
 object ManipulatorArmModelFactory {
@@ -15,8 +15,8 @@ object ManipulatorArmModelFactory {
       VertexXY(x1, y1),
       VertexXY(x2, y2),
       3,
-      ColorRGBA(0.5f * player.color + 0.5f * White, 0),
-      ColorRGBA(White, 1),
+      ColorRGBA(0.5f * player.color + 0.5f * White, 1),
+      ColorRGBA(White, 0),
       zPos = 3
     ).noCaching.getModel
   }

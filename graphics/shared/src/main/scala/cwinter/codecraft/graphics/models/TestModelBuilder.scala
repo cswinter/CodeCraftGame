@@ -72,8 +72,8 @@ case class ProcessingModuleModelBuilder(positions: Seq[VertexXY], t: Int, tMergi
       Polygon(
         rs.GaussianGlow,
         50,
-        ColorRGBA(BaseCol * fade, 0),
         ColorRGBA(BaseCol * fade, 1),
+        ColorRGBA(BaseCol * fade, 0),
         10 * scale,
         position + pos
       ).getModel

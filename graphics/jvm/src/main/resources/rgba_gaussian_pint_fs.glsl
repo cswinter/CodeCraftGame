@@ -8,6 +8,7 @@ uniform float intensity;
 
 
 void main() {
-	float alpha = exp(-5 * fragmentCol.w * fragmentCol.w);
+    float x = 1 - fragmentCol.w;
+    float alpha = exp(-5 * x * x);
     outputCol = vec4(fragmentCol.x * intensity, fragmentCol.y * intensity, fragmentCol.z * intensity, alpha);
 }

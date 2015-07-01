@@ -15,8 +15,8 @@ case class DroneManipulatorModelBuilder(player: Player, position: VertexXY)(impl
     Polygon(
       rs.GaussianGlow,
       20,
-      ColorRGBA(0.5f * player.color + 0.5f * White, 0),
-      ColorRGBA(White, 1),
+      ColorRGBA(0.5f * player.color + 0.5f * White, 1),
+      ColorRGBA(White, 0),
       radius = 8,
       position = position,
       zPos = 1,
