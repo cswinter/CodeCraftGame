@@ -4,7 +4,7 @@ import cwinter.codecraft.graphics.materials.Material
 import cwinter.codecraft.graphics.model.{VBO, TheModelCache, PrimitiveModelBuilder}
 import cwinter.codecraft.graphics.models.TheWorldObjectModelFactory
 import cwinter.codecraft.graphics.worldstate.{Simulator, WorldObjectDescriptor}
-import cwinter.codecraft.util.maths.Vector2
+import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 import org.scalajs.dom
 import org.scalajs.dom.html
 import org.scalajs.dom.raw.{WebGLRenderingContext => GL}
@@ -31,6 +31,13 @@ class Renderer(
 
     val worldObjects = gameWorld.worldState
     val projectionT = camera.projection.transposed
+    val onScreen =
+      Rectangle(
+        camera.x - camera.zoomFactor * camera.screenWidth / 2,
+        camera.x + camera.zoomFactor * camera.screenWidth / 2,
+        camera.y - camera.zoomFactor * camera.screenHeight / 2,
+        camera.y + camera.zoomFactor * camera.screenHeight / 2
+      )
 
     for (
       material <- renderStack.materials
@@ -40,6 +47,7 @@ class Renderer(
 
       for {
         worldObject <- worldObjects ++ Debug.debugObjects
+        if worldObject intersects onScreen
         model = TheWorldObjectModelFactory.generateModel(worldObject, gameWorld.timestep)
       } model.draw(material)
 

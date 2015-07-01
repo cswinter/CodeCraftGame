@@ -1,7 +1,7 @@
 package cwinter.codecraft.graphics.worldstate
 
 import cwinter.codecraft.util.maths
-import cwinter.codecraft.util.maths.{ColorRGB, Float0To1, VertexXY}
+import cwinter.codecraft.util.maths.{Rectangle, ColorRGB, Float0To1}
 
 
 
@@ -10,6 +10,14 @@ sealed trait WorldObjectDescriptor {
   val xPos: Float
   val yPos: Float
   val orientation: Float
+
+  def intersects(rectangle: Rectangle): Boolean = true
+  @inline final protected def intersects(rectangle: Rectangle, size: Float): Boolean = {
+    xPos + size > rectangle.xMin &&
+      xPos - size < rectangle.xMax &&
+      yPos + size > rectangle.yMin &&
+      yPos - size < rectangle.yMax
+  }
 }
 
 case class DroneDescriptor(
@@ -33,6 +41,8 @@ case class DroneDescriptor(
   assert(!xPos.toDouble.isNaN)
   assert(!yPos.toDouble.isNaN)
   assert(!orientation.toDouble.isNaN)
+
+  override def intersects(rectangle: Rectangle) = intersects(rectangle, 200) // FIXME
 }
 
 
@@ -65,6 +75,9 @@ case class EnergyGlobeDescriptor(
   assert(fade <= 1)
   val identifier: Int = 0
   val orientation: Float = 0
+
+  override def intersects(rectangle: Rectangle): Boolean =
+    intersects(rectangle, 20) // FIXME
 }
 
 case class ManipulatorArm(player: Player, x1: Float, y1: Float, x2: Float, y2: Float)
@@ -73,6 +86,14 @@ case class ManipulatorArm(player: Player, x1: Float, y1: Float, x2: Float, y2: F
   val xPos: Float = 0
   val yPos: Float = 0
   val orientation: Float = 0
+
+  override def intersects(rectangle: Rectangle): Boolean = {
+    val left = math.min(x1, x2)
+    val right = math.max(x1, x2)
+    val bot = math.min(y1, y2)
+    val top = math.max(y1, y2)
+    rectangle intersects Rectangle(left, right, bot, top) // FIXME
+  }
 }
 
 case class MineralDescriptor(
@@ -84,7 +105,10 @@ case class MineralDescriptor(
   size: Int,
   harvested: Boolean = false,
   harvestingProgress: Option[Float0To1] = None
-) extends WorldObjectDescriptor
+) extends WorldObjectDescriptor {
+  override def intersects(rectangle: Rectangle): Boolean =
+    intersects(rectangle, 100) // FIXME
+}
 
 
 case class LightFlashDescriptor(

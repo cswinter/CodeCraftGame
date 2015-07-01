@@ -11,6 +11,13 @@ final case class Rectangle(xMin: Double, xMax: Double, yMin: Double, yMax: Doubl
 
   def width: Double = xMax - xMin
   def height: Double = yMax - yMin
+
+  def intersects(that: Rectangle): Boolean = !(
+      this.xMin > that.xMax ||
+      this.xMax < that.xMin ||
+      this.yMin > that.yMax ||
+      this.yMax > that.yMin
+    )
 }
 
 
