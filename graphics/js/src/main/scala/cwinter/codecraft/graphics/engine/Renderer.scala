@@ -6,6 +6,7 @@ import cwinter.codecraft.graphics.models.TheWorldObjectModelFactory
 import cwinter.codecraft.graphics.worldstate.{Simulator, WorldObjectDescriptor}
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 import org.scalajs.dom
+import org.scalajs.dom.document
 import org.scalajs.dom.html
 import org.scalajs.dom.raw.{WebGLRenderingContext => GL}
 
@@ -20,6 +21,20 @@ class Renderer(
   val camera = new Camera2D
   camera.position = (initialCameraPos.x.toFloat, initialCameraPos.y.toFloat)
   camera.screenDims = (canvas.width, canvas.height)
+
+  private[this] val keyEventHandler = new KeyEventHandler(gameWorld, camera)
+  document.onkeypress = (e: dom.KeyboardEvent) => {
+    val key = e.keyCode match {
+      case 37 => LeftArrow
+      case 39 => RightArrow
+      case 38 => UpArrow
+      case 40 => DownArrow
+      case 33 => PageUp
+      case 34 => PageDown
+      case _ => Letter(e.charCode.toChar)
+    }
+    keyEventHandler.keypress(key)
+  }
 
   def render(): Unit = {
     Material.resetDrawCalls()
