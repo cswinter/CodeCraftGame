@@ -39,6 +39,14 @@ class Renderer(
   def render(): Unit = {
     Material.resetDrawCalls()
 
+    val width = canvas.clientWidth
+    val height = canvas.clientHeight
+    if (width != camera.screenWidth || height != camera.screenHeight) {
+      camera.screenDims = (width, height)
+      canvas.width = width
+      canvas.height = height
+    }
+
     gl.viewport(0, 0, camera.screenWidth, camera.screenHeight)
 
     gl.clearColor(0, 0, 0, 1)
@@ -90,7 +98,6 @@ class Renderer(
         f"Last cached model: ${TheModelCache.lastCachedModel}"
     )*/
   }
-
 
   private def initGL(): GL = {
     val gl = canvas.getContext("experimental-webgl").asInstanceOf[GL]
