@@ -7,7 +7,7 @@ import javax.media.opengl.{GLCapabilities, GLProfile}
 import javax.swing.JFrame
 
 import com.jogamp.opengl.util.FPSAnimator
-import cwinter.codecraft.graphics.engine.RenderFrame
+import cwinter.codecraft.graphics.engine._
 import RenderFrame._
 import cwinter.codecraft.graphics.worldstate.Simulator
 
@@ -46,35 +46,21 @@ object DrawingCanvas {
     jframe.setVisible(true)
 
 
+    val keyEventHandler = new KeyEventHandler(gameWorld, camera)
     canvas.addKeyListener(new KeyListener {
-      val moveSpeed = 100
-      val zoomSpeed = 0.2f
-
-      override def keyTyped(keyEvent: KeyEvent): Unit = ()
-
-      override def keyPressed(keyEvent: KeyEvent): Unit = keyEvent.getKeyCode match {
-        case 37 | 65 /* LEFT, A */ => camera.x -= moveSpeed * camera.zoomFactor
-        case 39 | 68 /* RIGHT, D */ => camera.x += moveSpeed * camera.zoomFactor
-        case 38 | 87 /* UP, W */ => camera.y += moveSpeed * camera.zoomFactor
-        case 40 | 83 /* DOWN, S */ => camera.y -= moveSpeed * camera.zoomFactor
-        case 33 | 81 /* PAGE UP, Q */ => camera.zoom -= zoomSpeed
-        case 34 | 69 /* PAGE DOWN, E */ => camera.zoom += zoomSpeed
-        case 82 /* R */ =>
-          if (gameWorld.framerateTarget >= 30) gameWorld.framerateTarget -= 10
-          else if (gameWorld.framerateTarget >= 15) gameWorld.framerateTarget -= 5
-          else if (gameWorld.framerateTarget > 1) gameWorld.framerateTarget -= 1
-        case 70 /* F */ =>
-          if (gameWorld.framerateTarget < 10) gameWorld.framerateTarget += 1
-          else if (gameWorld.framerateTarget < 30) gameWorld.framerateTarget += 5
-          else gameWorld.framerateTarget += 10
-        case 32 /* SPACEBAR */ => gameWorld.togglePause()
-        case 77 => jframe.setBounds(0, 0, 3840, 2160)
-        case 80 /* P */ =>
-          if (gameWorld.framerateTarget == 5) gameWorld.framerateTarget = 30
-          else gameWorld.framerateTarget = 5
-        case _ => gameWorld.handleKeypress(keyEvent.getKeyChar)
+      override def keyPressed(keyEvent: KeyEvent): Unit = {
+        val key = keyEvent.getKeyCode match {
+          case 37 => LeftArrow
+          case 39 => RightArrow
+          case 38 => UpArrow
+          case 40 => DownArrow
+          case 33 => PageUp
+          case 34 => PageDown
+          case _ => Letter(keyEvent.getKeyChar)
+        }
+        keyEventHandler.keypress(key)
       }
-
+      override def keyTyped(keyEvent: KeyEvent): Unit = ()
       override def keyReleased(keyEvent: KeyEvent): Unit = ()
     })
 
