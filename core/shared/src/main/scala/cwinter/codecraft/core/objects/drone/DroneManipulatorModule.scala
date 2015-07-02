@@ -81,7 +81,7 @@ class DroneManipulatorModule(positions: Seq[Int], owner: DroneImpl)
         ) yield {
           val t = 50 * i + progress
           i += 1
-          val offset = 0.8f * drone.radius * Vector2(math.sin(t / (10.0 - i)), math.cos(t / (7.1 + i)))
+          val offset = 0.8f * drone.radius * Vector2(math.sin(t / (10.5 - i)), math.cos(t / (7.1 + i)))
           ManipulatorArm(
             owner.player,
             pos.x.toFloat, pos.y.toFloat,

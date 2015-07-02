@@ -33,10 +33,10 @@ class Renderer(
     val projectionT = camera.projection.transposed
     val onScreen =
       Rectangle(
-        camera.x - camera.zoomFactor * camera.screenWidth / 2,
-        camera.x + camera.zoomFactor * camera.screenWidth / 2,
-        camera.y - camera.zoomFactor * camera.screenHeight / 2,
-        camera.y + camera.zoomFactor * camera.screenHeight / 2
+        camera.x - camera.zoomFactor * 0.5f * camera.screenWidth,
+        camera.x + camera.zoomFactor * 0.5f * camera.screenWidth,
+        camera.y - camera.zoomFactor * 0.5f * camera.screenHeight,
+        camera.y + camera.zoomFactor * 0.5f * camera.screenHeight
       )
 
     for (
@@ -47,7 +47,7 @@ class Renderer(
 
       for {
         worldObject <- worldObjects ++ Debug.debugObjects
-        if worldObject intersects onScreen
+        if worldObject.intersects(onScreen)
         model = TheWorldObjectModelFactory.generateModel(worldObject, gameWorld.timestep)
       } model.draw(material)
 

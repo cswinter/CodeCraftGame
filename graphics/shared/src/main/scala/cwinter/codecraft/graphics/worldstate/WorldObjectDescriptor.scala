@@ -42,7 +42,7 @@ case class DroneDescriptor(
   assert(!yPos.toDouble.isNaN)
   assert(!orientation.toDouble.isNaN)
 
-  override def intersects(rectangle: Rectangle) = intersects(rectangle, 200) // FIXME
+  override def intersects(rectangle: Rectangle) = constructionState.nonEmpty || intersects(rectangle, 200) // FIXME
 }
 
 
@@ -107,7 +107,7 @@ case class MineralDescriptor(
   harvestingProgress: Option[Float0To1] = None
 ) extends WorldObjectDescriptor {
   override def intersects(rectangle: Rectangle): Boolean =
-    intersects(rectangle, 100) // FIXME
+    intersects(rectangle, 0) // FIXME
 }
 
 

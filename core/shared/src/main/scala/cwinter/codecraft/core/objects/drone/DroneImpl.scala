@@ -3,9 +3,9 @@ package cwinter.codecraft.core.objects.drone
 import cwinter.codecraft.core._
 import cwinter.codecraft.core.api.{DroneControllerBase, DroneSpec, MineralCrystal}
 import cwinter.codecraft.core.errors.Errors
-import cwinter.codecraft.core.objects.{MineralCrystalImpl, EnergyGlobeObject, WorldObject}
+import cwinter.codecraft.core.objects.{EnergyGlobeObject, MineralCrystalImpl, WorldObject}
 import cwinter.codecraft.core.replay._
-import cwinter.codecraft.graphics.worldstate.{DroneModuleDescriptor, DroneDescriptor, WorldObjectDescriptor, Player}
+import cwinter.codecraft.graphics.worldstate.{DroneDescriptor, DroneModuleDescriptor, Player, WorldObjectDescriptor}
 import cwinter.codecraft.util.maths.{Float0To1, Vector2}
 
 
