@@ -41,7 +41,7 @@ object DroneSignature {
       droneObject.modules,
       droneObject.modules.exists(_.isInstanceOf[ShieldGeneratorDescriptor]),
       droneObject.hullState,
-      droneObject.constructionState != None,
+      droneObject.constructionState.isDefined,
       if (hasAnimatedComponents) timestep % 100 else 0,
       droneObject.player)
   }

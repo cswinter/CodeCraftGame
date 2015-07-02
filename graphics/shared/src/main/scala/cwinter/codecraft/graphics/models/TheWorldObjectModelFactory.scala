@@ -1,7 +1,7 @@
 package cwinter.codecraft.graphics.models
 
 import cwinter.codecraft.graphics.engine.RenderStack
-import cwinter.codecraft.util.maths.matrices.{IdentityMatrix4x4, RotationZMatrix4x4, TranslationXYMatrix4x4}
+import cwinter.codecraft.util.maths.matrices._
 import cwinter.codecraft.graphics.model.{PolygonRing, ClosedModel}
 import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.util.maths.VertexXY
@@ -15,11 +15,8 @@ object TheWorldObjectModelFactory {
     val yPos = worldObject.yPos
     val orientation = worldObject.orientation
     val modelview =
-      new RotationZMatrix4x4(orientation) *
-        new TranslationXYMatrix4x4(xPos, yPos)
-    if (renderStack.modelviewTranspose) {
-      modelview.transpose()
-    }
+      if (renderStack.modelviewTranspose) new RotationZTranslationXYTransposedMatrix4x4(orientation, xPos, yPos)
+      else new RotationZTranslationXYMatrix4x4(orientation, xPos, yPos)
 
     worldObject match {
       case mineral: MineralDescriptor => new ClosedModel[Unit](
