@@ -189,9 +189,11 @@ case class DroneModel(
   override def draw(modelview: Matrix4x4, material: GenericMaterial): Unit = {
     for (t <- constructionState) setVertexCount(t * 3)
 
+    // TODO: rs.modelviewTranspose is brittle (because of code like this)
     val modelview2 =
       if (constructionState.isDefined) {
-        new TranslationMatrix4x4(0, 0, -1) * modelview
+        if (rs.modelviewTranspose) modelview * new TranslationMatrix4x4(0, 0, -1).transposed
+        else new TranslationMatrix4x4(0, 0, -1) * modelview
       } else modelview
 
 
