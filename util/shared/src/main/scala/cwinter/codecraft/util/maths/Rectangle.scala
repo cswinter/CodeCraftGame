@@ -16,7 +16,7 @@ final case class Rectangle(xMin: Double, xMax: Double, yMin: Double, yMax: Doubl
       this.xMin > that.xMax ||
       this.xMax < that.xMin ||
       this.yMin > that.yMax ||
-      this.yMax > that.yMin
+      this.yMax < that.yMin
     )
 }
 
