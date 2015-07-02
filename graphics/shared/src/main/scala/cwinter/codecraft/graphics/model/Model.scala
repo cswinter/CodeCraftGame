@@ -25,7 +25,7 @@ trait Model[T] {
 
   def vertexCount: Int
 
-  def scalable: ScalableModel[T] = new ScalableModel(this)
+  def scalable(transpose: Boolean = false): ScalableModel[T] = new ScalableModel(this, transpose)
   def identityModelview: IdentityModelviewModel[T] = new IdentityModelviewModel[T](this)
 }
 
@@ -47,7 +47,7 @@ object EmptyModel extends Model[Unit] {
 }
 
 
-class ScalableModel[T](val model: Model[T]) extends Model[(T, Float)] {
+class ScalableModel[T](val model: Model[T], transpose: Boolean = false) extends Model[(T, Float)] {
   private[this] var scale = 1.0f
 
   def update(params: (T, Float)): Unit = {
@@ -58,7 +58,9 @@ class ScalableModel[T](val model: Model[T]) extends Model[(T, Float)] {
   def setVertexCount(n: Int): Unit = model.setVertexCount(n)
 
   def draw(modelview: Matrix4x4, material: GenericMaterial): Unit = {
-    val scaledModelview = new DilationXYMatrix4x4(scale) * modelview
+    val scaledModelview =
+      if (transpose) modelview * new DilationXYMatrix4x4(scale)
+      else new DilationXYMatrix4x4(scale) * modelview
     model.draw(scaledModelview, material)
   }
 

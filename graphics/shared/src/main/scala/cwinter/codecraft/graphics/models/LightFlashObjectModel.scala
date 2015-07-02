@@ -21,7 +21,7 @@ class LightFlashModelBuilder(lightFlash: LightFlashDescriptor)(implicit val rs: 
       ColorRGBA(1, 1, 1, 0),
       radius = 1,
       zPos = -1
-    ).getModel.scalable
+    ).getModel.scalable(rs.modelviewTranspose)
 
     new LightFlashModel(flash)
   }
