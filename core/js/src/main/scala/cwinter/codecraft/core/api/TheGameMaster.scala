@@ -30,7 +30,7 @@ object TheGameMaster extends GameMasterLike {
     dom.setInterval(() => {
       renderer.render()
       simulator.run(1)
-    }, 30)
+    }, 15)
   }
   
   

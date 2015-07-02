@@ -129,8 +129,7 @@ class VisionTracker[T: Positionable](
         for (
           newObj <- value -- _inSight
           if newObj != this
-        )
-          events :+= EnteredSightRadius(newObj.elem)
+        ) events :+= EnteredSightRadius(newObj.elem)
         for (oldObj <- _inSight -- value)
           events :+= LeftSightRadius(oldObj.elem)
       }

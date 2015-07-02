@@ -2,7 +2,7 @@ package cwinter.codecraft.collisions
 
 import cwinter.codecraft.util.maths.Vector2
 
-trait Positionable[T] {
+trait Positionable[-T] {
   def position(t: T): Vector2
 }
 
