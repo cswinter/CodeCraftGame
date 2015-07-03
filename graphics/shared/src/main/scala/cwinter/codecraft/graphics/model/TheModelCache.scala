@@ -21,4 +21,8 @@ object TheModelCache {
   def CachedModelCount = nModels
 
   def lastCachedModel = _lastCachedModel
+
+  def clear(): Unit = {
+    cache.clear()
+  }
 }

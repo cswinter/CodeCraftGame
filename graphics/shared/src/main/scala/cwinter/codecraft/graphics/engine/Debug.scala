@@ -31,4 +31,8 @@ object Debug {
     objects = List.empty[WorldObjectDescriptor]
     _textModels = List.empty[TextModel]
   }
+
+  private[cwinter] def clearDrawAlways(): Unit = {
+    objects = List.empty[WorldObjectDescriptor]
+  }
 }

@@ -62,12 +62,14 @@ lazy val testai = (project in file("testai")).
     libraryDependencies ++= commonDependencies
   ).dependsOn(coreJVM)
 
-lazy val demos = (project in file("demos")).
+val demos = (crossProject in file("demos")).
   settings(Commons.settings: _*).
   settings(
     name := "cg.demos",
     libraryDependencies ++= commonDependencies
-  ).dependsOn(graphicsJVM, collisionsJVM, physicsJVM)
+  ).dependsOn(graphics, collisions, physics)
+lazy val demosJVM = demos.jvm
+lazy val demosJS = demos.js
 
 
 val core = (crossProject in file("core")).
@@ -97,7 +99,7 @@ lazy val scalajsTest = (project in file("scalajs-test")).
     name := "scalajs-test",
     libraryDependencies ++= commonDependencies,
     libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.8.0"
-  ).dependsOn(coreJS)
+  ).dependsOn(coreJS, demosJS)
 
 
 

@@ -1,8 +1,8 @@
 package cwinter.codecraft.demos.graphics
 
 import cwinter.codecraft.collisions.VisionTracker
-import cwinter.codecraft.graphics.application.DrawingCanvas
-import cwinter.codecraft.graphics.worldstate.{TestingObject, WorldObjectDescriptor, Simulator}
+import cwinter.codecraft.graphics.engine.GraphicsEngine
+import cwinter.codecraft.graphics.worldstate.{Simulator, TestingObject, WorldObjectDescriptor}
 
 
 class GraphicsSimulator(
@@ -84,6 +84,6 @@ class GraphicsSimulator(
 
   
   def start(): Unit = {
-    DrawingCanvas.run(this)
+    GraphicsEngine.run(this)
   }
 }

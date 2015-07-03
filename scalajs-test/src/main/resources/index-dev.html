@@ -17,6 +17,10 @@
             width: 100%;
             height: 100%;
         }
+        #tdcontent, #page {
+            width: 100%;
+            height: 100%;
+        }
     </style>
 </head>
 <body>
@@ -130,7 +134,20 @@
         }
     </script>
 
-    <canvas id="webgl-canvas" style="border: none;" width="1000" height="750"></canvas>
+
+    <table id="page">
+        <tr>
+            <td>
+                <a href="https://www.codinggame.wordpress.com">Blog</a>
+                Demos: <button id="btn-gameplay">Gameplay</button> <button id="btn-graphics">Graphics</button> <button id="btn-physics">Physics</button>
+            </td>
+        </tr>
+        <tr>
+            <td id="tdcontent">
+                <canvas id="webgl-canvas" style="border: none;" width="1000" height="750"></canvas>
+            </td>
+        </tr>
+    </table>
 
     <script type="text/javascript" src="../scalajs-test-fastopt.js"></script>
     <script type="text/javascript">

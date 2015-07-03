@@ -27,10 +27,11 @@ object TheGameMaster extends GameMasterLike {
   def run(simulator: DroneWorldSimulator): Unit = {
     require(canvas != null, "Must first set TheGameMaster.canvas variable to the webgl canvas element.")
     val renderer = new Renderer(canvas, simulator, simulator.map.spawns.head)
-    dom.setInterval(() => {
+    val intervalID = dom.setInterval(() => {
       renderer.render()
       simulator.run(1)
     }, 15)
+    canvas.setAttribute("interval-id", intervalID.toString)
   }
   
   
