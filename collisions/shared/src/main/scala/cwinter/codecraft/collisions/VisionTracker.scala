@@ -18,6 +18,7 @@ class VisionTracker[T: Positionable](
   val width = (xMax - xMin) / radius
   val height = (yMax - yMin) / radius
 
+  private[this] var tracked = Set.empty[Element]
   private[this] val elementMap = collection.mutable.Map.empty[T, Element]
   private[this] val grid = new SquareGrid[Element](xMin, xMax, yMin, yMax, radius)(ElementIsPositionable)
 
@@ -25,6 +26,7 @@ class VisionTracker[T: Positionable](
   def insert(obj: T, generateEvents: Boolean = false): Unit = {
     val elem = new Element(obj, generateEvents)
     elementMap.put(obj, elem)
+    if (generateEvents) tracked += elem
     val (x, y) = elem.cell
 
     for (other <- grid.nearbyObjects(x, y)) {
@@ -44,29 +46,32 @@ class VisionTracker[T: Positionable](
     val (x, y) = elem.cell
     grid.remove(elem, x, y)
     elementMap -= obj
+    if (elem.generateEvents) tracked -= elem
   }
 
 
   def updateAll() = {
     for (elem <- elementMap.values) {
       val (newX, newY) = grid.computeCell(elem)
-      if (newX < -1 || newX > 1 || newY < -1 || newY > 1) {
+      val dx = newX - elem.x
+      val dy = newY - elem.y
+      if (dx < -1 || dx > 1 || dy < -1 || dy > 1) {
         grid.remove(elem, elem.cell)
         grid.insert(elem, newX, newY)
         elem.cell = (newX, newY)
       } else {
         if (elem.x != newX) {
-          grid.xTransfer(elem, elem.cell, newX - elem.x)
+          grid.xTransfer(elem, elem.cell, dx)
           elem.x = newX
         }
         if (elem.y != newY) {
-          grid.yTransfer(elem, elem.cell, newY - elem.y)
+          grid.yTransfer(elem, elem.cell, dy)
           elem.y = newY
         }
       }
     }
 
-    for (elem <- elementMap.values) {
+    for (elem <- tracked) {
       val (x, y) = elem.cell
 
       elem.inSight = {
