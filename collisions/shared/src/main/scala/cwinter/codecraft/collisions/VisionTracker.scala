@@ -1,6 +1,7 @@
 package cwinter.codecraft.collisions
 
 import Positionable.PositionableOps
+import cwinter.codecraft.util.maths.Vector2
 
 class VisionTracker[T: Positionable](
   val xMin: Int,
@@ -18,22 +19,22 @@ class VisionTracker[T: Positionable](
   val height = (yMax - yMin) / radius
 
   private[this] val elementMap = collection.mutable.Map.empty[T, Element]
-  private[this] val cells = Array.fill(width + 2, height + 2)(Set.empty[Element])
+  private[this] val grid = new SquareGrid[Element](xMin, xMax, yMin, yMax, radius)(ElementIsPositionable)
 
 
   def insert(obj: T, generateEvents: Boolean = false): Unit = {
     val elem = new Element(obj, generateEvents)
+    elementMap.put(obj, elem)
     val (x, y) = elem.cell
 
-    for (other <- nearbyElements(x, y)) {
+    for (other <- grid.nearbyObjects(x, y)) {
       if (contains(elem, other)) {
         elem.inSight += other
         other.inSight += elem
       }
     }
 
-    cells(x)(y) += elem
-    elementMap.put(obj, elem)
+    grid.insert(elem, x, y)
   }
 
 
@@ -41,16 +42,27 @@ class VisionTracker[T: Positionable](
     val elem = elementMap(obj)
     for (e <- elem.inSight) e.inSight -= elem
     val (x, y) = elem.cell
-    cells(x)(y) -= elem
+    grid.remove(elem, x, y)
     elementMap -= obj
   }
 
 
   def updateAll() = {
     for (elem <- elementMap.values) {
-      val actualCell = computeCell(elem)
-      if (elem.cell != actualCell) {
-        changeCell(elem, actualCell)
+      val (newX, newY) = grid.computeCell(elem)
+      if (newX < -1 || newX > 1 || newY < -1 || newY > 1) {
+        grid.remove(elem, elem.cell)
+        grid.insert(elem, newX, newY)
+        elem.cell = (newX, newY)
+      } else {
+        if (elem.x != newX) {
+          grid.xTransfer(elem, elem.cell, newX - elem.x)
+          elem.x = newX
+        }
+        if (elem.y != newY) {
+          grid.yTransfer(elem, elem.cell, newY - elem.y)
+          elem.y = newY
+        }
       }
     }
 
@@ -59,23 +71,12 @@ class VisionTracker[T: Positionable](
 
       elem.inSight = {
         for {
-          other <- nearbyElements(x, y)
+          other <- grid.nearbyObjects(x, y)
           if elem != other && contains(elem, other)
         } yield other
       }.toSet
     }
   }
-
-  private def changeCell(elem: Element, newCell: (Int, Int)): Unit = {
-    val (x1, y1) = elem.cell
-    cells(x1)(y1) -= elem
-
-    val (x2, y2) = newCell
-    cells(x2)(y2) += elem
-
-    elem.cell = newCell
-  }
-
 
   def getVisible(obj: T): Set[T] =
     elementMap(obj).inSight.map(_.elem)
@@ -90,29 +91,12 @@ class VisionTracker[T: Positionable](
     (diff dot diff) <= radius * radius
   }
 
-  private def computeCell(elem: Element): (Int, Int) = {
-    val cellX = 1 + (elem.position.x.toInt - xMin) / radius
-    val cellY = 1 + (elem.position.y.toInt - yMin) / radius
-    (cellX, cellY)
-  }
-
-  private def nearbyElements(x: Int, y: Int): Iterator[Element] =
-    cells(x - 1)(y + 1).iterator ++
-      cells(x + 0)(y + 1).iterator ++
-      cells(x + 1)(y + 1).iterator ++
-      cells(x - 1)(y + 0).iterator ++
-      cells(x + 0)(y + 0).iterator ++
-      cells(x + 1)(y + 0).iterator ++
-      cells(x - 1)(y - 1).iterator ++
-      cells(x + 0)(y - 1).iterator ++
-      cells(x + 1)(y - 1).iterator
-
   private final class Element(
     val elem: T,
     val generateEvents: Boolean
   ) {
     private[this] var _inSight = Set.empty[Element]
-    var cell = computeCell(this)
+    var cell = grid.computeCell(this)
     private[this] var events = Seq.empty[Event]
 
 
@@ -146,6 +130,17 @@ class VisionTracker[T: Positionable](
     def inSight: Set[Element] = _inSight
 
     def position = elem.position
+
+    def x = cell._1
+    def y = cell._2
+    def x_=(value: Int): Unit =
+      cell = cell.copy(_1 = value)
+    def y_=(value: Int): Unit =
+      cell = cell.copy(_2 = value)
+  }
+
+  implicit private object ElementIsPositionable extends Positionable[Element] {
+    override def position(e: Element): Vector2 = e.elem.position
   }
 
   sealed trait Event

@@ -38,10 +38,21 @@ class SquareGrid[T: Positionable](
 
   def remove(obj: T, cell: (Int, Int)): Unit = {
     val (x, y) = cell
+    remove(obj, x, y)
+  }
+
+  def remove(obj: T, x: Int, y: Int): Unit = {
     assert(cells(x)(y).contains(obj))
     cells(x)(y) -= obj
   }
 
+  /**
+   * Updates the x grid position of an object.
+   * @param obj The object to be updated.
+   * @param cell The old cell value.
+   * @param direction The change in x value. The new cell will be `cell + (direction, 0)`.
+   * @return Returns all objects which are now adjacent.
+   */
   def xTransfer(obj: T, cell: (Int, Int), direction: Int): Iterator[T] = {
     assert(direction == 1 || direction == -1)
     remove(obj, cell)
@@ -57,7 +68,7 @@ class SquareGrid[T: Positionable](
 
 
   def yTransfer(obj: T, cell: (Int, Int), direction: Int): Iterator[T] = {
-    assert(direction == 1 || direction == -1)
+    assert(direction == 1 || direction == -1, s"Parameter direction must be either 1 or -1. Actual value: $direction")
     remove(obj, cell)
 
     val x = cell._1
@@ -73,8 +84,10 @@ class SquareGrid[T: Positionable](
   def computeCell[T2: Positionable](elem: T2): (Int, Int) = {
     // if an object spawns outside of the bounds, expression can be negative, so we need floor
     // toInt will round UP for negative values
-    val cellX = Padding + math.floor((elem.position.x - xMin) / cellWidth).toInt
-    val cellY = Padding + math.floor((elem.position.y - yMin) / cellWidth).toInt
+    // ALSO: we must floor the x/y components of the position BEFORE subtracting xMin/yMin, otherwise there might
+    // be precision loss (e.g. adding denormalized to xMin will do nothing)
+    val cellX = Padding + ((math.floor(elem.position.x) - xMin) / cellWidth).toInt
+    val cellY = Padding + ((math.floor(elem.position.y) - yMin) / cellWidth).toInt
     assert({
       val bounds = cellBounds(cellX, cellY)
       val Vector2(x, y) = elem.position
