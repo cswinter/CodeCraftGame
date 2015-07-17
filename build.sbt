@@ -50,8 +50,8 @@ lazy val collisionsJVM = collisions.jvm
 lazy val collisionsJS = collisions.js
 
 lazy val physics = (crossProject in file("physics")).
-  settings(Commons.settings: _*)
-  .settings(
+  settings(Commons.settings: _*).
+  settings(
     name := "cg.physics",
     libraryDependencies ++= commonDependencies
   ).dependsOn(util, collisions)
@@ -105,8 +105,8 @@ lazy val scalajsTest = (project in file("scalajs-test")).
   ).dependsOn(coreJS, demosJS)
 
 
-
-
+lazy val root = project.in(file(".")).
+  aggregate(coreJS, coreJVM, graphicsJS, graphicsJVM, utilJS, utilJVM, physicsJS, physicsJVM, collisionsJS, collisionsJVM)
 
 
 

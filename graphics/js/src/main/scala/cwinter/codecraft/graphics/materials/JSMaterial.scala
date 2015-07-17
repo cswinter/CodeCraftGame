@@ -35,9 +35,9 @@ class JSMaterial[TPosition <: Vertex, TColor <: Vertex, TParams](
   val nComponents = nCompPos + nCompCol
 
 
-  /******************
-    * INITIALISATION *
-    ******************/
+  /*#################
+   # INITIALISATION #
+   #################*/
 
   // compile shaders and attach to program
   protected val programID = gl.createProgram()
@@ -59,9 +59,9 @@ class JSMaterial[TPosition <: Vertex, TColor <: Vertex, TParams](
     vbo.asInstanceOf[JSVBO]
   }
 
-  /********************
-    * PUBLIC INTERFACE *
-    ********************/
+  /*###################
+   # PUBLIC INTERFACE #
+   ###################*/
 
   def beforeDraw(projection: Matrix4x4): Unit = {
     gl.useProgram(programID)
@@ -140,9 +140,9 @@ class JSMaterial[TPosition <: Vertex, TColor <: Vertex, TParams](
   }
 
 
-  /*******************
-    * PRIVATE METHODS *
-    *******************/
+  /*##################
+   # PRIVATE METHODS #
+   ##################*/
 
 
   /**
@@ -175,7 +175,7 @@ class JSMaterial[TPosition <: Vertex, TColor <: Vertex, TParams](
     if (!compileStatus.asInstanceOf[Boolean]) {
       throw new Exception(gl.getShaderInfoLog(shaderHandle))
     }
-    /**
+    /*
     // Check compile status.
     val compiled = new Array[Int](1)
     gl.getShaderiv(shaderHandle, GL.COMPILE_STATUS, compiled, 0)
@@ -210,7 +210,7 @@ class JSMaterial[TPosition <: Vertex, TColor <: Vertex, TParams](
    * Print out errors from the shader info log, if any.
    */
   protected def checkShaderInfoLog(shaderID: WebGLShader): Unit = {
-    /**
+    /*
     val logLength = new Array[Int](1)
     glGetShaderiv(shaderID, GL.INFO_LOG_LENGTH, logLength, 0)
 

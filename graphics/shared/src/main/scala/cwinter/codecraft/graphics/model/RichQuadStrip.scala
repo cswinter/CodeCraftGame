@@ -25,7 +25,7 @@ case class RichQuadStrip[TColor <: Vertex : ClassTag, TParams](
   protected def computeVertexData(): Seq[(VertexXYZ, TColor)] = {
     // diagram: https://www.dropbox.com/sc/owb97vdjnl7bxq0/AAAg0qFJNR5lyxoB4RG7OLJ6a
 
-    /** compute directions, normals and left/right points and connector points **/
+    // compute directions, normals and left/right points and connector points
     val direction = new Array[VertexXY](n - 1)
     val normal = new Array[VertexXY](n - 1)
     val leftStart = new Array[VertexXY](n - 1)
@@ -59,7 +59,7 @@ case class RichQuadStrip[TColor <: Vertex : ClassTag, TParams](
 
         connector(i) = direction(i) * alpha + start
 
-        /** reassign outside curve points to the connector as appropriate **/
+        // reassign outside curve points to the connector as appropriate
         if (leftConnector) {
           leftStart(i) = connector(i)
           leftEnd(i - 1) = connector(i)
@@ -70,7 +70,7 @@ case class RichQuadStrip[TColor <: Vertex : ClassTag, TParams](
       }
     }
 
-    /** set triangle data **/
+    // set triangle data
     val stride = 21
     val vertexPos = new ArrayBuffer[VertexXYZ]((n - 1) * stride - 9)
     for (i <- 0 until n -1)
