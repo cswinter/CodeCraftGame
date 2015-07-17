@@ -1,6 +1,7 @@
 package cwinter.codecraft.graphics.materials
 
 import cwinter.codecraft.graphics.model.VBO
+import cwinter.codecraft.util.CompileTimeLoader
 import cwinter.codecraft.util.maths.matrices.Matrix4x4
 import cwinter.codecraft.util.maths.{ColorRGBA, VertexXYZ}
 import org.scalajs.dom.raw.{WebGLRenderingContext => GL}
@@ -8,8 +9,8 @@ import org.scalajs.dom.raw.{WebGLRenderingContext => GL}
 class GaussianGlowPIntensity(implicit gl: GL)
   extends JSMaterial[VertexXYZ, ColorRGBA, Intensity](
     gl = gl,
-    vsID = "xyz_rgba_vs",
-    fsID = "rgba_gaussian_pint_fs",
+    vsSource = CompileTimeLoader.loadResource("xyz_rgba_vs.glsl"),
+    fsSource = CompileTimeLoader.loadResource("rgba_gaussian_pint_fs.glsl"),
     "vertexPos",
     Some("vertexCol"),
     GL.BLEND

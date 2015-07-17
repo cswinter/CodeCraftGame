@@ -4,7 +4,6 @@ import javax.media.opengl.GL._
 import javax.media.opengl.GL2ES3._
 import javax.media.opengl.GL4
 
-
 class FramebufferObject(implicit val gl: GL4) {
   import gl._
   private[this] val intRef = new Array[Int](1)

@@ -19,7 +19,8 @@ lazy val util = (crossProject in file("util")).
   settings(Commons.settings: _*).
   settings(
     name := "cg.util",
-    libraryDependencies ++= commonDependencies
+    libraryDependencies ++= commonDependencies,
+    libraryDependencies += "org.scala-lang" % "scala-reflect" % "2.11.6"
   )
 lazy val utilJVM = util.jvm
 lazy val utilJS = util.js
@@ -32,7 +33,9 @@ lazy val graphics = (crossProject in file("graphics")).
   ).jvmSettings(
     libraryDependencies ++= graphicsJVMDependencies
   ).jsSettings(
-    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.8.0"
+    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.8.0",
+    // add resources of the current project into the build classpath
+    unmanagedClasspath in Compile <++= unmanagedResources in Compile
   ).dependsOn(util)
 lazy val graphicsJVM = graphics.jvm
 lazy val graphicsJS = graphics.js
