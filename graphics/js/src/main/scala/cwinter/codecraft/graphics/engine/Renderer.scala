@@ -62,20 +62,24 @@ class Renderer(
         camera.y + camera.zoomFactor * 0.5f * camera.screenHeight
       )
 
-    for (
-      material <- renderStack.materials
-      if material != null
-    ) {
+    var mcurr = renderStack.materials
+    while (mcurr != Nil) {
+      val material = mcurr.head
       material.beforeDraw(projectionT)
 
-      for {
-        worldObject <- worldObjects ++ Debug.debugObjects
-        if worldObject.intersects(onScreen)
-        model = TheWorldObjectModelFactory.generateModel(worldObject, gameWorld.timestep)
-      } model.draw(material)
+      var objcurr = worldObjects ++ Debug.debugObjects
+      while (objcurr != Nil) {
+        val worldObject = objcurr.head
+        if (worldObject.intersects(onScreen)) {
+          val model = TheWorldObjectModelFactory.generateModel(worldObject, gameWorld.timestep)
+          model.draw(material)
+        }
 
+        objcurr = objcurr.tail
+      }
 
       material.afterDraw()
+      mcurr = mcurr.tail
     }
 
     // TODO: implement rendering

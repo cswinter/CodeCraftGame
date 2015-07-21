@@ -3,14 +3,16 @@ package cwinter.codecraft.graphics.models
 import cwinter.codecraft.graphics.engine.RenderStack
 import cwinter.codecraft.graphics.model.{Model, ModelBuilder, Polygon}
 import cwinter.codecraft.graphics.worldstate.MineralDescriptor
+import cwinter.codecraft.util.PrecomputeHash
 import cwinter.codecraft.util.maths.{ColorRGBA, ColorRGB}
 
 
 case class MineralSignature(size: Int, harvested: Boolean, harvestingProgress: Option[Float])
+extends PrecomputeHash
 
 class MineralModelBuilder(mineral: MineralDescriptor)(implicit val rs: RenderStack)
   extends ModelBuilder[MineralSignature, Unit] {
-  val signature = MineralSignature(mineral.size, mineral.harvested, mineral.harvestingProgress.map(_.value))
+  val signature = mineral.signature
 
   override protected def buildModel: Model[Unit] = {
     val size = mineral.size

@@ -1,7 +1,8 @@
 package cwinter.codecraft.graphics.worldstate
 
+import cwinter.codecraft.graphics.models.MineralSignature
 import cwinter.codecraft.util.maths
-import cwinter.codecraft.util.maths.{Rectangle, ColorRGB, Float0To1}
+import cwinter.codecraft.util.maths.{ColorRGB, Float0To1, Rectangle}
 
 
 
@@ -106,6 +107,8 @@ case class MineralDescriptor(
   harvested: Boolean = false,
   harvestingProgress: Option[Float0To1] = None
 ) extends WorldObjectDescriptor {
+  private[graphics] val signature = MineralSignature(size, harvested, harvestingProgress.map(_.value))
+
   override def intersects(rectangle: Rectangle): Boolean =
     intersects(rectangle, 0) // FIXME
 }

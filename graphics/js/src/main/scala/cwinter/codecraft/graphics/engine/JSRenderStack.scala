@@ -8,7 +8,6 @@ import cwinter.codecraft.util.maths._
 
 
 class JSRenderStack(implicit gl: GL) extends RenderStack {
-  override val SimpleMaterial: Material[VertexXY, EmptyVertex.type, Unit] = null // FIXME
   override val TranslucentAdditive: Material[VertexXYZ, ColorRGBA, Unit] = new TranslucentAdditive
   override val MaterialXYZRGB: Material[VertexXYZ, ColorRGB, Unit] = new MaterialXYZRGB
   override val GaussianGlow: Material[VertexXYZ, ColorRGBA, Unit] = new GaussianGlow

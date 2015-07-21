@@ -8,22 +8,35 @@ import cwinter.codecraft.util.maths.{Float0To1, Vector2}
 
 private[core] class MineralCrystalImpl(
   val size: Int,
-  var position: Vector2,
-  var harvested: Boolean = false,
-  var harvestPosition: Vector2 = Vector2.Null,
-  var harvestProgress: Option[Float0To1] = None
+  private[this] var _position: Vector2,
+  private[this] var _harvested: Boolean = false,
+  private[this] var _harvestPosition: Vector2 = Vector2.Null,
+  private[this] var _harvestProgress: Option[Float0To1] = None
 ) extends WorldObject {
+  private[this] var _descriptor = Seq(createDescriptor)
 
-  override private[core] def descriptor: Seq[MineralDescriptor] = Seq(
-    harvestProgress match {
-      case Some(_) =>
-        MineralDescriptor(
-          id, harvestPosition.x.toFloat, harvestPosition.y.toFloat,
-          0, size, harvested, harvestProgress)
-      case None =>
-        MineralDescriptor(id, position.x.toFloat, position.y.toFloat, 0, size, harvested)
-    }
-  )
+  def position: Vector2 = _position
+  def position_=(value: Vector2): Unit = { _position = value; updateDescriptor() }
+  def harvested: Boolean = _harvested
+  def harvested_=(value: Boolean): Unit = { _harvested = value; updateDescriptor() }
+  def harvestPosition: Vector2 = _harvestPosition
+  def harvestPosition_=(value: Vector2): Unit = { _harvestPosition = value; updateDescriptor() }
+  def harvestProgress: Option[Float0To1] = _harvestProgress
+  def harvestProgress_=(value: Option[Float0To1]) = { _harvestProgress = value; updateDescriptor() }
+
+
+  @inline final private[this] def updateDescriptor(): Unit = _descriptor = Seq(createDescriptor)
+
+  private def createDescriptor: MineralDescriptor = harvestProgress match {
+    case Some(_) =>
+      MineralDescriptor(
+        id, harvestPosition.x.toFloat, harvestPosition.y.toFloat,
+        0, size, harvested, harvestProgress)
+    case None =>
+      MineralDescriptor(id, position.x.toFloat, position.y.toFloat, 0, size, harvested)
+  }
+
+  override private[core] def descriptor: Seq[MineralDescriptor] = _descriptor
 
   override private[core] def hasDied = false
 
