@@ -1,5 +1,9 @@
 package cwinter.codecraft.util.maths
 
+import scala.scalajs.js.annotation.{JSExport, JSExportAll}
+
+@JSExport
+@JSExportAll
 case class Vector2(x: Double, y: Double) {
   import Vector2._
   assert(isValid)

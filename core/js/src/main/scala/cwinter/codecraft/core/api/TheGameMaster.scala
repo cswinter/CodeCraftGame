@@ -8,6 +8,9 @@ import cwinter.codecraft.util.maths.Rectangle
 import org.scalajs.dom
 import org.scalajs.dom.html
 
+import scala.scalajs.js.annotation.JSExportAll
+
+@JSExportAll
 object TheGameMaster extends GameMasterLike {
   var canvas: html.Canvas = null
   private[this] var intervalID: Option[Int] = None

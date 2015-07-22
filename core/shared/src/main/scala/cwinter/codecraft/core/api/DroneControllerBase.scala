@@ -4,7 +4,10 @@ import cwinter.codecraft.core.objects.drone._
 import cwinter.codecraft.graphics.worldstate.Player
 import cwinter.codecraft.util.maths.{Rectangle, Rng, Vector2}
 
-abstract class DroneControllerBase extends Drone {
+import scala.scalajs.js.annotation.JSExportAll
+
+@JSExportAll
+trait DroneControllerBase extends Drone {
   private[this] var _drone: DroneImpl = null
 
   // abstract methods for event handling

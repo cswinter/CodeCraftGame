@@ -2,8 +2,10 @@ package cwinter.codecraft.core.api
 
 import scala.scalajs.js
 import scala.scalajs.js.JSConverters._
+import scala.scalajs.js.annotation.JSExportAll
 
 
+@JSExportAll
 class JSDroneController extends DroneControllerBase {
   /**
    * Gets all mineral crystals stored by this drone.
