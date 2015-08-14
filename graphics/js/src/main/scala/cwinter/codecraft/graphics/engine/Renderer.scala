@@ -23,7 +23,7 @@ class Renderer(
   camera.screenDims = (canvas.width, canvas.height)
 
   private[this] val keyEventHandler = new KeyEventHandler(gameWorld, camera)
-  document.onkeypress = (e: dom.KeyboardEvent) => {
+  canvas.onkeypress = (e: dom.KeyboardEvent) => {
     val key = e.keyCode match {
       case 37 => LeftArrow
       case 39 => RightArrow
