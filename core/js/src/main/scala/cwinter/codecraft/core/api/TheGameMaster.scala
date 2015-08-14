@@ -13,10 +13,13 @@ import scala.scalajs.js.annotation.JSExportAll
 @JSExportAll
 object TheGameMaster extends GameMasterLike {
   var canvas: html.Canvas = null
+  var currentSimulator: DroneWorldSimulator = null
   private[this] var intervalID: Option[Int] = None
 
 
   def runWithAscii(simulator: DroneWorldSimulator): Unit = {
+    currentSimulator = simulator
+
     println("Starting simulator...")
     dom.setInterval(() => {
       if (render != null) {
@@ -30,6 +33,8 @@ object TheGameMaster extends GameMasterLike {
   }
 
   def run(simulator: DroneWorldSimulator): Unit = {
+    currentSimulator = simulator
+
     require(canvas != null, "Must first set TheGameMaster.canvas variable to the webgl canvas element.")
     require(intervalID.isEmpty, "Can only run one CodeCraft game at a time.")
     val renderer = new Renderer(canvas, simulator, simulator.map.spawns.head)

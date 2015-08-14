@@ -33,7 +33,8 @@ class DroneWorldSimulator(
 
   private val visibleObjects = collection.mutable.Set.empty[WorldObject]
   private val dynamicObjects = collection.mutable.Set.empty[WorldObject]
-  private val drones = collection.mutable.Set.empty[DroneImpl]
+  private val _drones = collection.mutable.Set.empty[DroneImpl]
+  def drones = _drones
   private var deadDrones = List.empty[DroneImpl]
 
 
@@ -82,7 +83,7 @@ class DroneWorldSimulator(
   private def spawnDrone(drone: DroneImpl): Unit = {
     visibleObjects.add(drone)
     dynamicObjects.add(drone)
-    drones.add(drone)
+    _drones.add(drone)
     visionTracker.insert(drone, generateEvents=true)
     physicsEngine.addObject(drone.dynamics)
     drone.initialise(physicsEngine.time)
@@ -91,7 +92,7 @@ class DroneWorldSimulator(
   private def droneKilled(drone: DroneImpl): Unit = {
     visibleObjects.remove(drone)
     dynamicObjects.remove(drone)
-    drones.remove(drone)
+    _drones.remove(drone)
     visionTracker.remove(drone)
     physicsEngine.remove(drone.dynamics)
 
@@ -121,14 +122,14 @@ class DroneWorldSimulator(
 
     if (showMissileRadius) {
       for (
-        d <- drones
+        d <- _drones
         if d.spec.missileBatteries > 0
       ) {
         Debug.draw(DrawCircleOutline(d.position.x.toFloat, d.position.y.toFloat, DroneConstants.MissileLockOnRadius, ColorRGB(1, 0, 0)))
       }
     }
     if (showSightRadius) {
-      for (d <- drones) {
+      for (d <- _drones) {
         Debug.draw(DrawCircleOutline(d.position.x.toFloat, d.position.y.toFloat, DroneSpec.SightRadius, ColorRGB(0, 1, 0)))
       }
     }
@@ -138,13 +139,13 @@ class DroneWorldSimulator(
     // check win condition
     if (timestep % 30 == 0) {
       if (mothership1.hasDied) {
-        for (drone <- drones) {
+        for (drone <- _drones) {
           if (drone.player == mothership2.player) {
             Errors.inform("Victory!", drone.position)
           }
         }
       } else if (mothership2.hasDied) {
-        for (drone <- drones) {
+        for (drone <- _drones) {
           if (drone.player == mothership1.player) {
             Errors.inform("Victory!", drone.position)
           }
@@ -153,13 +154,13 @@ class DroneWorldSimulator(
     }
 
     for (r <- replayer) {
-      implicit val droneRegistry = drones.map(d => (d.id, d)).toMap
+      implicit val droneRegistry = _drones.map(d => (d.id, d)).toMap
       implicit val mineralRegistry = map.minerals.map(m => (m.id, m)).toMap
       r.run(timestep)
     }
 
     // handle all drone events (execute user code)
-    for (drone <- drones) {
+    for (drone <- _drones) {
       drone.processEvents()
     }
 
@@ -221,7 +222,7 @@ class DroneWorldSimulator(
     // COLLECT ALL EVENTS FROM PHYSICS SIMULATION
 
     visionTracker.updateAll()
-    for (drone <- drones) drone.objectsInSight = visionTracker.getVisible(drone)
+    for (drone <- _drones) drone.objectsInSight = visionTracker.getVisible(drone)
     // SPAWN NEW OBJECTS HERE???
     for {
       (drone: DroneImpl, events) <- visionTracker.collectEvents()
