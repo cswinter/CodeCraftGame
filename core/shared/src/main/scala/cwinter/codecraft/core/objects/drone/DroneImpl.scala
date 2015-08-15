@@ -363,9 +363,7 @@ object DroneCommand {
       (implicit droneRegistry: Map[Int, DroneImpl], mineralRegistry: Map[Int, MineralCrystalImpl]): Option[DroneCommand] = string match {
     case CaseClassRegex("ConstructDrone", params) =>
       val p = smartSplit(params)
-      val CaseClassRegex("DroneSpec", specParamsStr) = p(0)
-      val specParams = specParamsStr.split(",")
-      val spec = new DroneSpec(specParams(0).toInt, specParams(1).toInt, specParams(2).toInt, specParams(3).toInt, specParams(4).toInt, specParams(5).toInt)
+      val spec = DroneSpec(p(0))
       val controller = new DummyDroneController
       val position = Vector2(p(2))
       Some(ConstructDrone(spec, controller, position))

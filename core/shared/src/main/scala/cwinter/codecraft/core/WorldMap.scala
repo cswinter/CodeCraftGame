@@ -1,17 +1,51 @@
 package cwinter.codecraft.core
 
+import cwinter.codecraft.core.api.{DroneControllerBase, DroneSpec}
 import cwinter.codecraft.core.objects.MineralCrystalImpl
+import cwinter.codecraft.graphics.worldstate.Player
 import cwinter.codecraft.util.maths.{Rng, Rectangle, Vector2}
+
 
 case class WorldMap(
   minerals: Seq[MineralCrystalImpl],
   size: Rectangle,
-  spawns: Seq[Vector2]
+  initialDrones: Seq[Spawn],
+  winConditions: Map[Player, DroneWorldSimulator => Boolean] = Map.empty
+) {
+  // use this to get around compiler limitation (cannot have multiple overloaded methods with default arguments)
+  def withWinConditions(winConditions: Map[Player, DroneWorldSimulator => Boolean]) = {
+    WorldMap(minerals, size, initialDrones, winConditions)
+  }
+}
+
+case class Spawn(
+  droneSpec: DroneSpec,
+  controller: DroneControllerBase,
+  position: Vector2,
+  player: Player,
+  resources: Int = 0
 )
 
 
 object WorldMap {
-  def apply(size: Rectangle, resourceCount: Int, spawns: Seq[Vector2]): WorldMap = {
+
+  def apply(
+    size: Rectangle,
+    resources: List[(Vector2, Int)], // use List instead of Seq to get around compiler limitation (cannot overload on type parameters)
+    initialDrones: Seq[Spawn]
+  ): WorldMap = {
+    val minerals =
+      for ((pos, size) <- resources) yield
+        new MineralCrystalImpl(size, pos)
+
+    WorldMap(minerals, size, initialDrones)
+  }
+
+  def apply(
+    size: Rectangle,
+    resourceCount: Int,
+    initialDrones: Seq[Spawn]
+  ): WorldMap = {
     val minerals =
       for (i <- 0 to resourceCount) yield
       new MineralCrystalImpl(
@@ -19,11 +53,15 @@ object WorldMap {
         new Vector2(Rng.double(size.xMin, size.xMax), Rng.double(size.yMin, size.yMax))
       )
 
-    WorldMap(minerals, size, spawns)
+    WorldMap(minerals, size, initialDrones)
   }
 
 
-  def apply(size: Rectangle, resourceClusters: Seq[(Int, Int)], spawns: Seq[Vector2]): WorldMap = {
+  def apply(
+    size: Rectangle,
+    resourceClusters: Seq[(Int, Int)],
+    initialDrones: Seq[Spawn]
+  ): WorldMap = {
     val spread = 100
     var clusterPositions = List.empty[Vector2]
     var left = true
@@ -47,7 +85,7 @@ object WorldMap {
         m <- generateResourceCluster(freshClusterPosition, 25, spread, mineralCount, Rng.int(1, size))
       } yield m
 
-    WorldMap(minerals, size, spawns)
+    WorldMap(minerals, size, initialDrones)
   }
 
 

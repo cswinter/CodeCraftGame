@@ -2,8 +2,8 @@ package cwinter.codecraft.core.api
 
 import java.io.File
 
-import cwinter.codecraft.core.{WorldMap, DroneWorldSimulator}
-import cwinter.codecraft.core.replay.{DummyDroneController, Replayer}
+import cwinter.codecraft.core.replay.Replayer
+import cwinter.codecraft.core.{DroneWorldSimulator, WorldMap}
 import cwinter.codecraft.graphics.application.DrawingCanvas
 import cwinter.codecraft.util.maths.Rng
 
@@ -20,9 +20,7 @@ object TheGameMaster extends GameMasterLike {
     val mineralCrystals = replayer.startingMinerals
     val spawns = replayer.spawns
     val map = WorldMap(mineralCrystals, worldSize, spawns)
-    val mothership1 = new DummyDroneController
-    val mothership2 = new DummyDroneController
-    val simulator = new DroneWorldSimulator(map, mothership1, mothership2, devEvents, Some(replayer))
+    val simulator = new DroneWorldSimulator(map, devEvents, Some(replayer))
     run(simulator)
   }
 

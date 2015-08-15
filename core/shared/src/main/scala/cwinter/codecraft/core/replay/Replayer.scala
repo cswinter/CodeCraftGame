@@ -1,7 +1,10 @@
 package cwinter.codecraft.core.replay
 
+import cwinter.codecraft.core.Spawn
+import cwinter.codecraft.core.api.DroneSpec
 import cwinter.codecraft.core.objects.MineralCrystalImpl
 import cwinter.codecraft.core.objects.drone.{DroneCommand, DroneImpl}
+import cwinter.codecraft.graphics.worldstate.Player
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 
 private[core] class Replayer(lines: Iterator[String]) {
@@ -36,18 +39,16 @@ private[core] class Replayer(lines: Iterator[String]) {
   val startingMinerals = _startingMinerals
 
   // parse spawns
-  assert(currLine == "Spawn")
-  assert(nextLine.startsWith("Spec"))
-  val KeyValueRegex("Position", Vector2(spawn1)) = nextLine
-  assert(nextLine.startsWith("Player"))
-
-  assert(nextLine == "Spawn")
-  assert(nextLine.startsWith("Spec"))
-  val KeyValueRegex("Position", Vector2(spawn2)) = nextLine
-  assert(nextLine.startsWith("Player"))
-
-  val spawns = Seq(spawn1, spawn2)
-
+  var spawns = List.empty[Spawn]
+  //noinspection LoopVariableNotUpdated  (actually is updated whenever nextLine is called)
+  while (currLine == "Spawn") {
+    val KeyValueRegex("Spec", specString) = nextLine
+    val spec = DroneSpec(specString)
+    val KeyValueRegex("Position", Vector2(position)) = nextLine
+    val KeyValueRegex("Player", AsInt(playerID)) = nextLine
+    val player = Player.fromID(playerID)
+    spawns ::= Spawn(spec, new DummyDroneController, position, player)
+  }
 
   private[this] var currTime: Int = 0
   private[core] def run(timestep: Int)(implicit droneRegistry: Map[Int, DroneImpl], mineralRegistry: Map[Int, MineralCrystalImpl]): Unit = {

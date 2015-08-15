@@ -37,7 +37,7 @@ object TheGameMaster extends GameMasterLike {
 
     require(canvas != null, "Must first set TheGameMaster.canvas variable to the webgl canvas element.")
     require(intervalID.isEmpty, "Can only run one CodeCraft game at a time.")
-    val renderer = new Renderer(canvas, simulator, simulator.map.spawns.head)
+    val renderer = new Renderer(canvas, simulator, simulator.map.initialDrones.head.position)
     intervalID = Some(dom.setInterval(() => {
       renderer.render()
       simulator.run(1)

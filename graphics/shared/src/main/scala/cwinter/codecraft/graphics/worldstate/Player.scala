@@ -8,6 +8,14 @@ trait Player {
   private[codecraft] def char: Char
 }
 
+object Player {
+  def fromID(id: Int): Player = id match {
+    case 0 => BluePlayer
+    case 1 => RedPlayer
+    case 2 => OrangePlayer
+  }
+}
+
 
 object BluePlayer extends Player {
   def color: ColorRGB = ColorRGB(0, 0, 1)

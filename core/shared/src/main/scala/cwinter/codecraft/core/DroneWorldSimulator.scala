@@ -15,8 +15,6 @@ import cwinter.codecraft.util.modules.ModulePosition
 
 class DroneWorldSimulator(
   val map: WorldMap,
-  mothershipController1: DroneControllerBase,
-  mothershipController2: DroneControllerBase,
   eventGenerator: Int => Seq[SimulatorEvent],
   replayer: Option[Replayer] = None
 ) extends Simulator {
@@ -55,29 +53,17 @@ class DroneWorldSimulator(
   replayRecorder.recordWorldSize(map.size)
   map.minerals.foreach(replayRecorder.recordMineral)
   map.minerals.foreach(spawnMineral)
-  // TODO: check map bounds
-  val mothership1 = mothership(BluePlayer, mothershipController1, map.spawns(0))
-  val mothership2 = mothership(OrangePlayer, mothershipController2, map.spawns(1))
-  spawnDrone(mothership1)
-  spawnDrone(mothership2)
-
-
+  for {
+    Spawn(spec, controller, position, player, resources) <- map.initialDrones
+    drone = new DroneImpl(spec, controller, player, position, 0, worldConfig, replayRecorder, resources)
+  } {
+    spawnDrone(drone)
+    replayRecorder.recordSpawn(spec, position, player)
+  }
 
   private def spawnMineral(mineralCrystal: MineralCrystalImpl): Unit = {
     visibleObjects.add(mineralCrystal)
     visionTracker.insert(mineralCrystal)
-  }
-
-
-  private def mothership(player: Player, controller: DroneControllerBase, pos: Vector2): DroneImpl = {
-    val spec = new DroneSpec(
-      missileBatteries = 2,
-      constructors = 2,
-      refineries = 3,
-      storageModules = 3
-    )
-    replayRecorder.recordSpawn(spec, pos, player)
-    new DroneImpl(spec, controller, player, pos, 0, worldConfig, replayRecorder, 21)
   }
 
   private def spawnDrone(drone: DroneImpl): Unit = {
@@ -138,17 +124,12 @@ class DroneWorldSimulator(
 
     // check win condition
     if (timestep % 30 == 0) {
-      if (mothership1.hasDied) {
-        for (drone <- _drones) {
-          if (drone.player == mothership2.player) {
-            Errors.inform("Victory!", drone.position)
-          }
-        }
-      } else if (mothership2.hasDied) {
-        for (drone <- _drones) {
-          if (drone.player == mothership1.player) {
-            Errors.inform("Victory!", drone.position)
-          }
+      for ((player, winCondition) <- map.winConditions) {
+        if (winCondition(this)) {
+          for (
+            drone <- drones
+            if drone.player == player
+          ) Errors.inform("Victory!", drone.position)
         }
       }
     }
@@ -245,7 +226,7 @@ class DroneWorldSimulator(
   }
 
 
-  override def initialCameraPos: Vector2 = map.spawns.head
+  override def initialCameraPos: Vector2 = map.initialDrones.head.position
 
 
   override def handleKeypress(keyChar: Char): Unit = {

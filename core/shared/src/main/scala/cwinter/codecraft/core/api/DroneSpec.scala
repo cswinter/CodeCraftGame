@@ -90,6 +90,9 @@ case class DroneSpec(
         constructors + engines
       Some(new DroneShieldGeneratorModule(startIndex until startIndex + shieldGenerators, owner))
     } else None
+
+
+
 }
 
 
@@ -99,4 +102,13 @@ object DroneSpec {
   final val ResourceCost = 5
   final val SideLength = 40
   final val SightRadius = 500
+
+
+  final val CaseClassRegex = """(\w*?)\((.*)\)""".r
+  def apply(stringRepr: String): DroneSpec = {
+    val CaseClassRegex("DroneSpec", specParamsStr) = stringRepr
+    val specParams = specParamsStr.split(",")
+    new DroneSpec(specParams(0).toInt, specParams(1).toInt, specParams(2).toInt, specParams(3).toInt, specParams(4).toInt, specParams(5).toInt)
+  }
 }
+
