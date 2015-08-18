@@ -2,7 +2,7 @@ package cwinter.codecraft.core
 
 import cwinter.codecraft.core.api.{DroneControllerBase, DroneSpec}
 import cwinter.codecraft.core.objects.MineralCrystalImpl
-import cwinter.codecraft.graphics.worldstate.Player
+import cwinter.codecraft.graphics.worldstate.{OrangePlayer, BluePlayer, Player}
 import cwinter.codecraft.util.maths.{Rng, Rectangle, Vector2}
 
 
@@ -15,6 +15,17 @@ case class WorldMap(
   // use this to get around compiler limitation (cannot have multiple overloaded methods with default arguments)
   def withWinConditions(winConditions: Map[Player, DroneWorldSimulator => Boolean]) = {
     WorldMap(minerals, size, initialDrones, winConditions)
+  }
+
+  def withDefaultWinConditions: WorldMap = {
+    require(this.initialDrones.size == 2)
+    val m1 = initialDrones(0).controller
+    val m2 = initialDrones(1).controller
+    val winConditions = Map(
+      BluePlayer -> ((x: DroneWorldSimulator) => m2.hitpoints <= 0),
+      OrangePlayer -> ((x: DroneWorldSimulator) => m1.hitpoints <= 0)
+    )
+    this.withWinConditions(winConditions)
   }
 }
 

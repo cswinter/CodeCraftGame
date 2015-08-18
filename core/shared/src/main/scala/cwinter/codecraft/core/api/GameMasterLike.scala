@@ -1,7 +1,7 @@
 package cwinter.codecraft.core.api
 
-import cwinter.codecraft.core.ai.cheese.CheesyMothership
 import cwinter.codecraft.core._
+import cwinter.codecraft.core.ai.cheese.CheesyMothership
 import cwinter.codecraft.graphics.worldstate.{BluePlayer, OrangePlayer}
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 
@@ -45,7 +45,7 @@ trait GameMasterLike {
     spawn2: Vector2
   ): Unit = {
     val spawns = constructSpawns(mothership1, spawn1, mothership2, spawn2)
-    val map = WorldMap(worldSize, resourceClusters, spawns)
+    val map = WorldMap(worldSize, resourceClusters, spawns).withDefaultWinConditions
     new DroneWorldSimulator(map, devEvents)
   }
 
@@ -53,7 +53,7 @@ trait GameMasterLike {
     val worldSize = DefaultWorldSize
     val resourceClusters = DefaultResourceDistribution
     val spawns = constructSpawns(mothership1, Vector2(2500, 500), mothership2, Vector2(-2500, -500))
-    val map = WorldMap(worldSize, resourceClusters, spawns)
+    val map = WorldMap(worldSize, resourceClusters, spawns).withDefaultWinConditions
     val simulator = new DroneWorldSimulator(map, devEvents)
     run(simulator)
   }
@@ -62,7 +62,7 @@ trait GameMasterLike {
   def runLevel1(mothership1: DroneControllerBase): Unit = {
     val worldSize = Rectangle(-2000, 2000, -1000, 1000)
     val spawns = constructSpawns(mothership1, Vector2(1000, 200), new ai.basic.Mothership, Vector2(-1000, -200))
-    val map = WorldMap(worldSize, 100, spawns)
+    val map = WorldMap(worldSize, 100, spawns).withDefaultWinConditions
     val simulator = new DroneWorldSimulator(map, devEvents)
     run(simulator)
   }
