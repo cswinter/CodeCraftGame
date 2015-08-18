@@ -16,10 +16,22 @@
             display: block;
             width: 100%;
             height: 100%;
+            border: none;
         }
         #tdcontent, #page {
+            position: relative;
             width: 100%;
             height: 100%;
+        }
+        #text-canvas {
+            display: block;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            z-index: 10;
         }
     </style>
 </head>
@@ -34,7 +46,8 @@
         </tr>
         <tr>
             <td id="tdcontent">
-                <canvas id="webgl-canvas" style="border: none;" width="1000" height="750"></canvas>
+                <canvas id="webgl-canvas" tabindex="1"></canvas>
+                <canvas id="text-canvas" tabindex="1"></canvas>
             </td>
         </tr>
     </table>

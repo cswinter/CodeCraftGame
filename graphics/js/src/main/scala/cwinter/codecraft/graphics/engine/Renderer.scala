@@ -1,14 +1,13 @@
 package cwinter.codecraft.graphics.engine
 
 import cwinter.codecraft.graphics.materials.Material
-import cwinter.codecraft.graphics.model.{VBO, TheModelCache, PrimitiveModelBuilder}
+import cwinter.codecraft.graphics.model.PrimitiveModelBuilder
 import cwinter.codecraft.graphics.models.TheWorldObjectModelFactory
-import cwinter.codecraft.graphics.worldstate.{Simulator, WorldObjectDescriptor}
-import cwinter.codecraft.util.maths.{Rectangle, Vector2}
+import cwinter.codecraft.graphics.worldstate.Simulator
+import cwinter.codecraft.util.maths.{ColorRGBA, VertexXY, Rectangle, Vector2}
 import org.scalajs.dom
-import org.scalajs.dom.document
-import org.scalajs.dom.html
-import org.scalajs.dom.raw.{WebGLRenderingContext => GL}
+import org.scalajs.dom.raw.{CanvasRenderingContext2D, HTMLCanvasElement, WebGLRenderingContext => GL}
+import org.scalajs.dom.{document, html}
 
 
 class Renderer(
@@ -23,7 +22,13 @@ class Renderer(
   camera.screenDims = (canvas.width, canvas.height)
 
   private[this] val keyEventHandler = new KeyEventHandler(gameWorld, camera)
-  canvas.onkeypress = (e: dom.KeyboardEvent) => {
+  canvas.onkeypress = onkeypressHandler _
+  val textCanvas = document.getElementById("text-canvas").asInstanceOf[HTMLCanvasElement]
+  if (textCanvas != null) {
+    textCanvas.onkeypress = onkeypressHandler _
+  }
+
+  def onkeypressHandler(e: dom.KeyboardEvent) = {
     val key = e.keyCode match {
       case 37 => LeftArrow
       case 39 => RightArrow
@@ -82,8 +87,22 @@ class Renderer(
       mcurr = mcurr.tail
     }
 
-    // TODO: implement rendering
-    //renderText(drawable)
+    val textCanvas = document.getElementById("text-canvas").asInstanceOf[HTMLCanvasElement]
+    if (textCanvas == null) {
+      println("Could not find canvas #text-canvas. Without this, text cannot be rendered.")
+    } else {
+      val width = textCanvas.clientWidth
+      val height = textCanvas.clientHeight
+      if (width != camera.screenWidth || height != camera.screenHeight) {
+        textCanvas.width = width
+        textCanvas.height = height
+      }
+      val ctx = textCanvas.getContext("2d").asInstanceOf[CanvasRenderingContext2D]
+      ctx.clearRect(0, 0, width, height)
+      for (text <- Debug.textModels) {
+        renderText(ctx, text)
+      }
+    }
 
     // dispose one-time VBOs
     PrimitiveModelBuilder.disposeAll(gl)
@@ -101,6 +120,22 @@ class Renderer(
         f"Allocated VBOs: ${VBO.count}   " +
         f"Last cached model: ${TheModelCache.lastCachedModel}"
     )*/
+  }
+
+  private def renderText(context: CanvasRenderingContext2D, textModel: TextModel): Unit = {
+    val TextModel(text, x, y, ColorRGBA(r, g, b, a)) = textModel
+    val width = context.canvas.width
+    val height = context.canvas.height
+
+    def int(f: Float) = Math.round(255 * f)
+
+    context.fillStyle = s"rgba(${int(r)}, ${int(g)}, ${int(b)}, $a)"
+    context.font =  "16px serif bold"
+    val textMetric = context.measureText(text)
+    val worldPos = VertexXY(x, -y)
+    val position = (1 / camera.zoomFactor) * (worldPos - VertexXY(camera.x, -camera.y)) +
+      VertexXY(width / 2 - textMetric.width.toFloat / 2, height / 2 + 8)
+    context.fillText(text, position.x, position.y)
   }
 
   private def initGL(): GL = {
