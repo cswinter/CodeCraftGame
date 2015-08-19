@@ -97,6 +97,13 @@ trait DroneControllerBase extends Drone {
   }
 
   /**
+   * This drone will  move to the coordinate (`x`, `y`).
+   */
+  def moveTo(x: Double, y: Double): Unit = {
+    moveTo(Vector2(x, y))
+  }
+
+  /**
    * Drone will harvest this mineral crystal. Must already be at the position of the mineral crystal.
    * @param mineralCrystal The mineral crystal to be harvested.
    */
@@ -119,6 +126,19 @@ trait DroneControllerBase extends Drone {
    */
   def buildDrone(spec: DroneSpec, controller: DroneControllerBase): Unit = {
     drone ! ConstructDrone(spec, controller, drone.position - 110 * Rng.vector2())
+  }
+
+  def buildDrone(
+    controller: DroneController,
+    storageModules: Int = 0,
+    missileBatteries: Int = 0,
+    refineries: Int = 0,
+    constructors: Int = 0,
+    engines: Int = 0,
+    shieldGenerators: Int = 0
+  ): Unit = {
+    val spec = new DroneSpec(storageModules, missileBatteries, refineries, constructors, engines, shieldGenerators)
+    buildDrone(spec, controller)
   }
 
   /**
