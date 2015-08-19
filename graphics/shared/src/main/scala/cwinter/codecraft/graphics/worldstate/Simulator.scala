@@ -51,7 +51,9 @@ trait Simulator {
 
   def run(steps: Int): Unit = {
     for (i <- 0 until steps) {
-      performUpdate()
+      if (!paused) {
+        performUpdate()
+      }
     }
   }
 
