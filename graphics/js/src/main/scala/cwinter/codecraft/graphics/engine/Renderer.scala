@@ -44,6 +44,9 @@ class Renderer(
   def render(): Unit = {
     Material.resetDrawCalls()
 
+    for (Vector2(x, y) <- Debug.cameraOverride)
+      camera.position = (x.toFloat, y.toFloat)
+
     val width = canvas.clientWidth
     val height = canvas.clientHeight
     if (width != camera.screenWidth || height != camera.screenHeight) {
