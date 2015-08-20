@@ -23,9 +23,11 @@ class Renderer(
 
   private[this] val keyEventHandler = new KeyEventHandler(gameWorld, camera)
   canvas.onkeypress = onkeypressHandler _
+  canvas.onmousewheel = onmousewheelHandler _
   val textCanvas = document.getElementById("text-canvas").asInstanceOf[HTMLCanvasElement]
   if (textCanvas != null) {
     textCanvas.onkeypress = onkeypressHandler _
+    textCanvas.onmousewheel = onmousewheelHandler _
   }
 
   def onkeypressHandler(e: dom.KeyboardEvent) = {
@@ -39,6 +41,10 @@ class Renderer(
       case _ => Letter(e.charCode.toChar)
     }
     keyEventHandler.keypress(key)
+  }
+
+  def onmousewheelHandler(e: dom.WheelEvent): Unit = {
+    camera.zoom += 0.0001f * e.deltaY.toFloat
   }
 
   def render(): Unit = {
