@@ -24,10 +24,16 @@ class Renderer(
   private[this] val keyEventHandler = new KeyEventHandler(gameWorld, camera)
   canvas.onkeypress = onkeypressHandler _
   canvas.onmousewheel = onmousewheelHandler _
+  canvas.onmousedown = onmousedownHandler _
+  canvas.onmouseup = onmouseupHandler _
+  canvas.onmousemove = onmousemoveHandler _
   val textCanvas = document.getElementById("text-canvas").asInstanceOf[HTMLCanvasElement]
   if (textCanvas != null) {
     textCanvas.onkeypress = onkeypressHandler _
     textCanvas.onmousewheel = onmousewheelHandler _
+    textCanvas.onmousedown = onmousedownHandler _
+    textCanvas.onmouseup = onmouseupHandler _
+    textCanvas.onmousemove = onmousemoveHandler _
   }
 
   def onkeypressHandler(e: dom.KeyboardEvent) = {
@@ -44,8 +50,31 @@ class Renderer(
   }
 
   def onmousewheelHandler(e: dom.WheelEvent): Unit = {
-    camera.zoom += 0.0001f * e.deltaY.toFloat
+    camera.zoom += 0.001f * e.deltaY.toFloat
   }
+
+  private[this] var mouseIsDown = false
+  def onmousedownHandler(e: dom.MouseEvent): Unit = {
+    mouseIsDown = true
+  }
+
+  def onmouseupHandler(e: dom.MouseEvent): Unit = {
+    mouseIsDown = false
+  }
+
+  private[this] var xLast = 0.0
+  private[this] var yLast = 0.0
+  def onmousemoveHandler(e: dom.MouseEvent): Unit = {
+    val dx = xLast - e.clientX
+    val dy = yLast - e.clientY
+    xLast = e.clientX
+    yLast = e.clientY
+    if ((e.buttons & 7) > 0) {
+      camera.x += dx.toFloat * camera.zoomFactor
+      camera.y -= dy.toFloat * camera.zoomFactor
+    }
+  }
+
 
   def render(): Unit = {
     Material.resetDrawCalls()
