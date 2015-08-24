@@ -41,6 +41,7 @@ case class DroneSpec(
 
   import DroneSpec._
 
+  def maxHitpoints: Int = 2 * (size - 1)
   def resourceCost: Int = ModulePosition.moduleCount(size) * ResourceCost
   def buildTime: Int = ConstructionPeriod * resourceCost
   def weight = size + moduleCount

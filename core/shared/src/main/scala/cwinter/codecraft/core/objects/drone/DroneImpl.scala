@@ -327,7 +327,7 @@ private[core] class DroneImpl(
 
   override def hasDied = _hasDied
 
-  override def toString = id.toString
+  override def toString: String = id.toString
 }
 
 
@@ -342,10 +342,16 @@ case class DroneEntersSightRadius(drone: DroneImpl) extends DroneEvent
 
 
 sealed trait DroneCommand
-case class ConstructDrone(spec: DroneSpec, controller: DroneControllerBase, position: Vector2) extends DroneCommand
+case class ConstructDrone(spec: DroneSpec, controller: DroneControllerBase, position: Vector2) extends DroneCommand {
+  override def toString: String = s"ConstructDrone($spec, null, $position)"
+}
 case class ProcessMineral(mineralCrystal: MineralCrystalImpl) extends DroneCommand
-case class FireMissiles(target: DroneImpl) extends DroneCommand
-case class DepositMinerals(target: DroneImpl) extends DroneCommand
+case class FireMissiles(target: DroneImpl) extends DroneCommand {
+  override def toString: String = s"FireMissiles(${target.id})"
+}
+case class DepositMinerals(target: DroneImpl) extends DroneCommand {
+  override def toString: String = s"DepositMinerals(${target.id})"
+}
 case class HarvestMineral(mineral: MineralCrystalImpl) extends DroneCommand
 
 sealed trait MovementCommand extends DroneCommand

@@ -42,4 +42,30 @@ trait Drone {
   def isEnemy: Boolean
 
   private[core] def drone: DroneImpl
+
+  override def toString: String = {
+    def m(count: Int, descr: String): Option[String] = count match {
+      case 0 => None
+      case 1 => Some(descr)
+      case c if descr.last == 'y' => Some(c + " " + descr.substring(0, descr.length - 1) + "ies")
+      case c => Some(c + " " + descr + "s")
+    }
+    val moduleDescrs = Seq(
+      m(spec.engines, "Engine"),
+      m(spec.shieldGenerators, "Shield Generator"),
+      m(spec.constructors, "Constructor"),
+      m(spec.missileBatteries, "Missile Battery"),
+      m(spec.refineries, "Refinery"),
+      m(spec.storageModules, "Storage Module")
+    )
+    val moduleString =
+      (for (Some(s) <- moduleDescrs) yield s).mkString("[", ", ", "]")
+    s"""Modules:   $moduleString
+       |Hitpoints: $hitpoints/${spec.maxHitpoints}
+       |Position:  (${position.x},${position.y})
+       |Max Speed: ${spec.maximumSpeed}
+       |Radius:    ${spec.radius}
+    """.stripMargin
+  }
 }
+
