@@ -131,7 +131,7 @@ class Renderer(
     } else {
       val width = textCanvas.clientWidth
       val height = textCanvas.clientHeight
-      if (width != camera.screenWidth || height != camera.screenHeight) {
+      if (width != textCanvas.width || height != textCanvas.height) {
         textCanvas.width = width
         textCanvas.height = height
       }
