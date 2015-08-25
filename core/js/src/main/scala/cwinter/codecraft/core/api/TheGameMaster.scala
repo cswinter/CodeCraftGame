@@ -8,8 +8,9 @@ import cwinter.codecraft.util.maths.Rectangle
 import org.scalajs.dom
 import org.scalajs.dom.html
 
-import scala.scalajs.js.annotation.JSExportAll
+import scala.scalajs.js.annotation.{JSExport, JSExportAll}
 
+@JSExport
 @JSExportAll
 object TheGameMaster extends GameMasterLike {
   var canvas: html.Canvas = null
