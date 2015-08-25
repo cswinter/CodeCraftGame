@@ -34,7 +34,8 @@ case class Spawn(
   controller: DroneControllerBase,
   position: Vector2,
   player: Player,
-  resources: Int = 0
+  resources: Int = 0,
+  name: Option[String] = None
 )
 
 

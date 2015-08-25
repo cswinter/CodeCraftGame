@@ -12,6 +12,8 @@ import cwinter.codecraft.physics.PhysicsEngine
 import cwinter.codecraft.util.maths.{ColorRGB, Rng, Vector2}
 import cwinter.codecraft.util.modules.ModulePosition
 
+import scala.scalajs.js.annotation.JSExport
+
 
 class DroneWorldSimulator(
   val map: WorldMap,
@@ -54,12 +56,20 @@ class DroneWorldSimulator(
   map.minerals.foreach(replayRecorder.recordMineral)
   map.minerals.foreach(spawnMineral)
   for {
-    Spawn(spec, controller, position, player, resources) <- map.initialDrones
+    Spawn(spec, controller, position, player, resources, _) <- map.initialDrones
     drone = new DroneImpl(spec, controller, player, position, 0, worldConfig, replayRecorder, resources)
   } {
     spawnDrone(drone)
     replayRecorder.recordSpawn(spec, position, player)
   }
+
+  @JSExport
+  val namedDrones = (for (Spawn(_, controller, _, _, _, Some(name)) <- map.initialDrones) yield (
+    name,
+    if (controller.player == BluePlayer) controller
+    else new EnemyDrone(controller.drone, controller.player)
+  )).toMap
+
 
   private def spawnMineral(mineralCrystal: MineralCrystalImpl): Unit = {
     visibleObjects.add(mineralCrystal)
