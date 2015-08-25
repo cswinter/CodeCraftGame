@@ -145,7 +145,7 @@ trait DroneControllerBase extends Drone {
    * Fires all homing missiles at `target`.
    * @param target The drone to be shot.
    */
-  def shootMissiles(target: Drone): Unit = {
+  def fireMissilesAt(target: Drone): Unit = {
     drone ! FireMissiles(target.drone)
   }
 

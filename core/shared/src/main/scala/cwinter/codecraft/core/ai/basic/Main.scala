@@ -30,7 +30,7 @@ private[core] class Mothership extends DroneController {
     if (weaponsCooldown <= 0 && enemies.nonEmpty) {
       val enemy = enemies.minBy(x => (x.position - position).lengthSquared)
       if (isInMissileRange(enemy)) {
-        shootMissiles(enemy)
+        fireMissilesAt(enemy)
       }
     }
   }
@@ -108,7 +108,7 @@ private[core] class AttackDroneController extends DroneController {
     if (weaponsCooldown <= 0 && enemies.nonEmpty) {
       val enemy = enemies.minBy(x => (x.position - position).lengthSquared)
       if (isInMissileRange(enemy)) {
-        shootMissiles(enemy)
+        fireMissilesAt(enemy)
       }
       moveInDirection(enemy.position - position)
     } else if (Rng.bernoulli(0.01)) {

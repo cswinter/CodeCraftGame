@@ -28,7 +28,7 @@ abstract class BaseController(val name: Symbol) extends DroneController {
     if (weaponsCooldown <= 0 && enemies.nonEmpty) {
       val enemy = closestEnemy
       if (isInMissileRange(enemy)) {
-        shootMissiles(enemy)
+        fireMissilesAt(enemy)
       }
     }
   }

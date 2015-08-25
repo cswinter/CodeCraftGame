@@ -10,7 +10,7 @@ class CheesyDestroyer(targetPos: Vector2) extends DroneController {
   override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = ()
   override def onTick(): Unit = {
     for (d <- dronesInSight.find(d => d.isEnemy && isInMissileRange(d))) {
-      shootMissiles(d)
+      fireMissilesAt(d)
     }
   }
   override def onArrivesAtPosition(): Unit = ()
