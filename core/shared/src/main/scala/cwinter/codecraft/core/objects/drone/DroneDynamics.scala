@@ -1,9 +1,7 @@
 package cwinter.codecraft.core.objects.drone
 
-import cwinter.codecraft.core.errors.Errors
 import cwinter.codecraft.core.objects.{ConstantVelocityDynamics, MissileDynamics}
-import cwinter.codecraft.graphics.engine.Debug
-import cwinter.codecraft.util.maths.{ColorRGBA, Rectangle, Vector2}
+import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 
 
 private[core] class DroneDynamics(
@@ -148,10 +146,10 @@ private[core] class DroneDynamics(
     val dx = math.min(math.abs(pos.x + areaBounds.xMax), math.abs(pos.x + areaBounds.xMin))
     val dy = math.min(math.abs(pos.y + areaBounds.yMax), math.abs(pos.y + areaBounds.yMin))
     if (dx < dy) {
-      velocity = velocity.copy(x = -velocity.x)
+      velocity = velocity.copy(_x = -velocity.x)
       //orientation = orientation.copy(x = -orientation.x)
     } else {
-      velocity = velocity.copy(y = -velocity.y)
+      velocity = velocity.copy(_y = -velocity.y)
       //orientation = orientation.copy(y = -orientation.y)
     }
     isStunned = true
