@@ -171,7 +171,6 @@ class JSMaterial[TPosition <: Vertex, TColor <: Vertex, TParams](
     gl.compileShader(shaderHandle)
 
     val compileStatus = gl.getShaderParameter(shaderHandle, GL.COMPILE_STATUS)
-    println("Compile status: " + compileStatus)
     if (!compileStatus.asInstanceOf[Boolean]) {
       throw new Exception(gl.getShaderInfoLog(shaderHandle))
     }
