@@ -140,6 +140,13 @@ class Renderer(
       for (text <- Debug.textModels) {
         renderText(ctx, text)
       }
+      if (gameWorld.isPaused) {
+        renderText(
+          ctx,
+          TextModel("Game Paused. Press SPACEBAR to resume.", width / 2, height / 2, ColorRGBA(1, 1, 1, 1)),
+          absolutePos = true
+        )
+      }
     }
 
     // dispose one-time VBOs
@@ -160,7 +167,7 @@ class Renderer(
     )*/
   }
 
-  private def renderText(context: CanvasRenderingContext2D, textModel: TextModel): Unit = {
+  private def renderText(context: CanvasRenderingContext2D, textModel: TextModel, absolutePos: Boolean = false): Unit = {
     val TextModel(text, x, y, ColorRGBA(r, g, b, a)) = textModel
     val width = context.canvas.width
     val height = context.canvas.height
@@ -171,8 +178,13 @@ class Renderer(
     context.font =  "16px serif bold"
     val textMetric = context.measureText(text)
     val worldPos = VertexXY(x, -y)
-    val position = (1 / camera.zoomFactor) * (worldPos - VertexXY(camera.x, -camera.y)) +
-      VertexXY(width / 2 - textMetric.width.toFloat / 2, height / 2 + 8)
+    val position =
+      if (absolutePos) VertexXY(x - textMetric.width.toFloat / 2, y + 8)
+      else {
+        (1 / camera.zoomFactor) * (worldPos - VertexXY(camera.x, -camera.y)) +
+          VertexXY(width / 2 - textMetric.width.toFloat / 2, height / 2 + 8)
+      }
+
     context.fillText(text, position.x, position.y)
   }
 
