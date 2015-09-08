@@ -4,7 +4,10 @@ import cwinter.codecraft.core.objects.drone.DroneImpl
 import cwinter.codecraft.graphics.worldstate.Player
 import cwinter.codecraft.util.maths.Vector2
 
+import scala.scalajs.js.annotation.JSExportAll
 
+
+@JSExportAll
 trait Drone {
   /**
    * Returns the drones position.

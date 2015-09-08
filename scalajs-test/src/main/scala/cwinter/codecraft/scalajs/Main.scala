@@ -1,17 +1,14 @@
 package cwinter.codecraft.scalajs
 
 import cwinter.codecraft.core.api.TheGameMaster
-import cwinter.codecraft.graphics.engine.{Debug, AsciiVisualizer}
+import cwinter.codecraft.demos.graphics.BlogpostDemo
+import cwinter.codecraft.demos.physics.TheObjectManager
+import cwinter.codecraft.graphics.engine.{AsciiVisualizer, Debug}
 import cwinter.codecraft.graphics.model.TheModelCache
 import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.util.maths.Rectangle
-import cwinter.codecraft.demos.graphics.BlogpostDemo
-import cwinter.codecraft.demos.graphics.Chaos
-import cwinter.codecraft.demos.physics.TheObjectManager
 import org.scalajs.dom
-import org.scalajs.dom.document
-import org.scalajs.dom.html
-import org.scalajs.dom.raw.{WebGLRenderingContext => GL}
+import org.scalajs.dom.{document, html}
 
 import scala.scalajs.js.annotation.JSExport
 
