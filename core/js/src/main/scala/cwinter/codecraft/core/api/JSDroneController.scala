@@ -9,12 +9,12 @@ import scala.scalajs.js.annotation.JSExport
 class JSDroneController extends DroneControllerBase {
   private[this] var _nativeController: js.Dynamic = null
 
-  private[this] def nativeFun(name: String): Option[js.Dynamic] = {
-    if (_nativeController == null) None
-    else {
+  private[this] def callNativeFun(name: String, args: Any*): Unit = {
+    if (_nativeController != null) {
       val field = _nativeController.selectDynamic(name)
-      if (js.typeOf(field) == "function") Some(field)
-      else None
+      if (js.typeOf(field) == "function") {
+        field.asInstanceOf[js.Function].call(_nativeController, args)
+      }
     }
   }
 
@@ -25,37 +25,26 @@ class JSDroneController extends DroneControllerBase {
     _nativeController.drone = this.asInstanceOf[js.Any]
   }
 
-  override def onSpawn(): Unit = {
-    nativeFun("onSpawn").foreach(onSpawn => onSpawn())
-  }
+  override def onSpawn(): Unit = callNativeFun("onSpawn")
 
-  override def onDeath(): Unit = {
-    nativeFun("onDeath").foreach(onDeath => onDeath())
-  }
+  override def onDeath(): Unit = callNativeFun("onDeath")
 
-  override def onTick(): Unit = {
-    nativeFun("onTick").foreach(onTick => onTick())
-  }
+  override def onTick(): Unit = callNativeFun("onTick")
 
-  override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = {
-    nativeFun("onMineralEntersVision").foreach(onEntersVision => onEntersVision(mineralCrystal.asInstanceOf[js.Any]))
-  }
+  override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit =
+    callNativeFun("onMineralEntersVision", mineralCrystal)
 
-  override def onDroneEntersVision(drone: Drone): Unit = {
-    nativeFun("onDroneEntersVision").foreach(onEntersVision => onEntersVision(drone.asInstanceOf[js.Any]))
-  }
+  override def onDroneEntersVision(drone: Drone): Unit =
+    callNativeFun("onDroneEntersVision", drone)
 
-  override def onArrivesAtPosition(): Unit = {
-    nativeFun("onArrivesAtPosition").foreach(f => f())
-  }
+  override def onArrivesAtPosition(): Unit =
+    callNativeFun("onArrivesAtPosition")
 
-  override def onArrivesAtMineral(mineralCrystal: MineralCrystal): Unit = {
-    nativeFun("onArrivesAtMineral").foreach(f => f(mineralCrystal.asInstanceOf[js.Any]))
-  }
+  override def onArrivesAtMineral(mineralCrystal: MineralCrystal): Unit =
+    callNativeFun("onArrivesAtMineral", mineralCrystal)
 
-  override def onArrivesAtDrone(drone: Drone): Unit = {
-    nativeFun("onArrivesAtDrone").foreach(f => f(drone.asInstanceOf[js.Any]))
-  }
+  override def onArrivesAtDrone(drone: Drone): Unit =
+    callNativeFun("onArrivesAtDrone", drone)
 
   /**
    * Gets all mineral crystals stored by this drone.
