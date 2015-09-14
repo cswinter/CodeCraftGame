@@ -170,7 +170,7 @@ trait DroneControllerBase extends Drone {
   /**
    * Returns the module specification of this drone.
    */
-  override def spec: DroneSpec = drone.spec
+  override def spec: DroneSpec = if (drone == null) null else drone.spec
 
   /**
    * Returns the player that commands this drone.

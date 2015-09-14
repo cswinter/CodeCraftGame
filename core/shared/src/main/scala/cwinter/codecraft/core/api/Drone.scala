@@ -47,6 +47,9 @@ trait Drone {
   private[core] def drone: DroneImpl
 
   override def toString: String = {
+    if (this == null) {
+
+    }
     if (spec == null) {
       return "[Uninitialised drone controller]"
     }
