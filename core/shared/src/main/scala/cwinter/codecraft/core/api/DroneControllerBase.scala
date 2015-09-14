@@ -129,7 +129,7 @@ trait DroneControllerBase extends Drone {
   }
 
   def buildDrone(
-    controller: DroneController,
+    controller: DroneControllerBase,
     storageModules: Int = 0,
     missileBatteries: Int = 0,
     refineries: Int = 0,
