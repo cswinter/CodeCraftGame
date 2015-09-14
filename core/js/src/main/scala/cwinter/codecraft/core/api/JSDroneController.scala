@@ -9,11 +9,11 @@ import scala.scalajs.js.annotation.JSExport
 class JSDroneController extends DroneControllerBase {
   private[this] var _nativeController: js.Dynamic = null
 
-  private[this] def callNativeFun(name: String, args: Any*): Unit = {
+  private[this] def callNativeFun(name: String, args: js.Any*): Unit = {
     if (_nativeController != null) {
       val field = _nativeController.selectDynamic(name)
       if (js.typeOf(field) == "function") {
-        field.asInstanceOf[js.Function].call(_nativeController, args)
+        field.asInstanceOf[js.Function].call(_nativeController, args:_*)
       }
     }
   }
@@ -32,19 +32,19 @@ class JSDroneController extends DroneControllerBase {
   override def onTick(): Unit = callNativeFun("onTick")
 
   override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit =
-    callNativeFun("onMineralEntersVision", mineralCrystal)
+    callNativeFun("onMineralEntersVision", mineralCrystal.asInstanceOf[js.Any])
 
   override def onDroneEntersVision(drone: Drone): Unit =
-    callNativeFun("onDroneEntersVision", drone)
+    callNativeFun("onDroneEntersVision", drone.asInstanceOf[js.Any])
 
   override def onArrivesAtPosition(): Unit =
     callNativeFun("onArrivesAtPosition")
 
   override def onArrivesAtMineral(mineralCrystal: MineralCrystal): Unit =
-    callNativeFun("onArrivesAtMineral", mineralCrystal)
+    callNativeFun("onArrivesAtMineral", mineralCrystal.asInstanceOf[js.Any])
 
   override def onArrivesAtDrone(drone: Drone): Unit =
-    callNativeFun("onArrivesAtDrone", drone)
+    callNativeFun("onArrivesAtDrone", drone.asInstanceOf[js.Any])
 
   /**
    * Gets all mineral crystals stored by this drone.
