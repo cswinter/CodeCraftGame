@@ -47,6 +47,9 @@ trait Drone {
   private[core] def drone: DroneImpl
 
   override def toString: String = {
+    if (spec == null) {
+      return "[Uninitialised drone controller]"
+    }
     def m(count: Int, descr: String): Option[String] = count match {
       case 0 => None
       case 1 => Some(descr)
