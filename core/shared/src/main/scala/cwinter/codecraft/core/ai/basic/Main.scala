@@ -4,7 +4,7 @@ import cwinter.codecraft.core.api.{DroneController, Drone, DroneSpec, MineralCry
 import cwinter.codecraft.util.maths.{Rng, Vector2}
 
 
-private[core] class Mothership extends DroneController {
+class Mothership extends DroneController {
   var t = 0
   var collectors = 0
 
