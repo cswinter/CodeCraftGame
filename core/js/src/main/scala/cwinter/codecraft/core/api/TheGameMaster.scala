@@ -48,6 +48,8 @@ object TheGameMaster extends GameMasterLike {
 
   def stop(): Unit = {
     dom.clearInterval(intervalID.get)
+    intervalID = None
+    currentSimulator = null
     TheModelCache.clear()
     Debug.clearDrawAlways()
   }
