@@ -25,6 +25,26 @@ class JSDroneController extends DroneControllerBase {
     _nativeController.drone = this.asInstanceOf[js.Any]
   }
 
+  @JSExport
+  def buildDrone(controller: JSDroneController, spec: js.Dynamic): Unit = {
+    def getOrElse0(fieldName: String): Int = {
+      val value = spec.selectDynamic(fieldName)
+      //noinspection ComparingUnrelatedTypes,TypeCheckCanBeMatch
+      if (value.isInstanceOf[Int]) value.asInstanceOf[Int]
+      else 0
+    }
+
+    buildDrone(
+      controller,
+      storageModules = getOrElse0("storageModules"),
+      missileBatteries = getOrElse0("missileBatteries"),
+      refineries = getOrElse0("refineries"),
+      constructors = getOrElse0("constructors"),
+      engines = getOrElse0("engines"),
+      shieldGenerators = getOrElse0("shieldGenerators")
+    )
+  }
+
   override def onSpawn(): Unit = callNativeFun("onSpawn")
 
   override def onDeath(): Unit = callNativeFun("onDeath")
