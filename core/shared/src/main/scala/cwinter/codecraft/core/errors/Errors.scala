@@ -20,7 +20,7 @@ object Errors {
     addMessage(message, position, Information)
   }
 
-  private def addMessage(message: String, position: Vector2, errorLevel: ErrorLevel): Unit = {
+  def addMessage(message: String, position: Vector2, errorLevel: ErrorLevel): Unit = {
     errorMessages ::= new ErrorMessageObject(message, errorLevel, position)
   }
 

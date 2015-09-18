@@ -20,7 +20,7 @@ class JSDroneController(
           field.asInstanceOf[js.Function].call(_nativeController, args: _*)
         } catch {
           case e: Throwable =>
-            drone.warn(s"Exception thrown in $name, see console for details.")
+            drone.error(s"Exception thrown in $name, see console for details.")
             _errorHandler.foreach(_(e, name, this))
         }
       }

@@ -310,6 +310,12 @@ private[core] class DroneImpl(
     } yield descr
   }
 
+  def error(message: String): Unit = {
+    if (messageCooldown <= 0) {
+      messageCooldown = MessageCooldown
+      Errors.addMessage(message, position, errors.Error)
+    }
+  }
 
   def warn(message: String): Unit = {
     if (messageCooldown <= 0) {
