@@ -6,14 +6,20 @@ import scala.scalajs.js.annotation.JSExport
 
 
 @JSExport
-class JSDroneController extends DroneControllerBase {
+class JSDroneController(errorHandler: (Throwable, String, Drone) => Unit = (_, _, _) => Unit) extends DroneControllerBase {
   private[this] var _nativeController: js.Dynamic = null
 
   private[this] def callNativeFun(name: String, args: js.Any*): Unit = {
     if (_nativeController != null) {
       val field = _nativeController.selectDynamic(name)
       if (js.typeOf(field) == "function") {
-        field.asInstanceOf[js.Function].call(_nativeController, args:_*)
+        try {
+          field.asInstanceOf[js.Function].call(_nativeController, args: _*)
+        } catch {
+          case e: Throwable =>
+            drone.warn(s"Exception thrown in $name, see console for details.")
+            errorHandler(e, name, this)
+        }
       }
     }
   }
