@@ -6,8 +6,11 @@ import scala.scalajs.js.annotation.JSExport
 
 
 @JSExport
-class JSDroneController(errorHandler: (Throwable, String, Drone) => Unit = (_, _, _) => Unit) extends DroneControllerBase {
+class JSDroneController(
+  private[this] var _errorHandler: Option[(Throwable, String, Drone) => Unit] = None
+) extends DroneControllerBase {
   private[this] var _nativeController: js.Dynamic = null
+  def errorHandler_=(value: (Throwable, String, Drone) => Unit) = _errorHandler = Some(value)
 
   private[this] def callNativeFun(name: String, args: js.Any*): Unit = {
     if (_nativeController != null) {
@@ -18,7 +21,7 @@ class JSDroneController(errorHandler: (Throwable, String, Drone) => Unit = (_, _
         } catch {
           case e: Throwable =>
             drone.warn(s"Exception thrown in $name, see console for details.")
-            errorHandler(e, name, this)
+            _errorHandler.foreach(_(e, name, this))
         }
       }
     }
