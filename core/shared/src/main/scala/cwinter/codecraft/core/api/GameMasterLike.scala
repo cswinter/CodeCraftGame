@@ -50,19 +50,26 @@ trait GameMasterLike {
   }
 
   def startGame(mothership1: DroneControllerBase, mothership2: DroneControllerBase): Unit = {
-    val worldSize = DefaultWorldSize
-    val resourceClusters = DefaultResourceDistribution
-    val spawns = constructSpawns(mothership1, Vector2(2500, 500), mothership2, Vector2(-2500, -500))
-    val map = WorldMap(worldSize, resourceClusters, spawns).withDefaultWinConditions
+    val map = defaultMap(mothership1, mothership2)
     val simulator = new DroneWorldSimulator(map, devEvents)
     run(simulator)
   }
 
-
-  def runLevel1(mothership1: DroneControllerBase): Unit = {
+  def level1Map(mothership1: DroneControllerBase): WorldMap = {
     val worldSize = Rectangle(-2000, 2000, -1000, 1000)
     val spawns = constructSpawns(mothership1, Vector2(1000, 200), new ai.basic.Mothership, Vector2(-1000, -200))
-    val map = WorldMap(worldSize, 100, spawns).withDefaultWinConditions
+    WorldMap(worldSize, 100, spawns).withDefaultWinConditions
+  }
+
+  def defaultMap(mothership1: DroneControllerBase, mothership2: DroneControllerBase): WorldMap = {
+    val worldSize = DefaultWorldSize
+    val resourceClusters = DefaultResourceDistribution
+    val spawns = constructSpawns(mothership1, Vector2(2500, 500), mothership2, Vector2(-2500, -500))
+    WorldMap(worldSize, resourceClusters, spawns).withDefaultWinConditions
+  }
+
+  def runLevel1(mothership1: DroneControllerBase): Unit = {
+    val map = level1Map(mothership1)
     val simulator = new DroneWorldSimulator(map, devEvents)
     run(simulator)
   }
