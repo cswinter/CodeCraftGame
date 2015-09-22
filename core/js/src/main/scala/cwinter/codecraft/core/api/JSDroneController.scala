@@ -7,10 +7,20 @@ import scala.scalajs.js.annotation.JSExport
 
 @JSExport
 class JSDroneController(
-  private[this] var _errorHandler: Option[(Throwable, String, Drone) => Unit] = None
+  private[this] var _errorHandler: Option[(Throwable, String, JSDroneController) => Unit] = None,
+  private[this] var _nativeControllerName: String = ""
 ) extends DroneControllerBase {
   private[this] var _nativeController: js.Dynamic = null
-  def errorHandler_=(value: (Throwable, String, Drone) => Unit) = _errorHandler = Some(value)
+  def errorHandler_=(value: (Throwable, String, JSDroneController) => Unit) = _errorHandler = Some(value)
+
+  def nativeController = _nativeController
+  def updateController(controller: js.Dynamic, controllerName: String): Unit = {
+    _nativeController = controller
+    _nativeController.drone = this.asInstanceOf[js.Any]
+    _nativeControllerName = controllerName
+  }
+
+  def controllerName = _nativeControllerName
 
   private[this] def callNativeFun(name: String, args: js.Any*): Unit = {
     if (_nativeController != null) {
@@ -27,15 +37,15 @@ class JSDroneController(
     }
   }
 
-
-  def nativeController = _nativeController
-  def nativeController_=(value: js.Dynamic): Unit = {
-    _nativeController = value
-    _nativeController.drone = this.asInstanceOf[js.Any]
-  }
-
   @JSExport
+  @deprecated("Use buildDrone(controllerName: String, spec: js.Dynamic).", "0.11.1.0")
   def buildDrone(controller: JSDroneController, spec: js.Dynamic): Unit = {
+    if (!JSDroneController.buildDroneDeprWarnShown) {
+      Console.err.println("buildDrone(controller: JSDroneController, spec: js.Dynamic) has been deprecated. " +
+        "Use the more convenient buildDrone(controllerName: String, spec: js.Dynamic) instead, which allows you to eliminate the call to Game.getController.")
+      JSDroneController.buildDroneDeprWarnShown = true
+    }
+
     def getOrElse0(fieldName: String): Int = {
       val value = spec.selectDynamic(fieldName)
       //noinspection ComparingUnrelatedTypes,TypeCheckCanBeMatch
@@ -43,6 +53,27 @@ class JSDroneController(
       else 0
     }
 
+    buildDrone(
+      controller,
+      storageModules = getOrElse0("storageModules"),
+      missileBatteries = getOrElse0("missileBatteries"),
+      refineries = getOrElse0("refineries"),
+      constructors = getOrElse0("constructors"),
+      engines = getOrElse0("engines"),
+      shieldGenerators = getOrElse0("shieldGenerators")
+    )
+  }
+
+  @JSExport
+  def buildDrone(controller: String, spec: js.Dynamic): Unit = {
+    def getOrElse0(fieldName: String): Int = {
+      val value = spec.selectDynamic(fieldName)
+      //noinspection ComparingUnrelatedTypes,TypeCheckCanBeMatch
+      if (value.isInstanceOf[Int]) value.asInstanceOf[Int]
+      else 0
+    }
+
+    val controller = JSDroneController.droneControllerProvider(controller)
     buildDrone(
       controller,
       storageModules = getOrElse0("storageModules"),
@@ -86,4 +117,13 @@ class JSDroneController(
    */
   @JSExport
   def dronesInSight: js.Array[Drone] = super.dronesInSightScala.toJSArray
+}
+
+
+@JSExport
+object JSDroneController {
+  private var buildDroneDeprWarnShown = false
+
+  @JSExport
+  var droneControllerProvider: String => DroneControllerBase = null
 }
