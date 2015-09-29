@@ -4,6 +4,8 @@ import cwinter.codecraft.core.objects.drone._
 import cwinter.codecraft.util.maths.{Geometry, Vector2}
 import cwinter.codecraft.util.modules.ModulePosition
 
+import scala.scalajs.js.annotation.JSExportAll
+
 /**
  * Specifies the modules equipped by a drone.
  *
@@ -14,6 +16,7 @@ import cwinter.codecraft.util.modules.ModulePosition
  * @param engines Number of engines. Increases move speed.
  * @param shieldGenerators Number of shield generators. Create shield that absorbs damage and regenerates over time.
  */
+@JSExportAll
 case class DroneSpec(
   storageModules: Int = 0,
   missileBatteries: Int = 0,
