@@ -41,8 +41,11 @@ class JSDroneController(
   @deprecated("Use buildDrone(controllerName: String, spec: js.Dynamic).", "0.11.1.0")
   def buildDrone(controller: JSDroneController, spec: js.Dynamic): Unit = {
     if (!JSDroneController.buildDroneDeprWarnShown) {
-      Console.err.println("buildDrone(controller: JSDroneController, spec: js.Dynamic) has been deprecated. " +
-        "Use the more convenient buildDrone(controllerName: String, spec: js.Dynamic) instead, which allows you to eliminate the call to Game.getController.")
+      val errmsg = "buildDrone(controller: JSDroneController, spec: js.Dynamic) has been deprecated. " +
+        "Use the more convenient buildDrone(controllerName: String, spec: js.Dynamic) instead, " +
+        "which allows you to eliminate the call to Game.getController."
+      Console.err.println(errmsg)
+      drone.warn(errmsg)
       JSDroneController.buildDroneDeprWarnShown = true
     }
 
@@ -65,7 +68,7 @@ class JSDroneController(
   }
 
   @JSExport
-  def buildDrone(controller: String, spec: js.Dynamic): Unit = {
+  def buildDrone(controllerName: String, spec: js.Dynamic): Unit = {
     def getOrElse0(fieldName: String): Int = {
       val value = spec.selectDynamic(fieldName)
       //noinspection ComparingUnrelatedTypes,TypeCheckCanBeMatch
@@ -73,7 +76,7 @@ class JSDroneController(
       else 0
     }
 
-    val controller = JSDroneController.droneControllerProvider(controller)
+    val controller = JSDroneController.droneControllerProvider(controllerName)
     buildDrone(
       controller,
       storageModules = getOrElse0("storageModules"),
@@ -124,6 +127,5 @@ class JSDroneController(
 object JSDroneController {
   private var buildDroneDeprWarnShown = false
 
-  @JSExport
   var droneControllerProvider: String => DroneControllerBase = null
 }
