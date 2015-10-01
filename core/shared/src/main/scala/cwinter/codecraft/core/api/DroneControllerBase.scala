@@ -209,6 +209,12 @@ trait DroneControllerBase extends Drone {
   def availableStorage: Int = drone.availableStorage
 
   /**
+   * Returns the total amount of resources available to this drone.
+   * If the drone has refineries, this includes unprocessed mineral crystals.
+   */
+  def totalAvailableResources: Int = drone.totalAvailableResources
+
+  /**
    * Returns the number of unused refinery modules.
    */
   def availableRefineries: Int = drone.availableFactories

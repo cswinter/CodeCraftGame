@@ -44,6 +44,12 @@ trait Drone {
    */
   def isEnemy: Boolean
 
+  /**
+   * Returns the total amount of resources available to this drone.
+   * This includes any mineral crystals that are small enough to be processed by this drone.
+   */
+  def totalAvailableResources: Int
+
   private[core] def drone: DroneImpl
 
   override def toString: String = {

@@ -8,10 +8,7 @@ import cwinter.codecraft.util.maths.{Vector2, Rng}
 private[core] class DroneRefineryModule(positions: Seq[Int], owner: DroneImpl)
     extends DroneModule(positions, owner) {
 
-  final val MineralProcessingPeriod = 100
-  final val MineralResourceYield = 2
-
-
+  import DroneRefineryModule._
   private[this] var newMinerals = List.empty[MineralCrystalImpl]
   private[this] var mineralProcessing = List.empty[(MineralCrystalImpl, Int)]
 
@@ -79,3 +76,7 @@ private[core] class DroneRefineryModule(positions: Seq[Int], owner: DroneImpl)
   def mineralCrystals: Seq[MineralCrystalImpl] = newMinerals ::: mineralProcessing.map(_._1)
 }
 
+object DroneRefineryModule {
+  final val MineralProcessingPeriod = 100
+  final val MineralResourceYield = 2
+}

@@ -41,12 +41,12 @@ private[core] class DroneImpl(
 
   val dynamics: DroneDynamics = spec.constructDynamics(this, initialPos, time)
   private[this] val weapons = spec.constructMissilesBatteries(this)
-  private[this] val factories = spec.constructRefineries(this)
+  private[this] val refineries = spec.constructRefineries(this)
   private[core] val storage = spec.constructStorage(this, startingResources)
   private[this] val manipulator = spec.constructManipulatorModules(this)
   private[this] val shieldGenerators = spec.constructShieldGenerators(this)
   private[this] val engines = spec.constructEngineModules(this)
-  val droneModules = Seq(weapons, factories, storage, manipulator, shieldGenerators, engines)
+  val droneModules = Seq(weapons, refineries, storage, manipulator, shieldGenerators, engines)
 
 
   def initialise(time: Double): Unit = {
@@ -160,7 +160,7 @@ private[core] class DroneImpl(
         d <- m.droneInConstruction
       } simulatorEvents ::= DroneConstructionCancelled(d)
       for {
-        f <- factories
+        f <- refineries
         c <- f.mineralCrystals
       } simulatorEvents ::= MineralCrystalDestroyed(c)
     }
@@ -212,7 +212,7 @@ private[core] class DroneImpl(
     if (!storage.exists(_.storedMinerals.contains(mineral))) {
       warn("Tried to process mineral not stored in this drone!")
     } else {
-      factories match {
+      refineries match {
         case Some(f) =>
           storage.get.removeMineralCrystal(mineral)
           f.startMineralProcessing(mineral)
@@ -272,11 +272,15 @@ private[core] class DroneImpl(
   }.getOrElse(0)
 
   def availableFactories: Int = {
-    for (f <- factories) yield f.currentCapacity
+    for (f <- refineries) yield f.currentCapacity
   }.getOrElse(0)
 
   def availableResources: Int = {
     for (s <- storage) yield s.availableResources
+  }.getOrElse(0)
+
+  def totalAvailableResources: Int = {
+    for (s <- storage) yield s.totalAvailableResources(processingCapacity)
   }.getOrElse(0)
 
   def storedMinerals: Iterable[MineralCrystalImpl] = {

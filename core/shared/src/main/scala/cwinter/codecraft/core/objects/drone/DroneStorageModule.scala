@@ -139,6 +139,10 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
 
   def availableResources: Int = storedEnergyGlobes.size
 
+  def totalAvailableResources(refineries: Int): Int =
+    availableResources +
+      storedMinerals.filter(_.size <= refineries).foldLeft(0)(_ + _.size * DroneRefineryModule.MineralResourceYield)
+
   def availableStorage: Int =
     positions.size -
       _storedMinerals.foldLeft(0)(_ + _.contents.mineralCrystalOption.map(_.size).getOrElse(0)) -

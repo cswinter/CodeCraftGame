@@ -40,10 +40,19 @@ class EnemyDrone(
       drone.hitpoints
     } else {
       val exception = new ObjectNotVisibleException(
-        "Cannot get the hitpoints of an enemy droen that is not inside the sight radius of any of your drones.")
+        "Cannot get the hitpoints of an enemy drone that is not inside the sight radius of any of your drones.")
       Errors.error(exception, drone.position)
     }
   }
+
+  def totalAvailableResources: Int =
+   if (isVisible) {
+     drone.totalAvailableResources
+   } else {
+     val exception = new ObjectNotVisibleException(
+       "Cannot get the totalAvailableResources of an enemy drone that is not inside the sight radius of any of your drones.")
+     Errors.error(exception, drone.position)
+   }
 
   override def isEnemy: Boolean = true
 
