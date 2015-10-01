@@ -35,7 +35,7 @@ private[core] class DroneRefineryModule(positions: Seq[Int], owner: DroneImpl)
         yield {
           mineral.position = center
 
-          if (progress % (MineralProcessingPeriod / mineral.size) == 1) {
+          if (unprocessedAmount(progress, mineral.size) > unprocessedAmount(progress - 1, mineral.size)) {
             spawnedResources ::= center
           }
           (mineral, progress - 1)
@@ -51,6 +51,8 @@ private[core] class DroneRefineryModule(positions: Seq[Int], owner: DroneImpl)
     (effects, Seq.empty[Vector2], spawnedResources)
   }
 
+  private def unprocessedAmount(progress: Int, size: Int): Int =
+    math.ceil(size * progress.toDouble / MineralProcessingPeriod).toInt
 
   def startMineralProcessing(mineral: MineralCrystalImpl): Unit = {
     if (mineral.size > currentCapacity) {
@@ -63,6 +65,15 @@ private[core] class DroneRefineryModule(positions: Seq[Int], owner: DroneImpl)
   def currentCapacity: Int = positions.length -
     mineralProcessing.foldLeft(0)(_ + _._1.size) -
     newMinerals.foldLeft(0)(_ + _.size)
+
+  /**
+   * Returns the amount of resources that will be obtained from the current module contents.
+   */
+  def unprocessedResourceAmount: Int = {
+    val contributions = for ((mineral, progress) <- mineralProcessing) yield
+      unprocessedAmount(progress, mineral.size)
+    contributions.sum
+  }
 
   private def contents: Seq[Int] = mineralProcessing.map(_._1.size).sorted.reverse
 

@@ -7,17 +7,17 @@ import cwinter.codecraft.graphics.worldstate.BluePlayer
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 import org.scalatest.FlatSpec
 
-private[core] class DroneRefineryModuleTest extends FlatSpec {
+class DroneRefineryModuleTest extends FlatSpec {
   val mockDroneSpec = new DroneSpec(refineries = 5, storageModules = 2)
   val mockDrone = new DroneImpl(mockDroneSpec, null, BluePlayer, Vector2(0, 0), 0, WorldConfig(Rectangle(-100, 100, -100, 100)))
 
   val processingModule = new DroneRefineryModule((0 to 4).toSeq, mockDrone)
 
-  "A factory module" should "generate the correct amount of resources when processing a mineral crystal" in {
+  "A refinery module" should "generate the correct amount of resources when processing a mineral crystal" in {
     for (mineralSize <- 1 to 5) {
       processingModule.startMineralProcessing(new MineralCrystalImpl(mineralSize, Vector2.Null, true))
-      val (_, resourcesConsumed, resourcesSpawned) = runProcessingModule(processingModule, 2 * processingModule.MineralProcessingPeriod)
-      assert(resourcesSpawned.size == mineralSize * processingModule.MineralResourceYield)
+      val (_, resourcesConsumed, resourcesSpawned) = runProcessingModule(processingModule, 2 * DroneRefineryModule.MineralProcessingPeriod)
+      assert(resourcesSpawned.size == mineralSize * DroneRefineryModule.MineralResourceYield)
     }
   }
 
@@ -25,7 +25,7 @@ private[core] class DroneRefineryModuleTest extends FlatSpec {
     for (mineralSize <- 1 to 5) {
       val mineralCrystal = new MineralCrystalImpl(mineralSize, Vector2.Null, true)
       processingModule.startMineralProcessing(mineralCrystal)
-      val (events, _, _) = runProcessingModule(processingModule, 2 * processingModule.MineralProcessingPeriod)
+      val (events, _, _) = runProcessingModule(processingModule, 2 * DroneRefineryModule.MineralProcessingPeriod)
       assert(events.contains(MineralCrystalDestroyed(mineralCrystal)))
     }
   }
@@ -37,7 +37,16 @@ private[core] class DroneRefineryModuleTest extends FlatSpec {
     assert(resourcesSpawned.size == 0)
   }
 
-  def runProcessingModule(module: DroneRefineryModule, minTime: Int): (Seq[SimulatorEvent], Seq[Vector2], Seq[Vector2]) = {
+  it should "report the correct amount of unprocessed resources" in {
+    processingModule.startMineralProcessing(new MineralCrystalImpl(3, Vector2.Null, true))
+    processingModule.update(0)
+    assert(processingModule.unprocessedResourceAmount == 3 * DroneRefineryModule.MineralResourceYield)
+    for (i <- 0 until DroneRefineryModule.MineralProcessingPeriod / 3)
+      processingModule.update(0)
+    assert(processingModule.unprocessedResourceAmount == 3 * DroneRefineryModule.MineralResourceYield - 1)
+  }
+
+  private def runProcessingModule(module: DroneRefineryModule, minTime: Int): (Seq[SimulatorEvent], Seq[Vector2], Seq[Vector2]) = {
     var continue = true
     var allEvents = Seq.empty[SimulatorEvent]
     var netResourceSpawns = Seq.empty[Vector2]

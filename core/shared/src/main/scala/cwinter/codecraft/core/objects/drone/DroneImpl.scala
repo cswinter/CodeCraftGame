@@ -281,6 +281,8 @@ private[core] class DroneImpl(
 
   def totalAvailableResources: Int = {
     for (s <- storage) yield s.totalAvailableResources(processingCapacity)
+  }.getOrElse(0) + {
+    for (r <- refineries) yield r.unprocessedResourceAmount
   }.getOrElse(0)
 
   def storedMinerals: Iterable[MineralCrystalImpl] = {

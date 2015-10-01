@@ -9,9 +9,8 @@ import org.scalatest.FlatSpec
 
 class DroneWorldSimulatorTest extends FlatSpec {
   val mineral = new MineralCrystalImpl(1, Vector2(0, 0))
-  val map = new WorldMap(Seq(mineral), Rectangle(-2000, 2000, -2000, 2000), Seq(Vector2(0, 0), Vector2(0, 0)))
-  def emptyController = {
-    println("created new drone controller")
+  val mockDroneSpec = new DroneSpec(storageModules = 2)
+  val mockDrone =
     new DroneController {
       override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = ()
 
@@ -25,21 +24,22 @@ class DroneWorldSimulatorTest extends FlatSpec {
 
       override def onSpawn(): Unit = ()
     }
-  }
-  val mockDroneSpec = new DroneSpec(storageModules = 2)
-  val mockDrone = new DroneImpl(mockDroneSpec, emptyController, BluePlayer, Vector2(0, 0), 0, WorldConfig(Rectangle(-100, 100, -100, 100)))
+  val map = new WorldMap(
+    Seq(mineral), Rectangle(-2000, 2000, -2000, 2000),
+    Seq(Spawn(mockDroneSpec, mockDrone, Vector2(0, 0), BluePlayer))
+  )
 
-  val simulator = new DroneWorldSimulator(map, emptyController, emptyController, t => if (t == 0) Seq(SpawnDrone(mockDrone)) else Seq() )
+  val simulator = new DroneWorldSimulator(map, _ => Seq())
 
 
   "Game simulator" must "allow for mineral harvesting" in {
-    mockDrone.executeCommand(HarvestMineral(mineral))
+    mockDrone.drone ! HarvestMineral(mineral)
     simulator.run(DroneStorageModule.HarvestingTime)
     assert(mineral.harvested)
   }
 
   it must "prevent double harvesting of resources" in {
-    mockDrone.executeCommand(HarvestMineral(mineral))
+    mockDrone.drone ! HarvestMineral(mineral)
     simulator.run(DroneStorageModule.HarvestingTime)
     assert(mockDrone.storedMinerals.size == 1)
   }
