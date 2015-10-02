@@ -66,12 +66,14 @@ private[core] class DroneImpl(
     }
 
     if (hasDied) {
+      // TODO: think about the semantics of thsi
       controller.onDeath()
+      for (s <- storage) s.destroyed()
     } else {
       // process events
       eventQueue foreach {
         case Spawned => controller.onSpawn()
-        case Destroyed => controller.onDeath()
+        case Destroyed => // this should never be executed
         case MineralEntersSightRadius(mineral) =>
           controller.onMineralEntersVision(new MineralCrystal(mineral, player))
         case ArrivedAtPosition => controller.onArrivesAtPosition()

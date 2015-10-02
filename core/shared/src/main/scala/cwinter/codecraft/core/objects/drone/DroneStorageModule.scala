@@ -129,7 +129,6 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
       owner.warn("Trying to harvest mineral crystal that has already been harvested.")
     } else {
       createMineralSlot(HarvestsMineral(mineralCrystal, HarvestingTime))
-      // TODO: what if harvesting cancelled/drone killed?
       mineralCrystal.harvested = true
       mineralCrystal.harvestPosition = calculateAbsoluteMineralPosition(mineralCrystal)
     }
@@ -156,6 +155,15 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
     val slot = _storedMinerals.find(_.contents.mineralCrystalOption == Some(mineralCrystal)).get
     ModulePosition.center(owner.size, slot.positions).toVector2.rotated(owner.dynamics.orientation) +
       owner.position
+  }
+
+  def destroyed(): Unit = {
+    for (slot <- _storedMinerals) slot.contents match {
+      case HarvestsMineral(mineral, _) =>
+        mineral.harvested = false
+        mineral.harvestProgress = None
+      case _ =>
+    }
   }
 
   override def descriptors: Seq[DroneModuleDescriptor] = {

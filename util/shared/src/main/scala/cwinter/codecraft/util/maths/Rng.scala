@@ -1,7 +1,7 @@
 package cwinter.codecraft.util.maths
 
 object Rng {
-  private[this] var _seed = 1// scala.util.Random.nextInt(100000)
+  private[this] var _seed = scala.util.Random.nextInt(100000)
   private[this] var random = new scala.util.Random(seed)
 
 
