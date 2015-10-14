@@ -13,6 +13,7 @@ object Commons {
       "-deprecation",
       "-Xfatal-warnings",
       "-feature"
-    )
+    ),
+    autoAPIMappings := true
   )
 }

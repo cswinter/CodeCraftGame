@@ -105,8 +105,22 @@ lazy val scalajsTest = (project in file("scalajs-test")).
   ).dependsOn(coreJS, demosJS)
 
 
+val projects: Seq[ProjectReference] = Seq(coreJVM, graphicsJVM, utilJVM, physicsJVM, collisionsJVM)
+lazy val docs = (project in file("docs"))
+  .settings(Commons.settings: _*)
+  .settings(
+    name := "docs",
+    scalacOptions += "-Ymacro-expand:none",
+    libraryDependencies ++= commonDependencies,
+    libraryDependencies ++= graphicsJVMDependencies,
+    libraryDependencies += "org.scala-lang" % "scala-reflect" % "2.11.6"
+  )
+  .settings(
+    unmanagedSourceDirectories in Compile <<= (projects map (unmanagedSourceDirectories in _ in Compile)).join.apply{(s) => s.flatten}
+  )
+
+
 lazy val root = project.in(file(".")).
   aggregate(coreJS, coreJVM, graphicsJS, graphicsJVM, utilJS, utilJVM, physicsJS, physicsJVM, collisionsJS, collisionsJVM)
-
 
 
