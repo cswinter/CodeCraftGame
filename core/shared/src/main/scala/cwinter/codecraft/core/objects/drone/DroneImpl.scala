@@ -30,8 +30,8 @@ private[core] class DroneImpl(
   private[this] var _hasDied: Boolean = false
   private[this] var automaticMineralProcessing: Boolean = true
 
-  final val MessageCooldown = 20
-  private[this] var messageCooldown = MessageCooldown
+  final val MessageCooldown = 30
+  private[this] var messageCooldown = 0
   private final val NJetPositions = 6
   private[this] val oldPositions = collection.mutable.Queue.empty[(Float, Float, Float)]
 
