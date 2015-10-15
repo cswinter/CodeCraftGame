@@ -8,7 +8,7 @@ import cwinter.codecraft.util.maths.{ColorRGB, VertexXY}
 import cwinter.codecraft.util.modules.ModulePosition
 
 
-case class DroneStorageModelBuilder(positions: Seq[VertexXY], moduleContents: StorageModuleContents, size: Int, tMerge: Option[Float])(implicit rs: RenderStack)
+private[graphics] case class DroneStorageModelBuilder(positions: Seq[VertexXY], moduleContents: StorageModuleContents, size: Int, tMerge: Option[Float])(implicit rs: RenderStack)
   extends ModelBuilder[DroneStorageModelBuilder, Unit] {
 
   val scale = math.sqrt(size).toFloat

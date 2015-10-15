@@ -6,7 +6,7 @@ import cwinter.codecraft.util.maths.{NullVectorXY, Vertex, VertexXY, VertexXYZ}
 import scala.reflect.ClassTag
 
 
-case class PolygonWave[TColor <: Vertex : ClassTag, TParams](
+private[graphics] case class PolygonWave[TColor <: Vertex : ClassTag, TParams](
   material: Material[VertexXYZ, TColor, TParams],
   n: Int,
   colorMidpoint: TColor,

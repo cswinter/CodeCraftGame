@@ -5,7 +5,7 @@ import cwinter.codecraft.util.maths.Rng
 
 import scala.util.Random
 
-object Generators {
+private[graphics] object Generators {
   def rnd() = Random.nextDouble().toFloat
   def rnd(min: Float, max: Float): Float = {
     assert(min < max, "Cannot have min >= max.")

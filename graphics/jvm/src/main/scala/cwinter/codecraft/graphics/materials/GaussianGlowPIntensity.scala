@@ -7,7 +7,7 @@ import cwinter.codecraft.util.maths.matrices.Matrix4x4
 import cwinter.codecraft.graphics.model.{VBO, JVMVBO$}
 import cwinter.codecraft.util.maths.{ColorRGBA, VertexXYZ}
 
-class GaussianGlowPIntensity(implicit gl: GL4)
+private[graphics] class GaussianGlowPIntensity(implicit gl: GL4)
   extends JVMMaterial[VertexXYZ, ColorRGBA, Intensity](
     gl = gl,
     vsPath = "xyz_rgba_vs.glsl",

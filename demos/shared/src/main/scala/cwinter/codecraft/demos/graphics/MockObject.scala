@@ -5,7 +5,7 @@ import cwinter.codecraft.graphics.worldstate.WorldObjectDescriptor
 import cwinter.codecraft.util.maths.Vector2
 
 
-trait MockObject {
+private[graphics] trait MockObject {
   val identifier = MockObject.genID()
 
   def update(): Unit
@@ -16,7 +16,7 @@ trait MockObject {
   def yPos: Float
 }
 
-object MockObject {
+private[graphics] object MockObject {
   private var objectCount = 0
   private def genID(): Int = {
     objectCount += 1

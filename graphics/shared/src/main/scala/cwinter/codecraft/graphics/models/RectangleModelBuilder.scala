@@ -6,7 +6,7 @@ import cwinter.codecraft.util.maths
 import cwinter.codecraft.util.maths.ColorRGB
 
 
-case class RectangleModelBuilder(rectangle: maths.Rectangle)(implicit val rs: RenderStack)
+private[graphics] case class RectangleModelBuilder(rectangle: maths.Rectangle)(implicit val rs: RenderStack)
   extends ModelBuilder[RectangleModelBuilder, Unit] {
   val signature = this
 

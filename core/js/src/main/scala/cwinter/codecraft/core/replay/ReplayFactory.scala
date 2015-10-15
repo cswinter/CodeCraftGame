@@ -1,5 +1,5 @@
 package cwinter.codecraft.core.replay
 
-object ReplayFactory {
+private[core] object ReplayFactory {
   def replayRecorder: ReplayRecorder = NullReplayRecorder
 }

@@ -1,9 +1,8 @@
 package cwinter.codecraft.core.replay
 
-import cwinter.codecraft.core.api.DroneSpec
+import cwinter.codecraft.core.api.{Player, DroneSpec}
 import cwinter.codecraft.core.objects.MineralCrystalImpl
 import cwinter.codecraft.core.objects.drone.DroneCommand
-import cwinter.codecraft.graphics.worldstate.Player
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 
 

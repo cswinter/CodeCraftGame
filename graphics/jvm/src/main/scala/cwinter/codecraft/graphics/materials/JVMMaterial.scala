@@ -21,7 +21,7 @@ import scala.language.implicitConversions
  * (Vertex) Attribute: input parameter to a shader
  * Vertex Attribute Object: maps data from robowars.graphics.model.VBO to one or more attributes
  */
-class JVMMaterial[TPosition <: Vertex, TColor <: Vertex, TParams](
+private[graphics] class JVMMaterial[TPosition <: Vertex, TColor <: Vertex, TParams](
   val gl: GL4,
   vsPath: String,
   fsPath: String,

@@ -106,6 +106,7 @@ lazy val scalajsTest = (project in file("scalajs-test")).
 
 
 val projects: Seq[ProjectReference] = Seq(coreJVM, graphicsJVM, utilJVM, physicsJVM, collisionsJVM)
+val skippedPackages = Seq("cwinter.codecraft.core.ai")
 lazy val docs = (project in file("docs"))
   .settings(Commons.settings: _*)
   .settings(
@@ -117,6 +118,7 @@ lazy val docs = (project in file("docs"))
   )
   .settings(
     unmanagedSourceDirectories in Compile <<= (projects map (unmanagedSourceDirectories in _ in Compile)).join.apply{(s) => s.flatten}
+    //scalacOptions in (Compile, doc) += s"-skip-packages ${skippedPackages.mkString(" ")}"
   )
 
 

@@ -4,7 +4,7 @@ import cwinter.codecraft.core.api.{DroneController, Drone, DroneSpec, MineralCry
 import cwinter.codecraft.util.maths.{Rng, Vector2}
 
 
-class Mothership extends DroneController {
+private[core] class Mothership extends DroneController {
   var t = 0
   var collectors = 0
 
@@ -36,7 +36,7 @@ class Mothership extends DroneController {
   }
 
   def enemies: Set[Drone] =
-    dronesInSight.filter(_.player != player)
+    dronesInSight.filter(_.playerID != playerID)
 
   override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = ()
   override def onArrivesAtPosition(): Unit = ()
@@ -117,7 +117,7 @@ private[core] class AttackDroneController extends DroneController {
   }
 
   def enemies: Set[Drone] =
-    dronesInSight.filter(_.player != player)
+    dronesInSight.filter(_.playerID != playerID)
 
   override def onArrivesAtPosition(): Unit = ()
 

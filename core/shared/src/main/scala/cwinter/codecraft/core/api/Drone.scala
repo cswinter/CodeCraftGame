@@ -1,7 +1,6 @@
 package cwinter.codecraft.core.api
 
 import cwinter.codecraft.core.objects.drone.DroneImpl
-import cwinter.codecraft.graphics.worldstate.Player
 import cwinter.codecraft.util.maths.Vector2
 
 import scala.scalajs.js.annotation.JSExportAll
@@ -32,7 +31,7 @@ trait Drone {
   /**
    * Returns the player who commands this drone.
    */
-  def player: Player
+  def playerID: Int
 
   /**
    * Returns the current number of hitpoints.

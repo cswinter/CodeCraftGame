@@ -6,7 +6,7 @@ import cwinter.codecraft.util.maths.{Vertex, VertexXY, VertexXYZ}
 import scala.reflect.ClassTag
 
 
-case class PartialPolygonRing[TColor <: Vertex : ClassTag, TParams](
+private[graphics] case class PartialPolygonRing[TColor <: Vertex : ClassTag, TParams](
   material: Material[VertexXYZ, TColor, TParams],
   n: Int,
   colorInside: Seq[TColor],

@@ -6,7 +6,7 @@ import cwinter.codecraft.util.maths.Vector2
 import cwinter.codecraft.util.modules.ModulePosition
 
 
-abstract class DroneModule(
+private[core] abstract class DroneModule(
   val positions: Seq[Int],
   val owner: DroneImpl
 ) {

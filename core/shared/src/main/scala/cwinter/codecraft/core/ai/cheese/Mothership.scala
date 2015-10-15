@@ -3,11 +3,11 @@ package cwinter.codecraft.core.ai.cheese
 import cwinter.codecraft.core.api.{Drone, DroneController, DroneSpec, MineralCrystal}
 
 
-class CheesyMothership extends DroneController {
+private[core] class Mothership extends DroneController {
   final val destroyerSpec = new DroneSpec(0, 3, 0, 0, 0, 1)
 
   override def onSpawn(): Unit = {
-    buildDrone(destroyerSpec, new CheesyDestroyer(-position))
+    buildDrone(destroyerSpec, new Destroyer(-position))
     moveTo(-position)
   }
   override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = ()

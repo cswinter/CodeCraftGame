@@ -9,7 +9,7 @@ import cwinter.codecraft.util.maths._
 import cwinter.codecraft.util.maths.matrices.{Matrix4x4, TranslationMatrix4x4}
 
 
-object DroneColors {
+private[graphics] object DroneColors {
   val Black = ColorRGB(0, 0, 0)
   val White = ColorRGB(1, 1, 1)
   val ColorBody = ColorRGB(0.05f, 0.05f, 0.05f)
@@ -21,17 +21,17 @@ object DroneColors {
 }
 
 
-case class DroneSignature(
+private[graphics] case class DroneSignature(
   size: Int,
   modules: Seq[DroneModuleDescriptor],
   hasShields: Boolean,
   hullState: Seq[Byte],
   isBuilding: Boolean,
   animationTime: Int,
-  player: Player
+  playerColor: ColorRGB
 )
 
-object DroneSignature {
+private[graphics] object DroneSignature {
   def apply(droneObject: DroneDescriptor, timestep: Int): DroneSignature = {
     val hasAnimatedComponents = droneObject.modules.exists(m =>
       m.isInstanceOf[EnginesDescriptor] || m.isInstanceOf[ProcessingModuleDescriptor]
@@ -43,13 +43,16 @@ object DroneSignature {
       droneObject.hullState,
       droneObject.constructionState.isDefined,
       if (hasAnimatedComponents) timestep % 100 else 0,
-      droneObject.player)
+      droneObject.playerColor)
   }
 }
 
 
-class DroneModelBuilder(drone: DroneDescriptor, timestep: Int)(implicit val rs: RenderStack)
-  extends ModelBuilder[DroneSignature, DroneDescriptor] {
+private[graphics] class DroneModelBuilder(
+  drone: DroneDescriptor,
+  timestep: Int
+)(implicit val rs: RenderStack) extends ModelBuilder[DroneSignature, DroneDescriptor] {
+
   def signature: DroneSignature = DroneSignature(drone, timestep)
 
   import Geometry.circumradius
@@ -82,8 +85,8 @@ class DroneModelBuilder(drone: DroneDescriptor, timestep: Int)(implicit val rs: 
       PolygonRing(
         rs.MaterialXYZRGB,
         sides,
-        signature.player.color +: hullColors,
-        signature.player.color +: hullColors,
+        signature.playerColor +: hullColors,
+        signature.playerColor +: hullColors,
         radiusBody,
         radiusHull,
         NullVectorXY,
@@ -96,17 +99,17 @@ class DroneModelBuilder(drone: DroneDescriptor, timestep: Int)(implicit val rs: 
         module <- signature.modules
       } yield (module match {
         case EnginesDescriptor(position) =>
-          DroneEnginesModel(ModulePosition(sides, position), signature.player, signature.animationTime)
+          DroneEnginesModel(ModulePosition(sides, position), signature.playerColor, signature.animationTime)
         case MissileBatteryDescriptor(position, n) =>
-          DroneMissileBatteryModelBuilder(signature.player, ModulePosition(sides, position), n)
+          DroneMissileBatteryModelBuilder(signature.playerColor, ModulePosition(sides, position), n)
         case ShieldGeneratorDescriptor(position) =>
-          DroneShieldGeneratorModel(ModulePosition(sides, position), signature.player)
+          DroneShieldGeneratorModel(ModulePosition(sides, position), signature.playerColor)
         case ProcessingModuleDescriptor(positions, tMerging) =>
           ProcessingModuleModelBuilder(ModulePosition(sides, positions), signature.animationTime, tMerging, positions.size)
         case StorageModuleDescriptor(positions, contents, tm) =>
           DroneStorageModelBuilder(ModulePosition(sides, positions), contents, positions.size, tm)
         case ManipulatorDescriptor(position) =>
-          DroneManipulatorModelBuilder(signature.player, ModulePosition(sides, position))
+          DroneManipulatorModelBuilder(signature.playerColor, ModulePosition(sides, position))
       }).getModel
 
     val shields =
@@ -125,7 +128,7 @@ class DroneModelBuilder(drone: DroneDescriptor, timestep: Int)(implicit val rs: 
       if (!signature.isBuilding) {
         new DynamicModel(
           new DroneThrusterTrailsModelFactory(
-            sideLength, radiusHull, sides, signature.player).buildModel)
+            sideLength, radiusHull, sides, signature.playerColor).buildModel)
       } else new EmptyModel[Seq[(Float, Float, Float)]]
 
 
@@ -149,7 +152,7 @@ class DroneModelBuilder(drone: DroneDescriptor, timestep: Int)(implicit val rs: 
 }
 
 
-case class DroneModel(
+private[graphics] case class DroneModel(
   body: Model[Unit],
   hull: Model[Unit],
   modules: Seq[Model[Unit]],

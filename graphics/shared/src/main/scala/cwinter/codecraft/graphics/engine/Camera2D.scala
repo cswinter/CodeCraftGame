@@ -3,7 +3,7 @@ package cwinter.codecraft.graphics.engine
 import cwinter.codecraft.util.maths.matrices.{IdentityMatrix4x4, Matrix4x4, OrthographicProjectionMatrix4x4}
 
 
-class Camera2D {
+private[graphics] class Camera2D {
   private[this] var _screenWidth: Int = 0
   private[this] var _screenHeight: Int = 0
   private[this] var _projection: Matrix4x4 = IdentityMatrix4x4

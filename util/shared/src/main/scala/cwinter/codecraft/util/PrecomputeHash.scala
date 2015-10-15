@@ -1,7 +1,7 @@
 package cwinter.codecraft.util
 
 
-trait PrecomputeHash {
+private[cwinter] trait PrecomputeHash {
   private[this] val _hashcode = super.hashCode()
   override def hashCode(): Int = _hashcode
 }

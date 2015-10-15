@@ -7,7 +7,7 @@ import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.util.maths.VertexXY
 
 
-object TheWorldObjectModelFactory {
+private[graphics] object TheWorldObjectModelFactory {
   def generateModel(worldObject: WorldObjectDescriptor, timestep: Int)
       (implicit renderStack: RenderStack): ClosedModel[_] = {
 

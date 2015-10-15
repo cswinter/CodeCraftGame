@@ -6,7 +6,7 @@ import cwinter.codecraft.util.maths.{Vertex, VertexXY, VertexXYZ}
 import scala.reflect.ClassTag
 
 
-case class LinePrimitive[TColor <: Vertex : ClassTag, TParams](
+private[graphics] case class LinePrimitive[TColor <: Vertex : ClassTag, TParams](
   material: Material[VertexXYZ, TColor, TParams],
   p1: VertexXY,
   p2: VertexXY,

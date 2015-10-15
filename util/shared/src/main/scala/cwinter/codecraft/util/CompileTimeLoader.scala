@@ -10,7 +10,7 @@ import scala.reflect.macros.blackbox
  * To make this work with sbt, add this line to the settings:
  * `unmanagedClasspath in Compile <++= unmanagedResources in Compile`
  */
-object CompileTimeLoader {
+private[cwinter] object CompileTimeLoader {
   def loadResource(path: String): String = macro loadResourceImpl
 
   def loadResourceImpl(c: blackbox.Context)(path: c.Expr[String]) = {

@@ -6,7 +6,7 @@ import cwinter.codecraft.util.maths.Vector2
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-trait Simulator {
+private[codecraft] trait Simulator {
   @volatile private[this] var savedWorldState = Seq.empty[WorldObjectDescriptor]
 
   @volatile private[this] var running = false
@@ -65,12 +65,11 @@ trait Simulator {
     targetFPS = value
   }
   def framerateTarget: Int = targetFPS
-  def worldState: Seq[WorldObjectDescriptor] = savedWorldState
   def isPaused: Boolean = paused
-  def handleKeypress(keychar: Char): Unit = ()
-  def additionalInfoText: String = ""
   def initialCameraPos: Vector2 = Vector2.Null
-  
-  def computeWorldState: Iterable[WorldObjectDescriptor]
+  private[codecraft] def worldState: Seq[WorldObjectDescriptor] = savedWorldState
+  private[codecraft] def computeWorldState: Iterable[WorldObjectDescriptor]
+  private[codecraft] def handleKeypress(keychar: Char): Unit = ()
+  private[codecraft] def additionalInfoText: String = ""
 }
 

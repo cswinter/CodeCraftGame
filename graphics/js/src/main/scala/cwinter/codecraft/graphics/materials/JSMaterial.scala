@@ -18,7 +18,7 @@ import scala.scalajs.js.typedarray.Float32Array
  * (Vertex) Attribute: input parameter to a shader
  * Vertex Attribute Object: maps data from robowars.graphics.model.VBO to one or more attributes
  */
-class JSMaterial[TPosition <: Vertex, TColor <: Vertex, TParams](
+private[graphics] class JSMaterial[TPosition <: Vertex, TColor <: Vertex, TParams](
   val gl: GL,
   vsSource: String,
   fsSource: String,

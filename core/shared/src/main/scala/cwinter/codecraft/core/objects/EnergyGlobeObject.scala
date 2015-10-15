@@ -4,7 +4,7 @@ import cwinter.codecraft.core.{RemoveEnergyGlobeAnimation, SimulatorEvent}
 import cwinter.codecraft.graphics.worldstate.{EnergyGlobeDescriptor, WorldObjectDescriptor}
 import cwinter.codecraft.util.maths.Vector2
 
-class EnergyGlobeObject(
+private[core] class EnergyGlobeObject(
   var position: Vector2,
   var tta: Int,
   targetPosition: Vector2

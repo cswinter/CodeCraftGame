@@ -1,6 +1,6 @@
 package cwinter.codecraft.core.replay
 
-class ConsoleReplayRecorder extends ReplayRecorder {
+private[codecraft] class ConsoleReplayRecorder extends ReplayRecorder {
   val replay = new StringBuilder
 
   protected override def writeLine(string: String): Unit = {

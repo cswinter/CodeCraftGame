@@ -2,11 +2,11 @@ package cwinter.codecraft.collisions
 
 import cwinter.codecraft.util.maths.Vector2
 
-trait Positionable[-T] {
+private[codecraft] trait Positionable[-T] {
   def position(t: T): Vector2
 }
 
-object Positionable {
+private[codecraft] object Positionable {
   final implicit class PositionableOps[T](t: T)(implicit ev: Positionable[T]) {
     @inline def position = ev.position(t)
   }

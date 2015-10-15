@@ -5,7 +5,7 @@ import cwinter.codecraft.graphics.model._
 import cwinter.codecraft.util.maths.{ColorRGB, ColorRGBA, VertexXY}
 
 
-case class TestModelBuilder(t: Int)(implicit rs: RenderStack) extends ModelBuilder[TestModelBuilder, Unit] {
+private[graphics] case class TestModelBuilder(t: Int)(implicit rs: RenderStack) extends ModelBuilder[TestModelBuilder, Unit] {
   val signature = this
   val sideLength = 50
 
@@ -21,7 +21,7 @@ case class TestModelBuilder(t: Int)(implicit rs: RenderStack) extends ModelBuild
 }
 
 
-case class ProcessingModuleModelBuilder(positions: Seq[VertexXY], t: Int, tMerging: Option[Int], size: Int)(implicit rs: RenderStack) extends ModelBuilder[ProcessingModuleModelBuilder, Unit] {
+private[graphics] case class ProcessingModuleModelBuilder(positions: Seq[VertexXY], t: Int, tMerging: Option[Int], size: Int)(implicit rs: RenderStack) extends ModelBuilder[ProcessingModuleModelBuilder, Unit] {
   def signature: ProcessingModuleModelBuilder = this
 
   override protected def buildModel: Model[Unit] = {

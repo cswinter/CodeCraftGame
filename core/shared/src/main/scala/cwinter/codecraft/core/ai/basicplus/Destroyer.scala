@@ -2,7 +2,7 @@ package cwinter.codecraft.core.ai.basicplus
 
 import cwinter.codecraft.util.maths.{Rng, Vector2}
 
-class Destroyer(val mothership: Mothership) extends BaseController('Destroyer) {
+private[core] class Destroyer(val mothership: Mothership) extends BasicPlusController('Destroyer) {
   var attack = false
   var defend = false
 

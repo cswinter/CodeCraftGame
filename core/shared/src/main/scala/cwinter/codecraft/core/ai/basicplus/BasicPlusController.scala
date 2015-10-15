@@ -2,15 +2,15 @@ package cwinter.codecraft.core.ai.basicplus
 
 import cwinter.codecraft.core.api.{MineralCrystal, Drone, DroneController}
 
-abstract class BaseController(val name: Symbol) extends DroneController {
+private[core] abstract class BasicPlusController(val name: Symbol) extends DroneController {
   val mothership: Mothership
-  var searchToken: Option[SearchToken] = None
+  private var searchToken: Option[SearchToken] = None
 
   if (name != 'Mothership)
     mothership.DroneCount.increment(this.name)
 
   def enemies: Set[Drone] =
-    dronesInSight.filter(_.player != player)
+    dronesInSight.filter(_.playerID != playerID)
 
   def closestEnemy: Drone = enemies.minBy(x => (x.position - position).lengthSquared)
 

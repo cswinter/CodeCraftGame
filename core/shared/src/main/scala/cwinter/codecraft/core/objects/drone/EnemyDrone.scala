@@ -1,14 +1,13 @@
 package cwinter.codecraft.core.objects.drone
 
-import cwinter.codecraft.core.api.{Drone, DroneSpec}
-import cwinter.codecraft.core.errors.{ObjectNotVisibleException, Errors}
-import cwinter.codecraft.graphics.worldstate.Player
+import cwinter.codecraft.core.api.{Player, ObjectNotVisibleException, Drone, DroneSpec}
+import cwinter.codecraft.core.errors.Errors
 import cwinter.codecraft.util.maths.Vector2
 
 /**
  * Wrapper around drone class to allow users to query a subset of properties of enemy drones.
  */
-class EnemyDrone(
+private[core] class EnemyDrone(
   private[core] val drone: DroneImpl,
   private val holder: Player // the player to whom the handle is given
 ) extends Drone {
@@ -65,5 +64,5 @@ class EnemyDrone(
   }
 
   override def spec: DroneSpec = drone.spec
-  override def player: Player = drone.player
+  override def playerID: Int = drone.player.id
 }

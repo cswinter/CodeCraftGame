@@ -6,7 +6,7 @@ import cwinter.codecraft.util.maths.{Vertex, VertexXY, VertexXYZ}
 import scala.reflect.ClassTag
 
 
-case class RectanglePrimitive[TColor <: Vertex : ClassTag, TParams](
+private[graphics] case class RectanglePrimitive[TColor <: Vertex : ClassTag, TParams](
   material: Material[VertexXYZ, TColor, TParams],
   xMin: Float,
   xMax: Float,

@@ -1,9 +1,8 @@
 package cwinter.codecraft.core.objects.drone
 
 import cwinter.codecraft.core.{WorldConfig, MineralCrystalHarvested}
-import cwinter.codecraft.core.api.DroneSpec
+import cwinter.codecraft.core.api.{BluePlayer, DroneSpec}
 import cwinter.codecraft.core.objects.MineralCrystalImpl
-import cwinter.codecraft.graphics.worldstate.BluePlayer
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 import org.scalatest.FlatSpec
 

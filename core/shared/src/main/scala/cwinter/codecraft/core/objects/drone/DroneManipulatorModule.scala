@@ -5,7 +5,7 @@ import cwinter.codecraft.core.api.DroneSpec
 import cwinter.codecraft.graphics.worldstate.{ManipulatorArm, ManipulatorDescriptor, DroneModuleDescriptor}
 import cwinter.codecraft.util.maths.Vector2
 
-class DroneManipulatorModule(positions: Seq[Int], owner: DroneImpl)
+private[core] class DroneManipulatorModule(positions: Seq[Int], owner: DroneImpl)
   extends DroneModule(positions, owner) {
 
   private[this] var newDrone: Option[DroneImpl] = None
@@ -83,7 +83,7 @@ class DroneManipulatorModule(positions: Seq[Int], owner: DroneImpl)
           i += 1
           val offset = 0.8f * drone.radius * Vector2(math.sin(t / (10.5 - i)), math.cos(t / (7.1 + i)))
           ManipulatorArm(
-            owner.player,
+            owner.player.color,
             pos.x.toFloat, pos.y.toFloat,
             (offset.x + drone.position.x).toFloat, (offset.y + drone.position.y).toFloat)
         }

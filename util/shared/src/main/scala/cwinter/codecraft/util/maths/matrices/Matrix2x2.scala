@@ -3,7 +3,7 @@ package cwinter.codecraft.util.maths.matrices
 import cwinter.codecraft.util.maths.VertexXY
 
 
-final case class Matrix2x2(m11: Float, m12: Float, m21: Float, m22: Float) {
+private[codecraft] final case class Matrix2x2(m11: Float, m12: Float, m21: Float, m22: Float) {
   def *(other: Matrix2x2): Matrix2x2 =
     Matrix2x2(
       m11 * other.m11 + m12 * other.m21, m11 * other.m12 + m12 * other.m22,
@@ -18,7 +18,7 @@ final case class Matrix2x2(m11: Float, m12: Float, m21: Float, m22: Float) {
 }
 
 
-object Matrix2x2 {
+private[codecraft] object Matrix2x2 {
   def rotation(angle: Float): Matrix2x2 = {
     val cos = math.cos(angle).toFloat
     val sin = math.sin(angle).toFloat

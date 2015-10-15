@@ -1,7 +1,6 @@
 package cwinter.codecraft.core.api
 
 import cwinter.codecraft.core.objects.MineralCrystalImpl
-import cwinter.codecraft.graphics.worldstate.Player
 import cwinter.codecraft.util.maths.Vector2
 
 import scala.scalajs.js.annotation.JSExportAll

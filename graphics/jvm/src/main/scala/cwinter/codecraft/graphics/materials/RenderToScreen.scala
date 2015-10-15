@@ -5,7 +5,7 @@ import javax.media.opengl.GL4
 import cwinter.codecraft.util.maths.VertexXY
 
 
-class RenderToScreen(implicit gl: GL4)
+private[graphics] class RenderToScreen(implicit gl: GL4)
 extends JVMMaterial[VertexXY, VertexXY, Unit](
   gl = gl,
   vsPath = "texture_xy_vs.glsl",

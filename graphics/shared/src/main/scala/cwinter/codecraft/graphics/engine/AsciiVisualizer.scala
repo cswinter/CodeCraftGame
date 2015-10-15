@@ -1,9 +1,9 @@
 package cwinter.codecraft.graphics.engine
 
 import cwinter.codecraft.graphics.worldstate.{HomingMissileDescriptor, MineralDescriptor, DroneDescriptor, WorldObjectDescriptor}
-import cwinter.codecraft.util.maths.{Vector2, Rectangle}
+import cwinter.codecraft.util.maths.{Vector2, Rectangle, ColorRGB}
 
-object AsciiVisualizer {
+private[graphics] object AsciiVisualizer {
   final val ratio = 75
   final val margin = ratio * 2
 
@@ -20,7 +20,7 @@ object AsciiVisualizer {
     for (obj <- worldState) obj match {
       case d: DroneDescriptor =>
         val (x, y) = gridpoint(Vector2(d.xPos, d.yPos))
-        image(y)(x) = d.player.char
+        image(y)(x) = toChar(d.playerColor)
       case m: MineralDescriptor =>
         val (x, y) = gridpoint(Vector2(m.xPos, m.yPos))
         image(y)(x) = '*'
@@ -31,5 +31,12 @@ object AsciiVisualizer {
     }
 
     image.map(_.foldLeft("")(_ + _)).mkString("\n")
+  }
+
+
+  private def toChar(color: ColorRGB): Char = {
+    if (color.b > 0) 'B'
+    else if (color.r > 0 && color.g > 0) 'O'
+    else 'R'
   }
 }

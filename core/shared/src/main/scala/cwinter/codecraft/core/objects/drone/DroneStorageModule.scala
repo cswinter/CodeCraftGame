@@ -303,22 +303,23 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
 
 }
 
-object DroneStorageModule {
+// TODO: aggregate all constants
+private[core] object DroneStorageModule {
   final val HarvestingTime = 100
   final val MineralDepositTime = 45
   final val UnmergingTime = 20
 }
 
 
-trait EnergyGlobe {
+private[drone] trait EnergyGlobe {
   def updated(): EnergyGlobe
 }
 
-case object StaticEnergyGlobe extends EnergyGlobe {
+private[drone] case object StaticEnergyGlobe extends EnergyGlobe {
   def updated(): StaticEnergyGlobe.type = this
 }
 
-class MovingEnergyGlobe(
+private[drone] class MovingEnergyGlobe(
   val targetPosition: Vector2,
   var position: Vector2,
   var tta: Int

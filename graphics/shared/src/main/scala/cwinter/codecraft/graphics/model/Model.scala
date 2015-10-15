@@ -5,7 +5,7 @@ import cwinter.codecraft.util.maths.matrices.{DilationXYMatrix4x4, IdentityMatri
 import scala.annotation.tailrec
 
 
-class ClosedModel[T](objectState: T, model: Model[T], modelview: Matrix4x4) {
+private[graphics] class ClosedModel[T](objectState: T, model: Model[T], modelview: Matrix4x4) {
   def draw(material: GenericMaterial): Unit = {
     if (model.hasMaterial(material)) {
       model.update(objectState)
@@ -15,7 +15,7 @@ class ClosedModel[T](objectState: T, model: Model[T], modelview: Matrix4x4) {
 }
 
 
-trait Model[T] {
+private[graphics] trait Model[T] {
   def update(params: T): Unit
   def setVertexCount(n: Int): Unit
 
@@ -30,7 +30,7 @@ trait Model[T] {
 }
 
 
-class EmptyModel[T] extends Model[T] {
+private[graphics] class EmptyModel[T] extends Model[T] {
   def update(params: T) = ()
   def setVertexCount(n: Int) = ()
   def draw(modelview: Matrix4x4, material: GenericMaterial) = ()
@@ -38,7 +38,7 @@ class EmptyModel[T] extends Model[T] {
   def vertexCount = 0
 }
 
-object EmptyModel extends Model[Unit] {
+private[graphics] object EmptyModel extends Model[Unit] {
   def update(params: Unit) = ()
   def setVertexCount(n: Int) = ()
   def draw(modelview: Matrix4x4, material: GenericMaterial) = ()
@@ -47,7 +47,7 @@ object EmptyModel extends Model[Unit] {
 }
 
 
-class ScalableModel[T](val model: Model[T], transpose: Boolean = false) extends Model[(T, Float)] {
+private[graphics] class ScalableModel[T](val model: Model[T], transpose: Boolean = false) extends Model[(T, Float)] {
   private[this] var scale = 1.0f
 
   def update(params: (T, Float)): Unit = {
@@ -69,7 +69,7 @@ class ScalableModel[T](val model: Model[T], transpose: Boolean = false) extends 
   def vertexCount = model.vertexCount
 }
 
-class ImmediateModeModel extends Model[Seq[Model[Unit]]] {
+private[graphics] class ImmediateModeModel extends Model[Seq[Model[Unit]]] {
   private[this] var models = new StaticCompositeModel(Seq())
 
   override def update(params: Seq[Model[Unit]]): Unit =
@@ -86,9 +86,9 @@ class ImmediateModeModel extends Model[Seq[Model[Unit]]] {
   override def hasMaterial(material: GenericMaterial): Boolean = models.hasMaterial(material)
 }
 
-case class IsHidden(value: Boolean) extends AnyVal
+private[graphics] case class IsHidden(value: Boolean) extends AnyVal
 
-class HideableModel[T](val model: Model[T]) extends Model[(IsHidden, T)] {
+private[graphics] class HideableModel[T](val model: Model[T]) extends Model[(IsHidden, T)] {
   private[this] var show = true
 
   def update(params: (IsHidden, T)): Unit = {
@@ -112,7 +112,7 @@ class HideableModel[T](val model: Model[T]) extends Model[(IsHidden, T)] {
 }
 
 
-class IdentityModelviewModel[T](val model: Model[T]) extends Model[T] {
+private[graphics] class IdentityModelviewModel[T](val model: Model[T]) extends Model[T] {
   def update(params: T): Unit =
     model.update(params)
 
@@ -128,7 +128,7 @@ class IdentityModelviewModel[T](val model: Model[T]) extends Model[T] {
 }
 
 
-class DynamicModel[T](val modelFactory: T => Model[Unit]) extends Model[T] {
+private[graphics] class DynamicModel[T](val modelFactory: T => Model[Unit]) extends Model[T] {
   private[this] var model: Model[Unit] = null
 
   def draw(modelview: Matrix4x4, material: GenericMaterial): Unit =
@@ -148,7 +148,7 @@ class DynamicModel[T](val modelFactory: T => Model[Unit]) extends Model[T] {
 }
 
 
-trait ModelBuilder[TStatic, TDynamic] {
+private[graphics] trait ModelBuilder[TStatic, TDynamic] {
   def signature: TStatic
 
   def getModel: Model[TDynamic] = {
@@ -162,7 +162,7 @@ trait ModelBuilder[TStatic, TDynamic] {
 }
 
 
-trait CompositeModel[T] <: Model[T] {
+private[graphics] trait CompositeModel[T] <: Model[T] {
   def models: Seq[Model[_]]
 
   def update(params: T): Unit
@@ -198,6 +198,6 @@ trait CompositeModel[T] <: Model[T] {
   def vertexCount = models.map(_.vertexCount).sum
 }
 
-class StaticCompositeModel(val models: Seq[Model[Unit]]) extends CompositeModel[Unit] {
+private[graphics] class StaticCompositeModel(val models: Seq[Model[Unit]]) extends CompositeModel[Unit] {
   def update(params: Unit): Unit = { }
 }

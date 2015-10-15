@@ -1,6 +1,6 @@
 package cwinter.codecraft.util.maths.matrices
 
-class RotationZMatrix4x4(angle: Double) extends Matrix4x4({
+private[codecraft] class RotationZMatrix4x4(angle: Double) extends Matrix4x4({
   val cos = math.cos(angle).toFloat
   val sin = math.sin(angle).toFloat
   Array[Float](

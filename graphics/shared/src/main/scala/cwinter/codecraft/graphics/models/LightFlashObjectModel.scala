@@ -7,9 +7,9 @@ import cwinter.codecraft.graphics.worldstate.LightFlashDescriptor
 import cwinter.codecraft.util.maths.ColorRGBA
 
 
-case class LightFlashSign(rs: RenderStack)
+private[graphics] case class LightFlashSign(rs: RenderStack)
 
-class LightFlashModelBuilder(lightFlash: LightFlashDescriptor)(implicit val rs: RenderStack)
+private[graphics] class LightFlashModelBuilder(lightFlash: LightFlashDescriptor)(implicit val rs: RenderStack)
   extends ModelBuilder[LightFlashSign, LightFlashDescriptor] {
   val signature = LightFlashSign(rs)
 
@@ -28,7 +28,7 @@ class LightFlashModelBuilder(lightFlash: LightFlashDescriptor)(implicit val rs: 
 }
 
 
-class LightFlashModel(val flash: Model[(Intensity, Float)]) extends CompositeModel[LightFlashDescriptor] {
+private[graphics] class LightFlashModel(val flash: Model[(Intensity, Float)]) extends CompositeModel[LightFlashDescriptor] {
   val models = Seq(flash)
 
   override def update(lightFlash: LightFlashDescriptor): Unit = {

@@ -3,11 +3,14 @@ package cwinter.codecraft.graphics.models
 import cwinter.codecraft.graphics.engine.RenderStack
 import cwinter.codecraft.graphics.model.{Model, ModelBuilder, Polygon, StaticCompositeModel}
 import cwinter.codecraft.graphics.models.DroneColors._
-import cwinter.codecraft.graphics.worldstate.Player
-import cwinter.codecraft.util.maths.{Geometry, VertexXY}
+import cwinter.codecraft.util.maths.{Geometry, VertexXY, ColorRGB}
 
 
-case class DroneEnginesModel(position: VertexXY, player: Player, t: Int)(implicit rs: RenderStack)
+private[graphics] case class DroneEnginesModel(
+  position: VertexXY,
+  playerColor: ColorRGB,
+  t: Int
+)(implicit rs: RenderStack)
   extends ModelBuilder[DroneEnginesModel, Unit] {
 
   def signature: DroneEnginesModel = this
@@ -19,7 +22,7 @@ case class DroneEnginesModel(position: VertexXY, player: Player, t: Int)(implici
       yield Polygon(
         rs.MaterialXYZRGB,
         5,
-        player.color,
+        playerColor,
         ColorHull,
         radius = 4,
         position = position + offset,

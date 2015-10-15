@@ -11,7 +11,7 @@ import cwinter.codecraft.graphics.engine._
 import RenderFrame._
 import cwinter.codecraft.graphics.worldstate.Simulator
 
-object DrawingCanvas {
+private[codecraft] object DrawingCanvas {
   def run(gameWorld: Simulator, fps: Int = 60): Unit = {
     println("Initialising...")
 

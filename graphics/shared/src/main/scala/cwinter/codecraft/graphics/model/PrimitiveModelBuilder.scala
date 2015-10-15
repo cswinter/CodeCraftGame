@@ -5,7 +5,7 @@ import cwinter.codecraft.util.maths.{Vertex, VertexXYZ}
 
 
 
-trait PrimitiveModelBuilder[TShape, TColor <: Vertex, TParams] <: ModelBuilder[TShape, TParams] {
+private[graphics] trait PrimitiveModelBuilder[TShape, TColor <: Vertex, TParams] <: ModelBuilder[TShape, TParams] {
   val material: Material[VertexXYZ, TColor, TParams]
   val shape: TShape
   private[this] var _cacheable = true
@@ -26,7 +26,7 @@ trait PrimitiveModelBuilder[TShape, TColor <: Vertex, TParams] <: ModelBuilder[T
   protected def computeVertexData(): Seq[(VertexXYZ, TColor)]
 }
 
-object PrimitiveModelBuilder {
+private[graphics] object PrimitiveModelBuilder {
   private var toDispose = List.empty[VBO]
 
   def disposeAll(gl: Any): Unit = {

@@ -1,6 +1,6 @@
 package cwinter.codecraft.util.maths.matrices
 
-class Matrix4x4(val data: Array[Float]) {
+private[codecraft] class Matrix4x4(val data: Array[Float]) {
   left =>
 
   assert(data.length == 16)

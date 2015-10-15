@@ -3,7 +3,7 @@ package cwinter.codecraft.core.ai.basicplus
 import cwinter.codecraft.core.api.{DroneSpec, MineralCrystal, Drone}
 import cwinter.codecraft.util.maths.Vector2
 
-class Mothership extends BaseController('Mothership) {
+private[core] class Mothership extends BasicPlusController('Mothership) {
   val mothership = this
   var defenders = List.empty[Drone]
   var defenderCooldown: Int = 150
@@ -14,11 +14,11 @@ class Mothership extends BaseController('Mothership) {
   private[this] var _lastCapitalShipSighting: Option[Vector2] = None
   def lastCapitalShipSighting: Option[Vector2] = _lastCapitalShipSighting
 
-  val scoutSpec = DroneSpec(storageModules = 1)
-  val collectorSpec = DroneSpec(storageModules = 2)
-  val hunterSpec = DroneSpec(missileBatteries = 1, engines = 1)
-  val destroyerSpec = DroneSpec(missileBatteries = 3, shieldGenerators = 1)
-  var searchTokens: Set[SearchToken] = null
+  private val scoutSpec = DroneSpec(storageModules = 1)
+  private val collectorSpec = DroneSpec(storageModules = 2)
+  private val hunterSpec = DroneSpec(missileBatteries = 1, engines = 1)
+  private val destroyerSpec = DroneSpec(missileBatteries = 3, shieldGenerators = 1)
+  private[basicplus] var searchTokens: Set[SearchToken] = null
 
   // abstract methods for event handling
   override def onSpawn(): Unit = {

@@ -3,7 +3,7 @@ package cwinter.codecraft.core.ai.cheese
 import cwinter.codecraft.core.api.{Drone, MineralCrystal, DroneController}
 import cwinter.codecraft.util.maths.Vector2
 
-class CheesyDestroyer(targetPos: Vector2) extends DroneController {
+private[core] class Destroyer(targetPos: Vector2) extends DroneController {
   override def onSpawn(): Unit = {
     moveTo(targetPos)
   }

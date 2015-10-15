@@ -5,7 +5,7 @@ import cwinter.codecraft.util.maths.Vertex
 import cwinter.codecraft.util.maths.matrices.Matrix4x4
 
 
-class StaticModel[TPosition <: Vertex, TColor <: Vertex, TParams](
+private[graphics] class StaticModel[TPosition <: Vertex, TColor <: Vertex, TParams](
   val vbo: VBO,
   val material: Material[TPosition, TColor, TParams]
 ) extends Model[TParams] {

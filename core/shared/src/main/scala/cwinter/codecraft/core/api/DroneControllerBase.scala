@@ -1,7 +1,6 @@
 package cwinter.codecraft.core.api
 
 import cwinter.codecraft.core.objects.drone._
-import cwinter.codecraft.graphics.worldstate.Player
 import cwinter.codecraft.util.maths.{Rectangle, Rng, Vector2}
 
 import scala.scalajs.js.annotation.JSExportAll
@@ -155,27 +154,13 @@ trait DroneControllerBase extends Drone {
    */
   override def position: Vector2 = drone.position
 
-  /**
-   * The cooldown of the missile batteries.
-   *
-   * Cooldown decreases by 1 each turn, and you can only fire once cooldown reaches 0.
-   */
   override def weaponsCooldown: Int = drone.weaponsCooldown
 
-  /**
-   * Always true, since this is one of your own drones.
-   */
   override def isVisible: Boolean = true
 
-  /**
-   * Returns the module specification of this drone.
-   */
   override def spec: DroneSpec = if (drone == null) null else drone.spec
 
-  /**
-   * Returns the player that commands this drone.
-   */
-  override def player: Player = drone.player
+  override def playerID: Int = drone.player.id
 
   /**
    * Returns the number of hitpoints this drone has left.
@@ -220,7 +205,7 @@ trait DroneControllerBase extends Drone {
   def availableRefineries: Int = drone.availableFactories
   // TODO: make this O(1)
   private[core] def storedMineralsScala: Seq[MineralCrystal] =
-    drone.storedMinerals.toSeq.map(new MineralCrystal(_, player))
+    drone.storedMinerals.toSeq.map(new MineralCrystal(_, drone.player))
   private[core] def dronesInSightScala: Set[Drone] = drone.dronesInSight.map( d =>
       if (d.player == drone.player) d.controller
       else new EnemyDrone(d, drone.player)   // TODO: maybe create drone handles once for each player

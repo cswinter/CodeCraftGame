@@ -3,7 +3,7 @@ package cwinter.codecraft.util.modules
 import cwinter.codecraft.util.maths.{NullVectorXY, VertexXY, Geometry}
 
 
-object ModulePosition {
+private[codecraft] object ModulePosition {
 
   def apply(droneSize: Int, moduleIndex: Int): VertexXY = {
     ModulePosition(droneSize)(moduleIndex)

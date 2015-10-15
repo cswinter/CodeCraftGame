@@ -1,6 +1,6 @@
 package cwinter.codecraft.util.maths
 
-object Solve {
+private[codecraft] object Solve {
   /**
    * Returns the smallest strictly positive solution of ax**2 + bx + c.
    * If there is no such solution, returns None

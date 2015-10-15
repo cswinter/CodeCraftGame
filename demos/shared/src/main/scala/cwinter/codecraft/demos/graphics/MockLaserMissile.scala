@@ -1,13 +1,14 @@
 package cwinter.codecraft.demos.graphics
 
-import cwinter.codecraft.graphics.worldstate.{HomingMissileDescriptor, WorldObjectDescriptor, RedPlayer, BluePlayer}
+import cwinter.codecraft.core.api.{RedPlayer, BluePlayer}
+import cwinter.codecraft.graphics.worldstate.{HomingMissileDescriptor, WorldObjectDescriptor}
 import cwinter.codecraft.util.maths.Rng
 
 import scala.collection.mutable
 import scala.util.Random
 
 
-class MockLaserMissile(
+private[graphics] class MockLaserMissile(
   var xPos: Float,
   var yPos: Float,
   var orientation: Float,

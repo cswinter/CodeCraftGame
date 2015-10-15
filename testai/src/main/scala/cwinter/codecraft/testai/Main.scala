@@ -20,7 +20,7 @@ abstract class BaseController(val name: Symbol) extends DroneController {
     mothership.DroneCount.increment(this.name)
 
   def enemies: Set[Drone] =
-    dronesInSight.filter(_.player != player)
+    dronesInSight.filter(_.playerID != playerID)
 
   def closestEnemy: Drone = enemies.minBy(x => (x.position - position).lengthSquared)
 

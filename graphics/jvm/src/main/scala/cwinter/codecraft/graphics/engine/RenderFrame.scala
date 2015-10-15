@@ -16,7 +16,7 @@ import cwinter.codecraft.util.maths.{ColorRGBA, VertexXY}
 import org.joda.time.DateTime
 
 
-object RenderFrame extends GLEventListener {
+private[graphics] object RenderFrame extends GLEventListener {
   val DebugMode = false
 
   var gl: GL4 = null

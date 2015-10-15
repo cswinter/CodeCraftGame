@@ -5,7 +5,7 @@ import cwinter.codecraft.graphics.model.{Model, ModelBuilder, Polygon}
 import cwinter.codecraft.util.maths.ColorRGB
 
 
-case class CircleModelBuilder(radius: Float, id: Int)(implicit val rs: RenderStack)
+private[graphics] case class CircleModelBuilder(radius: Float, id: Int)(implicit val rs: RenderStack)
   extends ModelBuilder[CircleModelBuilder, Unit] {
   val signature = this
   val ColorCode = false

@@ -7,7 +7,7 @@ import cwinter.codecraft.util.maths.matrices.Matrix4x4
 import cwinter.codecraft.util.maths.{ColorRGBA, VertexXYZ}
 
 
-class TranslucentAdditive(implicit gl: GL4)
+private[graphics] class TranslucentAdditive(implicit gl: GL4)
   extends JVMMaterial[VertexXYZ, ColorRGBA, Unit](
     gl = gl,
     vsPath = "xyz_rgba_vs.glsl",

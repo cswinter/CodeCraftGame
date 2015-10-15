@@ -6,7 +6,7 @@ import javax.media.opengl.GL._
 import cwinter.codecraft.util.maths.matrices.Matrix4x4
 import cwinter.codecraft.util.maths.{ColorRGBA, VertexXYZ}
 
-class GaussianGlow(implicit gl: GL4)
+private[graphics] class GaussianGlow(implicit gl: GL4)
   extends JVMMaterial[VertexXYZ, ColorRGBA, Unit](
     gl = gl,
     vsPath = "xyz_rgba_vs.glsl",

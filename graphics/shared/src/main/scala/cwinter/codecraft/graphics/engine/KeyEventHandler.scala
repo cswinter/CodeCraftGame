@@ -2,7 +2,7 @@ package cwinter.codecraft.graphics.engine
 
 import cwinter.codecraft.graphics.worldstate.Simulator
 
-class KeyEventHandler(
+private[codecraft] class KeyEventHandler(
   val gameWorld: Simulator,
   val camera: Camera2D
 ) {
@@ -33,12 +33,12 @@ class KeyEventHandler(
   }
 }
 
-sealed trait Key
-case class Letter(char: Char) extends Key
-case object LeftArrow extends Key
-case object RightArrow extends Key
-case object UpArrow extends Key
-case object DownArrow extends Key
-case object PageUp extends Key
-case object PageDown extends Key
+private[codecraft] sealed trait Key
+private[codecraft] case class Letter(char: Char) extends Key
+private[codecraft] case object LeftArrow extends Key
+private[codecraft] case object RightArrow extends Key
+private[codecraft] case object UpArrow extends Key
+private[codecraft] case object DownArrow extends Key
+private[codecraft] case object PageUp extends Key
+private[codecraft] case object PageDown extends Key
 

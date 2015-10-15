@@ -3,7 +3,7 @@ package cwinter.codecraft.collisions
 import Positionable.PositionableOps
 import cwinter.codecraft.util.maths.Vector2
 
-class VisionTracker[T: Positionable](
+private[codecraft] class VisionTracker[T: Positionable](
   val xMin: Int,
   val xMax: Int,
   val yMin: Int,

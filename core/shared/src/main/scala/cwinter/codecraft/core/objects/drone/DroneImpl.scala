@@ -1,11 +1,11 @@
 package cwinter.codecraft.core.objects.drone
 
 import cwinter.codecraft.core._
-import cwinter.codecraft.core.api.{DroneControllerBase, DroneSpec, MineralCrystal}
+import cwinter.codecraft.core.api.{Player, DroneControllerBase, DroneSpec, MineralCrystal}
 import cwinter.codecraft.core.errors.Errors
 import cwinter.codecraft.core.objects.{EnergyGlobeObject, MineralCrystalImpl, WorldObject}
 import cwinter.codecraft.core.replay._
-import cwinter.codecraft.graphics.worldstate.{DroneDescriptor, DroneModuleDescriptor, Player, WorldObjectDescriptor}
+import cwinter.codecraft.graphics.worldstate.{DroneDescriptor, DroneModuleDescriptor, WorldObjectDescriptor}
 import cwinter.codecraft.util.maths.{Float0To1, Vector2}
 
 
@@ -304,7 +304,7 @@ private[core] class DroneImpl(
         hullState,
         shieldGenerators.map(_.hitpointPercentage),
         spec.size,
-        player,
+        player.color,
         constructionProgress.map(p => Float0To1(p / spec.buildTime.toFloat))
       )) ++ manipulator.toSeq.flatMap(_.manipulatorGraphics) ++
       storage.toSeq.flatMap(_.energyGlobeAnimations)
@@ -345,38 +345,38 @@ private[core] class DroneImpl(
 }
 
 
-sealed trait DroneEvent
-case object Spawned extends DroneEvent
-case object Destroyed extends DroneEvent
-case class MineralEntersSightRadius(mineralCrystal: MineralCrystalImpl) extends DroneEvent
-case object ArrivedAtPosition extends DroneEvent
-case class ArrivedAtMineral(mineral: MineralCrystalImpl) extends DroneEvent
-case class ArrivedAtDrone(drone: DroneImpl) extends DroneEvent
-case class DroneEntersSightRadius(drone: DroneImpl) extends DroneEvent
+private[core] sealed trait DroneEvent
+private[core] case object Spawned extends DroneEvent
+private[core] case object Destroyed extends DroneEvent
+private[core] case class MineralEntersSightRadius(mineralCrystal: MineralCrystalImpl) extends DroneEvent
+private[core] case object ArrivedAtPosition extends DroneEvent
+private[core] case class ArrivedAtMineral(mineral: MineralCrystalImpl) extends DroneEvent
+private[core] case class ArrivedAtDrone(drone: DroneImpl) extends DroneEvent
+private[core] case class DroneEntersSightRadius(drone: DroneImpl) extends DroneEvent
 
 
-sealed trait DroneCommand
-case class ConstructDrone(spec: DroneSpec, controller: DroneControllerBase, position: Vector2) extends DroneCommand {
+private[core] sealed trait DroneCommand
+private[core] case class ConstructDrone(spec: DroneSpec, controller: DroneControllerBase, position: Vector2) extends DroneCommand {
   override def toString: String = s"ConstructDrone($spec, null, $position)"
 }
-case class ProcessMineral(mineralCrystal: MineralCrystalImpl) extends DroneCommand
-case class FireMissiles(target: DroneImpl) extends DroneCommand {
+private[core] case class ProcessMineral(mineralCrystal: MineralCrystalImpl) extends DroneCommand
+private[core] case class FireMissiles(target: DroneImpl) extends DroneCommand {
   override def toString: String = s"FireMissiles(${target.id})"
 }
-case class DepositMinerals(target: DroneImpl) extends DroneCommand {
+private[core] case class DepositMinerals(target: DroneImpl) extends DroneCommand {
   override def toString: String = s"DepositMinerals(${target.id})"
 }
-case class HarvestMineral(mineral: MineralCrystalImpl) extends DroneCommand
+private[core] case class HarvestMineral(mineral: MineralCrystalImpl) extends DroneCommand
 
-sealed trait MovementCommand extends DroneCommand
-case class MoveInDirection(direction: Double) extends MovementCommand
-case class MoveToPosition(position: Vector2) extends MovementCommand
-case class MoveToMineralCrystal(mineralCrystal: MineralCrystalImpl) extends MovementCommand
-case class MoveToDrone(drone: DroneImpl) extends MovementCommand
-case object HoldPosition extends MovementCommand
+private[core] sealed trait MovementCommand extends DroneCommand
+private[core] case class MoveInDirection(direction: Double) extends MovementCommand
+private[core] case class MoveToPosition(position: Vector2) extends MovementCommand
+private[core] case class MoveToMineralCrystal(mineralCrystal: MineralCrystalImpl) extends MovementCommand
+private[core] case class MoveToDrone(drone: DroneImpl) extends MovementCommand
+private[core] case object HoldPosition extends MovementCommand
 
 
-object DroneCommand {
+private[core] object DroneCommand {
   final val CaseClassRegex = """(\w*?)\((.*)\)""".r
 
   def unapply(string: String)

@@ -3,16 +3,15 @@ package cwinter.codecraft.graphics.models
 import cwinter.codecraft.graphics.engine.RenderStack
 import cwinter.codecraft.graphics.model.{EmptyModel, Model, RichQuadStrip, StaticCompositeModel}
 import cwinter.codecraft.graphics.models.DroneColors._
-import cwinter.codecraft.graphics.worldstate.Player
 import cwinter.codecraft.util.maths.Geometry._
-import cwinter.codecraft.util.maths.{ColorRGBA, VertexXY}
+import cwinter.codecraft.util.maths.{ColorRGBA, ColorRGB, VertexXY}
 
 
-class DroneThrusterTrailsModelFactory(
+private[graphics] class DroneThrusterTrailsModelFactory(
   val sideLength: Float,
   val radiusHull: Float,
   val sides: Int,
-  val player: Player
+  val playerColor: ColorRGB
 )(implicit rs: RenderStack) {
   def buildModel(positions: Seq[(Float, Float, Float)]): Model[Unit] = {
     val n = positions.length
@@ -31,7 +30,7 @@ class DroneThrusterTrailsModelFactory(
       }
 
     val (trail1, trail2) = trailPositions.unzip
-    val colors = trailPositions.indices.map(index => ColorRGBA(player.color, (n - index) / n.toFloat))
+    val colors = trailPositions.indices.map(index => ColorRGBA(playerColor, (n - index) / n.toFloat))
 
     new StaticCompositeModel(Seq(
       RichQuadStrip(

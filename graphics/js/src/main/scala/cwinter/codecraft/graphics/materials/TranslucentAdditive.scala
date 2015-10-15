@@ -6,7 +6,7 @@ import cwinter.codecraft.util.maths.{ColorRGBA, VertexXYZ}
 import org.scalajs.dom.raw.{WebGLRenderingContext => GL}
 
 
-class TranslucentAdditive(implicit gl: GL)
+private[graphics] class TranslucentAdditive(implicit gl: GL)
   extends JSMaterial[VertexXYZ, ColorRGBA, Unit](
     gl = gl,
     vsSource = CompileTimeLoader.loadResource("xyz_rgba_vs.glsl"),

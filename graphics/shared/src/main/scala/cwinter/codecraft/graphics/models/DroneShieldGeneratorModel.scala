@@ -3,12 +3,11 @@ package cwinter.codecraft.graphics.models
 import cwinter.codecraft.graphics.engine.RenderStack
 import cwinter.codecraft.graphics.model._
 import cwinter.codecraft.graphics.models.DroneColors._
-import cwinter.codecraft.graphics.worldstate.Player
 import cwinter.codecraft.util.maths.Geometry._
-import cwinter.codecraft.util.maths.{Geometry, VertexXY}
+import cwinter.codecraft.util.maths.{ColorRGB, Geometry, VertexXY}
 
 
-case class DroneShieldGeneratorModel(position: VertexXY, player: Player)(implicit rs: RenderStack)
+private[graphics] case class DroneShieldGeneratorModel(position: VertexXY, playerColor: ColorRGB)(implicit rs: RenderStack)
   extends ModelBuilder[DroneShieldGeneratorModel, Unit] {
   def signature = this
 
@@ -37,8 +36,8 @@ case class DroneShieldGeneratorModel(position: VertexXY, player: Player)(implici
         Polygon(
           material = rs.MaterialXYZRGB,
           n = 6,
-          colorMidpoint = player.color,
-          colorOutside = player.color,
+          colorMidpoint = playerColor,
+          colorOutside = playerColor,
           radius = radius - 0.5f,
           position = pos + position,
           zPos = 1

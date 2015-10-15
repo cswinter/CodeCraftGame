@@ -6,7 +6,7 @@ import javax.media.opengl.GL4
 import cwinter.codecraft.util.maths.{ColorRGB, VertexXYZ}
 
 
-class MaterialXYZRGB(implicit gl: GL4)
+private[graphics] class MaterialXYZRGB(implicit gl: GL4)
 extends JVMMaterial[VertexXYZ, ColorRGB, Unit](
   gl = gl,
   vsPath = "xyz_rgb_vs.glsl",

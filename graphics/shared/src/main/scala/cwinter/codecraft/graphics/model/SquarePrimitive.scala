@@ -6,7 +6,7 @@ import cwinter.codecraft.util.maths.{Vertex, VertexXYZ}
 import scala.reflect.ClassTag
 
 
-case class SquarePrimitive[TColor <: Vertex : ClassTag, TParams](
+private[graphics] case class SquarePrimitive[TColor <: Vertex : ClassTag, TParams](
   material: Material[VertexXYZ, TColor, TParams],
   midpointX: Float,
   midpointY: Float,

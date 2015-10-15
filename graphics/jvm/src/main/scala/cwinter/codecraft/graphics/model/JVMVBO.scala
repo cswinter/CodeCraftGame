@@ -6,7 +6,7 @@ import javax.media.opengl._
 /**
  * Vertex Buffer Object
  */
-case class JVMVBO(id: Int, size: Int, vao: Int) extends VBO {
+private[graphics] case class JVMVBO(id: Int, size: Int, vao: Int) extends VBO {
   def withSize(size: Int): JVMVBO = copy(size = size)
   def dispose(anyGL: Any): Unit = {
     assert(anyGL.isInstanceOf[GL4], s"Expected gl of type javax.media.opengl.GL4. Actual: ${anyGL.getClass.getName}")

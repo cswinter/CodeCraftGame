@@ -2,7 +2,7 @@ package cwinter.codecraft.core.ai.basicplus
 
 import cwinter.codecraft.core.api.{Drone, MineralCrystal}
 
-class ScoutingDroneController(val mothership: Mothership) extends BaseController('Harvester) {
+private[core] class ScoutingDroneController(val mothership: Mothership) extends BasicPlusController('Harvester) {
   var hasReturned = false
   var nextCrystal: Option[MineralCrystal] = None
 

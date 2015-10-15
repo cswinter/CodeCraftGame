@@ -7,7 +7,7 @@ import cwinter.codecraft.graphics.materials._
 import cwinter.codecraft.util.maths._
 
 
-class JSRenderStack(implicit gl: GL) extends RenderStack {
+private[graphics] class JSRenderStack(implicit gl: GL) extends RenderStack {
   override val TranslucentAdditive: Material[VertexXYZ, ColorRGBA, Unit] = new TranslucentAdditive
   override val MaterialXYZRGB: Material[VertexXYZ, ColorRGB, Unit] = new MaterialXYZRGB
   override val GaussianGlow: Material[VertexXYZ, ColorRGBA, Unit] = new GaussianGlow

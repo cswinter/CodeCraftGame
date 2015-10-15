@@ -52,7 +52,7 @@ import cwinter.codecraft.util.maths.{Rectangle, Vector2}
  *
  * ## Proof of progress
  */
-class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val maxRadius: Int) {
+private[codecraft] class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle, val maxRadius: Int) {
   private[this] val objects = collection.mutable.ArrayBuffer.empty[ObjectRecord]
   private[this] val recordMap = collection.mutable.Map.empty[T, ObjectRecord]
   private[this] var _time: Double = 0

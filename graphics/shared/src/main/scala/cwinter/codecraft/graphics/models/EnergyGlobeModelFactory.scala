@@ -5,7 +5,7 @@ import cwinter.codecraft.graphics.model.Polygon
 import cwinter.codecraft.util.maths.{ColorRGB, ColorRGBA, VertexXY}
 
 
-object EnergyGlobeModelFactory {
+private[graphics] object EnergyGlobeModelFactory {
   def build(position: VertexXY, fade: Float = 1)(implicit rs: RenderStack) = {
     if (fade == 1) {
       Polygon(

@@ -1,6 +1,8 @@
 package cwinter.codecraft.core.objects.drone
 
 
-object DroneConstants {
+// TODO: aggregate all constants
+private[core] object DroneConstants {
   final val MissileLockOnRadius = 300
 }
+

@@ -2,7 +2,7 @@ package cwinter.codecraft.core.ai.basicplus
 
 import cwinter.codecraft.util.maths.Rng
 
-class Hunter(val mothership: Mothership) extends BaseController('Hunter) {
+private[core] class Hunter(val mothership: Mothership) extends BasicPlusController('Hunter) {
   override def onTick(): Unit = {
     handleWeapons()
 

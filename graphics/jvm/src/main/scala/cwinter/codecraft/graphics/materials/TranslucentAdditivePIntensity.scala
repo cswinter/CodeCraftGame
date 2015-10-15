@@ -8,7 +8,7 @@ import cwinter.codecraft.graphics.model.{VBO, JVMVBO$}
 import cwinter.codecraft.util.maths.{ColorRGBA, VertexXYZ}
 
 
-class TranslucentAdditivePIntensity(implicit gl: GL4)
+private[graphics] class TranslucentAdditivePIntensity(implicit gl: GL4)
   extends JVMMaterial[VertexXYZ, ColorRGBA, Intensity](
     gl = gl,
     vsPath = "xyz_rgba_vs.glsl",

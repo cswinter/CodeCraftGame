@@ -37,7 +37,7 @@ The rendering stages (as it concerns glow/opaque materials) are as follows:
 5. texture2 is interpolated (to full size, happens automatically) and added back to texture0
 
  */
-class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
+private[graphics] class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
   extends JVMMaterial[VertexXYZ, ColorRGB, Unit](
     gl = gl,
     vsPath = "xyz_rgb_vs.glsl",
@@ -75,7 +75,7 @@ class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
   }
 
 
-  abstract class Convolution(val orientation: Int, val sourceTexture: () => Int, val destTexture: () => Int)
+  private abstract class Convolution(val orientation: Int, val sourceTexture: () => Int, val destTexture: () => Int)
     extends JVMMaterial[VertexXY, VertexUV, Unit](
       gl = gl,
       vsPath = "texture_xy_vs.glsl",
@@ -106,12 +106,12 @@ class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
     }
   }
 
-  object HConvolution extends Convolution(0, () => mainTexture, () => tmpTexture1)
+  private object HConvolution extends Convolution(0, () => mainTexture, () => tmpTexture1)
 
-  object VConvolution extends Convolution(1, () => tmpTexture1, () => tmpTexture2)
+  private object VConvolution extends Convolution(1, () => tmpTexture1, () => tmpTexture2)
 
   // TODO: make use of parameters?
-  object Addition extends JVMMaterial[VertexXY, VertexUV, Unit](
+  private object Addition extends JVMMaterial[VertexXY, VertexUV, Unit](
     gl = gl,
     vsPath = "texture_xy_vs.glsl",
     fsPath = "texture_xy_fs.glsl",
@@ -139,9 +139,9 @@ class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
     }
   }
 
-  val hconvQuad = genFullsizeQuad(HConvolution)
-  val vconvQuad = genFullsizeQuad(VConvolution)
-  val addQuad = genFullsizeQuad(Addition)
+  private val hconvQuad = genFullsizeQuad(HConvolution)
+  private val vconvQuad = genFullsizeQuad(VConvolution)
+  private val addQuad = genFullsizeQuad(Addition)
 
   def genFullsizeQuad(material: Material[VertexXY, VertexUV, Unit]): VBO = {
     material.createVBO(

@@ -21,7 +21,7 @@ final case class Rectangle(xMin: Double, xMax: Double, yMin: Double, yMax: Doubl
 }
 
 
-object Rectangle {
+private[codecraft] object Rectangle {
   private final val RectangleRegex = """Rectangle\((.*),(.*),(.*),(.*)\)""".r
   def fromString(string: String): Rectangle = {
     val RectangleRegex(xMin, xMax, yMin, yMax) = string

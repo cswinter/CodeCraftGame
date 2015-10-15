@@ -3,7 +3,7 @@ package cwinter.codecraft.demos.graphics
 import cwinter.codecraft.graphics.worldstate.{MineralDescriptor, WorldObjectDescriptor}
 
 
-class MockResource(
+private[graphics] class MockResource(
   val xPos: Float,
   val yPos: Float,
   val orientation: Float,

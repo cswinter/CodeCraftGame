@@ -8,7 +8,7 @@ import cwinter.codecraft.util.maths.matrices.IdentityMatrix4x4
 import cwinter.codecraft.util.maths.VertexXY
 
 
-class JVMRenderStack(implicit val gl: GL4, implicit val fbo: FramebufferObject) extends RenderStack {
+private[graphics] class JVMRenderStack(implicit val gl: GL4, implicit val fbo: FramebufferObject) extends RenderStack {
   import gl._
 
   // materials

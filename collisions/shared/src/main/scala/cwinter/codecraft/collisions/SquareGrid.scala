@@ -3,7 +3,7 @@ package cwinter.codecraft.collisions
 import Positionable.PositionableOps
 import cwinter.codecraft.util.maths.{Vector2, Rectangle}
 
-class SquareGrid[T: Positionable](
+private[codecraft] class SquareGrid[T: Positionable](
   val xMin: Int,
   val xMaxA: Int,
   val yMin: Int,

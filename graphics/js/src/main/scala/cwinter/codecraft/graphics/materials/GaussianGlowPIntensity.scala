@@ -6,7 +6,7 @@ import cwinter.codecraft.util.maths.matrices.Matrix4x4
 import cwinter.codecraft.util.maths.{ColorRGBA, VertexXYZ}
 import org.scalajs.dom.raw.{WebGLRenderingContext => GL}
 
-class GaussianGlowPIntensity(implicit gl: GL)
+private[graphics] class GaussianGlowPIntensity(implicit gl: GL)
   extends JSMaterial[VertexXYZ, ColorRGBA, Intensity](
     gl = gl,
     vsSource = CompileTimeLoader.loadResource("xyz_rgba_vs.glsl"),

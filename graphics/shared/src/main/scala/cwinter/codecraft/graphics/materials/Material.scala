@@ -5,7 +5,7 @@ import cwinter.codecraft.util.maths.Vertex
 import cwinter.codecraft.util.maths.matrices.Matrix4x4
 
 
-trait Material[TPosition <: Vertex, TColor <: Vertex, TParams] {
+private[graphics] trait Material[TPosition <: Vertex, TColor <: Vertex, TParams] {
   var params: TParams = _
 
   def beforeDraw(projection: Matrix4x4): Unit

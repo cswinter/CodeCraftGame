@@ -6,7 +6,7 @@ import cwinter.codecraft.util.maths.{ColorRGB, Float0To1, Rectangle}
 
 
 
-sealed trait WorldObjectDescriptor {
+private[codecraft] sealed trait WorldObjectDescriptor {
   val identifier: Int
   val xPos: Float
   val yPos: Float
@@ -21,7 +21,7 @@ sealed trait WorldObjectDescriptor {
   }
 }
 
-case class DroneDescriptor(
+private[codecraft] case class DroneDescriptor(
   identifier: Int,
   xPos: Float,
   yPos: Float,
@@ -32,7 +32,7 @@ case class DroneDescriptor(
   shieldState: Option[Float],
   size: Int,
 
-  player: Player,
+  playerColor: ColorRGB,
   constructionState: Option[Float0To1] = None,
 
   sightRadius: Option[Int] = None,
@@ -47,27 +47,27 @@ case class DroneDescriptor(
 }
 
 
-sealed trait DroneModuleDescriptor
+private[codecraft] sealed trait DroneModuleDescriptor
 
-case class StorageModuleDescriptor(positions: Seq[Int], contents: StorageModuleContents, mergingProgress: Option[Float] = None) extends DroneModuleDescriptor {
+private[codecraft] case class StorageModuleDescriptor(positions: Seq[Int], contents: StorageModuleContents, mergingProgress: Option[Float] = None) extends DroneModuleDescriptor {
   for (x <- mergingProgress) {
     assert(x >= 0)
     assert(x <= 1)
   }
 }
 
-sealed trait StorageModuleContents
-case object EmptyStorage extends StorageModuleContents
-case object MineralStorage extends StorageModuleContents
-case class EnergyStorage(filledPositions: Set[Int] = Set(0, 1, 2, 3, 4, 5, 6)) extends StorageModuleContents
+private[codecraft] sealed trait StorageModuleContents
+private[codecraft] case object EmptyStorage extends StorageModuleContents
+private[codecraft] case object MineralStorage extends StorageModuleContents
+private[codecraft] case class EnergyStorage(filledPositions: Set[Int] = Set(0, 1, 2, 3, 4, 5, 6)) extends StorageModuleContents
 
-case class EnginesDescriptor(position: Int) extends DroneModuleDescriptor
-case class ProcessingModuleDescriptor(positions: Seq[Int], mergingProgress: Option[Int] = None) extends DroneModuleDescriptor
-case class ShieldGeneratorDescriptor(position: Int) extends DroneModuleDescriptor
-case class MissileBatteryDescriptor(position: Int, n: Int = 3) extends DroneModuleDescriptor
-case class ManipulatorDescriptor(position: Int) extends DroneModuleDescriptor
+private[codecraft] case class EnginesDescriptor(position: Int) extends DroneModuleDescriptor
+private[codecraft] case class ProcessingModuleDescriptor(positions: Seq[Int], mergingProgress: Option[Int] = None) extends DroneModuleDescriptor
+private[codecraft] case class ShieldGeneratorDescriptor(position: Int) extends DroneModuleDescriptor
+private[codecraft] case class MissileBatteryDescriptor(position: Int, n: Int = 3) extends DroneModuleDescriptor
+private[codecraft] case class ManipulatorDescriptor(position: Int) extends DroneModuleDescriptor
 
-case class EnergyGlobeDescriptor(
+private[codecraft] case class EnergyGlobeDescriptor(
   xPos: Float,
   yPos: Float,
   fade: Float = 1
@@ -81,7 +81,7 @@ case class EnergyGlobeDescriptor(
     intersects(rectangle, 20) // FIXME
 }
 
-case class ManipulatorArm(player: Player, x1: Float, y1: Float, x2: Float, y2: Float)
+private[codecraft] case class ManipulatorArm(playerColor: ColorRGB, x1: Float, y1: Float, x2: Float, y2: Float)
   extends WorldObjectDescriptor {
   val identifier: Int = 0
   val xPos: Float = 0
@@ -97,7 +97,7 @@ case class ManipulatorArm(player: Player, x1: Float, y1: Float, x2: Float, y2: F
   }
 }
 
-case class MineralDescriptor(
+private[codecraft] case class MineralDescriptor(
   identifier: Int,
   xPos: Float,
   yPos: Float,
@@ -114,7 +114,7 @@ case class MineralDescriptor(
 }
 
 
-case class LightFlashDescriptor(
+private[codecraft] case class LightFlashDescriptor(
   identifier: Int,
   xPos: Float,
   yPos: Float,
@@ -124,25 +124,25 @@ case class LightFlashDescriptor(
 }
 
 
-case class HomingMissileDescriptor(
+private[codecraft] case class HomingMissileDescriptor(
   identifier: Int,
   positions: Seq[(Float, Float)],
   maxPos: Int,
-  player: Player
+  playerColor: ColorRGB
 ) extends WorldObjectDescriptor {
   val orientation = 0.0f
   val xPos = 0.0f
   val yPos = 0.0f
 }
 
-case class TestingObject(time: Int) extends WorldObjectDescriptor {
+private[codecraft] case class TestingObject(time: Int) extends WorldObjectDescriptor {
   val identifier = -1
   val xPos = 0f
   val yPos = 0f
   val orientation = 0f
 }
 
-case class DrawCircle(
+private[codecraft] case class DrawCircle(
   identifier: Int,
   xPos: Float,
   yPos: Float,
@@ -151,7 +151,7 @@ case class DrawCircle(
   val orientation = 0.0f
 }
 
-case class DrawCircleOutline(
+private[codecraft] case class DrawCircleOutline(
   xPos: Float,
   yPos: Float,
   radius: Float,
@@ -161,7 +161,7 @@ case class DrawCircleOutline(
   val orientation = 0.0f
 }
 
-case class DrawRectangle(
+private[codecraft] case class DrawRectangle(
   identifier: Int,
   bounds: maths.Rectangle
 ) extends WorldObjectDescriptor {

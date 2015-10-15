@@ -4,7 +4,7 @@ import cwinter.codecraft.graphics.materials.{Intensity, Material}
 import cwinter.codecraft.util.maths._
 
 
-trait RenderStack {
+private[graphics] trait RenderStack {
   val MaterialXYZRGB: Material[VertexXYZ, ColorRGB, Unit]
   val BloomShader: Material[VertexXYZ, ColorRGB, Unit]
   val GaussianGlow: Material[VertexXYZ, ColorRGBA, Unit]

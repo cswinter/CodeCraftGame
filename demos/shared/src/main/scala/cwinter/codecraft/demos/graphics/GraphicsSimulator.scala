@@ -5,7 +5,7 @@ import cwinter.codecraft.graphics.engine.GraphicsEngine
 import cwinter.codecraft.graphics.worldstate.{Simulator, TestingObject, WorldObjectDescriptor}
 
 
-class GraphicsSimulator(
+private[graphics] class GraphicsSimulator(
   customObjects: Seq[MockObject],
   customChangingObjects: Int => Seq[WorldObjectDescriptor],
   spawnedObjects: Int => Seq[MockObject],

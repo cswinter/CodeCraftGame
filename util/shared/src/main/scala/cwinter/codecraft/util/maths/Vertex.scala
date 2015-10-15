@@ -1,10 +1,10 @@
 package cwinter.codecraft.util.maths
 
-trait Vertex extends {
+private[codecraft] trait Vertex extends {
   def apply(i: Int): Float
 }
 
-case class VertexXY(x: Float, y: Float) extends Vertex {
+private[codecraft] case class VertexXY(x: Float, y: Float) extends Vertex {
   def apply(i: Int) = i match {
     case 0 => x
     case 1 => y
@@ -34,7 +34,7 @@ case class VertexXY(x: Float, y: Float) extends Vertex {
 }
 
 
-object VertexXY {
+private[codecraft] object VertexXY {
   implicit class Scalar(val value: Float) extends AnyVal {
     def *(vertex: VertexXY) = vertex * value
   }
@@ -44,10 +44,10 @@ object VertexXY {
 }
 
 
-object NullVectorXY extends VertexXY(0, 0)
+private[codecraft] object NullVectorXY extends VertexXY(0, 0)
 
 
-case class VertexUV(u: Float, y: Float) extends Vertex {
+private[codecraft] case class VertexUV(u: Float, y: Float) extends Vertex {
   def apply(i: Int) = i match {
     case 0 => u
     case 1 => y
@@ -55,7 +55,7 @@ case class VertexUV(u: Float, y: Float) extends Vertex {
   }
 }
 
-case class VertexXYZ(x: Float, y: Float, z: Float) extends Vertex {
+private[codecraft] case class VertexXYZ(x: Float, y: Float, z: Float) extends Vertex {
   def apply(i: Int) = i match {
     case 0 => x
     case 1 => y
@@ -64,7 +64,7 @@ case class VertexXYZ(x: Float, y: Float, z: Float) extends Vertex {
   }
 }
 
-case class ColorRGB(r: Float, g: Float, b: Float) extends Vertex {
+private[codecraft] case class ColorRGB(r: Float, g: Float, b: Float) extends Vertex {
   def apply(i: Int) = i match {
     case 0 => r
     case 1 => g
@@ -76,13 +76,13 @@ case class ColorRGB(r: Float, g: Float, b: Float) extends Vertex {
   def *(a: Float): ColorRGB = ColorRGB(a * r, a * g, a * b)
 }
 
-object ColorRGB {
+private[codecraft] object ColorRGB {
   implicit class Scalar(val value: Float) extends AnyVal {
     def *(colorRGB: ColorRGB) = ColorRGB(value * colorRGB.r, value * colorRGB.g, value * colorRGB.b)
   }
 }
 
-case class ColorRGBA(r: Float, g: Float, b: Float, a: Float) extends Vertex {
+private[codecraft] case class ColorRGBA(r: Float, g: Float, b: Float, a: Float) extends Vertex {
   def *(float: Float): ColorRGBA = ColorRGBA(float * r, float * g, float * b, float * a)
   def +(other: ColorRGBA): ColorRGBA = ColorRGBA(r + other.r, g + other.g, b + other.b, a + other.a)
 
@@ -95,7 +95,7 @@ case class ColorRGBA(r: Float, g: Float, b: Float, a: Float) extends Vertex {
   }
 }
 
-object ColorRGBA {
+private[codecraft] object ColorRGBA {
   def apply(baseColor: ColorRGB, alpha: Float): ColorRGBA =
     ColorRGBA(baseColor.r, baseColor.g, baseColor.b, alpha)
 
@@ -105,18 +105,18 @@ object ColorRGBA {
 }
 
 
-object EmptyVertex extends Vertex {
+private[codecraft] object EmptyVertex extends Vertex {
   def apply(i: Int) =
     throw new IndexOutOfBoundsException("EmptyVertex does not have any components.")
 }
 
 
-trait VertexManifest[TVertex <: Vertex] {
+private[codecraft] trait VertexManifest[TVertex <: Vertex] {
   val nComponents: Int
 }
 
 
-object VertexManifest {
+private[codecraft] object VertexManifest {
   implicit object VertexXYZ extends VertexManifest[VertexXYZ] {
     val nComponents = 3
   }

@@ -1,9 +1,6 @@
 package cwinter.codecraft.core.replay
 
-/**
- * Created by Clemens on 26/06/2015.
- */
-object AsDouble {
+private[codecraft] object AsDouble {
   def unapply(s: String) = try {
     Some(s.toDouble)
   } catch {

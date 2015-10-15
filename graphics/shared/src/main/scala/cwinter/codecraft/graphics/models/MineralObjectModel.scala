@@ -7,10 +7,10 @@ import cwinter.codecraft.util.PrecomputeHash
 import cwinter.codecraft.util.maths.{ColorRGBA, ColorRGB}
 
 
-case class MineralSignature(size: Int, harvested: Boolean, harvestingProgress: Option[Float])
+private[graphics] case class MineralSignature(size: Int, harvested: Boolean, harvestingProgress: Option[Float])
 extends PrecomputeHash
 
-class MineralModelBuilder(mineral: MineralDescriptor)(implicit val rs: RenderStack)
+private[graphics] class MineralModelBuilder(mineral: MineralDescriptor)(implicit val rs: RenderStack)
   extends ModelBuilder[MineralSignature, Unit] {
   val signature = mineral.signature
 

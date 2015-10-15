@@ -3,12 +3,14 @@ package cwinter.codecraft.graphics.models
 import cwinter.codecraft.graphics.engine.RenderStack
 import cwinter.codecraft.graphics.model.{Model, ModelBuilder, SquarePrimitive, StaticCompositeModel}
 import cwinter.codecraft.graphics.models.DroneColors._
-import cwinter.codecraft.graphics.worldstate.Player
-import cwinter.codecraft.util.maths.VertexXY
+import cwinter.codecraft.util.maths.{VertexXY, ColorRGB}
 
 
-case class DroneMissileBatteryModelBuilder(player: Player, position: VertexXY, n: Int)(implicit rs: RenderStack)
-  extends ModelBuilder[DroneMissileBatteryModelBuilder, Unit] {
+private[graphics] case class DroneMissileBatteryModelBuilder(
+  playerColor: ColorRGB,
+  position: VertexXY,
+  n: Int
+)(implicit rs: RenderStack) extends ModelBuilder[DroneMissileBatteryModelBuilder, Unit] {
   override def signature: DroneMissileBatteryModelBuilder = this
 
   override protected def buildModel: Model[Unit] = {
@@ -38,7 +40,7 @@ case class DroneMissileBatteryModelBuilder(player: Player, position: VertexXY, n
         midpoint.x,
         midpoint.y,
         2.5f,
-        player.color,
+        playerColor,
         1
       ).getModel
 

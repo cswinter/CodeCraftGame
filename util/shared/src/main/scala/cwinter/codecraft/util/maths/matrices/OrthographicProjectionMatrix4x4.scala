@@ -1,6 +1,6 @@
 package cwinter.codecraft.util.maths.matrices
 
-class OrthographicProjectionMatrix4x4(right: Float, left: Float, top: Float, bottom: Float,
+private[codecraft] class OrthographicProjectionMatrix4x4(right: Float, left: Float, top: Float, bottom: Float,
                                       near: Float = 0.0f, far: Float = 1.0f) extends Matrix4x4({
   val rml = right - left
   val rpl = right + left

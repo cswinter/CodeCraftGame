@@ -1,8 +1,8 @@
 package cwinter.codecraft.core.objects.drone
 
 import cwinter.codecraft.core.{WorldConfig, SpawnHomingMissile}
-import cwinter.codecraft.core.api.DroneSpec
-import cwinter.codecraft.graphics.worldstate.{RedPlayer, BluePlayer}
+import cwinter.codecraft.core.api.{RedPlayer, BluePlayer, DroneSpec}
+import cwinter.codecraft.graphics.worldstate.RedPlayer
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 import org.scalatest.FlatSpec
 

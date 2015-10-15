@@ -1,9 +1,10 @@
 package cwinter.codecraft.demos.graphics
 
+import cwinter.codecraft.core.api
 import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.util.maths.Float0To1
 
-object Chaos {
+private[graphics] object Chaos {
   val sightRadius = Some(250)
   val north = (math.Pi / 2).toFloat
   val customDrones = Seq(
@@ -84,7 +85,7 @@ object Chaos {
       hullState = Seq[Byte](2, 2, 2, 2, 2),
       shieldState = Some(1),
       size = 6,
-      BluePlayer,
+      api.BluePlayer,
       constructionState = Some(Float0To1(math.max(time / 5000f, 1))),
       None, None
     )

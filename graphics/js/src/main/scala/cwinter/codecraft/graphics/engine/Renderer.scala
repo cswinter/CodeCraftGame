@@ -10,7 +10,7 @@ import org.scalajs.dom.raw.{CanvasRenderingContext2D, HTMLCanvasElement, WebGLRe
 import org.scalajs.dom.{document, html}
 
 
-class Renderer(
+private[codecraft] class Renderer(
   canvas: html.Canvas,
   gameWorld: Simulator,
   initialCameraPos: Vector2 = Vector2(0, 0)

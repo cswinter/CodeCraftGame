@@ -6,7 +6,7 @@ import cwinter.codecraft.graphics.worldstate.WorldObjectDescriptor
 import cwinter.codecraft.util.maths.Vector2
 
 
-trait WorldObject {
+private[core] trait WorldObject {
   def position: Vector2
 
   def update(): Seq[SimulatorEvent]
@@ -16,7 +16,7 @@ trait WorldObject {
 }
 
 
-object WorldObject {
+private[core] object WorldObject {
   private[this] var objectCount: Int = -1
   private def generateUID(): Int = {
     objectCount += 1

@@ -3,7 +3,7 @@ package cwinter.codecraft.physics
 import cwinter.codecraft.util.maths.{Rectangle, Vector2, Solve}
 
 
-abstract class DynamicObject[T](initialPos: Vector2, initialTime: Double) {
+private[codecraft] abstract class DynamicObject[T](initialPos: Vector2, initialTime: Double) {
   private[this] var _pos: Vector2 = initialPos
   private[this] var _time: Double = initialTime
   private[this] var _removed: Boolean = false
@@ -43,7 +43,7 @@ abstract class DynamicObject[T](initialPos: Vector2, initialTime: Double) {
 }
 
 
-class ConstantVelocityObject(
+private[codecraft] class ConstantVelocityObject(
   initialPos: Vector2,
   initialVelocity: Vector2,
   val weight: Double,
@@ -135,31 +135,31 @@ class ConstantVelocityObject(
 }
 
 
-sealed trait Direction {
+private[codecraft] sealed trait Direction {
   def x: Int
   def y: Int
   def xAxisAligned: Boolean
 }
 
-case object North extends Direction {
+private[codecraft] case object North extends Direction {
   def x = 0
   def y = 1
   def xAxisAligned = false
 }
 
-case object South extends Direction {
+private[codecraft] case object South extends Direction {
   def x = 0
   def y = -1
   def xAxisAligned = false
 }
 
-case object East extends Direction {
+private[codecraft] case object East extends Direction {
   def x = 1
   def y = 0
   def xAxisAligned = true
 }
 
-case object West extends Direction {
+private[codecraft] case object West extends Direction {
   def x = -1
   def y = 0
   def xAxisAligned = true

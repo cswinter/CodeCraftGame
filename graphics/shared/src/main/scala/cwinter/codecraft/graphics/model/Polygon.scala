@@ -6,7 +6,7 @@ import cwinter.codecraft.util.maths._
 import scala.reflect.ClassTag
 
 
-case class Polygon[TColor <: Vertex : ClassTag, TParams](
+private[graphics] case class Polygon[TColor <: Vertex : ClassTag, TParams](
   material: Material[VertexXYZ, TColor, TParams],
   n: Int,
   colorMidpoint: Seq[TColor],
@@ -51,7 +51,7 @@ case class Polygon[TColor <: Vertex : ClassTag, TParams](
   }
 }
 
-object Polygon {
+private[graphics] object Polygon {
   def apply[TColor <: Vertex : ClassTag, TParams](
     material: Material[VertexXYZ, TColor, TParams],
     n: Int,

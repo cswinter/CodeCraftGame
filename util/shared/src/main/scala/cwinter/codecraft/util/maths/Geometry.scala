@@ -1,7 +1,7 @@
 package cwinter.codecraft.util.maths
 
 
-object Geometry {
+private[codecraft] object Geometry {
   import math._
 
   def polygonVertices(

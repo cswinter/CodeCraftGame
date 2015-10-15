@@ -4,7 +4,7 @@ import cwinter.codecraft.graphics.worldstate.WorldObjectDescriptor
 import cwinter.codecraft.util.maths.{Vector2, ColorRGBA}
 
 
-object Debug {
+private[codecraft] object Debug {
   private[this] var objects = List.empty[WorldObjectDescriptor]
   private[this] var staticObjects = List.empty[WorldObjectDescriptor]
   private[this] var _textModels = List.empty[TextModel]

@@ -1,8 +1,8 @@
 package cwinter.codecraft.core.api
 
 import cwinter.codecraft.core._
-import cwinter.codecraft.core.ai.cheese.CheesyMothership
-import cwinter.codecraft.graphics.worldstate.{BluePlayer, OrangePlayer}
+import cwinter.codecraft.core.ai.basicplus
+import cwinter.codecraft.core.ai.cheese.Mothership
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 
 
@@ -61,6 +61,12 @@ trait GameMasterLike {
     WorldMap(worldSize, 100, spawns).withDefaultWinConditions
   }
 
+  def level2Map(mothership1: DroneControllerBase): WorldMap =
+    defaultMap(mothership1, new basicplus.Mothership)
+
+  def bonusLevelMap(mothership1: DroneControllerBase): WorldMap =
+    defaultMap(mothership1, new ai.cheese.Mothership)
+
   def defaultMap(mothership1: DroneControllerBase, mothership2: DroneControllerBase): WorldMap = {
     val worldSize = DefaultWorldSize
     val resourceClusters = DefaultResourceDistribution
@@ -75,7 +81,7 @@ trait GameMasterLike {
   }
 
   def runLevel2(mothership: DroneControllerBase): Unit = {
-    startGame(mothership, new CheesyMothership)
+    startGame(mothership, new Mothership)
   }
 
   def runLevel3(mothership: DroneControllerBase): Unit = {
@@ -83,7 +89,7 @@ trait GameMasterLike {
   }
 
   def runL1vL2(): Unit = {
-    startGame(new ai.basic.Mothership, new CheesyMothership)
+    startGame(new ai.basic.Mothership, new Mothership)
   }
 
   def runL3vL3(): Unit = {
@@ -91,7 +97,7 @@ trait GameMasterLike {
   }
 
   protected var devEvents: Int => Seq[SimulatorEvent] = t => Seq()
-  protected[cwinter] def setDevEvents(generator: Int => Seq[SimulatorEvent]): Unit = {
+  protected[codecraft] def setDevEvents(generator: Int => Seq[SimulatorEvent]): Unit = {
     devEvents = generator
   }
 }

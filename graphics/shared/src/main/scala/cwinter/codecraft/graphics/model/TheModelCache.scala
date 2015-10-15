@@ -1,6 +1,6 @@
 package cwinter.codecraft.graphics.model
 
-object TheModelCache {
+private[codecraft] object TheModelCache {
   private[this] var nModels = 0
   private[this] val cache = new collection.mutable.HashMap[Any, Model[_]]()
   private[this] var _lastCachedModel = ""

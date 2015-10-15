@@ -1,14 +1,14 @@
-package cwinter.codecraft.graphics.worldstate
+package cwinter.codecraft.core.api
 
 import cwinter.codecraft.util.maths.ColorRGB
 
 trait Player {
-  def color: ColorRGB
   def id: Int
   private[codecraft] def char: Char
+  private[codecraft] def color: ColorRGB
 }
 
-object Player {
+private[codecraft] object Player {
   def fromID(id: Int): Player = id match {
     case 0 => BluePlayer
     case 1 => RedPlayer
@@ -18,21 +18,21 @@ object Player {
 
 
 object BluePlayer extends Player {
-  def color: ColorRGB = ColorRGB(0, 0, 1)
-  def id: Int = 0
+  private[codecraft] def color: ColorRGB = ColorRGB(0, 0, 1)
   private[codecraft] def char = 'B'
+  val id = 0
 }
 
 object RedPlayer extends Player {
-  def color: ColorRGB = ColorRGB(1, 0, 0)
-  def id: Int = 1
+  private[codecraft] def color: ColorRGB = ColorRGB(1, 0, 0)
   private[codecraft] def char = 'R'
+  val id = 1
 }
 
 object OrangePlayer extends Player {
-  def color: ColorRGB = ColorRGB(1, 0.25f, 0)
-  def id: Int = 2
+  private[codecraft] def color: ColorRGB = ColorRGB(1, 0.25f, 0)
   private[codecraft] def char = 'O'
+  val id = 2
 }
 
 
