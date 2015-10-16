@@ -1,0 +1,9 @@
+These pages contain a comprehensive documentation of the Scala/Java API for [[http://www.codecraftgame.org CodeCraft]].
+An overview of the game mechanics can be found [[http://www.codecraftgame.org/docs/mechanics here]].
+Almost all of this applies directly to the JavaScript version as well, a description of the differences can be found [[http://www.codecraftgame.org/docs/javascript here]].
+
+The main class of interest is [[cwinter.codecraft.core.api.DroneController DroneController]]
+(Scala/JavaScript) and [[cwinter.codecraft.core.api.JDroneController JDroneController]] (Java),
+as it contains all the methods to give orders to drones, query their state and receive event notifications.
+In Scala/Java you will also make use of [[cwinter.codecraft.core.api.TheGameMaster TheGameMaster]] to select a level and start the game.
+

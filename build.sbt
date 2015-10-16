@@ -112,6 +112,7 @@ lazy val docs = (project in file("docs"))
   .settings(
     name := "docs",
     scalacOptions += "-Ymacro-expand:none",
+    scalacOptions in (Compile, doc) ++= Seq("-doc-root-content", baseDirectory.value + "/root-doc.txt"),
     libraryDependencies ++= commonDependencies,
     libraryDependencies ++= graphicsJVMDependencies,
     libraryDependencies += "org.scala-lang" % "scala-reflect" % "2.11.6"
