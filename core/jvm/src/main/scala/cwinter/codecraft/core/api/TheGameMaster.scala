@@ -1,12 +1,15 @@
 package cwinter.codecraft.core.api
 
 import java.io.File
-
 import cwinter.codecraft.core.replay.Replayer
 import cwinter.codecraft.core.{DroneWorldSimulator, WorldMap}
 import cwinter.codecraft.graphics.application.DrawingCanvas
 import cwinter.codecraft.util.maths.Rng
 
+
+/**
+ * Main entry point to start the game.
+ */
 object TheGameMaster extends GameMasterLike {
   override def run(simulator: DroneWorldSimulator): Unit = {
     DrawingCanvas.run(simulator)

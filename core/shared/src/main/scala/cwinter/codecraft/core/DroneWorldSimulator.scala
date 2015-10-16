@@ -15,6 +15,13 @@ import cwinter.codecraft.util.modules.ModulePosition
 import scala.scalajs.js.annotation.JSExport
 
 
+/**
+ * Aggregates all datastructures required to run a game and implements the game loop.
+ *
+ * @param map Describes the initial state of the game world.
+ * @param eventGenerator Allows for triggering custom events.
+ * @param replayer If set to `Some(r)`, the Simulator will replay the events recorded by `r`.
+ */
 class DroneWorldSimulator(
   val map: WorldMap,
   eventGenerator: Int => Seq[SimulatorEvent],

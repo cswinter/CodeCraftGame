@@ -10,6 +10,9 @@ import org.scalajs.dom.html
 
 import scala.scalajs.js.annotation.{JSExport, JSExportAll}
 
+/**
+ * Main entry point to start the game.
+ */
 @JSExport
 @JSExportAll
 object TheGameMaster extends GameMasterLike {

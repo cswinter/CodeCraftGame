@@ -6,6 +6,14 @@ import cwinter.codecraft.core.api.OrangePlayer
 import cwinter.codecraft.util.maths.{Rng, Rectangle, Vector2}
 
 
+/**
+ * Defines the initial world state for a game.
+ *
+ * @param minerals The initial set of mineral crystals.
+ * @param size The world boundary.
+ * @param initialDrones The initial set of drones.
+ * @param winConditions Win conditions for the players, if any.
+ */
 case class WorldMap(
   minerals: Seq[MineralCrystalImpl],
   size: Rectangle,
@@ -17,6 +25,9 @@ case class WorldMap(
     WorldMap(minerals, size, initialDrones, winConditions)
   }
 
+  /**
+   * Creates a copy of this WorldMap with the win conditions set to destruction of the enemy mothership.
+   */
   def withDefaultWinConditions: WorldMap = {
     require(this.initialDrones.size == 2)
     val m1 = initialDrones(0).controller
@@ -29,6 +40,16 @@ case class WorldMap(
   }
 }
 
+/**
+ * Describes the initial position and state of a drone.
+ *
+ * @param droneSpec The specification for the modules and size of the drone.
+ * @param controller A controller that will be assigned to the drone when the game starts.
+ * @param position The initial position for the drone.
+ * @param player The owner of the drone.
+ * @param resources The amount of resources initially stored by the drone.
+ * @param name Optional name by which the drone can be retrieved in the JavaScript version of the game.
+ */
 case class Spawn(
   droneSpec: DroneSpec,
   controller: DroneControllerBase,
@@ -40,7 +61,6 @@ case class Spawn(
 
 
 object WorldMap {
-
   def apply(
     size: Rectangle,
     resources: List[(Vector2, Int)], // use List instead of Seq to get around compiler limitation (cannot overload on type parameters)

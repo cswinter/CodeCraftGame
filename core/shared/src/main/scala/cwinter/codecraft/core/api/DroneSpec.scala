@@ -7,14 +7,18 @@ import cwinter.codecraft.util.modules.ModulePosition
 import scala.scalajs.js.annotation.JSExportAll
 
 /**
- * Specifies the modules equipped by a drone.
+ * Specifies the modules equipped by a drone and computes various properties of a Drone with this
+ * configuration of modules.
+ *
+ * Currently, the total number of modules is currently limited to 10 but this restriction will likely be
+ * lifted in the future.
  *
  * @param storageModules Number of storage modules. Allows for storage of mineral crystals and energy globes.
  * @param missileBatteries Number of missile batteries. Allows for firing homing missiles.
  * @param refineries Number of refineries. Allows for processing mineral crystals into energy globes.
  * @param constructors Number of constructors. Allows for constructing new drones and moving minerals from/to other drones.
  * @param engines Number of engines. Increases move speed.
- * @param shieldGenerators Number of shield generators. Create shield that absorbs damage and regenerates over time.
+ * @param shieldGenerators Number of shield generators. Gives the drone an additional 7 hitpoints each. Shields regenerate over time.
  */
 @JSExportAll
 case class DroneSpec(
@@ -32,23 +36,58 @@ case class DroneSpec(
   require(engines >= 0)
   require(shieldGenerators >= 0)
 
+  /**
+   * Total number of modules.
+   */
   val moduleCount =
     storageModules + missileBatteries + refineries +
       constructors + engines + shieldGenerators
 
   require(moduleCount <= ModulePosition.MaxModules, s"A drone cannot have more than ${ModulePosition.MaxModules} modules")
 
+  /**
+   * The number of sides that the drone will have.
+   * E.g. a drone with two modules will be a rectangle and therefore has 4 sides.
+   */
   val size = ModulePosition.size(moduleCount)
 
 
 
   import DroneSpec._
 
+  /**
+   * Returns the amount of hitpoints that a drone with this spec will have when it is at full health.
+   */
   def maxHitpoints: Int = 2 * (size - 1)
+
+  /**
+   * Returns the amount of resources it will cost to build a drone with this spec.
+   */
   def resourceCost: Int = ModulePosition.moduleCount(size) * ResourceCost
+
+  /**
+   * Returns the number of timesteps it will take to build a drone of this size.
+   * This time will be reduced if the constructing drone has more than one constructor module,
+   * e.g. with two constructor modules it will take half as long.
+   */
   def buildTime: Int = ConstructionPeriod * resourceCost
+
+  /**
+   * Returns the weight of a drone with this spec.
+   * Weight increases with size and module count and a higher weight leads to a slower movement speed.
+   */
   def weight = size + moduleCount
+
+  /**
+   * Returns the speed of a drone with this spec, measured in units distance per timestep.
+   */
   def maximumSpeed: Double = 1000 * (1 + engines)  / weight
+
+
+  /**
+   * Returns the `radius` for a drone with this spec.
+   * The `radius` is used to compute collisions with projectiles or other drones.
+   */
   val radius: Double = {
     val radiusBody = 0.5f * SideLength / math.sin(math.Pi / size).toFloat
     radiusBody + 0.5f * Geometry.circumradius(4, size)

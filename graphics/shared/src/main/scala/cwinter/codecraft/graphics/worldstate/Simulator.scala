@@ -16,6 +16,9 @@ private[codecraft] trait Simulator {
   @volatile private[this] var t = 0
   private[this] def frameMillis = 1000 / targetFPS
 
+  /**
+   * Runs the game until the program is terminated.
+   */
   def run(): Unit = synchronized {
     require(!running, "Simulator.run() must only be called once.")
     running = true
@@ -49,6 +52,9 @@ private[codecraft] trait Simulator {
     savedWorldState = Seq(computeWorldState.toSeq: _*)
   }
 
+  /**
+   * Will run the game for `steps` timesteps.
+   */
   def run(steps: Int): Unit = {
     for (i <- 0 until steps) {
       if (!paused) {
@@ -57,16 +63,45 @@ private[codecraft] trait Simulator {
     }
   }
 
+  /**
+   * Performs one timestep.
+   */
   protected def update(): Unit
+
+  /**
+   * Returns the current timestep.
+   */
   def timestep: Int = t
+
+  /**
+   * Pauses or resumes the game as applicable.
+   */
   def togglePause(): Unit = paused = !paused
+
+  /**
+   * Sets the target framerate to the given value.
+   * @param value The new framerate target.
+   */
   def framerateTarget_=(value: Int): Unit = {
     require(value > 0)
     targetFPS = value
   }
+
+  /**
+   * Returns the target framerate in frames per second.
+   */
   def framerateTarget: Int = targetFPS
+
+  /**
+   * Returns true if the game is currently paused.
+   */
   def isPaused: Boolean = paused
+
+  /**
+   * Returns the initial camera position in the game world.
+   */
   def initialCameraPos: Vector2 = Vector2.Null
+
   private[codecraft] def worldState: Seq[WorldObjectDescriptor] = savedWorldState
   private[codecraft] def computeWorldState: Iterable[WorldObjectDescriptor]
   private[codecraft] def handleKeypress(keychar: Char): Unit = ()

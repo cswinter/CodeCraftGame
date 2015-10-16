@@ -9,27 +9,31 @@ import scala.scalajs.js.annotation.JSExportAll
 @JSExportAll
 trait Drone {
   /**
-   * Returns the drones position.
+   * Returns the drone's position.
    */
   def position: Vector2
 
   /**
-   * Returns the drones module specification.
+   * Returns an object that specifies how many copies of each module the drone has.
    */
   def spec: DroneSpec
 
   /**
-   * Returns the drones homing missile cooldown.
+   * Returns the drone's homing missile cooldown.
    */
   def weaponsCooldown: Int
 
   /**
-   * Returns whether the drone is within the sight radius of any of your drones.
+   * Returns whether this drone is within the sight radius of any of your drones.
+   *
+   * This property always returns true for your own drones.
+   * If the drone is an enemy and [[isVisible]] is `false`, you will
+   * be unable to query properties such as [[position]].
    */
   def isVisible: Boolean
 
   /**
-   * Returns the player who commands this drone.
+   * Returns the identifier of the player that owns this drone.
    */
   def playerID: Int
 
