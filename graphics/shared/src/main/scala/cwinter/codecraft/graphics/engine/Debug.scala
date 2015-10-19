@@ -4,16 +4,16 @@ import cwinter.codecraft.graphics.worldstate.WorldObjectDescriptor
 import cwinter.codecraft.util.maths.{Vector2, ColorRGBA}
 
 
-private[codecraft] object Debug {
+object Debug {
   private[this] var objects = List.empty[WorldObjectDescriptor]
   private[this] var staticObjects = List.empty[WorldObjectDescriptor]
   private[this] var _textModels = List.empty[TextModel]
 
-  def draw(worldObject: WorldObjectDescriptor): Unit = {
+  private[codecraft] def draw(worldObject: WorldObjectDescriptor): Unit = {
     objects ::= worldObject
   }
 
-  def drawAlways(worldObject: WorldObjectDescriptor): Unit = {
+  private[codecraft] def drawAlways(worldObject: WorldObjectDescriptor): Unit = {
     staticObjects ::= worldObject
   }
 
