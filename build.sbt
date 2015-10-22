@@ -20,7 +20,7 @@ lazy val util = (crossProject in file("util")).
   settings(
     name := "cg.util",
     libraryDependencies ++= commonDependencies,
-    libraryDependencies += "org.scala-lang" % "scala-reflect" % "2.11.6"
+    libraryDependencies += "org.scala-lang" % "scala-reflect" % "2.11.7"
   )
 lazy val utilJVM = util.jvm
 lazy val utilJS = util.js
@@ -33,7 +33,7 @@ lazy val graphics = (crossProject in file("graphics")).
   ).jvmSettings(
     libraryDependencies ++= graphicsJVMDependencies
   ).jsSettings(
-    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.8.0",
+    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.8.2",
     // add resources of the current project into the build classpath
     unmanagedClasspath in Compile <++= unmanagedResources in Compile
   ).dependsOn(util)
@@ -79,7 +79,8 @@ val core = (crossProject in file("core")).
   settings(Commons.settings: _*).
   settings(
     name := "codecraft",
-    libraryDependencies ++= commonDependencies
+    libraryDependencies ++= commonDependencies,
+    libraryDependencies += "com.lihaoyi" %%% "upickle" % "0.3.6"
   ).jvmSettings(
     assemblyMergeStrategy in assembly := {
       case x if x.endsWith(".so") || x.endsWith(".dll") || x.endsWith(".jnilib") =>
@@ -89,7 +90,7 @@ val core = (crossProject in file("core")).
         oldStrategy(x)
     }
   ).jsSettings(
-    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.8.0"
+    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.8.2"
   ).dependsOn(graphics, physics, collisions, util)
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js
@@ -101,7 +102,7 @@ lazy val scalajsTest = (project in file("scalajs-test")).
   settings(
     name := "scalajs-test",
     libraryDependencies ++= commonDependencies,
-    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.8.0"
+    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.8.2"
   ).dependsOn(coreJS, demosJS)
 
 
@@ -115,7 +116,7 @@ lazy val docs = (project in file("docs"))
     scalacOptions in (Compile, doc) ++= Seq("-doc-root-content", baseDirectory.value + "/root-doc.txt"),
     libraryDependencies ++= commonDependencies,
     libraryDependencies ++= graphicsJVMDependencies,
-    libraryDependencies += "org.scala-lang" % "scala-reflect" % "2.11.6"
+    libraryDependencies += "org.scala-lang" % "scala-reflect" % "2.11.7"
   )
   .settings(
     unmanagedSourceDirectories in Compile <<= (projects map (unmanagedSourceDirectories in _ in Compile)).join.apply{(s) => s.flatten}

@@ -1,62 +1,75 @@
 package cwinter.codecraft.core.replay
 
 import cwinter.codecraft.core.Spawn
-import cwinter.codecraft.core.api.{Player, DroneSpec}
+import cwinter.codecraft.core.api.Player
 import cwinter.codecraft.core.objects.MineralCrystalImpl
 import cwinter.codecraft.core.objects.drone.{DroneCommand, DroneImpl}
-import cwinter.codecraft.util.maths.{Rectangle, Vector2}
+import upickle.default._
 
 private[core] class Replayer(lines: Iterator[String]) {
   def readLine: String = lines.next()
 
-  final val KeyValueRegex = "(\\w*?)=(.*)".r
-  final val CommandRegex = "(\\d*?)!(.*)".r
-
-
+  private[this] var lineNumber: Int = -1
+  private[this] var currRecord: ReplayRecord = null
   private[this] var currLine: String = null
-  private[this] def nextLine: String = {
+  private[this] def nextLine(): String = {
+    lineNumber += 1
     currLine = readLine
     currLine
   }
+  private[this] def nextRecord(): ReplayRecord = {
+    val line = nextLine()
+    currRecord = read[ReplayRecord](line)
+    currRecord
+  }
 
 
-  // parse version
-  val header = nextLine
-  require(header == "ReplayVersion=0.1.2", "Incorrect replay version.")
+  // read version
+  val ReplayVersion(version) = read[ReplayVersion](nextLine())
+  require(version == "0.2.0", "Incorrect replay version.")
 
-  // parse rng seed
-  val KeyValueRegex("Seed", AsInt(seed)) = nextLine
+  // read rng seed
+  val RNGSeed(seed) = read[RNGSeed](nextLine())
 
-  private val KeyValueRegex("Size", worldSizeStr) = nextLine
-  val worldSize = Rectangle.fromString(worldSizeStr)
+  // read world size
+  val WorldSize(worldSize) = read[WorldSize](nextLine())
 
+  // load initial spawns and mineral crystals
   private[this] var _startingMinerals = List.empty[MineralCrystalImpl]
-  while (nextLine.startsWith("Mineral")) {
-    val KeyValueRegex("Mineral", mcStr) = currLine
-    _startingMinerals ::= MineralCrystalImpl.fromString(mcStr)
+  var spawns = Seq.empty[Spawn]
+  nextRecord()
+  while (
+    currRecord match {
+      case SpawnRecord(spec, position, playerID, resources, name) =>
+        spawns :+= Spawn(spec, new DummyDroneController, position, Player.fromID(playerID), resources, name)
+        true
+      case MineralRecord(size, position) =>
+        _startingMinerals ::= new MineralCrystalImpl(size, position)
+        true
+      case _ =>
+        false
+    }
+  ) {
+    nextRecord()
   }
   val startingMinerals = _startingMinerals
 
-  // parse spawns
-  var spawns = List.empty[Spawn]
-  //noinspection LoopVariableNotUpdated  (actually is updated whenever nextLine is called)
-  while (currLine == "Spawn") {
-    val KeyValueRegex("Spec", specString) = nextLine
-    val spec = DroneSpec(specString)
-    val KeyValueRegex("Position", Vector2(position)) = nextLine
-    val KeyValueRegex("Player", AsInt(playerID)) = nextLine
-    val player = Player.fromID(playerID)
-    spawns ::= Spawn(spec, new DummyDroneController, position, player)
-  }
 
-  private[this] var currTime: Int = 0
-  private[core] def run(timestep: Int)(implicit droneRegistry: Map[Int, DroneImpl], mineralRegistry: Map[Int, MineralCrystalImpl]): Unit = {
+  private[this] var currTime: Long = 0
+  private[core] def run(
+    timestep: Long
+  )(implicit
+    droneRegistry: Map[Int, DroneImpl],
+    mineralRegistry: Map[Int, MineralCrystalImpl]
+  ): Unit = {
     while (currTime <= timestep && lines.hasNext) {
-      nextLine match {
-        case KeyValueRegex("Timestep", AsInt(t)) => currTime = t
-        case CommandRegex(AsInt(droneID), DroneCommand(d)) =>
-          droneRegistry(droneID).executeCommand(d)
-        case t => throw new Exception(s"Could not parse line: $t")
+      nextRecord()
+      currRecord match {
+        case Timestep(t) =>
+          currTime = t
+        case Command(droneID, d) =>
+          droneRegistry(droneID).executeCommand(DroneCommand(d))
+        case t => throw new Exception(s"""Error while parsing replay. Expected a "Timestep" or "Command" on line $lineNumber, instead: $currLine""")
       }
     }
   }
@@ -64,3 +77,4 @@ private[core] class Replayer(lines: Iterator[String]) {
 
   def finished = !lines.hasNext
 }
+

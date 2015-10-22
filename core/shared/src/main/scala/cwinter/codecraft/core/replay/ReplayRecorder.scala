@@ -2,8 +2,23 @@ package cwinter.codecraft.core.replay
 
 import cwinter.codecraft.core.api.{Player, DroneSpec}
 import cwinter.codecraft.core.objects.MineralCrystalImpl
-import cwinter.codecraft.core.objects.drone.DroneCommand
+import cwinter.codecraft.core.objects.drone.{SerializableDroneCommand, DroneCommand}
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
+import upickle.default._
+
+
+
+private sealed trait ReplayRecord
+@key("Version") private case class ReplayVersion(version: String) extends ReplayRecord
+@key("Cmd") private case class Command(droneID: Int, command: SerializableDroneCommand) extends ReplayRecord
+@key("Time") private case class Timestep(time: Long) extends ReplayRecord
+@key("Spawn") private case class SpawnRecord(spec: DroneSpec, position: Vector2, playerID: Int, resources: Int, name: Option[String]) extends ReplayRecord
+@key("WorldSize") private case class WorldSize(size: Rectangle) extends ReplayRecord
+@key("Mineral") private case class MineralRecord(size: Int, position: Vector2) extends ReplayRecord
+private object MineralRecord {
+  def apply(impl: MineralCrystalImpl): MineralRecord = MineralRecord(impl.size, impl.position)
+}
+@key("Seed") private case class RNGSeed(seed: Int) extends ReplayRecord
 
 
 private[core] trait ReplayRecorder {
@@ -15,38 +30,34 @@ private[core] trait ReplayRecorder {
     timestepWritten = false
   }
 
-  def recordVersion(): Unit = {
-    writeLine("ReplayVersion=0.1.2")
-  }
+  def recordVersion(): Unit =
+    writeRecord(ReplayVersion("0.2.0"))
 
   def record(droneID: Int, droneCommand: DroneCommand): Unit = {
     if (!timestepWritten) {
-      writeLine("Timestep=" + timestep)
+      writeRecord(Timestep(timestep))
       timestepWritten = true
     }
-    writeLine(s"$droneID!$droneCommand")
+    writeRecord(Command(droneID, droneCommand.toSerializable))
   }
 
-  def recordSpawn(droneSpec: DroneSpec, position: Vector2, player: Player): Unit = {
-    writeLine("Spawn")
-    writeLine(s"Spec=$droneSpec")
-    writeLine(s"Position=$position")
-    writeLine(s"Player=${player.id}")
-  }
+  def recordSpawn(droneSpec: DroneSpec, position: Vector2, player: Player, resources: Int, name: Option[String]): Unit =
+    writeRecord(SpawnRecord(droneSpec, position, player.id, resources, name))
 
-  def recordWorldSize(rectangle: Rectangle): Unit = {
-    writeLine(s"Size=$rectangle")
-  }
+  def recordWorldSize(rectangle: Rectangle): Unit =
+    writeRecord(WorldSize(rectangle))
 
-  def recordMineral(mineral: MineralCrystalImpl): Unit = {
-    writeLine(s"Mineral=${mineral.asString}")
-  }
+  def recordMineral(mineral: MineralCrystalImpl): Unit =
+    writeRecord(MineralRecord(mineral))
 
-  def recordRngSeed(rngSeed: Int): Unit = {
-    writeLine(s"Seed=$rngSeed")
-  }
+  def recordRngSeed(rngSeed: Int): Unit =
+    writeRecord(RNGSeed(rngSeed))
 
   def replayFilepath: Option[String] = None
 
+  private def writeRecord(record: ReplayRecord): Unit =
+    writeLine(write(record))
+
   protected def writeLine(string: String): Unit
 }
+

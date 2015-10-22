@@ -62,11 +62,11 @@ class DroneWorldSimulator(
   map.minerals.foreach(replayRecorder.recordMineral)
   map.minerals.foreach(spawnMineral)
   for {
-    Spawn(spec, controller, position, player, resources, _) <- map.initialDrones
+    Spawn(spec, controller, position, player, resources, name) <- map.initialDrones
     drone = new DroneImpl(spec, controller, player, position, 0, worldConfig, replayRecorder, resources)
   } {
     spawnDrone(drone)
-    replayRecorder.recordSpawn(spec, position, player)
+    replayRecorder.recordSpawn(spec, position, player, resources, name)
   }
 
   @JSExport

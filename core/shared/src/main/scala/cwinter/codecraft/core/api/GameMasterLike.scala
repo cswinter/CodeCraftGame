@@ -39,8 +39,8 @@ private[codecraft] trait GameMasterLike {
     mothership2: DroneControllerBase,
     pos2: Vector2
   ): Seq[Spawn] = {
-    val spawn1 = new Spawn(DefaultMothership, mothership1, pos1, BluePlayer, 21)
-    val spawn2 = new Spawn(DefaultMothership, mothership2, pos2, OrangePlayer, 21)
+    val spawn1 = Spawn(DefaultMothership, mothership1, pos1, BluePlayer, 21)
+    val spawn2 = Spawn(DefaultMothership, mothership2, pos2, OrangePlayer, 21)
     Seq(spawn1, spawn2)
   }
 

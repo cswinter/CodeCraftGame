@@ -355,81 +355,82 @@ private[core] case class ArrivedAtDrone(drone: DroneImpl) extends DroneEvent
 private[core] case class DroneEntersSightRadius(drone: DroneImpl) extends DroneEvent
 
 
-private[core] sealed trait DroneCommand
-private[core] case class ConstructDrone(spec: DroneSpec, controller: DroneControllerBase, position: Vector2) extends DroneCommand {
-  override def toString: String = s"ConstructDrone($spec, null, $position)"
+import upickle.default.key
+private[core] sealed trait SerializableDroneCommand
+@key("Construct") private[core] case class SerializableConstructDrone(spec: DroneSpec, position: Vector2) extends SerializableDroneCommand
+@key("Process") private[core] case class SerializableProcessMineral(mineralID: Int) extends SerializableDroneCommand
+@key("FireMissiles") private[core] case class SerializableFireMissiles(targetID: Int) extends SerializableDroneCommand
+@key("Deposit") private[core] case class SerializableDepositMinerals(targetID: Int) extends SerializableDroneCommand
+@key("Harvest") private[core] case class SerializableHarvestMineral(mineralID: Int) extends SerializableDroneCommand
+@key("MoveToMineral") private[core] case class SerializableMoveToMineralCrystal(mineralCrystalID: Int) extends SerializableDroneCommand
+@key("MoveToDrone") private[core] case class SerializableMoveToDrone(droneID: Int) extends SerializableDroneCommand
+
+
+private[core] sealed trait DroneCommand {
+  def toSerializable: SerializableDroneCommand
 }
-private[core] case class ProcessMineral(mineralCrystal: MineralCrystalImpl) extends DroneCommand
+object DroneCommand {
+  def apply(
+    serialized: SerializableDroneCommand
+  )(implicit droneRegistry: Map[Int, DroneImpl], mineralRegistry: Map[Int, MineralCrystalImpl]): DroneCommand = {
+    import scala.language.implicitConversions
+    implicit def droneLookup(droneID: Int): DroneImpl = {
+      if (droneRegistry.contains(droneID)) droneRegistry(droneID)
+      else throw new Exception(f"Cannot find drone with id $droneID. Available IDs: ${droneRegistry.keys}")
+    }
+    implicit def mineralLookup(mineralID: Int): MineralCrystalImpl = {
+      if (mineralRegistry.contains(mineralID)) mineralRegistry(mineralID)
+      else throw new Exception(f"Cannot find mineral with id $mineralID. Available IDs: ${mineralRegistry.keys}")
+    }
+    serialized match {
+      case SerializableConstructDrone(spec, position) => ConstructDrone(spec, new DummyDroneController, position)
+      case SerializableProcessMineral(mineral) => ProcessMineral(mineral)
+      case SerializableFireMissiles(target) => FireMissiles(target)
+      case SerializableDepositMinerals(target) => DepositMinerals(target)
+      case SerializableHarvestMineral(mineral) => HarvestMineral(mineral)
+      case SerializableMoveToMineralCrystal(mineral) => MoveToMineralCrystal(mineral)
+      case SerializableMoveToDrone(drone) => MoveToDrone(drone)
+      case move: MoveInDirection => move
+      case move: MoveToPosition => move
+      case HoldPosition => HoldPosition
+    }
+  }
+}
+private[core] case class ConstructDrone(
+  spec: DroneSpec,
+  controller: DroneControllerBase,
+  position: Vector2
+) extends DroneCommand {
+  def toSerializable = SerializableConstructDrone(spec, position)
+}
+private[core] case class ProcessMineral(mineralCrystal: MineralCrystalImpl) extends DroneCommand {
+  def toSerializable = SerializableProcessMineral(mineralCrystal.id)
+}
 private[core] case class FireMissiles(target: DroneImpl) extends DroneCommand {
-  override def toString: String = s"FireMissiles(${target.id})"
+  def toSerializable = SerializableFireMissiles(target.id)
 }
 private[core] case class DepositMinerals(target: DroneImpl) extends DroneCommand {
-  override def toString: String = s"DepositMinerals(${target.id})"
+  def toSerializable = SerializableDepositMinerals(target.id)
 }
-private[core] case class HarvestMineral(mineral: MineralCrystalImpl) extends DroneCommand
+private[core] case class HarvestMineral(mineral: MineralCrystalImpl) extends DroneCommand {
+  def toSerializable = SerializableHarvestMineral(mineral.id)
+}
 
 private[core] sealed trait MovementCommand extends DroneCommand
-private[core] case class MoveInDirection(direction: Double) extends MovementCommand
-private[core] case class MoveToPosition(position: Vector2) extends MovementCommand
-private[core] case class MoveToMineralCrystal(mineralCrystal: MineralCrystalImpl) extends MovementCommand
-private[core] case class MoveToDrone(drone: DroneImpl) extends MovementCommand
-private[core] case object HoldPosition extends MovementCommand
-
-
-private[core] object DroneCommand {
-  final val CaseClassRegex = """(\w*?)\((.*)\)""".r
-
-  def unapply(string: String)
-      (implicit droneRegistry: Map[Int, DroneImpl], mineralRegistry: Map[Int, MineralCrystalImpl]): Option[DroneCommand] = string match {
-    case CaseClassRegex("ConstructDrone", params) =>
-      val p = smartSplit(params)
-      val spec = DroneSpec(p(0))
-      val controller = new DummyDroneController
-      val position = Vector2(p(2))
-      Some(ConstructDrone(spec, controller, position))
-    case CaseClassRegex("MoveToPosition", params) =>
-      Some(MoveToPosition(Vector2(params)))
-    case CaseClassRegex("MoveToDrone", AsInt(id)) =>
-      Some(MoveToDrone(droneRegistry(id)))
-    case CaseClassRegex("MoveToMineralCrystal", AsInt(id)) =>
-      Some(MoveToMineralCrystal(mineralRegistry(id)))
-    case CaseClassRegex("HarvestMineral", AsInt(id)) =>
-      Some(HarvestMineral(mineralRegistry(id)))
-    case CaseClassRegex("DepositMinerals", AsInt(droneID)) =>
-      Some(DepositMinerals(droneRegistry(droneID)))
-    case CaseClassRegex("FireMissiles", AsInt(targetID)) =>
-      Some(FireMissiles(droneRegistry(targetID)))
-    case CaseClassRegex("MoveInDirection", AsDouble(direction)) =>
-      Some(MoveInDirection(direction))
-    case _ => None
-  }
-
-  private def smartSplit(string: String): IndexedSeq[String] = {
-    val result = new collection.mutable.ArrayBuffer[String]
-    var pcount = 0
-    var i = 0
-    val currString = new StringBuilder
-    while (i < string.length) {
-      val char = string.charAt(i)
-      if (char == '(') {
-        pcount += 1
-      } else if (char == ')') {
-        pcount -= 1
-      }
-
-      if (char == ',' && pcount == 0) {
-        result += currString.toString
-        currString.clear()
-      } else {
-        currString.append(char)
-      }
-
-      i += 1
-    }
-    result += currString.toString
-
-    result
-  }
+@key("MoveInDirec") private[core] case class MoveInDirection(direction: Double) extends MovementCommand with SerializableDroneCommand {
+  def toSerializable = this
+}
+@key("MoveToPos") private[core] case class MoveToPosition(position: Vector2) extends MovementCommand with SerializableDroneCommand {
+  def toSerializable = this
+}
+private[core] case class MoveToMineralCrystal(mineralCrystal: MineralCrystalImpl) extends MovementCommand {
+  def toSerializable = SerializableMoveToMineralCrystal(mineralCrystal.id)
+}
+private[core] case class MoveToDrone(drone: DroneImpl) extends MovementCommand {
+  def toSerializable = SerializableMoveToDrone(drone.id)
+}
+@key("Stop") private[core] case object HoldPosition extends MovementCommand with SerializableDroneCommand {
+  def toSerializable = this
 }
 
 
