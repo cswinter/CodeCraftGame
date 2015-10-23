@@ -45,7 +45,7 @@ private[codecraft] trait GameMasterLike {
   }
 
 
-  def run(simulator: DroneWorldSimulator): Unit
+  def run(simulator: DroneWorldSimulator): DroneWorldSimulator
 
   def createSimulator(
     mothership1: DroneControllerBase,
@@ -54,7 +54,7 @@ private[codecraft] trait GameMasterLike {
     resourceClusters: Seq[(Int, Int)],
     spawn1: Vector2,
     spawn2: Vector2
-  ): Unit = {
+  ): DroneWorldSimulator = {
     val spawns = constructSpawns(mothership1, spawn1, mothership2, spawn2)
     val map = WorldMap(worldSize, resourceClusters, spawns).withDefaultWinConditions
     new DroneWorldSimulator(map, devEvents)
@@ -66,10 +66,11 @@ private[codecraft] trait GameMasterLike {
    * @param mothership1 The controller for the initial mothership of player 1.
    * @param mothership2 The controller for the initial mothership of player 2.
    */
-  def startGame(mothership1: DroneControllerBase, mothership2: DroneControllerBase): Unit = {
+  def startGame(mothership1: DroneControllerBase, mothership2: DroneControllerBase): DroneWorldSimulator = {
     val map = defaultMap(mothership1, mothership2)
     val simulator = new DroneWorldSimulator(map, devEvents)
     run(simulator)
+    simulator
   }
 
   /**
@@ -118,10 +119,11 @@ private[codecraft] trait GameMasterLike {
    *
    * @param mothership1 The controller for your mothership.
    */
-  def runLevel1(mothership1: DroneControllerBase): Unit = {
+  def runLevel1(mothership1: DroneControllerBase): DroneWorldSimulator = {
     val map = level1Map(mothership1)
     val simulator = new DroneWorldSimulator(map, devEvents)
     run(simulator)
+    simulator
   }
 
   /**
@@ -129,7 +131,7 @@ private[codecraft] trait GameMasterLike {
    *
    * @param mothership The controller for your mothership.
    */
-  def runLevel2(mothership: DroneControllerBase): Unit = {
+  def runLevel2(mothership: DroneControllerBase): DroneWorldSimulator = {
     startGame(mothership, new Mothership)
   }
 
@@ -138,21 +140,21 @@ private[codecraft] trait GameMasterLike {
    *
    * @param mothership The controller for your mothership.
    */
-  def runLevel3(mothership: DroneControllerBase): Unit = {
+  def runLevel3(mothership: DroneControllerBase): DroneWorldSimulator = {
     startGame(mothership, new ai.basicplus.Mothership)
   }
 
   /**
    * Runs a game with the level 1 AI versus the level 2 AI.
    */
-  def runL1vL2(): Unit = {
+  def runL1vL2(): DroneWorldSimulator = {
     startGame(new ai.basic.Mothership, new Mothership)
   }
 
   /**
    * Runs a game with the level 3 AI versus the level 3 AI.
    */
-  def runL3vL3(): Unit = {
+  def runL3vL3(): DroneWorldSimulator = {
     startGame(new ai.basicplus.Mothership, new ai.basicplus.Mothership)
   }
 

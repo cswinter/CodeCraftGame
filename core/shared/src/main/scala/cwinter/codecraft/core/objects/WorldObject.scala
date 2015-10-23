@@ -23,6 +23,8 @@ private[core] object WorldObject {
     objectCount
   }
 
+  private[codecraft] def resetCount(): Unit = objectCount = -1
+
   implicit object WorldObjectIsPositionable extends Positionable[WorldObject] {
     override def position(t: WorldObject): Vector2 = t.position
   }

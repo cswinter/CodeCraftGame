@@ -53,6 +53,8 @@ private[core] trait ReplayRecorder {
   def recordRngSeed(rngSeed: Int): Unit =
     writeRecord(RNGSeed(rngSeed))
 
+  def replayString: Option[String] = None
+
   def replayFilepath: Option[String] = None
 
   private def writeRecord(record: ReplayRecord): Unit =

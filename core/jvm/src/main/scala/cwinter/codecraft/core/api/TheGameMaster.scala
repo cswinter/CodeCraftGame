@@ -11,11 +11,12 @@ import cwinter.codecraft.util.maths.Rng
  * Main entry point to start the game.
  */
 object TheGameMaster extends GameMasterLike {
-  override def run(simulator: DroneWorldSimulator): Unit = {
+  override def run(simulator: DroneWorldSimulator): DroneWorldSimulator = {
     DrawingCanvas.run(simulator)
+    simulator
   }
 
-  def runReplay(filepath: String): Unit = {
+  def runReplay(filepath: String): DroneWorldSimulator = {
     val replayer =
       new Replayer(scala.io.Source.fromFile(filepath).getLines())
     Rng.seed = replayer.seed
@@ -27,7 +28,7 @@ object TheGameMaster extends GameMasterLike {
     run(simulator)
   }
 
-  def runLastReplay(): Unit = {
+  def runLastReplay(): DroneWorldSimulator = {
     val dir = new File(System.getProperty("user.home") + "/.codecraft/replays")
     val latest = dir.listFiles().maxBy(_.lastModified())
     runReplay(latest.getPath)

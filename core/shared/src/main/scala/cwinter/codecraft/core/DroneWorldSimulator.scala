@@ -241,6 +241,8 @@ class DroneWorldSimulator(
     visibleObjects.flatMap(_.descriptor)
   }
 
+  def replayString: Option[String] = replayRecorder.replayString
+
 
   override def initialCameraPos: Vector2 = map.initialDrones.head.position
 
