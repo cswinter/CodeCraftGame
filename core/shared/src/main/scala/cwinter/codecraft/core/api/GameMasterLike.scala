@@ -3,6 +3,7 @@ package cwinter.codecraft.core.api
 import cwinter.codecraft.core._
 import cwinter.codecraft.core.ai.basicplus
 import cwinter.codecraft.core.ai.cheese.Mothership
+import cwinter.codecraft.core.replay.Replayer
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 
 
@@ -58,6 +59,15 @@ private[codecraft] trait GameMasterLike {
     val spawns = constructSpawns(mothership1, spawn1, mothership2, spawn2)
     val map = WorldMap(worldSize, resourceClusters, spawns).withDefaultWinConditions
     new DroneWorldSimulator(map, devEvents)
+  }
+
+  def createReplaySimulator(replayText: String): DroneWorldSimulator = {
+    val replayer = new Replayer(replayText.lines)
+    val worldSize = replayer.worldSize
+    val mineralCrystals = replayer.startingMinerals
+    val spawns = replayer.spawns
+    val map = WorldMap(mineralCrystals, worldSize, spawns)
+    new DroneWorldSimulator(map, devEvents, Some(replayer))
   }
 
   /**

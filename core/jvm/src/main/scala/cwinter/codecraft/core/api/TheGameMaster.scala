@@ -16,22 +16,15 @@ object TheGameMaster extends GameMasterLike {
     simulator
   }
 
-  def runReplay(filepath: String): DroneWorldSimulator = {
-    val replayer =
-      new Replayer(scala.io.Source.fromFile(filepath).getLines())
-    Rng.seed = replayer.seed
-    val worldSize = replayer.worldSize
-    val mineralCrystals = replayer.startingMinerals
-    val spawns = replayer.spawns
-    val map = WorldMap(mineralCrystals, worldSize, spawns)
-    val simulator = new DroneWorldSimulator(map, devEvents, Some(replayer))
+  def runReplayFromFile(filepath: String): DroneWorldSimulator = {
+    val simulator = createReplaySimulator(scala.io.Source.fromFile(filepath).mkString)
     run(simulator)
   }
 
   def runLastReplay(): DroneWorldSimulator = {
     val dir = new File(System.getProperty("user.home") + "/.codecraft/replays")
     val latest = dir.listFiles().maxBy(_.lastModified())
-    runReplay(latest.getPath)
+    runReplayFromFile(latest.getPath)
   }
 }
 

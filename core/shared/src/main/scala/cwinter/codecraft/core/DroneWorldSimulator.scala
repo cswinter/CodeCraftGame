@@ -56,6 +56,7 @@ class DroneWorldSimulator(
 
   Debug.drawAlways(DrawRectangle(0, map.size))
 
+  replayer.foreach { r => Rng.seed = r.seed }
   replayRecorder.recordVersion()
   replayRecorder.recordRngSeed(Rng.seed)
   replayRecorder.recordWorldSize(map.size)
