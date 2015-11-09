@@ -6,7 +6,7 @@ import cwinter.codecraft.core.objects.MineralCrystalImpl
 import cwinter.codecraft.core.objects.drone.{DroneCommand, DroneImpl}
 import upickle.default._
 
-private[core] class Replayer(lines: Iterator[String]) {
+class Replayer(lines: Iterator[String]) {
   def readLine: String = lines.next()
 
   private[this] var lineNumber: Int = -1
