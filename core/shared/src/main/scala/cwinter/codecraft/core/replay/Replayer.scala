@@ -26,7 +26,7 @@ class Replayer(lines: Iterator[String]) {
 
   // read version
   val ReplayVersion(version) = read[ReplayVersion](nextLine())
-  require(version == "0.2.0", "Incorrect replay version.")
+  require(version == Replay.CurrentVersion, "Incorrect replay version.")
 
   // read rng seed
   val RNGSeed(seed) = read[RNGSeed](nextLine())

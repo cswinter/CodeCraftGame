@@ -31,7 +31,7 @@ private[core] trait ReplayRecorder {
   }
 
   def recordVersion(): Unit =
-    writeRecord(ReplayVersion("0.2.0"))
+    writeRecord(ReplayVersion(Replay.CurrentVersion))
 
   def record(droneID: Int, droneCommand: DroneCommand): Unit = {
     if (!timestepWritten) {
