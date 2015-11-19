@@ -195,7 +195,11 @@ trait DroneControllerBase extends Drone {
    * @param target The drone to be shot at.
    */
   def fireMissilesAt(target: Drone): Unit = {
-    drone ! FireMissiles(target.drone)
+    if (target.isDead) {
+      drone.warn("Trying to fireMissilesAt a drone that does not exist anymore!")
+    } else {
+      drone ! FireMissiles(target.drone)
+    }
   }
 
   // drone properties
