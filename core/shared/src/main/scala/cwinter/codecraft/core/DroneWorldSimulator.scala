@@ -153,6 +153,8 @@ class DroneWorldSimulator(
 
     for (r <- replayer) {
       implicit val droneRegistry = _drones.map(d => (d.id, d)).toMap
+      // NOTE: if mineralRegistry does not contain harvested/destroyed minerals as well, this will
+      // cause issues if serialized commands refer to those minerals (which is currently possible)
       implicit val mineralRegistry = map.minerals.map(m => (m.id, m)).toMap
       r.run(timestep)
     }
@@ -191,8 +193,8 @@ class DroneWorldSimulator(
       case SpawnHomingMissile(player, position, target) =>
         // TODO: remove this check once boundary collisions are done properly
         if (map.size.contains(position)) {
-        val newMissile = new HomingMissile(player, position, physicsEngine.time, target)
-          spawnMissile(newMissile)
+          val newMissile = new HomingMissile(player, position, physicsEngine.time, target)
+            spawnMissile(newMissile)
         }
       case HomingMissileFaded(missile) =>
         visibleObjects.remove(missile)

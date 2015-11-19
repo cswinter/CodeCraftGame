@@ -53,6 +53,11 @@ trait Drone {
    */
   def totalAvailableResources: Int
 
+  /**
+   * Returns true if this drone is dead, false otherwise.
+   */
+  def isDead: Boolean = hitpoints <= 0
+
   private[core] def drone: DroneImpl
 
   override def toString: String = {

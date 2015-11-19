@@ -96,7 +96,12 @@ trait DroneControllerBase extends Drone {
    * @param otherDrone The drone to be moved towards.
    */
   def moveTo(otherDrone: Drone): Unit = {
-    drone ! MoveToDrone(otherDrone.drone)
+    // TODO: most validation is in DroneImpl, maybe make consistent?
+    if (otherDrone.isDead) {
+      drone.warn("Trying to moveTo a dead drone!")
+    } else {
+      drone ! MoveToDrone(otherDrone.drone)
+    }
   }
 
   /**
@@ -140,7 +145,12 @@ trait DroneControllerBase extends Drone {
    * @param otherDrone The drone which will receive the minerals.
    */
   def giveMineralsTo(otherDrone: Drone): Unit = {
-    drone ! DepositMinerals(otherDrone.drone)
+    // TODO: isDead checks are all in this class, since they may cause replay errors if the command is recorded. Restructure would be good to make things less cluttered.
+    if (otherDrone.isDead) {
+      drone.warn("Trying to give minerals to a drone that does not exist anymore!")
+    } else {
+      drone ! DepositMinerals(otherDrone.drone)
+    }
   }
 
   /**
