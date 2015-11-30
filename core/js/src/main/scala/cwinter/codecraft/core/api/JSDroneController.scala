@@ -7,6 +7,8 @@ import scala.scalajs.js.annotation.JSExport
 
 @JSExport
 class JSDroneController(
+  val droneControllerProvider: String => DroneControllerBase,
+  val preEventProcessingHook: () => Unit,
   private[this] var _errorHandler: Option[(Throwable, String, JSDroneController) => Unit] = None,
   private[this] var _nativeControllerName: String = ""
 ) extends DroneControllerBase {
@@ -76,7 +78,7 @@ class JSDroneController(
       else 0
     }
 
-    val controller = JSDroneController.droneControllerProvider(controllerName)
+    val controller = droneControllerProvider(controllerName)
     buildDrone(
       controller,
       storageModules = getOrElse0("storageModules"),
@@ -120,12 +122,12 @@ class JSDroneController(
    */
   @JSExport
   def dronesInSight: js.Array[Drone] = super.dronesInSightScala.toJSArray
+
+  private[core] override def willProcessEvents(): Unit = preEventProcessingHook()
 }
 
 
 @JSExport
 object JSDroneController {
   private var buildDroneDeprWarnShown = false
-
-  var droneControllerProvider: String => DroneControllerBase = null
 }

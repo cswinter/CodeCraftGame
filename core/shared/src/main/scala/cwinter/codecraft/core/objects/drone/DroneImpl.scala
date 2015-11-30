@@ -55,6 +55,8 @@ private[core] class DroneImpl(
   }
 
   def processEvents(): Unit = {
+    controller.willProcessEvents()
+
     for (mineralCrystal <- storedMinerals) {
       if (availableFactories >= mineralCrystal.size) {
         startMineralProcessing(mineralCrystal)

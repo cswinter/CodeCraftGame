@@ -160,11 +160,11 @@ class DroneWorldSimulator(
     }
 
     // handle all drone events (execute user code)
-    for (drone <- _drones) {
+    for (drone <- deadDrones) {
       drone.processEvents()
     }
 
-    for (drone <- deadDrones) {
+    for (drone <- _drones) {
       drone.processEvents()
     }
     deadDrones = List.empty[DroneImpl]

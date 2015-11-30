@@ -22,6 +22,7 @@ import scala.scalajs.js.annotation.JSExportAll
 trait DroneControllerBase extends Drone {
   private[this] var _drone: DroneImpl = null
 
+
   // abstract methods for event handling
   /**
    * Called once when the drone is spawned. Called before any other `onEvent` method is called.
@@ -270,6 +271,7 @@ trait DroneControllerBase extends Drone {
    */
   def orientation: Double = drone.dynamics.orientation
 
+  private[core] def willProcessEvents(): Unit = {}
 
   private[core] def initialise(drone: DroneImpl): Unit = {
     require(_drone == null, "DroneController must only be initialised once.")
