@@ -8,7 +8,7 @@ import scala.scalajs.js.annotation.JSExport
 @JSExport
 class JSDroneController(
   val droneControllerProvider: String => DroneControllerBase,
-  val preEventProcessingHook: () => Unit,
+  val preEventProcessingHook: () => Unit = () => {},
   private[this] var _errorHandler: Option[(Throwable, String, JSDroneController) => Unit] = None,
   private[this] var _nativeControllerName: String = ""
 ) extends DroneControllerBase {
