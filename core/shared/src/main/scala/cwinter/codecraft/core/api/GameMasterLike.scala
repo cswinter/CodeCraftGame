@@ -14,6 +14,12 @@ private[codecraft] trait GameMasterLike {
   final val DefaultWorldSize = Rectangle(-4000, 4000, -2500, 2500)
 
   /**
+   * Identifies the current version of the JavaScript API.
+   * This value is changed whenever a backwards incompatible change is made to the JavaScript API.
+   */
+  final val JavascriptAPIVersion = "0.1"
+
+  /**
    * Default resource distribution.
    */
   final val DefaultResourceDistribution = Seq(
