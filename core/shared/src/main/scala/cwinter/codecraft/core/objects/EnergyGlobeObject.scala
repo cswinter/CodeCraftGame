@@ -32,6 +32,6 @@ private[core] class EnergyGlobeObject(
     else Seq()
   }
 
-  override private[core] def hasDied: Boolean = fade <= 0
+  override private[core] def isDead: Boolean = fade <= 0
 }
 

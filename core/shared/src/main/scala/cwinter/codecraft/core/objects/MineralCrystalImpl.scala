@@ -38,7 +38,7 @@ private[core] class MineralCrystalImpl(
 
   override private[core] def descriptor: Seq[MineralDescriptor] = _descriptor
 
-  override private[core] def hasDied = false
+  override private[core] def isDead = false
 
   override def update(): Seq[SimulatorEvent] = Seq.empty[SimulatorEvent]
 

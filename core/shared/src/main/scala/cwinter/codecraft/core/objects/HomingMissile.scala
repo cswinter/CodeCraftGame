@@ -49,6 +49,6 @@ private[core] class HomingMissile(val player: Player, initialPos: Vector2, time:
       math.min(MaxLifetime - lifetime, positions), player.color)
   )
 
-  override private[core] def hasDied = lifetime <= 0
+  override private[core] def isDead = lifetime <= 0
 }
 

@@ -12,7 +12,7 @@ private[core] trait WorldObject {
   def update(): Seq[SimulatorEvent]
   private[core] def descriptor: Seq[WorldObjectDescriptor]
   private[core] val id = WorldObject.generateUID()
-  private[core] def hasDied: Boolean
+  private[core] def isDead: Boolean
 }
 
 

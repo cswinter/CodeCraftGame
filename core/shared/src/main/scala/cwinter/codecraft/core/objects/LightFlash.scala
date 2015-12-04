@@ -20,5 +20,5 @@ private[core] class LightFlash(val position: Vector2) extends WorldObject {
     } else Seq.empty[SimulatorEvent]
   }
 
-  def hasDied: Boolean = stage > 1
+  def isDead: Boolean = stage > 1
 }

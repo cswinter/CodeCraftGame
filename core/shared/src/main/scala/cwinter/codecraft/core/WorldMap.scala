@@ -12,32 +12,24 @@ import cwinter.codecraft.util.maths.{Rng, Rectangle, Vector2}
  * @param minerals The initial set of mineral crystals.
  * @param size The world boundary.
  * @param initialDrones The initial set of drones.
- * @param winConditions Win conditions for the players, if any.
+ * @param winCondition Win condition, if any.
  */
 case class WorldMap(
   minerals: Seq[MineralCrystalImpl],
   size: Rectangle,
   initialDrones: Seq[Spawn],
-  winConditions: Map[Player, DroneWorldSimulator => Boolean] = Map.empty
+  winCondition: Option[WinCondition] = None
 ) {
   // use this to get around compiler limitation (cannot have multiple overloaded methods with default arguments)
-  private[codecraft] def withWinConditions(winConditions: Map[Player, DroneWorldSimulator => Boolean]) = {
-    WorldMap(minerals, size, initialDrones, winConditions)
+  private[codecraft] def withWinConditions(winCondition: WinCondition) = {
+    WorldMap(minerals, size, initialDrones, Some(winCondition))
   }
 
   /**
    * Creates a copy of this WorldMap with the win conditions set to destruction of the enemy mothership.
    */
-  def withDefaultWinConditions: WorldMap = {
-    require(this.initialDrones.size == 2)
-    val m1 = initialDrones(0).controller
-    val m2 = initialDrones(1).controller
-    val winConditions = Map(
-      BluePlayer -> ((x: DroneWorldSimulator) => m2.hitpoints <= 0),
-      OrangePlayer -> ((x: DroneWorldSimulator) => m1.hitpoints <= 0)
-    )
-    this.withWinConditions(winConditions)
-  }
+  def withDefaultWinConditions: WorldMap =
+    this.withWinConditions(DestroyEnemyMotherships)
 }
 
 /**
@@ -63,7 +55,8 @@ case class Spawn(
 object WorldMap {
   def apply(
     size: Rectangle,
-    resources: List[(Vector2, Int)], // use List instead of Seq to get around compiler limitation (cannot overload on type parameters)
+    // use List instead of Seq to get around compiler limitation (cannot overload on type parameters)
+    resources: List[(Vector2, Int)],
     initialDrones: Seq[Spawn]
   ): WorldMap = {
     val minerals =

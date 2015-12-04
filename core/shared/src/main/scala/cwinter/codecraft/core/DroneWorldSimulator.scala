@@ -139,17 +139,7 @@ class DroneWorldSimulator(
 
     if (replayer.exists(_.finished)) return
 
-    // check win condition
-    if (timestep % 30 == 0) {
-      for ((player, winCondition) <- map.winConditions) {
-        if (winCondition(this)) {
-          for (
-            drone <- drones
-            if drone.player == player
-          ) Errors.inform("Victory!", drone.position)
-        }
-      }
-    }
+    checkWinConditions()
 
     for (r <- replayer) {
       implicit val droneRegistry = _drones.map(d => (d.id, d)).toMap
@@ -237,6 +227,34 @@ class DroneWorldSimulator(
     }
 
     Errors.updateMessages()
+  }
+  
+  private def checkWinConditions(): Unit = {
+    if (timestep % 30 == 0) {
+      for (
+        wc <- map.winCondition;
+        player <- players
+        if playerHasWon(wc, player)
+      ) showVictoryMessage(player)
+    }
+  }
+
+  private def players = map.initialDrones.map(_.player)
+  
+  private def playerHasWon(winCondition: WinCondition, player: Player): Boolean =
+    winCondition match {
+      case DestroyEnemyMotherships =>
+        drones.exists(isLivingEnemyMothership(_, player))
+    }
+
+  private def isLivingEnemyMothership(drone: DroneImpl, player: Player): Boolean =
+    drone.player != player && !drone.isDead && drone.spec.constructors > 0
+
+  def showVictoryMessage(winner: Player): Unit = {
+    for (
+      drone <- drones
+      if drone.player == winner
+    ) Errors.inform("Victory!", drone.position)
   }
 
 

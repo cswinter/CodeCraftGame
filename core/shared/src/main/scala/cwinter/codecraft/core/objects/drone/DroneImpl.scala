@@ -67,7 +67,7 @@ private[core] class DroneImpl(
       enqueueEvent(event)
     }
 
-    if (hasDied) {
+    if (isDead) {
       // TODO: think about the semantics of thsi
       controller.onDeath()
       for (s <- storage) s.destroyed()
@@ -341,7 +341,7 @@ private[core] class DroneImpl(
     }
   }
 
-  override def hasDied = _hasDied
+  override def isDead = _hasDied
 
   override def toString: String = id.toString
 }
