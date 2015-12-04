@@ -2,7 +2,6 @@ package cwinter.codecraft.core
 
 import cwinter.codecraft.core.api._
 import cwinter.codecraft.core.objects.MineralCrystalImpl
-import cwinter.codecraft.core.api.OrangePlayer
 import cwinter.codecraft.util.maths.{Rng, Rectangle, Vector2}
 
 
@@ -36,7 +35,6 @@ case class WorldMap(
  * Describes the initial position and state of a drone.
  *
  * @param droneSpec The specification for the modules and size of the drone.
- * @param controller A controller that will be assigned to the drone when the game starts.
  * @param position The initial position for the drone.
  * @param player The owner of the drone.
  * @param resources The amount of resources initially stored by the drone.
@@ -44,7 +42,6 @@ case class WorldMap(
  */
 case class Spawn(
   droneSpec: DroneSpec,
-  controller: DroneControllerBase,
   position: Vector2,
   player: Player,
   resources: Int = 0,

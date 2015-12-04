@@ -1,7 +1,7 @@
 package cwinter.codecraft.core
 
 import cwinter.codecraft.collisions.VisionTracker
-import cwinter.codecraft.core.api.{BluePlayer, Player, DroneSpec}
+import cwinter.codecraft.core.api.{DroneControllerBase, BluePlayer, Player, DroneSpec}
 import cwinter.codecraft.core.errors.Errors
 import cwinter.codecraft.core.objects._
 import cwinter.codecraft.core.objects.drone._
@@ -19,11 +19,13 @@ import scala.scalajs.js.annotation.JSExport
  * Aggregates all datastructures required to run a game and implements the game loop.
  *
  * @param map Describes the initial state of the game world.
+ * @param controllers The controllers for the initial drones.
  * @param eventGenerator Allows for triggering custom events.
  * @param replayer If set to `Some(r)`, the Simulator will replay the events recorded by `r`.
  */
 class DroneWorldSimulator(
   val map: WorldMap,
+  controllers: Seq[DroneControllerBase],
   eventGenerator: Int => Seq[SimulatorEvent],
   replayer: Option[Replayer] = None
 ) extends Simulator {
@@ -63,7 +65,7 @@ class DroneWorldSimulator(
   map.minerals.foreach(replayRecorder.recordMineral)
   map.minerals.foreach(spawnMineral)
   for {
-    Spawn(spec, controller, position, player, resources, name) <- map.initialDrones
+    (Spawn(spec, position, player, resources, name), controller) <- map.initialDrones zip controllers
     drone = new DroneImpl(spec, controller, player, position, 0, worldConfig, replayRecorder, resources)
   } {
     spawnDrone(drone)
@@ -71,11 +73,14 @@ class DroneWorldSimulator(
   }
 
   @JSExport
-  val namedDrones = (for (Spawn(_, controller, _, _, _, Some(name)) <- map.initialDrones) yield (
-    name,
-    if (controller.playerID == BluePlayer.id) controller
-    else new EnemyDrone(controller.drone, controller.drone.player)
-  )).toMap
+  val namedDrones = (
+    for ((Spawn(_, _,player, _, Some(name)), controller) <- map.initialDrones zip controllers)
+    yield (
+      name,
+      if (player == BluePlayer) controller
+      else new EnemyDrone(controller.drone, controller.drone.player)
+    )
+  ).toMap
 
 
   private def spawnMineral(mineralCrystal: MineralCrystalImpl): Unit = {

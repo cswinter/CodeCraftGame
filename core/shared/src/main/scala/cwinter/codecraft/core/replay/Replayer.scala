@@ -1,6 +1,6 @@
 package cwinter.codecraft.core.replay
 
-import cwinter.codecraft.core.Spawn
+import cwinter.codecraft.core.{WorldMap, Spawn}
 import cwinter.codecraft.core.api.Player
 import cwinter.codecraft.core.objects.MineralCrystalImpl
 import cwinter.codecraft.core.objects.drone.{DroneCommand, DroneImpl}
@@ -41,7 +41,7 @@ class Replayer(lines: Iterator[String]) {
   while (
     currRecord match {
       case SpawnRecord(spec, position, playerID, resources, name) =>
-        spawns :+= Spawn(spec, new DummyDroneController, position, Player.fromID(playerID), resources, name)
+        spawns :+= Spawn(spec, position, Player.fromID(playerID), resources, name)
         true
       case MineralRecord(size, position) =>
         _startingMinerals ::= new MineralCrystalImpl(size, position)
@@ -53,6 +53,10 @@ class Replayer(lines: Iterator[String]) {
     nextRecord()
   }
   val startingMinerals = _startingMinerals
+
+  def controllers = spawns.map(_ => new DummyDroneController)
+
+  val map = WorldMap(startingMinerals, worldSize, spawns)
 
 
   private[this] var currTime: Long = 0
