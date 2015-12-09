@@ -128,33 +128,57 @@ class DroneWorldSimulator(
   override def update(): Unit = {
     replayRecorder.newTimestep(timestep)
 
+    showSightAndMissileRadii()
+
+    checkWinConditions()
+
+    // TODO: expose a simulationHasFinished property that will stop the update method from being called
+    if (replayer.exists(_.finished)) return
+
+    for (r <- replayer) {
+      implicit val droneRegistry = _drones.map(d => (d.id, d)).toMap
+      implicit val mineralRegistry = map.minerals.map(m => (m.id, m)).toMap
+      r.run(timestep)
+    }
+
+    processDroneEvents()
+
+    val events = executeGameMechanics()
+
+    processSimulatorEvents(events ++ debugEvents)
+
+    physicsEngine.update()
+
+    processVisionTrackerEvents()
+
+    Errors.updateMessages()
+  }
+
+  private def showSightAndMissileRadii(): Unit = {
     if (showMissileRadius) {
       for (
         d <- _drones
         if d.spec.missileBatteries > 0
-      ) {
-        Debug.draw(DrawCircleOutline(d.position.x.toFloat, d.position.y.toFloat, DroneConstants.MissileLockOnRadius, ColorRGB(1, 0, 0)))
-      }
+      ) Debug.draw(DrawCircleOutline(d.position.x.toFloat, d.position.y.toFloat, DroneConstants.MissileLockOnRadius, ColorRGB(1, 0, 0)))
     }
     if (showSightRadius) {
       for (d <- _drones) {
         Debug.draw(DrawCircleOutline(d.position.x.toFloat, d.position.y.toFloat, DroneSpec.SightRadius, ColorRGB(0, 1, 0)))
       }
     }
-
-    if (replayer.exists(_.finished)) return
-
-    checkWinConditions()
-
-    for (r <- replayer) {
-      implicit val droneRegistry = _drones.map(d => (d.id, d)).toMap
-      // NOTE: if mineralRegistry does not contain harvested/destroyed minerals as well, this will
-      // cause issues if serialized commands refer to those minerals (which is currently possible)
-      implicit val mineralRegistry = map.minerals.map(m => (m.id, m)).toMap
-      r.run(timestep)
+  }
+  
+  private def checkWinConditions(): Unit = {
+    if (timestep % 30 == 0) {
+      for (
+        wc <- map.winCondition;
+        player <- players
+        if playerHasWon(wc, player)
+      ) showVictoryMessage(player)
     }
+  }
 
-    // handle all drone events (execute user code)
+  private def processDroneEvents(): Unit = {
     for (drone <- deadDrones) {
       drone.processEvents()
     }
@@ -163,62 +187,64 @@ class DroneWorldSimulator(
       drone.processEvents()
     }
     deadDrones = List.empty[DroneImpl]
+  }
 
-    // execute game mechanics for all objects + collect resulting events
-    val simulatorEvents = {
-      for (obj <- dynamicObjects; event <- obj.update())
-        yield event
-    } ++ eventGenerator(timestep)
+  private def executeGameMechanics(): Seq[SimulatorEvent] = {
+    for (obj <- dynamicObjects.toSeq; event <- obj.update())
+      yield event
+  }
 
+  private def debugEvents: Seq[SimulatorEvent] =
+    eventGenerator(timestep)
 
-    simulatorEvents.foreach {
-      case MineralCrystalHarvested(mineralCrystal) =>
-        visibleObjects.remove(mineralCrystal)
-        visionTracker.remove(mineralCrystal)
-      case MineralCrystalDestroyed(mineralCrystal) =>
-        visibleObjects.remove(mineralCrystal)
-      case MineralCrystalActivated(mineralCrystal) =>
-        visibleObjects.add(mineralCrystal)
+  private def processSimulatorEvents(events: Iterable[SimulatorEvent]): Unit = {
+    events.foreach(processEvent)
+  }
+
+  private def processEvent(event: SimulatorEvent): Unit = event match {
+    case MineralCrystalHarvested(mineralCrystal) =>
+      visibleObjects.remove(mineralCrystal)
+      visionTracker.remove(mineralCrystal)
+    case MineralCrystalDestroyed(mineralCrystal) =>
+      visibleObjects.remove(mineralCrystal)
+    case MineralCrystalActivated(mineralCrystal) =>
+      visibleObjects.add(mineralCrystal)
     case MineralCrystalInactivated(mineralCrystal) =>
-        visibleObjects.remove(mineralCrystal)
-      case DroneConstructionStarted(drone) =>
-        visibleObjects.add(drone)
-      case DroneConstructionCancelled(drone) =>
-        visibleObjects.remove(drone)
-      case SpawnHomingMissile(player, position, target) =>
-        // TODO: remove this check once boundary collisions are done properly
-        if (map.size.contains(position)) {
-          val newMissile = new HomingMissile(player, position, physicsEngine.time, target)
-            spawnMissile(newMissile)
-        }
-      case HomingMissileFaded(missile) =>
-        visibleObjects.remove(missile)
-        dynamicObjects.remove(missile)
-        physicsEngine.remove(missile.dynamics)
-      case MissileExplodes(missile) =>
-        spawnLightflash(missile.position)
-      case LightFlashDestroyed(lightFlash) =>
-        visibleObjects.remove(lightFlash)
-        dynamicObjects.remove(lightFlash)
-      case DroneKilled(drone) =>
-        droneKilled(drone)
-      case SpawnDrone(drone) =>
-        spawnDrone(drone)
-      case SpawnEnergyGlobeAnimation(energyGlobeObject) =>
-        visibleObjects.add(energyGlobeObject)
-        dynamicObjects.add(energyGlobeObject)
-      case RemoveEnergyGlobeAnimation(energyGlobeObject) =>
-        visibleObjects.remove(energyGlobeObject)
-        dynamicObjects.remove(energyGlobeObject)
-    }
+      visibleObjects.remove(mineralCrystal)
+    case DroneConstructionStarted(drone) =>
+      visibleObjects.add(drone)
+    case DroneConstructionCancelled(drone) =>
+      visibleObjects.remove(drone)
+    case SpawnHomingMissile(player, position, target) =>
+      // TODO: remove this check once boundary collisions are done properly
+      if (map.size.contains(position)) {
+        val newMissile = new HomingMissile(player, position, physicsEngine.time, target)
+        spawnMissile(newMissile)
+      }
+    case HomingMissileFaded(missile) =>
+      visibleObjects.remove(missile)
+      dynamicObjects.remove(missile)
+      physicsEngine.remove(missile.dynamics)
+    case MissileExplodes(missile) =>
+      spawnLightflash(missile.position)
+    case LightFlashDestroyed(lightFlash) =>
+      visibleObjects.remove(lightFlash)
+      dynamicObjects.remove(lightFlash)
+    case DroneKilled(drone) =>
+      droneKilled(drone)
+    case SpawnDrone(drone) =>
+      spawnDrone(drone)
+    case SpawnEnergyGlobeAnimation(energyGlobeObject) =>
+      visibleObjects.add(energyGlobeObject)
+      dynamicObjects.add(energyGlobeObject)
+    case RemoveEnergyGlobeAnimation(energyGlobeObject) =>
+      visibleObjects.remove(energyGlobeObject)
+      dynamicObjects.remove(energyGlobeObject)
+  }
 
-    physicsEngine.update()
-
-    // COLLECT ALL EVENTS FROM PHYSICS SIMULATION
-
+  private def processVisionTrackerEvents(): Unit = {
     visionTracker.updateAll()
     for (drone <- _drones) drone.objectsInSight = visionTracker.getVisible(drone)
-    // SPAWN NEW OBJECTS HERE???
     for {
       (drone: DroneImpl, events) <- visionTracker.collectEvents()
       event <- events
@@ -229,18 +255,6 @@ class DroneWorldSimulator(
       case visionTracker.EnteredSightRadius(other: DroneImpl) =>
         drone.enqueueEvent(DroneEntersSightRadius(other))
       case e => throw new Exception(s"AHHHH, AN UFO!!! RUN FOR YOUR LIFE!!! $e")
-    }
-
-    Errors.updateMessages()
-  }
-  
-  private def checkWinConditions(): Unit = {
-    if (timestep % 30 == 0) {
-      for (
-        wc <- map.winCondition;
-        player <- players
-        if playerHasWon(wc, player)
-      ) showVictoryMessage(player)
     }
   }
 

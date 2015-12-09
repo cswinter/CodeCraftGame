@@ -293,8 +293,7 @@ private[core] class DroneImpl(
     for (s <- storage) yield s.storedMinerals
   }.getOrElse(Seq())
 
-  override def descriptor: Seq[WorldObjectDescriptor] =
-  {
+  override def descriptor: Seq[WorldObjectDescriptor] = {
     Seq(
       DroneDescriptor(
         id,
@@ -312,8 +311,7 @@ private[core] class DroneImpl(
       storage.toSeq.flatMap(_.energyGlobeAnimations)
   }
 
-  private def moduleDescriptors: Seq[DroneModuleDescriptor] =
-  {
+  private def moduleDescriptors: Seq[DroneModuleDescriptor] = {
     for {
       Some(m) <- droneModules
       descr <- m.descriptors
