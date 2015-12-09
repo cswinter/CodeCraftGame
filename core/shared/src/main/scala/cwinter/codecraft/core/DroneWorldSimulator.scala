@@ -249,7 +249,7 @@ class DroneWorldSimulator(
   private def playerHasWon(winCondition: WinCondition, player: Player): Boolean =
     winCondition match {
       case DestroyEnemyMotherships =>
-        drones.exists(isLivingEnemyMothership(_, player))
+        !drones.exists(isLivingEnemyMothership(_, player))
     }
 
   private def isLivingEnemyMothership(drone: DroneImpl, player: Player): Boolean =
