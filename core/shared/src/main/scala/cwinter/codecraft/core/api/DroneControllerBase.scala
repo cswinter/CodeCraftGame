@@ -42,14 +42,14 @@ trait DroneControllerBase extends Drone {
   /**
    * Called when a mineral crystal enters the sight radius of this drone.
    *
-   * @param mineralCrystal The [[MineralCrystal]] that is now in sight.
+   * @param mineralCrystal The [[cwinter.codecraft.core.api.MineralCrystal]] that is now in sight.
    */
   def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = ()
 
   /**
    * Called when another drone enters the sight radius of this drone.
    *
-   * @param drone The [[Drone]] that is now in sight.
+   * @param drone The [[cwinter.codecraft.core.api.Drone]] that is now in sight.
    */
   def onDroneEntersVision(drone: Drone): Unit = ()
 

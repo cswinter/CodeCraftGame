@@ -8,12 +8,16 @@ import scala.scalajs.js.annotation.JSExport
 @JSExport
 class JSDroneController(
   val droneControllerProvider: String => DroneControllerBase,
-  val preEventProcessingHook: () => Unit = () => {},
   private[this] var _errorHandler: Option[(Throwable, String, JSDroneController) => Unit] = None,
   private[this] var _nativeControllerName: String = ""
 ) extends DroneControllerBase {
   private[this] var _nativeController: js.Dynamic = null
   def errorHandler_=(value: (Throwable, String, JSDroneController) => Unit) = _errorHandler = Some(value)
+
+  private[this] var _preEventProcessingHook: () => Unit = () => {}
+  def setPreEventProcessingHook(value: () => Unit): Unit = {
+    _preEventProcessingHook = value
+  }
 
   def nativeController = _nativeController
   def updateController(controller: js.Dynamic, controllerName: String): Unit = {
@@ -123,7 +127,7 @@ class JSDroneController(
   @JSExport
   def dronesInSight: js.Array[Drone] = super.dronesInSightScala.toJSArray
 
-  private[core] override def willProcessEvents(): Unit = preEventProcessingHook()
+  private[core] override def willProcessEvents(): Unit = _preEventProcessingHook()
 }
 
 

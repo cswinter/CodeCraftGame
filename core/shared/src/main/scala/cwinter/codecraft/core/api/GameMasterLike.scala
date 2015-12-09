@@ -84,10 +84,8 @@ private[codecraft] trait GameMasterLike {
 
   /**
    * Returns a [[WorldMap]] for the first level.
-   *
-   * @param mothership1 The controller for the initial mothership of player 1.
    */
-  def level1Map(mothership1: DroneControllerBase): WorldMap = {
+  def level1Map(): WorldMap = {
     val worldSize = Rectangle(-2000, 2000, -1000, 1000)
     val spawns = constructSpawns(Vector2(1000, 200), Vector2(-1000, -200))
     WorldMap(worldSize, 100, spawns).withDefaultWinConditions
@@ -123,7 +121,7 @@ private[codecraft] trait GameMasterLike {
    * @param mothership1 The controller for your mothership.
    */
   def runLevel1(mothership1: DroneControllerBase): DroneWorldSimulator = {
-    val map = level1Map(mothership1)
+    val map = level1Map()
     val controllers = Seq(mothership1, level1AI())
     val simulator = new DroneWorldSimulator(map, controllers, devEvents)
     run(simulator)
