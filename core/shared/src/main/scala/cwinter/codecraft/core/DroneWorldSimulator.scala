@@ -27,12 +27,15 @@ class DroneWorldSimulator(
   val map: WorldMap,
   controllers: Seq[DroneControllerBase],
   eventGenerator: Int => Seq[SimulatorEvent],
-  replayer: Option[Replayer] = None
+  replayer: Option[Replayer] = None,
+  isMultiplayerServer: Boolean = false
 ) extends Simulator {
   private final val MaxDroneRadius = 60
 
   private var showSightRadius = false
   private var showMissileRadius = false
+
+  private var _syncMessages: Iterable[DroneDynamicsState] = Seq.empty
 
   private val replayRecorder =
     if (replayer.isEmpty) ReplayFactory.replayRecorder
@@ -153,6 +156,10 @@ class DroneWorldSimulator(
 
     physicsEngine.update()
 
+    if (isMultiplayerServer) {
+      collectWorldState()
+    }
+
     processVisionTrackerEvents()
 
     Errors.updateMessages()
@@ -262,6 +269,11 @@ class DroneWorldSimulator(
     }
   }
 
+  private def collectWorldState(): Unit = {
+    _syncMessages = for (drone <- _drones)
+      yield drone.dynamics.asInstanceOf[ComputedDroneDynamics].state
+  }
+
   private def players = map.initialDrones.map(_.player)
   
   private def playerHasWon(winCondition: WinCondition, player: Player): Boolean =
@@ -286,6 +298,8 @@ class DroneWorldSimulator(
   }
 
   def replayString: Option[String] = replayRecorder.replayString
+
+  def syncMessages: Iterable[DroneDynamicsState] = _syncMessages
 
 
   override def initialCameraPos: Vector2 = map.initialDrones.head.position

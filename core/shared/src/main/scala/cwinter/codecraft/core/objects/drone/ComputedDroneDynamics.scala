@@ -188,12 +188,13 @@ private[core] class ComputedDroneDynamics(
   override def toString: String = s"DroneDynamics(pos=$pos, velocity=$velocity)"
   
   
-  def state: DroneDynamicsState = DroneDynamicsState(pos, orientation, arrivalEvent)
+  def state: DroneDynamicsState = DroneDynamicsState(pos, orientation, arrivalEvent, drone.id)
 }
 
 case class DroneDynamicsState(
   position: Vector2,
   orientation: Double,
-  arrivalEvent: Option[DroneEvent]
+  arrivalEvent: Option[DroneEvent],
+  droneId: Long
 )
 
