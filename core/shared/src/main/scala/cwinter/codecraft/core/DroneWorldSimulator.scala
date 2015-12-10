@@ -93,7 +93,9 @@ class DroneWorldSimulator(
     dynamicObjects.add(drone)
     _drones.add(drone)
     visionTracker.insert(drone, generateEvents=true)
-    physicsEngine.addObject(drone.dynamics)
+    if (drone.dynamics.isInstanceOf[ComputedDroneDynamics]) {
+      physicsEngine.addObject(drone.dynamics.asInstanceOf[ComputedDroneDynamics])
+    }
     drone.initialise(physicsEngine.time)
   }
 
@@ -102,7 +104,9 @@ class DroneWorldSimulator(
     dynamicObjects.remove(drone)
     _drones.remove(drone)
     visionTracker.remove(drone)
-    physicsEngine.remove(drone.dynamics)
+    if (drone.dynamics.isInstanceOf[ComputedDroneDynamics]) {
+      physicsEngine.remove(drone.dynamics.asInstanceOf[ComputedDroneDynamics])
+    }
 
     deadDrones ::= drone
     drone.enqueueEvent(Destroyed)

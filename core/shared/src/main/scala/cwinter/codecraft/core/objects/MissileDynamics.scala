@@ -1,12 +1,12 @@
 package cwinter.codecraft.core.objects
 
-import cwinter.codecraft.core.objects.drone.DroneDynamics
+import cwinter.codecraft.core.objects.drone.{DroneDynamics, ComputedDroneDynamics}
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 
 
 private[core] class MissileDynamics(
   val speed: Double,
-  val target: ConstantVelocityDynamics,
+  val target: DroneDynamics,
   val ownerID: Int,
   initialPosition: Vector2,
   initialTime: Double
@@ -19,7 +19,7 @@ private[core] class MissileDynamics(
     hasHit = true
     other match {
       case otherMissile: MissileDynamics => otherMissile.remove()
-      case otherDrone: DroneDynamics => otherDrone.drone.missileHit(pos)
+      case otherDrone: ComputedDroneDynamics => otherDrone.drone.missileHit(pos)
     }
   }
 
