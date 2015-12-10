@@ -5,7 +5,7 @@ import cwinter.codecraft.util.maths.Vector2
 
 private[core] trait DroneDynamics {
   def setTime(time: Double)
-  def arrivalEvent: Option[DroneEvent]
+  def checkArrivalConditions(): Option[DroneEvent]
   def update(): Unit
   def orientation: Double
   def setMovementCommand(movementCommand: MovementCommand): Boolean

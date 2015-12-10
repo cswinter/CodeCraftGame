@@ -63,7 +63,7 @@ private[core] class DroneImpl(
       }
     }
 
-    for (event <- dynamics.arrivalEvent) {
+    for (event <- dynamics.checkArrivalConditions) {
       enqueueEvent(event)
     }
 
@@ -140,6 +140,7 @@ private[core] class DroneImpl(
     eventQueue.enqueue(event)
   }
 
+  // TODO: mb only record hits here and do all processing as part of update()
   def missileHit(position: Vector2): Unit = {
     def damageHull(hull: List[Byte]): List[Byte] = hull match {
       case h :: hs =>

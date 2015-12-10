@@ -76,19 +76,23 @@ private[core] class ComputedDroneDynamics(
     if (orientation > 2 * math.Pi) orientation -= 2 * math.Pi
   }
 
+  def checkArrivalConditions(): Option[DroneEvent] = {
+    val event = arrivalEvent
+    val hasArrived = event.nonEmpty
+    if (hasArrived) halt()
+    event
+  }
+
   def arrivalEvent: Option[DroneEvent] = _movementCommand match {
     case MoveToPosition(position) if position ~ this.pos =>
-      halt()
       Some(ArrivedAtPosition)
     case MoveToMineralCrystal(mc) if mc.position ~ this.pos =>
-      halt()
       Some(ArrivedAtMineral(mc))
     case MoveToDrone(other) =>
-        val r = other.radius + drone.radius + 10 + Vector2.epsilon
-        if ((other.position - pos).lengthSquared <= r * r) {
-          halt()
-          Some(ArrivedAtDrone(other))
-        } else None
+      val r = other.radius + drone.radius + 10 + Vector2.epsilon
+      if ((other.position - pos).lengthSquared <= r * r) {
+        Some(ArrivedAtDrone(other))
+      } else None
     case _ => None
   }
 
@@ -182,4 +186,14 @@ private[core] class ComputedDroneDynamics(
   }
 
   override def toString: String = s"DroneDynamics(pos=$pos, velocity=$velocity)"
+  
+  
+  def state: DroneDynamicsState = DroneDynamicsState(pos, orientation, arrivalEvent)
 }
+
+case class DroneDynamicsState(
+  position: Vector2,
+  orientation: Double,
+  arrivalEvent: Option[DroneEvent]
+)
+
