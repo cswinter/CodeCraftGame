@@ -1,9 +1,10 @@
 package cwinter.codecraft.core.replay
 
+import cwinter.codecraft.core.{Spawn, WorldMap}
 import cwinter.codecraft.core.api.{Player, DroneSpec}
 import cwinter.codecraft.core.objects.MineralCrystalImpl
 import cwinter.codecraft.core.objects.drone.{SerializableDroneCommand, DroneCommand}
-import cwinter.codecraft.util.maths.{Rectangle, Vector2}
+import cwinter.codecraft.util.maths.{Rng, Rectangle, Vector2}
 import upickle.default._
 
 
@@ -28,6 +29,15 @@ private[core] trait ReplayRecorder {
   def newTimestep(t: Long): Unit = {
     timestep = t
     timestepWritten = false
+  }
+
+  def recordInitialWorldState(map: WorldMap): Unit = {
+    recordVersion()
+    recordRngSeed(Rng.seed)
+    recordWorldSize(map.size)
+    map.minerals.foreach(recordMineral)
+    for (Spawn(spec, position, player, resources, name) <- map.initialDrones)
+      recordSpawn(spec, position, player, resources, name)
   }
 
   def recordVersion(): Unit =

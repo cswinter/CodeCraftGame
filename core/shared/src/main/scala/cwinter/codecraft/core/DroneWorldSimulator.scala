@@ -37,7 +37,7 @@ class DroneWorldSimulator(
 
   private var _syncMessages: Iterable[DroneDynamicsState] = Seq.empty
 
-  private val replayRecorder =
+  private val replayRecorder: ReplayRecorder =
     if (replayer.isEmpty) ReplayFactory.replayRecorder
     else NullReplayRecorder
 
@@ -61,19 +61,17 @@ class DroneWorldSimulator(
 
   Debug.drawAlways(DrawRectangle(0, map.size))
 
+
   replayer.foreach { r => Rng.seed = r.seed }
-  replayRecorder.recordVersion()
-  replayRecorder.recordRngSeed(Rng.seed)
-  replayRecorder.recordWorldSize(map.size)
-  map.minerals.foreach(replayRecorder.recordMineral)
+
+  replayRecorder.recordInitialWorldState(map)
+
   map.minerals.foreach(spawnMineral)
   for {
     (Spawn(spec, position, player, resources, name), controller) <- map.initialDrones zip controllers
     drone = new DroneImpl(spec, controller, player, position, 0, worldConfig, replayRecorder, resources)
-  } {
-    spawnDrone(drone)
-    replayRecorder.recordSpawn(spec, position, player, resources, name)
-  }
+  } spawnDrone(drone)
+
 
   @JSExport
   val namedDrones = (
@@ -84,7 +82,6 @@ class DroneWorldSimulator(
       else new EnemyDrone(controller.drone, controller.drone.player)
     )
   ).toMap
-
 
   private def spawnMineral(mineralCrystal: MineralCrystalImpl): Unit = {
     visibleObjects.add(mineralCrystal)
