@@ -18,3 +18,5 @@ tags
 # OpenGL
 *.log
 
+# nohup
+nohup.out

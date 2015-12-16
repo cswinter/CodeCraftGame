@@ -16,6 +16,7 @@ private[core] class DroneImpl(
   initialPos: Vector2,
   time: Double,
   val worldConfig: WorldConfig,
+  val commandRecorder: Option[CommandRecorder],
   val replayRecorder: ReplayRecorder = NullReplayRecorder,
   startingResources: Int = 0
 ) extends WorldObject {
@@ -186,7 +187,13 @@ private[core] class DroneImpl(
     }
     if (!redundant) {
       replayRecorder.record(id, command)
+      commandRecorder.foreach(_.record(id, command))
     }
+  }
+
+  def applyState(state: DroneDynamicsState): Unit = {
+    assert(dynamics.isInstanceOf[RemoteDroneDynamics], "Trying to apply state to locally computed drone.")
+    dynamics.asInstanceOf[RemoteDroneDynamics].update(state)
   }
   
 

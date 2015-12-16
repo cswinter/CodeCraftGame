@@ -195,6 +195,6 @@ case class DroneDynamicsState(
   position: Vector2,
   orientation: Double,
   arrivalEvent: Option[DroneEvent],
-  droneId: Long
+  droneId: Int
 )
 
