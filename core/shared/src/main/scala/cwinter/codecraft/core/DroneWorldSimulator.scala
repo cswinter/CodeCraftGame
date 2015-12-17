@@ -3,6 +3,7 @@ package cwinter.codecraft.core
 import cwinter.codecraft.collisions.VisionTracker
 import cwinter.codecraft.core.api.{DroneControllerBase, BluePlayer, Player, DroneSpec}
 import cwinter.codecraft.core.errors.Errors
+import cwinter.codecraft.core.network.RemoteClient
 import cwinter.codecraft.core.objects._
 import cwinter.codecraft.core.objects.drone._
 import cwinter.codecraft.core.replay._
@@ -34,8 +35,6 @@ class DroneWorldSimulator(
 
   private var showSightRadius = false
   private var showMissileRadius = false
-
-  private var _syncMessages: Iterable[DroneDynamicsState] = Seq.empty
 
   private val replayRecorder: ReplayRecorder =
     if (replayer.isEmpty) ReplayFactory.replayRecorder
@@ -178,8 +177,7 @@ class DroneWorldSimulator(
 
     physicsEngine.update()
 
-    if (multiplayerConfig.isInstanceOf[AuthoritativeServerConfig]) {
-      collectWorldState()
+    if (multiplayerConfig.isMultiplayerGame) {
       syncWorldState()
     }
 
@@ -338,21 +336,22 @@ class DroneWorldSimulator(
     ) drone ! command
   }
 
-  private def collectWorldState(): Unit = {
-    _syncMessages = for (drone <- drones)
-      yield drone.dynamics.asInstanceOf[ComputedDroneDynamics].state
-  }
-
   private def syncWorldState(): Unit = multiplayerConfig match {
     case AuthoritativeServerConfig(_, _, clients) =>
+      val syncMessages = collectWorldState()
       for (client <- clients)
-        client.sendWorldState(_syncMessages)
+        client.sendWorldState(syncMessages)
     case MultiplayerClientConfig(_, _, server) =>
       val worldState = server.receiveWorldState()
       for (state <- worldState)
         droneRegistry(state.droneId).applyState(state)
     case SingleplayerConfig =>
       throw new Exception("Matched SingleplayerConfig in syncWorldState().")
+  }
+
+  private def collectWorldState(): Iterable[DroneDynamicsState] = {
+    for (drone <- drones)
+      yield drone.dynamics.asInstanceOf[ComputedDroneDynamics].state
   }
 
   private def players = map.initialDrones.map(_.player)
@@ -382,8 +381,6 @@ class DroneWorldSimulator(
 
 
   def replayString: Option[String] = replayRecorder.replayString
-
-  def syncMessages: Iterable[DroneDynamicsState] = _syncMessages
 
 
   override def initialCameraPos: Vector2 = map.initialDrones.head.position

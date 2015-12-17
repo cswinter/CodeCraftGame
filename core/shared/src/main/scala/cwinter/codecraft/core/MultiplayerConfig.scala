@@ -1,7 +1,8 @@
 package cwinter.codecraft.core
 
 import cwinter.codecraft.core.api.Player
-import cwinter.codecraft.core.objects.drone.{DroneDynamicsState, DroneCommand}
+import cwinter.codecraft.core.network.{RemoteClient, RemoteServer}
+
 
 sealed trait MultiplayerConfig {
   def isMultiplayerGame: Boolean
@@ -35,16 +36,7 @@ private[core] object SingleplayerConfig extends MultiplayerConfig {
   def isLocalPlayer(player: Player): Boolean = true
 }
 
-private[core] trait RemoteServer {
-  def receiveCommands(): Seq[(Int, DroneCommand)]
-  def receiveWorldState(): Iterable[DroneDynamicsState]
-  def sendCommands(commands: Seq[(Int, DroneCommand)]): Unit
-}
 
-private[core] trait RemoteClient {
-  def waitForCommands(): Seq[(Int, DroneCommand)]
-  def sendCommands(commands: Seq[(Int, DroneCommand)]): Unit
-  def sendWorldState(worldState: Iterable[DroneDynamicsState]): Unit
-  def players: Set[Player]
-}
+
+
 
