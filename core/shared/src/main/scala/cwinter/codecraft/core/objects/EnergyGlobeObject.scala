@@ -12,6 +12,7 @@ private[core] class EnergyGlobeObject(
   final val FadeTime = 15
   val velocity = (targetPosition - position) / tta
   var fade = FadeTime
+  val id = -1
 
   override private[core] def descriptor: Seq[WorldObjectDescriptor] = Seq(
     if (tta > 0) {

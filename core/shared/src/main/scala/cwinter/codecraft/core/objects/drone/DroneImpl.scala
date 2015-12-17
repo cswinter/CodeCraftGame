@@ -3,7 +3,7 @@ package cwinter.codecraft.core.objects.drone
 import cwinter.codecraft.core._
 import cwinter.codecraft.core.api.{Player, DroneControllerBase, DroneSpec, MineralCrystal}
 import cwinter.codecraft.core.errors.Errors
-import cwinter.codecraft.core.objects.{EnergyGlobeObject, MineralCrystalImpl, WorldObject}
+import cwinter.codecraft.core.objects.{Counter, EnergyGlobeObject, MineralCrystalImpl, WorldObject}
 import cwinter.codecraft.core.replay._
 import cwinter.codecraft.graphics.worldstate.{DroneDescriptor, DroneModuleDescriptor, WorldObjectDescriptor}
 import cwinter.codecraft.util.maths.{Float0To1, Vector2}
@@ -17,10 +17,13 @@ private[core] class DroneImpl(
   time: Double,
   val worldConfig: WorldConfig,
   val commandRecorder: Option[CommandRecorder],
+  val idGenerator: Counter,
   val replayRecorder: ReplayRecorder = NullReplayRecorder,
   startingResources: Int = 0
 ) extends WorldObject {
   require(worldConfig != null)
+
+  val id = idGenerator.getAndIncrement()
 
   var objectsInSight: Set[WorldObject] = Set.empty[WorldObject]
 
@@ -64,7 +67,7 @@ private[core] class DroneImpl(
       }
     }
 
-    for (event <- dynamics.checkArrivalConditions) {
+    for (event <- dynamics.checkArrivalConditions()) {
       enqueueEvent(event)
     }
 

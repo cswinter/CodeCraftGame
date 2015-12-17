@@ -37,6 +37,7 @@ class Replayer(lines: Iterator[String]) {
   // load initial spawns and mineral crystals
   private[this] var _startingMinerals = List.empty[MineralCrystalImpl]
   var spawns = Seq.empty[Spawn]
+  var mineralCount = 0
   nextRecord()
   while (
     currRecord match {
@@ -44,7 +45,8 @@ class Replayer(lines: Iterator[String]) {
         spawns :+= Spawn(spec, position, Player.fromID(playerID), resources, name)
         true
       case MineralRecord(size, position) =>
-        _startingMinerals ::= new MineralCrystalImpl(size, position)
+        _startingMinerals ::= new MineralCrystalImpl(size, mineralCount, position)
+        mineralCount += 1
         true
       case _ =>
         false

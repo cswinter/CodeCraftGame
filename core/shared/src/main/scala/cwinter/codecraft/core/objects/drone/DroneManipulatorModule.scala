@@ -65,7 +65,10 @@ private[core] class DroneManipulatorModule(positions: Seq[Int], owner: DroneImpl
   def startDroneConstruction(command: ConstructDrone): Unit = {
     if (droneConstruction.isEmpty) {
       val ConstructDrone(spec, controller, pos) = command
-      val d = new DroneImpl(spec, controller, owner.player, pos, -1, owner.worldConfig, owner.commandRecorder, owner.replayRecorder)
+      val d = new DroneImpl(
+        spec, controller, owner.player, pos, -1, owner.worldConfig,
+        owner.commandRecorder, owner.idGenerator, owner.replayRecorder
+      )
       newDrone = Some(d)
     }
   }

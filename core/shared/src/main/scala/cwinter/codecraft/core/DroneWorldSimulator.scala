@@ -40,6 +40,8 @@ class DroneWorldSimulator(
     if (replayer.isEmpty) ReplayFactory.replayRecorder
     else NullReplayRecorder
 
+  private val idGenerator = new Counter
+
   private val worldConfig = WorldConfig(map.size)
   private val visibleObjects = collection.mutable.Set.empty[WorldObject]
   private val dynamicObjects = collection.mutable.Set.empty[WorldObject]
@@ -101,7 +103,7 @@ class DroneWorldSimulator(
 
     new DroneImpl(
       spec, controller, player, position, 0, worldConfig,
-      commandRecorder, replayRecorder, resources
+      commandRecorder, idGenerator, replayRecorder, resources
     )
   }
 

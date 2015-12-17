@@ -11,20 +11,22 @@ private[core] trait WorldObject {
 
   def update(): Seq[SimulatorEvent]
   private[core] def descriptor: Seq[WorldObjectDescriptor]
-  private[core] val id = WorldObject.generateUID()
+  private[core] val id: Int
   private[core] def isDead: Boolean
 }
 
 
-private[core] object WorldObject {
-  private[this] var objectCount: Int = -1
-  private def generateUID(): Int = {
-    objectCount += 1
-    objectCount
+class Counter {
+  private[this] var count: Int = -1
+
+  def getAndIncrement(): Int = {
+    count += 1
+    count
   }
+}
 
-  private[codecraft] def resetCount(): Unit = objectCount = -1
 
+private[core] object WorldObject {
   implicit object WorldObjectIsPositionable extends Positionable[WorldObject] {
     override def position(t: WorldObject): Vector2 = t.position
   }

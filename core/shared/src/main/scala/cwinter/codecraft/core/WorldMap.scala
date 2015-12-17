@@ -57,8 +57,8 @@ object WorldMap {
     initialDrones: Seq[Spawn]
   ): WorldMap = {
     val minerals =
-      for ((pos, size) <- resources) yield
-        new MineralCrystalImpl(size, pos)
+      for (((pos, size), i) <- resources.zipWithIndex) yield
+        new MineralCrystalImpl(size, i, pos)
 
     WorldMap(minerals, size, initialDrones)
   }
@@ -72,6 +72,7 @@ object WorldMap {
       for (i <- 0 to resourceCount) yield
       new MineralCrystalImpl(
         Rng.int(1, 2),
+        i,
         new Vector2(Rng.double(size.xMin, size.xMax), Rng.double(size.yMin, size.yMax))
       )
 
@@ -121,7 +122,7 @@ object WorldMap {
       val p = math.sqrt(math.exp(-dist * dist / 100000))
       val size = (Rng.double(0, p) * 3 * maxSize).toInt + 1
       if (!minerals.exists(m => (m.position - pos).lengthSquared <= minDist * minDist * size)) {
-        minerals :+= new MineralCrystalImpl(size, pos)
+        minerals :+= new MineralCrystalImpl(size, minerals.size, pos)
       }
     }
 

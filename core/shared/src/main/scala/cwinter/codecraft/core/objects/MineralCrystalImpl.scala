@@ -8,6 +8,7 @@ import cwinter.codecraft.util.maths.{Float0To1, Vector2}
 
 private[core] class MineralCrystalImpl(
   val size: Int,
+  val id: Int,
   private[this] var _position: Vector2,
   private[this] var _harvested: Boolean = false,
   private[this] var _harvestPosition: Vector2 = Vector2.Null,
@@ -50,10 +51,4 @@ private[core] class MineralCrystalImpl(
 object MineralCrystalImpl {
   def unapply(mineralCrystal: MineralCrystalImpl): Option[(Int, Vector2)] =
     Some((mineralCrystal.size, mineralCrystal.position))
-
-  private final val MineralCrystalRegex = """MineralCrystal\((\d*), (.*)\)""".r
-  def fromString(string: String): MineralCrystalImpl = {
-    val MineralCrystalRegex(AsInt(size), Vector2(position)) = string
-    new MineralCrystalImpl(size, position)
-  }
 }
