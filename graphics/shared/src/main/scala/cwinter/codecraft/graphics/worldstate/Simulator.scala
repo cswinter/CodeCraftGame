@@ -44,7 +44,7 @@ private[codecraft] trait Simulator {
     try {
       update()
     } catch {
-      case e: Exception =>
+      case e: Throwable =>
         e.printStackTrace()
         paused = true
     }

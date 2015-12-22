@@ -2,18 +2,20 @@ package cwinter.codecraft.core
 
 import cwinter.codecraft.core.objects.drone.DroneCommand
 
+import scala.collection.mutable.ListBuffer
+
 
 private[core] class CommandRecorder {
-  private var commands = List.empty[(Int, DroneCommand)]
+  private val commands = ListBuffer.empty[(Int, DroneCommand)]
 
   def record(droneID: Int, droneCommand: DroneCommand): Unit = {
-    commands ::= ((droneID, droneCommand))
+    commands.append((droneID, droneCommand))
   }
 
   def popAll(): Seq[(Int, DroneCommand)] = {
-    val tmp = commands
-    commands = List.empty[(Int, DroneCommand)]
-    tmp
+    val result = commands.toList
+    commands.clear()
+    result
   }
 }
 

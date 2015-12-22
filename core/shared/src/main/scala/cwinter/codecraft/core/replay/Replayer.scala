@@ -1,10 +1,12 @@
 package cwinter.codecraft.core.replay
 
-import cwinter.codecraft.core.{WorldMap, Spawn}
+import cwinter.codecraft.core.{SimulationContext, MineralSpawn, WorldMap, Spawn}
 import cwinter.codecraft.core.api.Player
 import cwinter.codecraft.core.objects.MineralCrystalImpl
 import cwinter.codecraft.core.objects.drone.{DroneCommand, DroneImpl}
 import upickle.default._
+
+import scala.collection.mutable.ListBuffer
 
 class Replayer(lines: Iterator[String]) {
   def readLine: String = lines.next()
@@ -35,7 +37,7 @@ class Replayer(lines: Iterator[String]) {
   val WorldSize(worldSize) = read[WorldSize](nextLine())
 
   // load initial spawns and mineral crystals
-  private[this] var _startingMinerals = List.empty[MineralCrystalImpl]
+  private[this] val _startingMinerals = ListBuffer.empty[MineralSpawn]
   var spawns = Seq.empty[Spawn]
   var mineralCount = 0
   nextRecord()
@@ -45,7 +47,7 @@ class Replayer(lines: Iterator[String]) {
         spawns :+= Spawn(spec, position, Player.fromID(playerID), resources, name)
         true
       case MineralRecord(size, position) =>
-        _startingMinerals ::= new MineralCrystalImpl(size, mineralCount, position)
+        _startingMinerals.append(MineralSpawn(size, position))
         mineralCount += 1
         true
       case _ =>
@@ -54,7 +56,7 @@ class Replayer(lines: Iterator[String]) {
   ) {
     nextRecord()
   }
-  val startingMinerals = _startingMinerals
+  val startingMinerals = _startingMinerals.toList
 
   def controllers = spawns.map(_ => new DummyDroneController)
 
@@ -62,19 +64,16 @@ class Replayer(lines: Iterator[String]) {
 
 
   private[this] var currTime: Long = 0
-  private[core] def run(
-    timestep: Long
-  )(implicit
-    droneRegistry: Map[Int, DroneImpl],
-    mineralRegistry: Map[Int, MineralCrystalImpl]
-  ): Unit = {
+  private[core] def run(timestep: Long)(
+    implicit context: SimulationContext): Unit = {
+
     while (currTime <= timestep && lines.hasNext) {
       nextRecord()
       currRecord match {
         case Timestep(t) =>
           currTime = t
         case Command(droneID, d) =>
-          droneRegistry(droneID).executeCommand(DroneCommand(d))
+          context.drone(droneID).executeCommand(DroneCommand(d))
         case t => throw new Exception(s"""Error while parsing replay. Expected a "Timestep" or "Command" on line $lineNumber, instead: $currLine""")
       }
     }

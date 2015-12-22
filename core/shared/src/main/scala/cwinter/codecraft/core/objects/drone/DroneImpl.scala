@@ -3,7 +3,7 @@ package cwinter.codecraft.core.objects.drone
 import cwinter.codecraft.core._
 import cwinter.codecraft.core.api.{Player, DroneControllerBase, DroneSpec, MineralCrystal}
 import cwinter.codecraft.core.errors.Errors
-import cwinter.codecraft.core.objects.{Counter, EnergyGlobeObject, MineralCrystalImpl, WorldObject}
+import cwinter.codecraft.core.objects.{IDGenerator, EnergyGlobeObject, MineralCrystalImpl, WorldObject}
 import cwinter.codecraft.core.replay._
 import cwinter.codecraft.graphics.worldstate.{DroneDescriptor, DroneModuleDescriptor, WorldObjectDescriptor}
 import cwinter.codecraft.util.maths.{Float0To1, Vector2}
@@ -17,7 +17,8 @@ private[core] class DroneImpl(
   time: Double,
   val worldConfig: WorldConfig,
   val commandRecorder: Option[CommandRecorder],
-  val idGenerator: Counter,
+  val idGenerator: IDGenerator,
+  val isLocallyComputed: Boolean,
   val replayRecorder: ReplayRecorder = NullReplayRecorder,
   startingResources: Int = 0
 ) extends WorldObject {
@@ -178,6 +179,7 @@ private[core] class DroneImpl(
   @inline final def !(command: DroneCommand) = executeCommand(command)
   
   def executeCommand(command: DroneCommand) = {
+    println(s"Drone$id: $command")
     var redundant = false
     command match {
       case mc: MovementCommand =>
@@ -194,7 +196,7 @@ private[core] class DroneImpl(
     }
   }
 
-  def applyState(state: DroneDynamicsState): Unit = {
+  def applyState(state: DroneDynamicsState)(implicit context: SimulationContext): Unit = {
     assert(dynamics.isInstanceOf[RemoteDroneDynamics], "Trying to apply state to locally computed drone.")
     dynamics.asInstanceOf[RemoteDroneDynamics].update(state)
   }
@@ -356,14 +358,50 @@ private[core] class DroneImpl(
 }
 
 
-private[core] sealed trait DroneEvent
-private[core] case object Spawned extends DroneEvent
-private[core] case object Destroyed extends DroneEvent
-private[core] case class MineralEntersSightRadius(mineralCrystal: MineralCrystalImpl) extends DroneEvent
-private[core] case object ArrivedAtPosition extends DroneEvent
-private[core] case class ArrivedAtMineral(mineral: MineralCrystalImpl) extends DroneEvent
-private[core] case class ArrivedAtDrone(drone: DroneImpl) extends DroneEvent
-private[core] case class DroneEntersSightRadius(drone: DroneImpl) extends DroneEvent
+private[core] sealed trait DroneEvent {
+  def toSerializable: SerializableDroneEvent
+}
+private[core] case object Spawned extends DroneEvent with SerializableDroneEvent
+private[core] case object Destroyed extends DroneEvent with SerializableDroneEvent
+private[core] case class MineralEntersSightRadius(mineralCrystal: MineralCrystalImpl) extends DroneEvent {
+  override def toSerializable: SerializableDroneEvent =
+    SerializableMineralEntersSightRadius(mineralCrystal.id)
+}
+private[core] case object ArrivedAtPosition extends DroneEvent with SerializableDroneEvent
+private[core] case class ArrivedAtMineral(mineral: MineralCrystalImpl) extends DroneEvent {
+  override def toSerializable: SerializableDroneEvent =
+    SerializableArrivedAtMineral(mineral.id)
+}
+private[core] case class ArrivedAtDrone(drone: DroneImpl) extends DroneEvent {
+  override def toSerializable: SerializableDroneEvent =
+    SerializableArrivedAtDrone(drone.id)
+}
+private[core] case class DroneEntersSightRadius(drone: DroneImpl) extends DroneEvent {
+  override def toSerializable: SerializableDroneEvent =
+    SerializableDroneEntersSightRadius(drone.id)
+}
+
+private[core] sealed trait SerializableDroneEvent {
+  def toSerializable: SerializableDroneEvent = this
+}
+private[core] case class SerializableMineralEntersSightRadius(mineralID: Int) extends SerializableDroneEvent
+private[core] case class SerializableArrivedAtMineral(mineralID: Int) extends SerializableDroneEvent
+private[core] case class SerializableArrivedAtDrone(droneID: Int) extends SerializableDroneEvent
+private[core] case class SerializableDroneEntersSightRadius(droneID: Int) extends SerializableDroneEvent
+
+object DroneEvent {
+  def apply(serialized: SerializableDroneEvent)(
+    implicit context: SimulationContext
+  ): DroneEvent = serialized match {
+    case SerializableMineralEntersSightRadius(id) => MineralEntersSightRadius(context.mineral(id))
+    case SerializableArrivedAtMineral(id) => ArrivedAtMineral(context.mineral(id))
+    case SerializableArrivedAtDrone(id) => ArrivedAtDrone(context.drone(id))
+    case SerializableDroneEntersSightRadius(id) => DroneEntersSightRadius(context.drone(id))
+    case Spawned => Spawned
+    case Destroyed => Destroyed
+    case ArrivedAtPosition => ArrivedAtPosition
+  }
+}
 
 
 import upickle.default.key
@@ -383,15 +421,15 @@ private[core] sealed trait DroneCommand {
 object DroneCommand {
   def apply(
     serialized: SerializableDroneCommand
-  )(implicit droneRegistry: Map[Int, DroneImpl], mineralRegistry: Map[Int, MineralCrystalImpl]): DroneCommand = {
+  )(implicit context: SimulationContext): DroneCommand = {
     import scala.language.implicitConversions
     implicit def droneLookup(droneID: Int): DroneImpl = {
-      if (droneRegistry.contains(droneID)) droneRegistry(droneID)
-      else throw new Exception(f"Cannot find drone with id $droneID. Available IDs: ${droneRegistry.keys}")
+      if (context.droneRegistry.contains(droneID)) context.droneRegistry(droneID)
+      else throw new Exception(f"Cannot find drone with id $droneID. Available IDs: ${context.droneRegistry.keys}")
     }
     implicit def mineralLookup(mineralID: Int): MineralCrystalImpl = {
-      if (mineralRegistry.contains(mineralID)) mineralRegistry(mineralID)
-      else throw new Exception(f"Cannot find mineral with id $mineralID. Available IDs: ${mineralRegistry.keys}")
+      if (context.mineralRegistry.contains(mineralID)) context.mineralRegistry(mineralID)
+      else throw new Exception(f"Cannot find mineral with id $mineralID. Available IDs: ${context.mineralRegistry.keys}")
     }
     serialized match {
       case SerializableConstructDrone(spec, position) => ConstructDrone(spec, new DummyDroneController, position)
@@ -407,6 +445,7 @@ object DroneCommand {
     }
   }
 }
+
 private[core] case class ConstructDrone(
   spec: DroneSpec,
   controller: DroneControllerBase,

@@ -14,7 +14,7 @@ import cwinter.codecraft.util.maths.{Rng, Rectangle, Vector2}
  * @param winCondition Win condition, if any.
  */
 case class WorldMap(
-  minerals: Seq[MineralCrystalImpl],
+  minerals: Seq[MineralSpawn],
   size: Rectangle,
   initialDrones: Seq[Spawn],
   winCondition: Option[WinCondition] = None
@@ -29,6 +29,10 @@ case class WorldMap(
    */
   def withDefaultWinConditions: WorldMap =
     this.withWinConditions(DestroyEnemyMotherships)
+
+  def instantiateMinerals(): Seq[MineralCrystalImpl] =
+    for ((MineralSpawn(size, position), id) <- minerals.zipWithIndex)
+      yield new MineralCrystalImpl(size, id, position)
 }
 
 /**
@@ -57,8 +61,8 @@ object WorldMap {
     initialDrones: Seq[Spawn]
   ): WorldMap = {
     val minerals =
-      for (((pos, size), i) <- resources.zipWithIndex) yield
-        new MineralCrystalImpl(size, i, pos)
+      for ((pos, size) <- resources) yield
+        new MineralSpawn(size, pos)
 
     WorldMap(minerals, size, initialDrones)
   }
@@ -69,12 +73,11 @@ object WorldMap {
     initialDrones: Seq[Spawn]
   ): WorldMap = {
     val minerals =
-      for (i <- 0 to resourceCount) yield
-      new MineralCrystalImpl(
-        Rng.int(1, 2),
-        i,
-        new Vector2(Rng.double(size.xMin, size.xMax), Rng.double(size.yMin, size.yMax))
-      )
+      for (i <- 0 to resourceCount)
+        yield new MineralSpawn(
+          Rng.int(1, 2),
+          new Vector2(Rng.double(size.xMin, size.xMax), Rng.double(size.yMin, size.yMax))
+        )
 
     WorldMap(minerals, size, initialDrones)
   }
@@ -113,8 +116,8 @@ object WorldMap {
 
 
 
-  private def generateResourceCluster(midpoint: Vector2, minDist: Double, spread: Double, amount: Int, maxSize: Int): Seq[MineralCrystalImpl] = {
-    var minerals = Seq.empty[MineralCrystalImpl]
+  private def generateResourceCluster(midpoint: Vector2, minDist: Double, spread: Double, amount: Int, maxSize: Int): Seq[MineralSpawn] = {
+    var minerals = Seq.empty[MineralSpawn]
 
     while (minerals.size < amount) {
       val pos = midpoint + spread * Rng.gaussian2D()
@@ -122,10 +125,16 @@ object WorldMap {
       val p = math.sqrt(math.exp(-dist * dist / 100000))
       val size = (Rng.double(0, p) * 3 * maxSize).toInt + 1
       if (!minerals.exists(m => (m.position - pos).lengthSquared <= minDist * minDist * size)) {
-        minerals :+= new MineralCrystalImpl(size, minerals.size, pos)
+        minerals :+= new MineralSpawn(size, pos)
       }
     }
 
     minerals
   }
 }
+
+case class MineralSpawn(
+  size: Int,
+  position: Vector2
+)
+

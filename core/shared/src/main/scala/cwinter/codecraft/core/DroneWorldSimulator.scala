@@ -40,7 +40,9 @@ class DroneWorldSimulator(
     if (replayer.isEmpty) ReplayFactory.replayRecorder
     else NullReplayRecorder
 
-  private val idGenerator = new Counter
+  private val idGenerators = collection.mutable.Map.empty[Int, IDGenerator]
+  def getIDGenerator(player: Player): IDGenerator =
+      idGenerators.getOrElseUpdate(player.id, new IDGenerator(player.id))
 
   private val worldConfig = WorldConfig(map.size)
   private val visibleObjects = collection.mutable.Set.empty[WorldObject]
@@ -67,7 +69,9 @@ class DroneWorldSimulator(
 
   replayRecorder.recordInitialWorldState(map)
 
-  map.minerals.foreach(spawnMineral)
+  val minerals = map.instantiateMinerals()
+  implicit val mineralRegistry = minerals.map(m => (m.id, m)).toMap
+  minerals.foreach(spawnMineral)
   for {
     (Spawn(spec, position, player, resources, name), controller) <- map.initialDrones zip controllers
     drone = createDrone(spec, controller, player, position, resources)
@@ -102,8 +106,8 @@ class DroneWorldSimulator(
       else None
 
     new DroneImpl(
-      spec, controller, player, position, 0, worldConfig,
-      commandRecorder, idGenerator, replayRecorder, resources
+      spec, controller, player, position, 0, worldConfig, commandRecorder, getIDGenerator(player),
+      !multiplayerConfig.isInstanceOf[MultiplayerClientConfig], replayRecorder, resources
     )
   }
 
@@ -161,10 +165,7 @@ class DroneWorldSimulator(
     // TODO: expose a simulationHasFinished property that will stop the update method from being called
     if (replayer.exists(_.finished)) return
 
-    for (r <- replayer) {
-      implicit val mineralRegistry = map.minerals.map(m => (m.id, m)).toMap
-      r.run(timestep)
-    }
+    for (r <- replayer) r.run(timestep)
 
     processDroneEvents()
 
@@ -302,17 +303,17 @@ class DroneWorldSimulator(
 
     val localCommands = multiplayerConfig.commandRecorder.popAll()
 
-    val remoteCommands = multiplayerConfig match {
+    val remoteCommands: Seq[(Int, DroneCommand)] = multiplayerConfig match {
       case AuthoritativeServerConfig(local, remote, clients) =>
         syncWithClients(clients, localCommands)
       case MultiplayerClientConfig(local, remote, server) =>
         server.sendCommands(localCommands)
-        server.receiveCommands()
+        server.receiveCommands()(simulationContext)
       case SingleplayerConfig =>
         throw new Exception("Matched SingleplayerConfig in syncDroneCommands().")
     }
 
-    executeCommands(remoteCommands, droneRegistry)
+    executeCommands(remoteCommands)
   }
 
   private def syncWithClients(
@@ -331,11 +332,15 @@ class DroneWorldSimulator(
     remoteCommands
   }
 
-  private def executeCommands(commands: Seq[(Int, DroneCommand)], droneRegistry: Map[Int, DroneImpl]): Unit = {
+  private def executeCommands(commands: Seq[(Int, DroneCommand)]): Unit = {
+    println(s"Executing remote commands $commands")
     for (
       (id, command) <- commands;
       drone = droneRegistry(id)
-    ) drone ! command
+    ) {
+      drone.inform(command.toString)
+      drone ! command
+    }
   }
 
   private def syncWorldState(): Unit = multiplayerConfig match {
@@ -346,7 +351,7 @@ class DroneWorldSimulator(
     case MultiplayerClientConfig(_, _, server) =>
       val worldState = server.receiveWorldState()
       for (state <- worldState)
-        droneRegistry(state.droneId).applyState(state)
+          droneRegistry(state.droneId).applyState(state)
     case SingleplayerConfig =>
       throw new Exception("Matched SingleplayerConfig in syncWorldState().")
   }
@@ -379,7 +384,10 @@ class DroneWorldSimulator(
     visibleObjects.flatMap(_.descriptor)
   }
 
-  implicit def droneRegistry: Map[Int, DroneImpl] = _drones
+  private implicit def droneRegistry: Map[Int, DroneImpl] = _drones
+
+  private implicit def simulationContext: SimulationContext =
+    SimulationContext(droneRegistry, mineralRegistry)
 
 
   def replayString: Option[String] = replayRecorder.replayString

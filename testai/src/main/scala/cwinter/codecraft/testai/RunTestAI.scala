@@ -1,6 +1,8 @@
 package cwinter.codecraft.testai
 
+import cwinter.codecraft.core.{AuthoritativeServerConfig, DroneWorldSimulator}
 import cwinter.codecraft.core.api._
+import cwinter.codecraft.core.replay.DummyDroneController
 import cwinter.codecraft.util.maths.{Rng, Vector2}
 
 object RunTestAI {

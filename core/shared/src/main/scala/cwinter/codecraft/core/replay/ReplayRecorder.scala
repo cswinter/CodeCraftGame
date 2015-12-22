@@ -1,6 +1,6 @@
 package cwinter.codecraft.core.replay
 
-import cwinter.codecraft.core.{Spawn, WorldMap}
+import cwinter.codecraft.core.{MineralSpawn, Spawn, WorldMap}
 import cwinter.codecraft.core.api.{Player, DroneSpec}
 import cwinter.codecraft.core.objects.MineralCrystalImpl
 import cwinter.codecraft.core.objects.drone.{SerializableDroneCommand, DroneCommand}
@@ -17,7 +17,7 @@ private sealed trait ReplayRecord
 @key("WorldSize") private case class WorldSize(size: Rectangle) extends ReplayRecord
 @key("Mineral") private case class MineralRecord(size: Int, position: Vector2) extends ReplayRecord
 private object MineralRecord {
-  def apply(impl: MineralCrystalImpl): MineralRecord = MineralRecord(impl.size, impl.position)
+  def apply(mineral: MineralSpawn): MineralRecord = MineralRecord(mineral.size, mineral.position)
 }
 @key("Seed") private case class RNGSeed(seed: Int) extends ReplayRecord
 
@@ -57,7 +57,7 @@ private[core] trait ReplayRecorder {
   def recordWorldSize(rectangle: Rectangle): Unit =
     writeRecord(WorldSize(rectangle))
 
-  def recordMineral(mineral: MineralCrystalImpl): Unit =
+  def recordMineral(mineral: MineralSpawn): Unit =
     writeRecord(MineralRecord(mineral))
 
   def recordRngSeed(rngSeed: Int): Unit =

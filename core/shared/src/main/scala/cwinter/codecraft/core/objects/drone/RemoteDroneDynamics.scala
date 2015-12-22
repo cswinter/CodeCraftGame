@@ -1,5 +1,6 @@
 package cwinter.codecraft.core.objects.drone
 
+import cwinter.codecraft.core.SimulationContext
 import cwinter.codecraft.util.maths.Vector2
 
 
@@ -16,13 +17,13 @@ private[core] class RemoteDroneDynamics(
 
   override def setTime(time: Double): Unit = {}
   override def remove(): Unit = _removed = true
-  override def setMovementCommand(movementCommand: MovementCommand): Boolean = true
+  override def setMovementCommand(movementCommand: MovementCommand): Boolean = false
   override def removed: Boolean = _removed
 
-  def update(state: DroneDynamicsState): Unit = {
+  def update(state: DroneDynamicsState)(implicit context: SimulationContext): Unit = {
     position = state.position
     _orientation = state.orientation
-    _arrivalEvent = state.arrivalEvent
+    _arrivalEvent = state.arrivalEvent.map(DroneEvent(_))
     stateIsFresh = true
   }
 

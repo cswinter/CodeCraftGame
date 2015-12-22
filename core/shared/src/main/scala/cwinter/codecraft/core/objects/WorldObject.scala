@@ -16,14 +16,7 @@ private[core] trait WorldObject {
 }
 
 
-class Counter {
-  private[this] var count: Int = -1
 
-  def getAndIncrement(): Int = {
-    count += 1
-    count
-  }
-}
 
 
 private[core] object WorldObject {

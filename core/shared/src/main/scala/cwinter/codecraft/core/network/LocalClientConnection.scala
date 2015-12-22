@@ -1,7 +1,8 @@
 package cwinter.codecraft.core.network
 
+import cwinter.codecraft.core.SimulationContext
 import cwinter.codecraft.core.api.Player
-import cwinter.codecraft.core.objects.drone.{DroneCommand, DroneDynamicsState}
+import cwinter.codecraft.core.objects.drone._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.language.postfixOps
@@ -25,9 +26,10 @@ private[core] class LocalClientConnection(
   connection: LocalConnection,
   override val players: Set[Player]
 ) extends RemoteClient {
-  override def waitForCommands(): Seq[(Int, DroneCommand)] = {
+  override def waitForCommands()(implicit context: SimulationContext): Seq[(Int, DroneCommand)] = {
+    val result = Await.result(connection.popClientCommands(clientID), 5 seconds)
     connection.resetState()
-    Await.result(connection.popClientCommands(clientID), 1 seconds)
+    result
   }
 
   override def sendWorldState(worldState: Iterable[DroneDynamicsState]): Unit = {
@@ -45,14 +47,18 @@ private[core] class LocalServerConnection(
   clientID: Int,
   connection: LocalConnection
 ) extends RemoteServer {
-  override def receiveCommands(): Seq[(Int, DroneCommand)] =
-    Await.result(connection.getCommandsForClient(clientID), 1 seconds)
+  override def receiveCommands()(implicit context: SimulationContext): Seq[(Int, DroneCommand)] = {
+    Await.result(connection.getCommandsForClient(clientID), 5 seconds)
+  }
 
-  override def receiveWorldState(): Iterable[DroneDynamicsState] =
-    Await.result(connection.getWorldState(), 1 seconds)
+  override def receiveWorldState(): Iterable[DroneDynamicsState] = {
+    val result = Await.result(connection.getWorldState(), 5 seconds)
+    result
+  }
 
-  override def sendCommands(commands: Seq[(Int, DroneCommand)]): Unit =
+  override def sendCommands(commands: Seq[(Int, DroneCommand)]): Unit = {
     connection.putClientCommands(clientID, commands)
+  }
 }
 
 
@@ -60,42 +66,58 @@ private[core] class LocalConnection(
   clientIDs: Set[Int]
 ) {
   type Commands = Seq[(Int, DroneCommand)]
-  var promisedCommandsForClient = Map.empty[Int, Promise[Commands]]
-  var promisedCommandsFromClients = Map.empty[Int, Promise[Commands]]
+  type SerializedCommands = Seq[(Int, SerializableDroneCommand)]
+  var promisedCommandsForClient = Map.empty[Int, Promise[SerializedCommands]]
+  var promisedCommandsFromClients = Map.empty[Int, Promise[SerializedCommands]]
   var state = Promise[Iterable[DroneDynamicsState]]
   resetCommandsForClients()
   resetCommandsFromClients()
 
   def resetCommandsForClients(): Unit = promisedCommandsForClient = {
-      for (id <- clientIDs) yield (id, Promise[Commands])
+      for (id <- clientIDs) yield (id, Promise[SerializedCommands])
   }.toMap
 
   def resetCommandsFromClients(): Unit = promisedCommandsFromClients = {
-    for (id <- clientIDs) yield (id, Promise[Commands])
+    for (id <- clientIDs) yield (id, Promise[SerializedCommands])
   }.toMap
 
   def resetState(): Unit = state = Promise[Iterable[DroneDynamicsState]]
 
   def putClientCommands(clientID: Int, commands: Commands): Unit = this.synchronized {
-    promisedCommandsFromClients(clientID).success(commands)
+    promisedCommandsFromClients(clientID).success(serialize(commands))
   }
 
-  def popClientCommands(clientID: Int): Future[Commands] = this.synchronized {
-    promisedCommandsFromClients(clientID).future
+  def popClientCommands(clientID: Int)(
+    implicit context: SimulationContext
+  ): Future[Commands] = this.synchronized {
+    promisedCommandsFromClients(clientID).future.map(deserialize)
   }
 
   def putWorldState(state: Iterable[DroneDynamicsState]): Unit = this.synchronized {
-    this.state.success(state)
+    if (!this.state.isCompleted) {
+      this.state.success(state)
+    }
   }
 
   def putCommandsForClient(clientID: Int, commands: Commands): Unit = this.synchronized {
-    promisedCommandsForClient(clientID).success(commands)
+    promisedCommandsForClient(clientID).success(serialize(commands))
   }
 
-  def getCommandsForClient(clientID: Int): Future[Seq[(Int, DroneCommand)]] = this.synchronized {
-    promisedCommandsForClient(clientID).future
+  def getCommandsForClient(clientID: Int)(
+    implicit context: SimulationContext
+  ): Future[Seq[(Int, DroneCommand)]] = this.synchronized {
+    promisedCommandsForClient(clientID).future.map(deserialize)
   }
 
   def getWorldState(): Future[Iterable[DroneDynamicsState]] = state.future
+
+  def serialize(commands: Commands): SerializedCommands =
+    for ((id, command) <- commands) yield (id, command.toSerializable)
+
+  def deserialize(commands: SerializedCommands)(
+    implicit context: SimulationContext
+  ): Commands =
+    for ((id, command) <- commands)
+      yield (id, DroneCommand(command))
 }
 

@@ -4,8 +4,6 @@ import cwinter.codecraft.core.api.CodeCraftException
 import cwinter.codecraft.util.maths.{ColorRGB, Vector2}
 
 private[codecraft] object Errors {
-  private[this] var throwExceptions: Boolean = false
-
   private[this] var errorMessages = List.empty[ErrorMessageObject]
 
   def error(exception: CodeCraftException, position: Vector2): Nothing = {

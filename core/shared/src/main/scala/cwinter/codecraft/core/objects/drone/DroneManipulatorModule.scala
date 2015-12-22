@@ -67,7 +67,7 @@ private[core] class DroneManipulatorModule(positions: Seq[Int], owner: DroneImpl
       val ConstructDrone(spec, controller, pos) = command
       val d = new DroneImpl(
         spec, controller, owner.player, pos, -1, owner.worldConfig,
-        owner.commandRecorder, owner.idGenerator, owner.replayRecorder
+        owner.commandRecorder, owner.idGenerator, owner.isLocallyComputed, owner.replayRecorder
       )
       newDrone = Some(d)
     }
