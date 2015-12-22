@@ -35,6 +35,13 @@ private[core] class DroneImpl(
   private[this] var _hasDied: Boolean = false
   private[this] var automaticMineralProcessing: Boolean = true
 
+  private[this] var _missileHits = List.empty[MissileHit]
+  def popMissileHits(): Seq[MissileHit] = {
+    val result = _missileHits
+    _missileHits = List.empty[MissileHit]
+    result
+  }
+
   final val MessageCooldown = 30
   private[this] var messageCooldown = 0
   private final val NJetPositions = 6
@@ -146,6 +153,7 @@ private[core] class DroneImpl(
   }
 
   // TODO: mb only record hits here and do all processing as part of update()
+  // NOTE: death state probable must be determined before (or at very start of) next update()
   def missileHit(position: Vector2): Unit = {
     def damageHull(hull: List[Byte]): List[Byte] = hull match {
       case h :: hs =>
@@ -173,6 +181,11 @@ private[core] class DroneImpl(
         f <- refineries
         c <- f.mineralCrystals
       } simulatorEvents ::= MineralCrystalDestroyed(c)
+    }
+
+    // TODO: only do this in multiplayer games
+    if (isLocallyComputed) {
+      _missileHits ::= MissileHit(id, position)
     }
   }
 

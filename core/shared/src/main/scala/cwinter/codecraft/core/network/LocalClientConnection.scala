@@ -32,7 +32,7 @@ private[core] class LocalClientConnection(
     result
   }
 
-  override def sendWorldState(worldState: Iterable[DroneDynamicsState]): Unit = {
+  override def sendWorldState(worldState: Iterable[DroneStateMessage]): Unit = {
     connection.resetCommandsForClients()
     connection.putWorldState(worldState)
   }
@@ -51,7 +51,7 @@ private[core] class LocalServerConnection(
     Await.result(connection.getCommandsForClient(clientID), 5 seconds)
   }
 
-  override def receiveWorldState(): Iterable[DroneDynamicsState] = {
+  override def receiveWorldState(): Iterable[DroneStateMessage] = {
     val result = Await.result(connection.getWorldState(), 5 seconds)
     result
   }
@@ -69,7 +69,7 @@ private[core] class LocalConnection(
   type SerializedCommands = Seq[(Int, SerializableDroneCommand)]
   var promisedCommandsForClient = Map.empty[Int, Promise[SerializedCommands]]
   var promisedCommandsFromClients = Map.empty[Int, Promise[SerializedCommands]]
-  var state = Promise[Iterable[DroneDynamicsState]]
+  var state = Promise[Iterable[DroneStateMessage]]
   resetCommandsForClients()
   resetCommandsFromClients()
 
@@ -81,7 +81,7 @@ private[core] class LocalConnection(
     for (id <- clientIDs) yield (id, Promise[SerializedCommands])
   }.toMap
 
-  def resetState(): Unit = state = Promise[Iterable[DroneDynamicsState]]
+  def resetState(): Unit = state = Promise[Iterable[DroneStateMessage]]
 
   def putClientCommands(clientID: Int, commands: Commands): Unit = this.synchronized {
     promisedCommandsFromClients(clientID).success(serialize(commands))
@@ -93,7 +93,7 @@ private[core] class LocalConnection(
     promisedCommandsFromClients(clientID).future.map(deserialize)
   }
 
-  def putWorldState(state: Iterable[DroneDynamicsState]): Unit = this.synchronized {
+  def putWorldState(state: Iterable[DroneStateMessage]): Unit = this.synchronized {
     if (!this.state.isCompleted) {
       this.state.success(state)
     }
@@ -109,7 +109,7 @@ private[core] class LocalConnection(
     promisedCommandsForClient(clientID).future.map(deserialize)
   }
 
-  def getWorldState(): Future[Iterable[DroneDynamicsState]] = state.future
+  def getWorldState(): Future[Iterable[DroneStateMessage]] = state.future
 
   def serialize(commands: Commands): SerializedCommands =
     for ((id, command) <- commands) yield (id, command.toSerializable)

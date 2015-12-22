@@ -350,15 +350,24 @@ class DroneWorldSimulator(
         client.sendWorldState(syncMessages)
     case MultiplayerClientConfig(_, _, server) =>
       val worldState = server.receiveWorldState()
-      for (state <- worldState)
-          droneRegistry(state.droneId).applyState(state)
+      for (state <- worldState) state match {
+        case MissileHit(id, position) => simulationContext.drone(id).missileHit(position)
+        case d: DroneDynamicsState =>
+          simulationContext.drone(d.droneId).applyState(d)
+      }
     case SingleplayerConfig =>
       throw new Exception("Matched SingleplayerConfig in syncWorldState().")
   }
 
-  private def collectWorldState(): Iterable[DroneDynamicsState] = {
-    for (drone <- drones)
+  private def collectWorldState(): Iterable[DroneStateMessage] = {
+    val positions = for (drone <- drones)
       yield drone.dynamics.asInstanceOf[ComputedDroneDynamics].state
+    val missileHits = for (
+      drone <- drones;
+      missileHit <- drone.popMissileHits()
+    ) yield missileHit
+
+    positions ++ missileHits
   }
 
   private def players = map.initialDrones.map(_.player)

@@ -191,10 +191,18 @@ private[core] class ComputedDroneDynamics(
   def state: DroneDynamicsState = DroneDynamicsState(pos, orientation, arrivalEvent.map(_.toSerializable), drone.id)
 }
 
+
+sealed trait DroneStateMessage
+
+case class MissileHit(
+  droneID: Int,
+  location: Vector2
+) extends DroneStateMessage
+
 case class DroneDynamicsState(
   position: Vector2,
   orientation: Double,
   arrivalEvent: Option[SerializableDroneEvent],
   droneId: Int
-)
+) extends DroneStateMessage
 
