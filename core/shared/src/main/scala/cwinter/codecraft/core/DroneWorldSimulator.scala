@@ -333,7 +333,6 @@ class DroneWorldSimulator(
   }
 
   private def executeCommands(commands: Seq[(Int, DroneCommand)]): Unit = {
-    println(s"Executing remote commands $commands")
     for (
       (id, command) <- commands;
       drone = droneRegistry(id)

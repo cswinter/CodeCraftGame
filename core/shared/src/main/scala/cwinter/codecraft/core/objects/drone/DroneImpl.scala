@@ -192,7 +192,6 @@ private[core] class DroneImpl(
   @inline final def !(command: DroneCommand) = executeCommand(command)
   
   def executeCommand(command: DroneCommand) = {
-    println(s"Drone$id: $command")
     var redundant = false
     command match {
       case mc: MovementCommand =>
