@@ -91,7 +91,11 @@ val core = (crossProject in file("core")).
     },
     libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.4.1",
     resolvers += "Spray" at "http://repo.spray.io",
-    libraryDependencies += "com.wandoulabs.akka" %% "spray-websocket" % "0.1.4"
+    libraryDependencies += "com.wandoulabs.akka" %% "spray-websocket" % "0.1.4",
+    libraryDependencies ++= Seq(
+      "javax.websocket" % "javax.websocket-client-api" % "1.1",
+      "org.glassfish.tyrus" % "tyrus-container-grizzly-client" % "1.12"
+    )
   ).jsSettings(
     libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.8.2"
   ).dependsOn(graphics, physics, collisions, util)
