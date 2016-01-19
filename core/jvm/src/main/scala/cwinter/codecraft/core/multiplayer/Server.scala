@@ -10,33 +10,33 @@ import scala.concurrent.duration.Duration
 
 
 object Server {
-  def spawnServerInstance(): Unit = {
+  def spawnServerInstance(displayGame: Boolean = false): Unit = {
     implicit val system = ActorSystem()
 
-    val server = system.actorOf(MultiplayerServer.props(), "websocket")
+    val server = system.actorOf(MultiplayerServer.props(displayGame), "websocket")
 
-    IO(UHttp) ! Http.Bind(server, "localhost", 8080)
+    IO(UHttp) ! Http.Bind(server, "0.0.0.0", 8080)
 
     Await.result(system.whenTerminated, Duration.Inf)
   }
 
   def main(args: Array[String]): Unit = {
-    spawnServerInstance()
+    spawnServerInstance(true)
   }
 }
 
 
-class MultiplayerServer extends Actor with ActorLogging {
+class MultiplayerServer(displayGame: Boolean = false) extends Actor with ActorLogging {
   def receive = {
     // when a new connection comes in we register a WebSocketConnection actor as the per connection handler
     case Http.Connected(remoteAddress, localAddress) =>
       val serverConnection = sender()
-      val conn = context.actorOf(MultiplayerGameWorker.props(serverConnection))
+      val conn = context.actorOf(MultiplayerGameWorker.props(serverConnection, displayGame))
       serverConnection ! Http.Register(conn)
   }
 }
 
 object MultiplayerServer {
-  def props() = Props(classOf[MultiplayerServer])
+  def props(displayGame: Boolean = false) = Props(classOf[MultiplayerServer], displayGame)
 }
 

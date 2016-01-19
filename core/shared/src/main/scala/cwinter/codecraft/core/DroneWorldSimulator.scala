@@ -395,7 +395,7 @@ class DroneWorldSimulator(
   private implicit def droneRegistry: Map[Int, DroneImpl] = _drones
 
   private implicit def simulationContext: SimulationContext =
-    SimulationContext(droneRegistry, mineralRegistry)
+    SimulationContext(droneRegistry, mineralRegistry, timestep)
 
 
   def replayString: Option[String] = replayRecorder.replayString

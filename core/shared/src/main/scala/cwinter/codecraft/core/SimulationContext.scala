@@ -6,7 +6,8 @@ import cwinter.codecraft.core.objects.drone.DroneImpl
 
 case class SimulationContext(
   droneRegistry: Map[Int, DroneImpl],
-  mineralRegistry: Map[Int, MineralCrystalImpl]
+  mineralRegistry: Map[Int, MineralCrystalImpl],
+  timestep: Int
 ) {
   def drone(id: Int): DroneImpl = droneRegistry(id)
   def mineral(id: Int): MineralCrystalImpl = mineralRegistry(id)

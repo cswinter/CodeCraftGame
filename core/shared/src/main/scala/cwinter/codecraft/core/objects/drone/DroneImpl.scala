@@ -6,7 +6,7 @@ import cwinter.codecraft.core.errors.Errors
 import cwinter.codecraft.core.objects.{IDGenerator, EnergyGlobeObject, MineralCrystalImpl, WorldObject}
 import cwinter.codecraft.core.replay._
 import cwinter.codecraft.graphics.worldstate.{DroneDescriptor, DroneModuleDescriptor, WorldObjectDescriptor}
-import cwinter.codecraft.util.maths.{Float0To1, Vector2}
+import cwinter.codecraft.util.maths.{Rectangle, Float0To1, Vector2}
 
 
 private[core] class DroneImpl(
@@ -370,6 +370,7 @@ private[core] class DroneImpl(
 }
 
 
+import upickle.default.key
 private[core] sealed trait DroneEvent {
   def toSerializable: SerializableDroneEvent
 }
@@ -416,7 +417,6 @@ object DroneEvent {
 }
 
 
-import upickle.default.key
 private[core] sealed trait SerializableDroneCommand
 @key("Construct") private[core] case class SerializableConstructDrone(spec: DroneSpec, position: Vector2) extends SerializableDroneCommand
 @key("Process") private[core] case class SerializableProcessMineral(mineralID: Int) extends SerializableDroneCommand
@@ -493,6 +493,62 @@ private[core] case class MoveToDrone(drone: DroneImpl) extends MovementCommand {
 }
 @key("Stop") private[core] case object HoldPosition extends MovementCommand with SerializableDroneCommand {
   def toSerializable = this
+}
+
+
+import upickle.default._
+
+case class SerializableSpawn(spec: DroneSpec, position: Vector2, playerID: Int, resources: Int, name: Option[String]) {
+  def deserialize: Spawn =
+    Spawn(spec, position, Player.fromID(playerID), resources, name)
+}
+object SerializableSpawn {
+  def apply(spawn: Spawn): SerializableSpawn =
+    SerializableSpawn(spawn.droneSpec, spawn.position, spawn.player.id, spawn.resources, spawn.name)
+}
+
+sealed trait MultiplayerMessage
+
+@key("Cmds") case class CommandsMessage(
+  commands: Seq[(Int, SerializableDroneCommand)],
+  identifier: Int = MultiplayerMessage.getID()
+) extends MultiplayerMessage
+@key("State") case class WorldStateMessage(worldState: Iterable[DroneStateMessage]) extends MultiplayerMessage
+@key("Start") case class InitialSync(
+  worldSize: Rectangle,
+  minerals: Seq[MineralSpawn],
+  initialDrones: Seq[SerializableSpawn]
+) extends MultiplayerMessage
+@key("Register") case object Register extends MultiplayerMessage
+
+
+
+object MultiplayerMessage {
+  var count = 0
+  def getID(): Int = {
+    count += 1
+    count
+  }
+
+  def parse(json: String): MultiplayerMessage =
+    read[MultiplayerMessage](json)
+
+  def serialize(commands: Seq[(Int, SerializableDroneCommand)]): String =
+    write(CommandsMessage(commands))
+
+  def serialize(worldState: Iterable[DroneStateMessage]): String =
+     write[WorldStateMessage](WorldStateMessage(worldState))
+
+  def serialize(worldSize: Rectangle, minerals: Seq[MineralSpawn], initialDrones: Seq[Spawn]): String =
+    write(
+      InitialSync(
+        worldSize,
+        minerals,
+        initialDrones.map(x => SerializableSpawn(x))
+      )
+    )
+
+  def register: String = write(Register)
 }
 
 

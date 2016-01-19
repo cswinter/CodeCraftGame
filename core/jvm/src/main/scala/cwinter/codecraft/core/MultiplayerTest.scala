@@ -5,16 +5,10 @@ import cwinter.codecraft.core.multiplayer.WebsocketServerConnection
 import cwinter.codecraft.core.replay.DummyDroneController
 
 
-object WebsocketMultiplayerTest {
+object MultiplayerTest {
   def main(args: Array[String]): Unit = {
-    new Thread {
-      override def run(): Unit = {
-        multiplayer.Server.spawnServerInstance()
-      }
-    }.start()
-
-    Thread.sleep(2000, 0)
-    val serverConnection = new WebsocketServerConnection("localhost", 8080)
+    val address = "192.168.2.112"
+    val serverConnection = new WebsocketServerConnection(address, 8080)
 
     // TODO: receive this information from server
     val clientPlayers = Set[Player](BluePlayer)
@@ -40,3 +34,4 @@ object WebsocketMultiplayerTest {
     TheGameMaster.run(client)
   }
 }
+

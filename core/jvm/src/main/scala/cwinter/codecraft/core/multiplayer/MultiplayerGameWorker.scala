@@ -1,11 +1,11 @@
 package cwinter.codecraft.core.multiplayer
 
 import akka.actor.{ActorRef, Props}
+import cwinter.codecraft.core._
 import cwinter.codecraft.core.api.{BluePlayer, OrangePlayer, Player, TheGameMaster}
 import cwinter.codecraft.core.network.RemoteClient
-import cwinter.codecraft.core.objects.drone.{DroneCommand, DroneStateMessage, SerializableDroneCommand}
+import cwinter.codecraft.core.objects.drone._
 import cwinter.codecraft.core.replay.DummyDroneController
-import cwinter.codecraft.core.{AuthoritativeServerConfig, DroneWorldSimulator, SimulationContext}
 import spray.can.websocket
 import spray.can.websocket.FrameCommandFailed
 import spray.can.websocket.frame.{BinaryFrame, TextFrame}
@@ -18,10 +18,8 @@ import scala.concurrent.{Await, Promise}
 import scala.language.postfixOps
 
 
-sealed trait MultiplayerMessage
-@key("Cmds") case class CommandsMessage(commands: Seq[(Int, SerializableDroneCommand)]) extends MultiplayerMessage
 
-private[core] class MultiplayerGameWorker(val serverConnection: ActorRef)
+private[core] class MultiplayerGameWorker(val serverConnection: ActorRef, displayGame: Boolean = false)
 extends websocket.WebSocketServerWorker with RemoteClient {
   val clientPlayers = Set[Player](BluePlayer)
   val serverPlayers = Set[Player](OrangePlayer)
@@ -33,7 +31,12 @@ extends websocket.WebSocketServerWorker with RemoteClient {
     None,
     AuthoritativeServerConfig(serverPlayers, clientPlayers, Set(this))
   )
-  TheGameMaster.run(server)
+
+  if (displayGame) {
+    TheGameMaster.run(server)
+  } else {
+    server.run()
+  }
 
   private[this] var clientCommands = Promise[Seq[(Int, SerializableDroneCommand)]]
 
@@ -45,9 +48,15 @@ extends websocket.WebSocketServerWorker with RemoteClient {
       val decoded = text.decodeString("UTF-8")
       println(decoded)
       try {
-        read[MultiplayerMessage](decoded) match {
-          case CommandsMessage(commands) =>
+        MultiplayerMessage.parse(decoded) match {
+          case CommandsMessage(commands, _) =>
             clientCommands.success(commands)
+          case WorldStateMessage(_) =>
+            throw new Exception("Authoritative server received WorldStateMessage!")
+          case _: InitialSync =>
+            throw new Exception("Authoritative server received InitialSync!")
+          case Register =>
+            send(TextFrame(MultiplayerMessage.serialize(map.size, map.minerals, map.initialDrones)))
         }
       } catch {
         case t: Throwable =>
@@ -56,23 +65,27 @@ extends websocket.WebSocketServerWorker with RemoteClient {
       }
     case x: FrameCommandFailed =>
       log.error("frame command failed", x)
-    case x: HttpRequest => // do something
+      throw new Exception(s"Frame command failed: $x")
+    case x: HttpRequest =>
+      throw new Exception("Unexpected HttpRequest")
   }
 
   override def waitForCommands()(implicit context: SimulationContext): Seq[(Int, DroneCommand)] = {
+    println(s"[t=${context.timestep}] Waiting for commands...")
     val result = Await.result(clientCommands.future.map(deserialize), 30 seconds)
     clientCommands = Promise[Seq[(Int, SerializableDroneCommand)]]
+    println("Commands received.")
     result
   }
   override def players: Set[Player] = clientPlayers
   override def sendWorldState(worldState: Iterable[DroneStateMessage]): Unit = {
-    send(TextFrame(write(worldState)))
+    send(TextFrame(MultiplayerMessage.serialize(worldState)))
   }
   override def sendCommands(commands: Seq[(Int, DroneCommand)]): Unit = {
     val serializable =
       for ((id, command) <- commands)
         yield (id, command.toSerializable)
-    val serialized = write(CommandsMessage(serializable))
+    val serialized = MultiplayerMessage.serialize(serializable)
     send(TextFrame(serialized))
   }
 
@@ -85,5 +98,7 @@ extends websocket.WebSocketServerWorker with RemoteClient {
 
 
 object MultiplayerGameWorker {
-  def props(serverConnection: ActorRef) = Props(classOf[MultiplayerGameWorker], serverConnection)
+  def props(serverConnection: ActorRef, displayGame: Boolean = false) =
+    Props(classOf[MultiplayerGameWorker], serverConnection, displayGame)
 }
+
