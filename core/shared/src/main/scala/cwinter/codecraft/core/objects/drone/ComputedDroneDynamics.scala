@@ -192,14 +192,15 @@ private[core] class ComputedDroneDynamics(
 }
 
 
+import upickle.default.key
 sealed trait DroneStateMessage
 
-case class MissileHit(
+@key("Hit") case class MissileHit(
   droneID: Int,
   location: Vector2
 ) extends DroneStateMessage
 
-case class DroneDynamicsState(
+@key("State") case class DroneDynamicsState(
   position: Vector2,
   orientation: Double,
   arrivalEvent: Option[SerializableDroneEvent],

@@ -374,13 +374,13 @@ import upickle.default.key
 private[core] sealed trait DroneEvent {
   def toSerializable: SerializableDroneEvent
 }
-private[core] case object Spawned extends DroneEvent with SerializableDroneEvent
-private[core] case object Destroyed extends DroneEvent with SerializableDroneEvent
+@key("Spawned") private[core] case object Spawned extends DroneEvent with SerializableDroneEvent
+@key("Destroyed") private[core] case object Destroyed extends DroneEvent with SerializableDroneEvent
 private[core] case class MineralEntersSightRadius(mineralCrystal: MineralCrystalImpl) extends DroneEvent {
   override def toSerializable: SerializableDroneEvent =
     SerializableMineralEntersSightRadius(mineralCrystal.id)
 }
-private[core] case object ArrivedAtPosition extends DroneEvent with SerializableDroneEvent
+@key("ArrivesPosition") private[core] case object ArrivedAtPosition extends DroneEvent with SerializableDroneEvent
 private[core] case class ArrivedAtMineral(mineral: MineralCrystalImpl) extends DroneEvent {
   override def toSerializable: SerializableDroneEvent =
     SerializableArrivedAtMineral(mineral.id)
@@ -397,10 +397,10 @@ private[core] case class DroneEntersSightRadius(drone: DroneImpl) extends DroneE
 private[core] sealed trait SerializableDroneEvent {
   def toSerializable: SerializableDroneEvent = this
 }
-private[core] case class SerializableMineralEntersSightRadius(mineralID: Int) extends SerializableDroneEvent
-private[core] case class SerializableArrivedAtMineral(mineralID: Int) extends SerializableDroneEvent
-private[core] case class SerializableArrivedAtDrone(droneID: Int) extends SerializableDroneEvent
-private[core] case class SerializableDroneEntersSightRadius(droneID: Int) extends SerializableDroneEvent
+@key("SeesMineral") private[core] case class SerializableMineralEntersSightRadius(mineralID: Int) extends SerializableDroneEvent
+@key("ReachesMineral") private[core] case class SerializableArrivedAtMineral(mineralID: Int) extends SerializableDroneEvent
+@key("ReachesDrone") private[core] case class SerializableArrivedAtDrone(droneID: Int) extends SerializableDroneEvent
+@key("SeesDrone") private[core] case class SerializableDroneEntersSightRadius(droneID: Int) extends SerializableDroneEvent
 
 object DroneEvent {
   def apply(serialized: SerializableDroneEvent)(
