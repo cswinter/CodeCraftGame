@@ -40,17 +40,12 @@ class DroneWorldSimulator(
     if (replayer.isEmpty) ReplayFactory.replayRecorder
     else NullReplayRecorder
 
-  private val idGenerators = collection.mutable.Map.empty[Int, IDGenerator]
-  def getIDGenerator(player: Player): IDGenerator =
-      idGenerators.getOrElseUpdate(player.id, new IDGenerator(player.id))
-
   private val worldConfig = WorldConfig(map.size)
   private val visibleObjects = collection.mutable.Set.empty[WorldObject]
   private val dynamicObjects = collection.mutable.Set.empty[WorldObject]
   private var _drones = Map.empty[Int, DroneImpl]
   private def drones = _drones.values
   private var deadDrones = List.empty[DroneImpl]
-
 
   private val visionTracker = new VisionTracker[WorldObject](
     map.size.xMin.toInt, map.size.xMax.toInt,
@@ -61,6 +56,19 @@ class DroneWorldSimulator(
   private val physicsEngine = new PhysicsEngine[ConstantVelocityDynamics](
     map.size, MaxDroneRadius
   )
+
+  val contextForPlayer: Map[Player, DroneContext] = {
+    for (player <- players)
+      yield player -> DroneContext(
+        player,
+        worldConfig,
+        if (shouldRecordCommands(player)) Some(multiplayerConfig.commandRecorder)
+        else None,
+        new IDGenerator(player.id),
+        !multiplayerConfig.isInstanceOf[MultiplayerClientConfig],
+        replayRecorder
+      )
+  }.toMap
 
   Debug.drawAlways(DrawRectangle(0, map.size))
 
@@ -99,17 +107,7 @@ class DroneWorldSimulator(
     player: Player,
     position: Vector2,
     resources: Int
-  ): DroneImpl = {
-    val commandRecorder =
-      if (shouldRecordCommands(player))
-        Some(multiplayerConfig.commandRecorder)
-      else None
-
-    new DroneImpl(
-      spec, controller, player, position, 0, worldConfig, commandRecorder, getIDGenerator(player),
-      !multiplayerConfig.isInstanceOf[MultiplayerClientConfig], replayRecorder, resources
-    )
-  }
+  ): DroneImpl = new DroneImpl(spec, controller, contextForPlayer(player), position, 0, resources)
 
   def shouldRecordCommands(player: Player): Boolean =
     multiplayerConfig.isMultiplayerGame && multiplayerConfig.isLocalPlayer(player)

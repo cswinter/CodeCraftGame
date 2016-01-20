@@ -95,7 +95,7 @@ case class DroneSpec(
 
 
   private[core] def constructDynamics(owner: DroneImpl, initialPos: Vector2, time: Double): DroneDynamics =
-    if (owner.isLocallyComputed) new ComputedDroneDynamics(owner, maximumSpeed, weight, radius, initialPos, time)
+    if (owner.context.isLocallyComputed) new ComputedDroneDynamics(owner, maximumSpeed, weight, radius, initialPos, time)
     else new RemoteDroneDynamics(initialPos)
 
   private[core] def constructStorage(owner: DroneImpl, startingResources: Int = 0): Option[DroneStorageModule] =

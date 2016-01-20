@@ -264,7 +264,7 @@ trait DroneControllerBase extends Drone {
   /**
    * Returns the confines of the game world.
    */
-  def worldSize: Rectangle = drone.worldConfig.size
+  def worldSize: Rectangle = drone.context.worldConfig.size
 
   /**
    * Returns the drones orientation in radians.

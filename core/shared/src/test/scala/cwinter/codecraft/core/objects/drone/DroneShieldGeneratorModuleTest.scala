@@ -1,13 +1,12 @@
 package cwinter.codecraft.core.objects.drone
 
-import cwinter.codecraft.core.WorldConfig
-import cwinter.codecraft.core.api.{BluePlayer, DroneSpec}
-import cwinter.codecraft.util.maths.{Rectangle, Vector2}
+import cwinter.codecraft.core.api.DroneSpec
+import cwinter.codecraft.util.maths.Vector2
 import org.scalatest.FlatSpec
 
 class DroneShieldGeneratorModuleTest extends FlatSpec {
   val mockDroneSpec = DroneSpec(5, missileBatteries = 2, shieldGenerators = 1, engines = 1)
-  val mockDrone = new DroneImpl(mockDroneSpec, null, BluePlayer, Vector2(0, 0), 0, WorldConfig(Rectangle(-100, 100, -100, 100)))
+  val mockDrone = DroneFactory.blueDrone(mockDroneSpec, Vector2(0, 0))
   val shieldGenerator = new DroneShieldGeneratorModule(Seq(2), mockDrone)
 
 

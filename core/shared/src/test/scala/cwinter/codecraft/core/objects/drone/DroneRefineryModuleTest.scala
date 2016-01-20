@@ -1,20 +1,19 @@
 package cwinter.codecraft.core.objects.drone
 
-import cwinter.codecraft.core.api.{BluePlayer, DroneSpec}
+import cwinter.codecraft.core.api.DroneSpec
 import cwinter.codecraft.core.objects.MineralCrystalImpl
-import cwinter.codecraft.core.{WorldConfig, MineralCrystalDestroyed, SimulatorEvent}
-import cwinter.codecraft.util.maths.{Rectangle, Vector2}
+import cwinter.codecraft.core.{MineralCrystalDestroyed, SimulatorEvent}
+import cwinter.codecraft.util.maths.Vector2
 import org.scalatest.FlatSpec
 
 class DroneRefineryModuleTest extends FlatSpec {
   val mockDroneSpec = new DroneSpec(refineries = 5, storageModules = 2)
-  val mockDrone = new DroneImpl(mockDroneSpec, null, BluePlayer, Vector2(0, 0), 0, WorldConfig(Rectangle(-100, 100, -100, 100)))
-
+  val mockDrone = DroneFactory.blueDrone(mockDroneSpec, Vector2(0, 0))
   val processingModule = new DroneRefineryModule((0 to 4).toSeq, mockDrone)
 
   "A refinery module" should "generate the correct amount of resources when processing a mineral crystal" in {
     for (mineralSize <- 1 to 5) {
-      processingModule.startMineralProcessing(new MineralCrystalImpl(mineralSize, Vector2.Null, true))
+      processingModule.startMineralProcessing(new MineralCrystalImpl(mineralSize, 0, Vector2.Null, true))
       val (_, resourcesConsumed, resourcesSpawned) = runProcessingModule(processingModule, 2 * DroneRefineryModule.MineralProcessingPeriod)
       assert(resourcesSpawned.size == mineralSize * DroneRefineryModule.MineralResourceYield)
     }
@@ -22,7 +21,7 @@ class DroneRefineryModuleTest extends FlatSpec {
 
   it should "generate a mineral destroyed event after processing a mineral crystal" in {
     for (mineralSize <- 1 to 5) {
-      val mineralCrystal = new MineralCrystalImpl(mineralSize, Vector2.Null, true)
+      val mineralCrystal = new MineralCrystalImpl(mineralSize, 1, Vector2.Null, true)
       processingModule.startMineralProcessing(mineralCrystal)
       val (events, _, _) = runProcessingModule(processingModule, 2 * DroneRefineryModule.MineralProcessingPeriod)
       assert(events.contains(MineralCrystalDestroyed(mineralCrystal)))
@@ -37,7 +36,7 @@ class DroneRefineryModuleTest extends FlatSpec {
   }
 
   it should "report the correct amount of unprocessed resources" in {
-    processingModule.startMineralProcessing(new MineralCrystalImpl(3, Vector2.Null, true))
+    processingModule.startMineralProcessing(new MineralCrystalImpl(3, 2, Vector2.Null, true))
     processingModule.update(0)
     assert(processingModule.unprocessedResourceAmount == 3 * DroneRefineryModule.MineralResourceYield)
     for (i <- 0 until DroneRefineryModule.MineralProcessingPeriod / 3)

@@ -1,16 +1,15 @@
 package cwinter.codecraft.core.objects.drone
 
-import cwinter.codecraft.core.{WorldConfig, SpawnHomingMissile}
-import cwinter.codecraft.core.api.{RedPlayer, BluePlayer, DroneSpec}
-import cwinter.codecraft.util.maths.{Rectangle, Vector2}
+import cwinter.codecraft.core.SpawnHomingMissile
+import cwinter.codecraft.core.api.DroneSpec
+import cwinter.codecraft.util.maths.Vector2
 import org.scalatest.FlatSpec
 
 
 class DroneMissileBatteryModuleTest extends FlatSpec {
   val mockDroneSpec = DroneSpec(missileBatteries = 3, engines = 1)
-  val mockDrone = new DroneImpl(mockDroneSpec, null, BluePlayer, Vector2(0, 0), 0, WorldConfig(Rectangle(-100, 100, -100, 100)))
-  val mockEnemySpec = DroneSpec(storageModules = 1)
-  val mockEnemy = new DroneImpl(mockEnemySpec, null, RedPlayer, Vector2(100, 100), 0, WorldConfig(Rectangle(-100, 100, -100, 100)))
+  val mockDrone = DroneFactory.blueDrone(mockDroneSpec, Vector2(0, 0))
+  val mockEnemy = DroneFactory.redDrone(DroneSpec(storageModules = 1), Vector2(100, 100))
 
   "A laser module" should "not generate spurious events" in {
     val missileBattery = new DroneMissileBatteryModule(Seq(0, 1, 2), mockDrone)

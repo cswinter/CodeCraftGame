@@ -8,16 +8,17 @@ import cwinter.codecraft.util.maths.{Vector2, Rectangle}
 import org.scalatest.FlatSpec
 
 class DroneWorldSimulatorTest extends FlatSpec {
-  val mineral = new MineralCrystalImpl(1, Vector2(0, 0))
+  val mineralSpawn = new MineralSpawn(1, Vector2(0, 0))
   val mockDroneSpec = new DroneSpec(storageModules = 2)
   val mockDrone = new DummyDroneController
 
   val map = new WorldMap(
-    Seq(mineral), Rectangle(-2000, 2000, -2000, 2000),
+    Seq(mineralSpawn), Rectangle(-2000, 2000, -2000, 2000),
     Seq(Spawn(mockDroneSpec, Vector2(0, 0), BluePlayer))
   )
 
   val simulator = new DroneWorldSimulator(map, Seq(mockDrone), _ => Seq())
+  val mineral = simulator.minerals.head
 
 
   "Game simulator" must "allow for mineral harvesting" in {

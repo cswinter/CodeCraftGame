@@ -12,23 +12,20 @@ import cwinter.codecraft.util.maths.{Rectangle, Float0To1, Vector2}
 private[core] class DroneImpl(
   val spec: DroneSpec,
   val controller: DroneControllerBase,
-  val player: Player,
+  val context: DroneContext,
   initialPos: Vector2,
   time: Double,
-  val worldConfig: WorldConfig,
-  val commandRecorder: Option[CommandRecorder],
-  val idGenerator: IDGenerator,
-  val isLocallyComputed: Boolean,
-  val replayRecorder: ReplayRecorder = NullReplayRecorder,
   startingResources: Int = 0
 ) extends WorldObject {
-  require(worldConfig != null)
+  require(context.worldConfig != null)
 
-  val id = idGenerator.getAndIncrement()
+  val id = context.idGenerator.getAndIncrement()
 
   var objectsInSight: Set[WorldObject] = Set.empty[WorldObject]
 
   private[this] val eventQueue = collection.mutable.Queue[DroneEvent](Spawned)
+
+  // TODO: move all this state into submodules?
   private[this] var hullState = List.fill[Byte](spec.size - 1)(2)
   private[core] var constructionProgress: Option[Int] = None
   private[this] var mineralDepositee: Option[DroneImpl] = None
@@ -184,7 +181,7 @@ private[core] class DroneImpl(
     }
 
     // TODO: only do this in multiplayer games
-    if (isLocallyComputed) {
+    if (context.isLocallyComputed) {
       _missileHits ::= MissileHit(id, position)
     }
   }
@@ -203,8 +200,8 @@ private[core] class DroneImpl(
       case ProcessMineral(mineral) => startMineralProcessing(mineral)
     }
     if (!redundant) {
-      replayRecorder.record(id, command)
-      commandRecorder.foreach(_.record(id, command))
+      context.replayRecorder.record(id, command)
+      context.commandRecorder.foreach(_.record(id, command))
     }
   }
 
@@ -295,6 +292,7 @@ private[core] class DroneImpl(
   def processingCapacity = spec.refineries
   def size = spec.size
   def radius = spec.radius
+  def player = context.player
 
   def availableStorage: Int = {
     for (s <- storage) yield s.availableStorage
