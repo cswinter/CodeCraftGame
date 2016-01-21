@@ -3,7 +3,7 @@ package cwinter.codecraft.core.objects.drone
 import cwinter.codecraft.core._
 import cwinter.codecraft.core.api.{Player, DroneControllerBase, DroneSpec, MineralCrystal}
 import cwinter.codecraft.core.errors.Errors
-import cwinter.codecraft.core.objects.{IDGenerator, EnergyGlobeObject, MineralCrystalImpl, WorldObject}
+import cwinter.codecraft.core.objects._
 import cwinter.codecraft.core.replay._
 import cwinter.codecraft.graphics.worldstate.{DroneDescriptor, DroneModuleDescriptor, WorldObjectDescriptor}
 import cwinter.codecraft.util.maths.{Rectangle, Float0To1, Vector2}
@@ -151,7 +151,7 @@ private[core] class DroneImpl(
 
   // TODO: mb only record hits here and do all processing as part of update()
   // NOTE: death state probable must be determined before (or at very start of) next update()
-  def missileHit(position: Vector2): Unit = {
+  def missileHit(missile: HomingMissile): Unit = {
     def damageHull(hull: List[Byte]): List[Byte] = hull match {
       case h :: hs =>
         if (h > 0) (h - 1).toByte :: hs
@@ -182,7 +182,7 @@ private[core] class DroneImpl(
 
     // TODO: only do this in multiplayer games
     if (context.isLocallyComputed) {
-      _missileHits ::= MissileHit(id, position)
+      _missileHits ::= MissileHit(id, missile.position, missile.id)
     }
   }
 

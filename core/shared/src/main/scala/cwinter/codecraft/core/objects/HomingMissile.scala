@@ -6,10 +6,16 @@ import cwinter.codecraft.core.objects.drone.DroneImpl
 import cwinter.codecraft.graphics.worldstate.{HomingMissileDescriptor, WorldObjectDescriptor}
 import cwinter.codecraft.util.maths.Vector2
 
-private[core] class HomingMissile(val player: Player, initialPos: Vector2, time: Double, target: DroneImpl) extends WorldObject {
+private[core] class HomingMissile(
+  val player: Player,
+  initialPos: Vector2,
+  val id: Int,
+  time: Double,
+  target: DroneImpl
+) extends WorldObject {
   final val MaxLifetime = 50
-  val id = -1
-  val dynamics: MissileDynamics = new MissileDynamics(500, target.dynamics, player.id, initialPos, time)
+  val dynamics: MissileDynamics =
+    new MissileDynamics(500, target.dynamics, player.id, this, initialPos, time)
   val previousPositions = collection.mutable.Queue(initialPos)
   val positions = 7
   var lifetime = MaxLifetime

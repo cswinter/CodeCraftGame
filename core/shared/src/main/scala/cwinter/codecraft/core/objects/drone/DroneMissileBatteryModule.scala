@@ -32,7 +32,7 @@ private[core] class DroneMissileBatteryModule(positions: Seq[Int], owner: DroneI
 
         val missiles =
           for (pos <- absoluteModulePositions)
-            yield SpawnHomingMissile(owner.player, pos, target)
+            yield SpawnHomingMissile(owner.player, pos, owner.context.idGenerator.getAndIncrement(), target)
 
         nextEffect = (missiles, Seq.empty[Vector2], Seq.empty[Vector2])
       }

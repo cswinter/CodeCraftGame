@@ -197,7 +197,8 @@ sealed trait DroneStateMessage
 
 @key("Hit") case class MissileHit(
   droneID: Int,
-  location: Vector2
+  location: Vector2,
+  missileID: Int
 ) extends DroneStateMessage
 
 @key("State") case class DroneDynamicsState(

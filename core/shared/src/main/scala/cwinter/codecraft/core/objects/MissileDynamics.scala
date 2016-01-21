@@ -8,6 +8,7 @@ private[core] class MissileDynamics(
   val speed: Double,
   val target: DroneDynamics,
   val ownerID: Int,
+  val missile: HomingMissile,
   initialPosition: Vector2,
   initialTime: Double
 ) extends ConstantVelocityDynamics(1, ownerID, false, initialPosition, initialTime) {
@@ -19,7 +20,7 @@ private[core] class MissileDynamics(
     hasHit = true
     other match {
       case otherMissile: MissileDynamics => otherMissile.remove()
-      case otherDrone: ComputedDroneDynamics => otherDrone.drone.missileHit(pos)
+      case otherDrone: ComputedDroneDynamics => otherDrone.drone.missileHit(missile)
     }
   }
 

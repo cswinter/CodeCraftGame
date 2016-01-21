@@ -44,6 +44,7 @@ class DroneWorldSimulator(
   private val visibleObjects = collection.mutable.Set.empty[WorldObject]
   private val dynamicObjects = collection.mutable.Set.empty[WorldObject]
   private var _drones = Map.empty[Int, DroneImpl]
+  private val missiles = collection.mutable.Map.empty[Int, HomingMissile]
   private def drones = _drones.values
   private var deadDrones = List.empty[DroneImpl]
 
@@ -145,6 +146,7 @@ class DroneWorldSimulator(
     visibleObjects.add(missile)
     dynamicObjects.add(missile)
     physicsEngine.addObject(missile.dynamics)
+    missiles.put(missile.id, missile)
   }
 
   private def spawnLightflash(position: Vector2): Unit = {
@@ -248,10 +250,10 @@ class DroneWorldSimulator(
       visibleObjects.add(drone)
     case DroneConstructionCancelled(drone) =>
       visibleObjects.remove(drone)
-    case SpawnHomingMissile(player, position, target) =>
+    case SpawnHomingMissile(player, position, missileID, target) =>
       // TODO: remove this check once boundary collisions are done properly
       if (map.size.contains(position)) {
-        val newMissile = new HomingMissile(player, position, physicsEngine.time, target)
+        val newMissile = new HomingMissile(player, position, missileID, physicsEngine.time, target)
         spawnMissile(newMissile)
       }
     case HomingMissileFaded(missile) =>
@@ -348,7 +350,10 @@ class DroneWorldSimulator(
     case MultiplayerClientConfig(_, _, server) =>
       val worldState = server.receiveWorldState()
       for (state <- worldState) state match {
-        case MissileHit(id, position) => simulationContext.drone(id).missileHit(position)
+        case MissileHit(droneID, position, missileID) =>
+          val missile = missiles(missileID)
+          simulationContext.drone(droneID).missileHit(missile)
+          missile.dynamics.remove()
         case d: DroneDynamicsState =>
           simulationContext.drone(d.droneId).applyState(d)
       }
@@ -427,7 +432,7 @@ private[codecraft] case class SpawnDrone(drone: DroneImpl) extends SimulatorEven
 private[codecraft] case class MineralCrystalActivated(mineralCrystal: MineralCrystalImpl) extends SimulatorEvent
 private[codecraft] case class MineralCrystalInactivated(mineralCrystal: MineralCrystalImpl) extends SimulatorEvent
 private[codecraft] case class MineralCrystalDestroyed(mineralCrystal: MineralCrystalImpl) extends SimulatorEvent
-private[codecraft] case class SpawnHomingMissile(player: Player, position: Vector2, target: DroneImpl) extends SimulatorEvent
+private[codecraft] case class SpawnHomingMissile(player: Player, position: Vector2, missileID: Int, target: DroneImpl) extends SimulatorEvent
 private[codecraft] case class HomingMissileFaded(missile: HomingMissile) extends SimulatorEvent
 private[codecraft] case class MissileExplodes(homingMissile: HomingMissile) extends SimulatorEvent
 private[codecraft] case class LightFlashDestroyed(lightFlash: LightFlash) extends SimulatorEvent

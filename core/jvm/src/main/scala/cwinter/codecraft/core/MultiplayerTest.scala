@@ -7,9 +7,7 @@ import cwinter.codecraft.core.replay.DummyDroneController
 
 object MultiplayerTest {
   def main(args: Array[String]): Unit = {
-
     val client = TheGameMaster.prepareMultiplayerGame("192.168.2.113", TheGameMaster.level2AI())
-
     TheGameMaster.run(client)
   }
 }
