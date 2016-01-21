@@ -1,10 +1,9 @@
 package cwinter.codecraft.core.replay
 
+import cwinter.codecraft.core.api.{DroneSpec, Player}
+import cwinter.codecraft.core.objects.drone.{DroneCommand, SerializableDroneCommand}
 import cwinter.codecraft.core.{MineralSpawn, Spawn, WorldMap}
-import cwinter.codecraft.core.api.{Player, DroneSpec}
-import cwinter.codecraft.core.objects.MineralCrystalImpl
-import cwinter.codecraft.core.objects.drone.{SerializableDroneCommand, DroneCommand}
-import cwinter.codecraft.util.maths.{Rng, Rectangle, Vector2}
+import cwinter.codecraft.util.maths.{Rectangle, Rng, Vector2}
 import upickle.default._
 
 
