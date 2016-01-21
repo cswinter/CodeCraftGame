@@ -1,8 +1,9 @@
 package cwinter.codecraft.core.api
 
 import java.io.File
-import cwinter.codecraft.core.replay.Replayer
-import cwinter.codecraft.core.{DroneWorldSimulator, WorldMap}
+import cwinter.codecraft.core.multiplayer.WebsocketServerConnection
+import cwinter.codecraft.core.replay.{DummyDroneController, Replayer}
+import cwinter.codecraft.core.{MultiplayerClientConfig, DroneWorldSimulator, WorldMap}
 import cwinter.codecraft.graphics.application.DrawingCanvas
 import cwinter.codecraft.util.maths.Rng
 
@@ -25,6 +26,24 @@ object TheGameMaster extends GameMasterLike {
     val dir = new File(System.getProperty("user.home") + "/.codecraft/replays")
     val latest = dir.listFiles().maxBy(_.lastModified())
     runReplayFromFile(latest.getPath)
+  }
+
+
+  def prepareMultiplayerGame(serverAddress: String, controller: DroneControllerBase): DroneWorldSimulator = {
+    val serverConnection = new WebsocketServerConnection(serverAddress, 8080)
+    val sync = serverConnection.receiveInitialWorldState()
+
+    // TODO: receive this information from server
+    val clientPlayers = Set[Player](BluePlayer)
+    val serverPlayers = Set[Player](OrangePlayer)
+
+    new DroneWorldSimulator(
+      sync.worldMap,
+      Seq(controller, new DummyDroneController),
+      t => Seq.empty,
+      None,
+      MultiplayerClientConfig(clientPlayers, serverPlayers, serverConnection)
+    )
   }
 }
 

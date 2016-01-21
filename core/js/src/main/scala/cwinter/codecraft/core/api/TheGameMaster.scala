@@ -1,7 +1,6 @@
 package cwinter.codecraft.core.api
 
 import cwinter.codecraft.core.DroneWorldSimulator
-import cwinter.codecraft.core.objects.WorldObject
 import cwinter.codecraft.graphics.engine.{Debug, Renderer}
 import cwinter.codecraft.graphics.model.TheModelCache
 import cwinter.codecraft.graphics.worldstate.WorldObjectDescriptor

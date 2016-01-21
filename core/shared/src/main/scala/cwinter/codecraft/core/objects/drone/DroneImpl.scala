@@ -470,7 +470,14 @@ sealed trait MultiplayerMessage
   worldSize: Rectangle,
   minerals: Seq[MineralSpawn],
   initialDrones: Seq[SerializableSpawn]
-) extends MultiplayerMessage
+) extends MultiplayerMessage {
+  def worldMap: WorldMap = new WorldMap(
+    minerals,
+    worldSize,
+    initialDrones.map(_.deserialize),
+    None
+  )
+}
 @key("Register") case object Register extends MultiplayerMessage
 
 
