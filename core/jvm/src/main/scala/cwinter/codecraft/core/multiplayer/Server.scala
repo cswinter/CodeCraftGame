@@ -17,7 +17,7 @@ object Server {
 
     IO(UHttp) ! Http.Bind(server, "0.0.0.0", 8080)
 
-    Await.result(system.whenTerminated, Duration.Inf)
+    system.awaitTermination()
   }
 
   def main(args: Array[String]): Unit = {

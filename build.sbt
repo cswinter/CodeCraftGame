@@ -89,7 +89,7 @@ val core = (crossProject in file("core")).
         val oldStrategy = (assemblyMergeStrategy in assembly).value
         oldStrategy(x)
     },
-    libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.4.1",
+    libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.3.13",
     resolvers += "Spray" at "http://repo.spray.io",
     libraryDependencies += "com.wandoulabs.akka" %% "spray-websocket" % "0.1.4",
     libraryDependencies ++= Seq(
