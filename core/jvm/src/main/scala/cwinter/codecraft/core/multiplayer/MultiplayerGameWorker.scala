@@ -3,14 +3,12 @@ package cwinter.codecraft.core.multiplayer
 import akka.actor.{ActorRef, Props}
 import cwinter.codecraft.core._
 import cwinter.codecraft.core.api.{BluePlayer, OrangePlayer, Player, TheGameMaster}
-import cwinter.codecraft.core.network.RemoteClient
 import cwinter.codecraft.core.objects.drone._
 import cwinter.codecraft.core.replay.DummyDroneController
 import spray.can.websocket
 import spray.can.websocket.FrameCommandFailed
 import spray.can.websocket.frame.{BinaryFrame, TextFrame}
 import spray.http.HttpRequest
-import upickle.default._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._

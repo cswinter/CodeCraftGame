@@ -1,7 +1,7 @@
 package cwinter.codecraft.core
 
 import cwinter.codecraft.core.api.{Player, TheGameMaster, BluePlayer, OrangePlayer}
-import cwinter.codecraft.core.network.{LocalServerConnection, LocalClientConnection, LocalConnection}
+import cwinter.codecraft.core.multiplayer.{LocalServerConnection, LocalClientConnection, LocalConnection}
 import cwinter.codecraft.core.replay.DummyDroneController
 
 

@@ -1,4 +1,4 @@
-package cwinter.codecraft.core.network
+package cwinter.codecraft.core.multiplayer
 
 import cwinter.codecraft.core.SimulationContext
 import cwinter.codecraft.core.api.Player

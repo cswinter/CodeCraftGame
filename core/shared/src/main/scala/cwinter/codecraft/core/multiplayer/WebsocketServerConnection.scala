@@ -1,7 +1,6 @@
 package cwinter.codecraft.core.multiplayer
 
 import cwinter.codecraft.core.SimulationContext
-import cwinter.codecraft.core.network.RemoteServer
 import cwinter.codecraft.core.objects.drone._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -12,11 +11,8 @@ import scala.language.postfixOps
 
 
 private[core] class WebsocketServerConnection(
-  address: String = "localhost",
-  port: Int = 8080
+  val connection: WebsocketClient
 ) extends RemoteServer {
-  val url = s"ws://$address:$port"
-  val connection = new WebsocketClient(url)
 
   val initialWorldState = Promise[InitialSync]
 
@@ -25,7 +21,6 @@ private[core] class WebsocketServerConnection(
 
 
   connection.onMessage(handleMessage)
-
   connection.sendMessage(MultiplayerMessage.register)
 
 

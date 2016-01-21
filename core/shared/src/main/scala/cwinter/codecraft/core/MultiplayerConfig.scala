@@ -1,7 +1,7 @@
 package cwinter.codecraft.core
 
 import cwinter.codecraft.core.api.Player
-import cwinter.codecraft.core.network.{RemoteClient, RemoteServer}
+import cwinter.codecraft.core.multiplayer.{RemoteClient, RemoteServer}
 
 
 sealed trait MultiplayerConfig {

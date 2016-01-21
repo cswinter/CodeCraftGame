@@ -3,7 +3,7 @@ package cwinter.codecraft.core
 import cwinter.codecraft.collisions.VisionTracker
 import cwinter.codecraft.core.api.{DroneControllerBase, BluePlayer, Player, DroneSpec}
 import cwinter.codecraft.core.errors.Errors
-import cwinter.codecraft.core.network.RemoteClient
+import cwinter.codecraft.core.multiplayer.RemoteClient
 import cwinter.codecraft.core.objects._
 import cwinter.codecraft.core.objects.drone._
 import cwinter.codecraft.core.replay._

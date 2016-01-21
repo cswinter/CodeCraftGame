@@ -9,7 +9,7 @@ import javax.websocket._
 // - this class has any abstract member functions
 // - any of the (annotated) api functions are private
 @ClientEndpoint
-class WebsocketClient(uri: String) {
+class JavaXWebsocketClient(uri: String) extends WebsocketClient {
   private[this] var _closed = false
   def isClosed: Boolean = _closed
   private[this] var userSession: Session = null

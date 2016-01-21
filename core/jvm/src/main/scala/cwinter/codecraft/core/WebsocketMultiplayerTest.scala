@@ -1,7 +1,7 @@
 package cwinter.codecraft.core
 
 import cwinter.codecraft.core.api.{BluePlayer, OrangePlayer, Player, TheGameMaster}
-import cwinter.codecraft.core.multiplayer.WebsocketServerConnection
+import cwinter.codecraft.core.multiplayer.{JavaXWebsocketClient, WebsocketServerConnection}
 import cwinter.codecraft.core.replay.DummyDroneController
 
 
@@ -14,7 +14,8 @@ object WebsocketMultiplayerTest {
     }.start()
 
     Thread.sleep(2000, 0)
-    val serverConnection = new WebsocketServerConnection("localhost", 8080)
+    val serverConnection = new WebsocketServerConnection(
+      new JavaXWebsocketClient("ws://localhost:8080"))
 
     // TODO: receive this information from server
     val clientPlayers = Set[Player](BluePlayer)

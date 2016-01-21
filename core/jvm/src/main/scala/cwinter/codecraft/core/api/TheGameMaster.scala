@@ -1,7 +1,7 @@
 package cwinter.codecraft.core.api
 
 import java.io.File
-import cwinter.codecraft.core.multiplayer.WebsocketServerConnection
+import cwinter.codecraft.core.multiplayer.{JavaXWebsocketClient, WebsocketServerConnection}
 import cwinter.codecraft.core.replay.{DummyDroneController, Replayer}
 import cwinter.codecraft.core.{MultiplayerClientConfig, DroneWorldSimulator, WorldMap}
 import cwinter.codecraft.graphics.application.DrawingCanvas
@@ -30,7 +30,8 @@ object TheGameMaster extends GameMasterLike {
 
 
   def prepareMultiplayerGame(serverAddress: String, controller: DroneControllerBase): DroneWorldSimulator = {
-    val serverConnection = new WebsocketServerConnection(serverAddress, 8080)
+    val websocketConnection = new JavaXWebsocketClient(s"ws$serverAddress:8080")
+    val serverConnection = new WebsocketServerConnection(websocketConnection)
     val sync = serverConnection.receiveInitialWorldState()
 
     // TODO: receive this information from server
