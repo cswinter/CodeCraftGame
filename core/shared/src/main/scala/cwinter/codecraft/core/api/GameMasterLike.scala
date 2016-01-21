@@ -160,6 +160,11 @@ private[codecraft] trait GameMasterLike {
     startGame(new ai.basicplus.Mothership, new ai.basicplus.Mothership)
   }
 
+  /**
+   * Sets up a multiplayer game with the specified server.
+   */
+  def prepareMultiplayerGame(serverAddress: String, controller: DroneControllerBase): DroneWorldSimulator
+
   protected var devEvents: Int => Seq[SimulatorEvent] = t => Seq()
   protected[codecraft] def setDevEvents(generator: Int => Seq[SimulatorEvent]): Unit = {
     devEvents = generator
