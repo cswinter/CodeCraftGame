@@ -30,7 +30,7 @@ object TheGameMaster extends GameMasterLike {
 
 
   def prepareMultiplayerGame(serverAddress: String, controller: DroneControllerBase): DroneWorldSimulator = {
-    val websocketConnection = new JavaXWebsocketClient(s"ws$serverAddress:8080")
+    val websocketConnection = new JavaXWebsocketClient(s"ws://$serverAddress:8080")
     val serverConnection = new WebsocketServerConnection(websocketConnection)
     val sync = serverConnection.receiveInitialWorldState()
 

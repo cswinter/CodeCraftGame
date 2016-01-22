@@ -1,7 +1,7 @@
 package cwinter.codecraft.core
 
 import cwinter.codecraft.collisions.VisionTracker
-import cwinter.codecraft.core.api.{DroneControllerBase, BluePlayer, Player, DroneSpec}
+import cwinter.codecraft.core.api.{BluePlayer, DroneControllerBase, DroneSpec, Player}
 import cwinter.codecraft.core.errors.Errors
 import cwinter.codecraft.core.multiplayer.RemoteClient
 import cwinter.codecraft.core.objects._
@@ -13,6 +13,11 @@ import cwinter.codecraft.physics.PhysicsEngine
 import cwinter.codecraft.util.maths.{ColorRGB, Rng, Vector2}
 import cwinter.codecraft.util.modules.ModulePosition
 
+import scala.async.Async.{async, await}
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
+import scala.language.postfixOps
 import scala.scalajs.js.annotation.JSExport
 
 
@@ -171,7 +176,7 @@ class DroneWorldSimulator(
 
 
     if (multiplayerConfig.isMultiplayerGame) {
-      syncDroneCommands()
+      Await.result(syncDroneCommands(), 30 seconds)
     }
 
     val events = executeGameMechanics()
@@ -181,7 +186,7 @@ class DroneWorldSimulator(
     physicsEngine.update()
 
     if (multiplayerConfig.isMultiplayerGame) {
-      syncWorldState()
+      Await.result(syncWorldState(), 30 seconds)
     }
 
     processVisionTrackerEvents()
@@ -293,7 +298,7 @@ class DroneWorldSimulator(
     }
   }
 
-  private def syncDroneCommands(): Unit = {
+  private def syncDroneCommands(): Future[Unit] = async {
     // [CLIENTS + SERVER] COLLECT COMMANDS FROM LOCAL DRONES
     // [CLIENTS] SEND COMMANDS FROM LOCAL DRONES
     // [CLIENTS} RECEIVE COMMANDS FROM SERVER
@@ -305,10 +310,10 @@ class DroneWorldSimulator(
 
     val remoteCommands: Seq[(Int, DroneCommand)] = multiplayerConfig match {
       case AuthoritativeServerConfig(local, remote, clients) =>
-        syncWithClients(clients, localCommands)
+        await { syncWithClients(clients, localCommands) }
       case MultiplayerClientConfig(local, remote, server) =>
         server.sendCommands(localCommands)
-        server.receiveCommands()(simulationContext)
+        await { server.receiveCommands()(simulationContext) }
       case SingleplayerConfig =>
         throw new Exception("Matched SingleplayerConfig in syncDroneCommands().")
     }
@@ -319,17 +324,35 @@ class DroneWorldSimulator(
   private def syncWithClients(
     clients: Set[RemoteClient],
     localCommands: Seq[(Int, DroneCommand)]
-  ): Seq[(Int, DroneCommand)] = {
-    val remoteCommands = for (
-      client <- clients.toSeq;
-      command <- client.waitForCommands()
-    ) yield command
-    val allCommands = remoteCommands ++ localCommands
+  ): Future[Seq[(Int, DroneCommand)]] = async {
+    val remoteCommands = await { receiveCommandsFromClients(clients) }
+    distributeCommandsToClients(clients, remoteCommands ++ localCommands)
+    remoteCommands
+  }
+
+  private def receiveCommandsFromClients(clients: Set[RemoteClient]): Future[Seq[(Int, DroneCommand)]] = {
+    val commandFutures = for (
+      client <- clients.toSeq
+    ) yield client.waitForCommands()
+
+    val futureCommandSequences = Future.sequence(commandFutures)
+    async {
+      val commandSequences = await { futureCommandSequences }
+      for {
+        commands <- commandSequences
+        command <- commands
+      } yield command
+    }
+  }
+
+  private def distributeCommandsToClients(
+    clients: Set[RemoteClient],
+    allCommands: Seq[(Int, DroneCommand)]
+  ): Unit = {
     for (
       client <- clients;
       commands = allCommands.filter(d => !client.players.contains(droneRegistry(d._1).player))
     ) client.sendCommands(commands)
-    remoteCommands
   }
 
   private def executeCommands(commands: Seq[(Int, DroneCommand)]): Unit = {
@@ -342,23 +365,25 @@ class DroneWorldSimulator(
     }
   }
 
-  private def syncWorldState(): Unit = multiplayerConfig match {
-    case AuthoritativeServerConfig(_, _, clients) =>
-      val syncMessages = collectWorldState()
-      for (client <- clients)
-        client.sendWorldState(syncMessages)
-    case MultiplayerClientConfig(_, _, server) =>
-      val worldState = server.receiveWorldState()
-      for (state <- worldState) state match {
-        case MissileHit(droneID, position, missileID) =>
-          val missile = missiles(missileID)
-          simulationContext.drone(droneID).missileHit(missile)
-          missile.dynamics.remove()
-        case d: DroneDynamicsState =>
-          simulationContext.drone(d.droneId).applyState(d)
-      }
-    case SingleplayerConfig =>
-      throw new Exception("Matched SingleplayerConfig in syncWorldState().")
+  private def syncWorldState(): Future[Unit] = async {
+    multiplayerConfig match {
+      case AuthoritativeServerConfig(_, _, clients) =>
+        val syncMessages = collectWorldState()
+        for (client <- clients)
+          client.sendWorldState(syncMessages)
+      case MultiplayerClientConfig(_, _, server) =>
+        val worldState = await { server.receiveWorldState() }
+        for (state <- worldState) state match {
+          case MissileHit(droneID, position, missileID) =>
+            val missile = missiles(missileID)
+            simulationContext.drone(droneID).missileHit(missile)
+            missile.dynamics.remove()
+          case d: DroneDynamicsState =>
+            simulationContext.drone(d.droneId).applyState(d)
+        }
+      case SingleplayerConfig =>
+        throw new Exception("Matched SingleplayerConfig in syncWorldState().")
+    }
   }
 
   private def collectWorldState(): Iterable[DroneStateMessage] = {

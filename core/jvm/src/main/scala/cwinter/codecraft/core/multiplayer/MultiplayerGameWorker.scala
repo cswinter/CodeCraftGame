@@ -12,7 +12,7 @@ import spray.http.HttpRequest
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Promise}
+import scala.concurrent.{Future, Await, Promise}
 import scala.language.postfixOps
 
 
@@ -68,13 +68,17 @@ extends websocket.WebSocketServerWorker with RemoteClient {
       throw new Exception("Unexpected HttpRequest")
   }
 
-  override def waitForCommands()(implicit context: SimulationContext): Seq[(Int, DroneCommand)] = {
+  override def waitForCommands()(implicit context: SimulationContext): Future[Seq[(Int, DroneCommand)]] = {
     println(s"[t=${context.timestep}] Waiting for commands...")
-    val result = Await.result(clientCommands.future.map(deserialize), 30 seconds)
-    clientCommands = Promise[Seq[(Int, SerializableDroneCommand)]]
-    println("Commands received.")
-    result
+    for (
+      commands <- clientCommands.future
+    ) yield {
+      println("Commands received.")
+      clientCommands = Promise[Seq[(Int, SerializableDroneCommand)]]
+      deserialize(commands)
+    }
   }
+
   override def players: Set[Player] = clientPlayers
   override def sendWorldState(worldState: Iterable[DroneStateMessage]): Unit = {
     send(TextFrame(MultiplayerMessage.serialize(worldState)))

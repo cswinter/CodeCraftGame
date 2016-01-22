@@ -5,7 +5,7 @@ import cwinter.codecraft.core.objects.drone._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Promise}
+import scala.concurrent.{Future, Await, Promise}
 import scala.language.postfixOps
 
 
@@ -40,18 +40,20 @@ private[core] class WebsocketServerConnection(
   def receiveInitialWorldState(): InitialSync =
     Await.result(initialWorldState.future, 30 seconds)
 
-  override def receiveCommands()(implicit context: SimulationContext): Seq[(Int, DroneCommand)] = {
+  override def receiveCommands()(implicit context: SimulationContext): Future[Seq[(Int, DroneCommand)]] = {
     println(s"[t=${context.timestep}] Waiting for commands...")
-    val result = Await.result(serverCommands.future.map(deserialize), 30 seconds)
-    serverCommands = Promise[Seq[(Int, SerializableDroneCommand)]]
-    println("Commands received.")
-    result
+    for (commands <- serverCommands.future) yield {
+      println("Commands received.")
+      serverCommands = Promise[Seq[(Int, SerializableDroneCommand)]]
+      deserialize(commands)
+    }
   }
 
-  override def receiveWorldState(): Iterable[DroneStateMessage] = {
-    val result = Await.result(worldState.future, 30 seconds)
-    worldState = Promise[Iterable[DroneStateMessage]]
-    result
+  override def receiveWorldState(): Future[Iterable[DroneStateMessage]] = {
+    for (state <- worldState.future) yield {
+      worldState = Promise[Iterable[DroneStateMessage]]
+      state
+    }
   }
 
   override def sendCommands(commands: Seq[(Int, DroneCommand)]): Unit = {

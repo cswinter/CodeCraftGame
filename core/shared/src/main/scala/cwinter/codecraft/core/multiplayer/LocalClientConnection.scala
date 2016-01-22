@@ -5,9 +5,8 @@ import cwinter.codecraft.core.api.Player
 import cwinter.codecraft.core.objects.drone._
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{Future, Promise}
 import scala.language.postfixOps
-import scala.concurrent.{Await, Future, Promise}
-import scala.concurrent.duration._
 
 
 
@@ -26,10 +25,11 @@ private[core] class LocalClientConnection(
   connection: LocalConnection,
   override val players: Set[Player]
 ) extends RemoteClient {
-  override def waitForCommands()(implicit context: SimulationContext): Seq[(Int, DroneCommand)] = {
-    val result = Await.result(connection.popClientCommands(clientID), 5 seconds)
-    connection.resetState()
-    result
+  override def waitForCommands()(implicit context: SimulationContext): Future[Seq[(Int, DroneCommand)]] = {
+    for (commands <- connection.popClientCommands(clientID)) yield {
+      connection.resetState()
+      commands
+    }
   }
 
   override def sendWorldState(worldState: Iterable[DroneStateMessage]): Unit = {
@@ -47,13 +47,12 @@ private[core] class LocalServerConnection(
   clientID: Int,
   connection: LocalConnection
 ) extends RemoteServer {
-  override def receiveCommands()(implicit context: SimulationContext): Seq[(Int, DroneCommand)] = {
-    Await.result(connection.getCommandsForClient(clientID), 5 seconds)
+  override def receiveCommands()(implicit context: SimulationContext): Future[Seq[(Int, DroneCommand)]] = {
+    connection.getCommandsForClient(clientID)
   }
 
-  override def receiveWorldState(): Iterable[DroneStateMessage] = {
-    val result = Await.result(connection.getWorldState(), 5 seconds)
-    result
+  override def receiveWorldState(): Future[Iterable[DroneStateMessage]] = {
+    connection.getWorldState()
   }
 
   override def sendCommands(commands: Seq[(Int, DroneCommand)]): Unit = {
