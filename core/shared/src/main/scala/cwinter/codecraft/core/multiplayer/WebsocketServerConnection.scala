@@ -4,8 +4,7 @@ import cwinter.codecraft.core.SimulationContext
 import cwinter.codecraft.core.objects.drone._
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration._
-import scala.concurrent.{Future, Await, Promise}
+import scala.concurrent.{Future, Promise}
 import scala.language.postfixOps
 
 
@@ -37,8 +36,8 @@ private[core] class WebsocketServerConnection(
     }
   }
 
-  def receiveInitialWorldState(): InitialSync =
-    Await.result(initialWorldState.future, 30 seconds)
+  def receiveInitialWorldState(): Future[InitialSync] =
+    initialWorldState.future
 
   override def receiveCommands()(implicit context: SimulationContext): Future[Seq[(Int, DroneCommand)]] = {
     println(s"[t=${context.timestep}] Waiting for commands...")

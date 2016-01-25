@@ -3,10 +3,8 @@ package cwinter.codecraft.core.api
 import cwinter.codecraft.core.multiplayer.{JSWebsocketClient, WebsocketServerConnection}
 import cwinter.codecraft.core.replay.DummyDroneController
 import cwinter.codecraft.core.{DroneWorldSimulator, MultiplayerClientConfig}
-import cwinter.codecraft.graphics.engine.{Debug, Renderer}
+import cwinter.codecraft.graphics.engine.{Debug, WebGLRenderer}
 import cwinter.codecraft.graphics.model.TheModelCache
-import cwinter.codecraft.graphics.worldstate.WorldObjectDescriptor
-import cwinter.codecraft.util.maths.Rectangle
 import org.scalajs.dom
 import org.scalajs.dom.html
 
@@ -27,25 +25,11 @@ object TheGameMaster extends GameMasterLike {
   private[this] var runContext: Option[RunContext] = None
 
 
-  def runWithAscii(simulator: DroneWorldSimulator): DroneWorldSimulator = {
-    println("Starting simulator...")
-    dom.setInterval(() => {
-      if (render != null) {
-        render(simulator.worldState, simulator.map.size)
-      }
-      println("t = " + simulator.timestep)
-      println("object count: " + simulator.worldState.length)
-      simulator.run(1)
-    }, 30)
-    println("Success")
-    simulator
-  }
-
   def run(simulator: DroneWorldSimulator): DroneWorldSimulator = {
     require(canvas != null, "Must first set TheGameMaster.canvas variable to the webgl canvas element.")
     require(intervalID.isEmpty && runContext.isEmpty, "Can only run one CodeCraft game at a time.")
 
-    val renderer = new Renderer(canvas, simulator, simulator.map.initialDrones.head.position)
+    val renderer = new WebGLRenderer(canvas, simulator, simulator.map.initialDrones.head.position)
     val context = new RunContext(simulator, renderer, 16)
     runContext = Some(context)
     run(context)
@@ -56,7 +40,7 @@ object TheGameMaster extends GameMasterLike {
     context.renderer.render()
     val updateFuture =
       if (context.simulator.isPaused) Future.successful(Unit)
-      else context.simulator.asyncUpdate()
+      else context.simulator.performAsyncUpdate()
 
     updateFuture.onComplete {
       case Success(_) =>
@@ -80,7 +64,7 @@ object TheGameMaster extends GameMasterLike {
     Debug.clearDrawAlways()
   }
 
-  def prepareMultiplayerGame(serverAddress: String, controller: DroneControllerBase): DroneWorldSimulator = {
+  def prepareMultiplayerGame(serverAddress: String, controller: DroneControllerBase): Future[DroneWorldSimulator] = {
     val websocketConnection = new JSWebsocketClient(s"ws$serverAddress:8080")
     val serverConnection = new WebsocketServerConnection(websocketConnection)
     val sync = serverConnection.receiveInitialWorldState()
@@ -89,22 +73,21 @@ object TheGameMaster extends GameMasterLike {
     val clientPlayers = Set[Player](BluePlayer)
     val serverPlayers = Set[Player](OrangePlayer)
 
-    new DroneWorldSimulator(
-      sync.worldMap,
-      Seq(controller, new DummyDroneController),
-      t => Seq.empty,
-      None,
-      MultiplayerClientConfig(clientPlayers, serverPlayers, serverConnection)
+    sync.map(sync =>
+      new DroneWorldSimulator(
+        sync.worldMap,
+        Seq(controller, new DummyDroneController),
+        t => Seq.empty,
+        None,
+        MultiplayerClientConfig(clientPlayers, serverPlayers, serverConnection)
+      )
     )
   }
-
-
-  private[codecraft] var render: (Seq[WorldObjectDescriptor], Rectangle) => Unit = null
 }
 
 class RunContext(
   val simulator: DroneWorldSimulator,
-  val renderer: Renderer,
+  val renderer: WebGLRenderer,
   val targetMillisPerFrame: Int,
   var lastCompletionTime: Double = js.Date.now()
 ) {

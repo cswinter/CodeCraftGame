@@ -3,6 +3,7 @@ package cwinter.codecraft.graphics.engine
 import cwinter.codecraft.graphics.worldstate.{HomingMissileDescriptor, MineralDescriptor, DroneDescriptor, WorldObjectDescriptor}
 import cwinter.codecraft.util.maths.{Vector2, Rectangle, ColorRGB}
 
+
 private[graphics] object AsciiVisualizer {
   final val ratio = 75
   final val margin = ratio * 2
@@ -32,7 +33,6 @@ private[graphics] object AsciiVisualizer {
 
     image.map(_.foldLeft("")(_ + _)).mkString("\n")
   }
-
 
   private def toChar(color: ColorRGB): Char = {
     if (color.b > 0) 'B'

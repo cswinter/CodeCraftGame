@@ -16,13 +16,6 @@ import scala.scalajs.js.annotation.JSExport
 @JSExport
 object Main {
   @JSExport
-  def main(target: html.Pre): Unit = {
-    println(target)
-    TheGameMaster.render = render(target)
-    TheGameMaster.runL3vL3()
-  }
-
-  @JSExport
   def webgl(canvas: html.Canvas): Unit = {
     def intervalID: Int = canvas.getAttribute("interval-id").toInt
     def reset(): Unit = {

@@ -1,11 +1,14 @@
 package cwinter.codecraft.core.api
 
 import java.io.File
+
 import cwinter.codecraft.core.multiplayer.{JavaXWebsocketClient, WebsocketServerConnection}
-import cwinter.codecraft.core.replay.{DummyDroneController, Replayer}
-import cwinter.codecraft.core.{MultiplayerClientConfig, DroneWorldSimulator, WorldMap}
+import cwinter.codecraft.core.replay.DummyDroneController
+import cwinter.codecraft.core.{DroneWorldSimulator, MultiplayerClientConfig}
 import cwinter.codecraft.graphics.application.DrawingCanvas
-import cwinter.codecraft.util.maths.Rng
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 
 /**
@@ -29,7 +32,7 @@ object TheGameMaster extends GameMasterLike {
   }
 
 
-  def prepareMultiplayerGame(serverAddress: String, controller: DroneControllerBase): DroneWorldSimulator = {
+  def prepareMultiplayerGame(serverAddress: String, controller: DroneControllerBase): Future[DroneWorldSimulator] = {
     val websocketConnection = new JavaXWebsocketClient(s"ws://$serverAddress:8080")
     val serverConnection = new WebsocketServerConnection(websocketConnection)
     val sync = serverConnection.receiveInitialWorldState()
@@ -38,12 +41,14 @@ object TheGameMaster extends GameMasterLike {
     val clientPlayers = Set[Player](BluePlayer)
     val serverPlayers = Set[Player](OrangePlayer)
 
-    new DroneWorldSimulator(
-      sync.worldMap,
-      Seq(controller, new DummyDroneController),
-      t => Seq.empty,
-      None,
-      MultiplayerClientConfig(clientPlayers, serverPlayers, serverConnection)
+    sync.map(sync =>
+      new DroneWorldSimulator(
+        sync.worldMap,
+        Seq(controller, new DummyDroneController),
+        t => Seq.empty,
+        None,
+        MultiplayerClientConfig(clientPlayers, serverPlayers, serverConnection)
+      )
     )
   }
 }

@@ -52,6 +52,21 @@ private[codecraft] trait Simulator {
     savedWorldState = Seq(computeWorldState.toSeq: _*)
   }
 
+  private[codecraft] def performAsyncUpdate(): Future[Unit] = {
+    Debug.clear()
+    val result = asyncUpdate()
+    result.onFailure{
+      case e: Exception =>
+        e.printStackTrace()
+        paused = true
+    }
+    result.map {x =>
+      t += 1
+      savedWorldState = Seq(computeWorldState.toSeq: _*)
+      x
+    }
+  }
+
   /**
    * Will run the game for `steps` timesteps.
    */

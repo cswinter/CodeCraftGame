@@ -1,9 +1,9 @@
 package cwinter.codecraft.core
 
-import cwinter.codecraft.core.api.{BluePlayer, OrangePlayer, Player, TheGameMaster}
-import cwinter.codecraft.core.multiplayer.{JavaXWebsocketClient, WebsocketServerConnection}
-import cwinter.codecraft.core.replay.DummyDroneController
+import cwinter.codecraft.core.api.TheGameMaster
 
+import scala.async.Async.{async, await}
+import scala.concurrent.ExecutionContext.Implicits.global
 
 object WebsocketMultiplayerTest {
   def main(args: Array[String]): Unit = {
@@ -15,7 +15,11 @@ object WebsocketMultiplayerTest {
 
     Thread.sleep(2000, 0)
 
-    val client = TheGameMaster.prepareMultiplayerGame("localhost", TheGameMaster.level2AI())
-    TheGameMaster.run(client)
+    async {
+      val client = await {
+        TheGameMaster.prepareMultiplayerGame("localhost", TheGameMaster.level2AI())
+      }
+      TheGameMaster.run(client)
+    }
   }
 }

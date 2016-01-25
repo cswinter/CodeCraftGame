@@ -6,6 +6,8 @@ import cwinter.codecraft.core.ai.cheese.Mothership
 import cwinter.codecraft.core.replay.Replayer
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 
+import scala.concurrent.Future
+
 
 private[codecraft] trait GameMasterLike {
   /**
@@ -163,7 +165,7 @@ private[codecraft] trait GameMasterLike {
   /**
    * Sets up a multiplayer game with the specified server.
    */
-  def prepareMultiplayerGame(serverAddress: String, controller: DroneControllerBase): DroneWorldSimulator
+  def prepareMultiplayerGame(serverAddress: String, controller: DroneControllerBase): Future[DroneWorldSimulator]
 
   protected var devEvents: Int => Seq[SimulatorEvent] = t => Seq()
   protected[codecraft] def setDevEvents(generator: Int => Seq[SimulatorEvent]): Unit = {
