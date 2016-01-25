@@ -161,38 +161,59 @@ class DroneWorldSimulator(
   }
 
   override def update(): Unit = {
+    if (multiplayerConfig.isMultiplayerGame) {
+      Await.result(multiplayerUpdate(), 30 seconds)
+    } else {
+      singleplayerUpdate()
+    }
+  }
+
+  override def asyncUpdate(): Future[Unit] = {
+    if (multiplayerConfig.isMultiplayerGame) {
+      multiplayerUpdate()
+    } else {
+      singleplayerUpdate()
+      Future.successful(Unit)
+    }
+  }
+
+  def multiplayerUpdate(): Future[Unit] = async {
+    prepareDroneCommands()
+    await { syncDroneCommands() }
+    updateWorldState()
+    await { syncWorldState() }
+    completeUpdate()
+  }
+
+  def singleplayerUpdate(): Unit = {
+    prepareDroneCommands()
+    updateWorldState()
+    completeUpdate()
+  }
+
+  def prepareDroneCommands(): Unit = {
     replayRecorder.newTimestep(timestep)
-
     showSightAndMissileRadii()
-
     checkWinConditions()
 
     // TODO: expose a simulationHasFinished property that will stop the update method from being called
     if (replayer.exists(_.finished)) return
-
     for (r <- replayer) r.run(timestep)
 
     processDroneEvents()
+  }
 
-
-    if (multiplayerConfig.isMultiplayerGame) {
-      Await.result(syncDroneCommands(), 30 seconds)
-    }
-
+  def updateWorldState(): Unit = {
     val events = executeGameMechanics()
-
     processSimulatorEvents(events ++ debugEvents)
-
     physicsEngine.update()
+  }
 
-    if (multiplayerConfig.isMultiplayerGame) {
-      Await.result(syncWorldState(), 30 seconds)
-    }
-
+  def completeUpdate(): Unit = {
     processVisionTrackerEvents()
-
     Errors.updateMessages()
   }
+
 
   private def showSightAndMissileRadii(): Unit = {
     if (showMissileRadius) {

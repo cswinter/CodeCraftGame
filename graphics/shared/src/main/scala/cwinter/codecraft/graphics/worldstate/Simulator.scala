@@ -69,6 +69,12 @@ private[codecraft] trait Simulator {
   protected def update(): Unit
 
   /**
+    * Asynchronously performs one timestep.
+    * Returns a future which completes once all changes have taken effect.
+    */
+  protected def asyncUpdate(): Future[Unit]
+
+  /**
    * Returns the current timestep.
    */
   def timestep: Int = t
