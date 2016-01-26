@@ -3,8 +3,7 @@ package cwinter.codecraft.core.api
 import java.io.File
 
 import cwinter.codecraft.core.multiplayer.{JavaXWebsocketClient, WebsocketServerConnection}
-import cwinter.codecraft.core.replay.DummyDroneController
-import cwinter.codecraft.core.{DroneWorldSimulator, MultiplayerClientConfig}
+import cwinter.codecraft.core.{DroneWorldSimulator, MultiplayerClientConfig, MultiplayerConfig, WorldMap}
 import cwinter.codecraft.graphics.application.DrawingCanvas
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -32,7 +31,7 @@ object TheGameMaster extends GameMasterLike {
   }
 
 
-  def prepareMultiplayerGame(serverAddress: String, controller: DroneControllerBase): Future[DroneWorldSimulator] = {
+  def prepareMultiplayerGame(serverAddress: String): Future[(WorldMap, MultiplayerConfig)] = {
     val websocketConnection = new JavaXWebsocketClient(s"ws://$serverAddress:8080")
     val serverConnection = new WebsocketServerConnection(websocketConnection)
     val sync = serverConnection.receiveInitialWorldState()
@@ -41,15 +40,11 @@ object TheGameMaster extends GameMasterLike {
     val clientPlayers = Set[Player](BluePlayer)
     val serverPlayers = Set[Player](OrangePlayer)
 
-    sync.map(sync =>
-      new DroneWorldSimulator(
-        sync.worldMap,
-        Seq(controller, new DummyDroneController),
-        t => Seq.empty,
-        None,
-        MultiplayerClientConfig(clientPlayers, serverPlayers, serverConnection)
-      )
-    )
+    sync.map(sync => {
+      val map = sync.worldMap
+      val connection = MultiplayerClientConfig(clientPlayers, serverPlayers, serverConnection)
+      (map, connection)
+    })
   }
 }
 

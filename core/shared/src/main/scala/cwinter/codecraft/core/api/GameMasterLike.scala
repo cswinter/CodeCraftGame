@@ -3,9 +3,11 @@ package cwinter.codecraft.core.api
 import cwinter.codecraft.core._
 import cwinter.codecraft.core.ai.basicplus
 import cwinter.codecraft.core.ai.cheese.Mothership
-import cwinter.codecraft.core.replay.Replayer
+import cwinter.codecraft.core.replay.{DummyDroneController, Replayer}
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 
+import scala.async.Async.{async, await}
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 
@@ -165,7 +167,25 @@ private[codecraft] trait GameMasterLike {
   /**
    * Sets up a multiplayer game with the specified server.
    */
-  def prepareMultiplayerGame(serverAddress: String, controller: DroneControllerBase): Future[DroneWorldSimulator]
+  def prepareMultiplayerGame(
+    serverAddress: String,
+    controller: DroneControllerBase
+  ): Future[DroneWorldSimulator] =  async {
+    val (map, connection) = await { prepareMultiplayerGame(serverAddress) }
+
+    new DroneWorldSimulator(
+      map,
+      Seq(controller, new DummyDroneController),
+      t => Seq.empty,
+      None,
+      connection
+    )
+  }
+
+  /**
+   * Sets up a multiplayer game.
+   */
+  def prepareMultiplayerGame(serverAddress: String): Future[(WorldMap, MultiplayerConfig)]
 
   protected var devEvents: Int => Seq[SimulatorEvent] = t => Seq()
   protected[codecraft] def setDevEvents(generator: Int => Seq[SimulatorEvent]): Unit = {

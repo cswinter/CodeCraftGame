@@ -12,7 +12,15 @@ class JSWebsocketClient(connectionString: String) extends WebsocketClient {
   }
 
   def sendMessage(message: String): Unit = {
-    ws.send(message)
+    if (isConnecting) {
+      assert(ws.onopen == null, "Broken code, previous message is lost.")
+      ws.onopen = (event: Event) => ws.send(message)
+    } else {
+      ws.send(message)
+    }
   }
+
+  def isConnecting: Boolean =
+    ws.readyState == 0
 }
 
