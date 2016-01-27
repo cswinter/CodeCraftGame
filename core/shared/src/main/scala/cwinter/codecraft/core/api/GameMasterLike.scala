@@ -3,6 +3,7 @@ package cwinter.codecraft.core.api
 import cwinter.codecraft.core._
 import cwinter.codecraft.core.ai.basicplus
 import cwinter.codecraft.core.ai.cheese.Mothership
+import cwinter.codecraft.core.multiplayer.{WebsocketServerConnection, WebsocketClient}
 import cwinter.codecraft.core.replay.{DummyDroneController, Replayer}
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 
@@ -173,9 +174,15 @@ private[codecraft] trait GameMasterLike {
   ): Future[DroneWorldSimulator] =  async {
     val (map, connection) = await { prepareMultiplayerGame(serverAddress) }
 
+    assert(map.initialDrones.count(d => connection.isLocalPlayer(d.player)) == 1,
+      "Must have one drone owned by local player.")
+
     new DroneWorldSimulator(
       map,
-      Seq(controller, new DummyDroneController),
+      map.initialDrones.map(drone =>
+        if (connection.isLocalPlayer(drone.player)) controller
+        else new DummyDroneController
+      ),
       t => Seq.empty,
       None,
       connection
@@ -185,7 +192,21 @@ private[codecraft] trait GameMasterLike {
   /**
    * Sets up a multiplayer game.
    */
-  def prepareMultiplayerGame(serverAddress: String): Future[(WorldMap, MultiplayerConfig)]
+  def prepareMultiplayerGame(serverAddress: String): Future[(WorldMap, MultiplayerConfig)] = {
+    val websocketClient = connectToWebsocket(s"ws://$serverAddress:8080")
+    val serverConnection = new WebsocketServerConnection(websocketClient)
+    val sync = serverConnection.receiveInitialWorldState()
+
+    sync.map(sync => {
+      val clientPlayers = sync.localPlayers
+      val serverPlayers = sync.remotePlayers
+      val map = sync.worldMap
+      val connection = MultiplayerClientConfig(clientPlayers, serverPlayers, serverConnection)
+      (map, connection)
+    })
+  }
+
+  protected def connectToWebsocket(connectionString: String): WebsocketClient
 
   protected var devEvents: Int => Seq[SimulatorEvent] = t => Seq()
   protected[codecraft] def setDevEvents(generator: Int => Seq[SimulatorEvent]): Unit = {

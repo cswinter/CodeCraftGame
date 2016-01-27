@@ -1,6 +1,6 @@
 package cwinter.codecraft.core.api
 
-import cwinter.codecraft.core.multiplayer.{JSWebsocketClient, WebsocketServerConnection}
+import cwinter.codecraft.core.multiplayer.{WebsocketClient, JSWebsocketClient, WebsocketServerConnection}
 import cwinter.codecraft.core.{DroneWorldSimulator, MultiplayerClientConfig, MultiplayerConfig, WorldMap}
 import cwinter.codecraft.graphics.engine.{Debug, WebGLRenderer}
 import cwinter.codecraft.graphics.model.TheModelCache
@@ -63,21 +63,8 @@ object TheGameMaster extends GameMasterLike {
     Debug.clearDrawAlways()
   }
 
-  def prepareMultiplayerGame(serverAddress: String): Future[(WorldMap, MultiplayerConfig)] = {
-    val websocketConnection = new JSWebsocketClient(s"ws://$serverAddress:8080")
-    val serverConnection = new WebsocketServerConnection(websocketConnection)
-    val sync = serverConnection.receiveInitialWorldState()
-
-    // TODO: receive this information from server
-    val clientPlayers = Set[Player](BluePlayer)
-    val serverPlayers = Set[Player](OrangePlayer)
-
-    sync.map(sync => {
-      val map = sync.worldMap
-      val connection = MultiplayerClientConfig(clientPlayers, serverPlayers, serverConnection)
-      (map, connection)
-    })
-  }
+  override def connectToWebsocket(connectionString: String): WebsocketClient =
+    new JSWebsocketClient(connectionString)
 }
 
 class RunContext(

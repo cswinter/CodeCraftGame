@@ -20,6 +20,16 @@ object Server {
     system.awaitTermination()
   }
 
+  def spawnServerInstance2(): Unit = {
+    implicit val system = ActorSystem()
+
+    val server = system.actorOf(Props(classOf[TwoPlayerMultiplayerServer]), "websocket")
+
+    IO(UHttp) ! Http.Bind(server, "0.0.0.0", 8080)
+
+    system.awaitTermination()
+  }
+
   def main(args: Array[String]): Unit = {
     spawnServerInstance(false)
   }
@@ -54,6 +64,38 @@ class MultiplayerServer(displayGame: Boolean = false) extends Actor with ActorLo
       } else {
         server.run()
       }
+  }
+}
+
+class TwoPlayerMultiplayerServer extends Actor with ActorLogging {
+  val map = TheGameMaster.defaultMap()
+
+  private[this] val players = collection.mutable.Stack[Set[Player]](Set(BluePlayer), Set(OrangePlayer))
+  private[this] var clients = Set.empty[RemoteClient]
+
+  def receive = {
+    case Http.Connected(remoteAddress, localAddress) =>
+      val serverConnection = sender()
+      val worker = new RemoteWebsocketClient(players.pop(), map)
+      val conn = context.actorOf(WebsocketActor.props(serverConnection, worker))
+      serverConnection ! Http.Register(conn)
+      clients += worker
+
+      if (players.isEmpty) {
+        startServer()
+      }
+  }
+
+
+  def startServer(): Unit = {
+    val server = new DroneWorldSimulator(
+      map,
+      Seq(new DummyDroneController, new DummyDroneController),
+      t => Seq.empty,
+      None,
+      AuthoritativeServerConfig(Set.empty, Set(OrangePlayer, BluePlayer), clients)
+    )
+    TheGameMaster.run(server)
   }
 }
 

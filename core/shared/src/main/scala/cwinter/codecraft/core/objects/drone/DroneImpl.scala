@@ -469,7 +469,9 @@ sealed trait MultiplayerMessage
 @key("Start") case class InitialSync(
   worldSize: Rectangle,
   minerals: Seq[MineralSpawn],
-  initialDrones: Seq[SerializableSpawn]
+  initialDrones: Seq[SerializableSpawn],
+  localPlayerIDs: Set[Int],
+  remotePlayerIDs: Set[Int]
 ) extends MultiplayerMessage {
   def worldMap: WorldMap = new WorldMap(
     minerals,
@@ -477,6 +479,9 @@ sealed trait MultiplayerMessage
     initialDrones.map(_.deserialize),
     None
   )
+
+  def localPlayers: Set[Player] = localPlayerIDs.map(Player.fromID)
+  def remotePlayers: Set[Player] = remotePlayerIDs.map(Player.fromID)
 }
 @key("Register") case object Register extends MultiplayerMessage
 
@@ -498,14 +503,19 @@ object MultiplayerMessage {
   def serialize(worldState: Iterable[DroneStateMessage]): String =
      write[WorldStateMessage](WorldStateMessage(worldState))
 
-  def serialize(worldSize: Rectangle, minerals: Seq[MineralSpawn], initialDrones: Seq[Spawn]): String =
-    write(
-      InitialSync(
-        worldSize,
-        minerals,
-        initialDrones.map(x => SerializableSpawn(x))
-      )
-    )
+  def serialize(
+    worldSize: Rectangle,
+    minerals: Seq[MineralSpawn],
+    initialDrones: Seq[Spawn],
+    localPlayers: Set[Player],
+    remotePlayers: Set[Player]
+  ): String = write(InitialSync(
+    worldSize,
+    minerals,
+    initialDrones.map(x => SerializableSpawn(x)),
+    localPlayers.map(_.id),
+    remotePlayers.map(_.id)
+  ))
 
   def register: String = write(Register)
 }

@@ -2,7 +2,7 @@ package cwinter.codecraft.core.api
 
 import java.io.File
 
-import cwinter.codecraft.core.multiplayer.{JavaXWebsocketClient, WebsocketServerConnection}
+import cwinter.codecraft.core.multiplayer.{WebsocketClient, JavaXWebsocketClient, WebsocketServerConnection}
 import cwinter.codecraft.core.{DroneWorldSimulator, MultiplayerClientConfig, MultiplayerConfig, WorldMap}
 import cwinter.codecraft.graphics.application.DrawingCanvas
 
@@ -30,21 +30,7 @@ object TheGameMaster extends GameMasterLike {
     runReplayFromFile(latest.getPath)
   }
 
-
-  def prepareMultiplayerGame(serverAddress: String): Future[(WorldMap, MultiplayerConfig)] = {
-    val websocketConnection = new JavaXWebsocketClient(s"ws://$serverAddress:8080")
-    val serverConnection = new WebsocketServerConnection(websocketConnection)
-    val sync = serverConnection.receiveInitialWorldState()
-
-    // TODO: receive this information from server
-    val clientPlayers = Set[Player](BluePlayer)
-    val serverPlayers = Set[Player](OrangePlayer)
-
-    sync.map(sync => {
-      val map = sync.worldMap
-      val connection = MultiplayerClientConfig(clientPlayers, serverPlayers, serverConnection)
-      (map, connection)
-    })
-  }
+  override def connectToWebsocket(connectionString: String): WebsocketClient =
+    new JavaXWebsocketClient(connectionString)
 }
 

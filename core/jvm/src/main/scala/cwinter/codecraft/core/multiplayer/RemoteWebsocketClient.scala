@@ -1,6 +1,6 @@
 package cwinter.codecraft.core.multiplayer
 
-import cwinter.codecraft.core.api.Player
+import cwinter.codecraft.core.api.{OrangePlayer, BluePlayer, Player}
 import cwinter.codecraft.core.objects.drone._
 import cwinter.codecraft.core.{SimulationContext, WorldMap}
 
@@ -36,7 +36,13 @@ private[core] class RemoteWebsocketClient(
   }
 
   def syncMessage =
-    MultiplayerMessage.serialize(map.size, map.minerals, map.initialDrones)
+    MultiplayerMessage.serialize(
+      map.size,
+      map.minerals,
+      map.initialDrones,
+      players,
+      Set(OrangePlayer, BluePlayer) -- players
+    )
 
   override def waitForCommands()(implicit context: SimulationContext): Future[Seq[(Int, DroneCommand)]] = {
     println(s"[t=${context.timestep}] Waiting for commands...")
