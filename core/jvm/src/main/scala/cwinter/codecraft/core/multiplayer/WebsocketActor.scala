@@ -1,0 +1,62 @@
+package cwinter.codecraft.core.multiplayer
+
+import akka.actor.{ActorRef, Props}
+import spray.can.websocket
+import spray.can.websocket.FrameCommandFailed
+import spray.can.websocket.frame.{BinaryFrame, TextFrame}
+import spray.http.HttpRequest
+
+import scala.language.postfixOps
+
+
+trait WebsocketWorker {
+  private[this] var websocketActor: Option[ActorRef] = None
+
+  def receive(message: String): Unit
+
+  def installActorRef(actorRef: ActorRef): Unit = {
+    websocketActor = Some(actorRef)
+  }
+
+  def send(message: String): Unit = websocketActor match {
+    case Some(actor) => actor ! WebsocketActor.Send(message)
+    case None => throw new Exception(
+      "WebsocketWorker must be installed with a RemoteWebsocketClient before calling send.")
+  }
+}
+
+
+
+private[core] class WebsocketActor(
+  val serverConnection: ActorRef,
+  val websocketWorker: WebsocketWorker
+) extends websocket.WebSocketServerWorker {
+  import WebsocketActor.Send
+
+  websocketWorker.installActorRef(this.self)
+
+  override def receive = handshaking orElse closeLogic
+
+  def businessLogic: Receive = {
+    case BinaryFrame(bytes) => throw new Exception("Received unexpected binary frame")
+    case TextFrame(text) =>
+      val decoded = text.decodeString("UTF-8")
+      websocketWorker.receive(decoded)
+    case Send(message) =>
+      send(TextFrame(message))
+    case x: FrameCommandFailed =>
+      log.error("frame command failed", x)
+      throw new Exception(s"Frame command failed: $x")
+    case x: HttpRequest =>
+      throw new Exception("Unexpected HttpRequest")
+  }
+
+}
+
+object WebsocketActor {
+  def props(serverConnection: ActorRef, worker: WebsocketWorker) =
+    Props(classOf[WebsocketActor], serverConnection, worker)
+
+  case class Send(message: String)
+}
+
