@@ -15,7 +15,7 @@ private[codecraft] trait Simulator {
   private[this] var targetFPS = 30
   @volatile private[this] var t = 0
   private[this] def frameMillis = 1000 / targetFPS
-  private[this] var stopped = true
+  private[this] var stopped = false
   private[this] var exceptionHandler: Option[Throwable => _] = None
 
   /**
