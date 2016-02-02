@@ -19,11 +19,16 @@ object WebsocketMulticlientTest {
       val client1 = await {
         TheGameMaster.prepareMultiplayerGame("localhost", TheGameMaster.level2AI())
       }
+      client1.run()
+      Thread.sleep(35000, 0)
       val client2 = await {
         TheGameMaster.prepareMultiplayerGame("localhost", TheGameMaster.level2AI())
       }
-      client1.run()
+      val client3 = await {
+        TheGameMaster.prepareMultiplayerGame("localhost", TheGameMaster.level2AI())
+      }
       client2.run()
+      client3.run()
     }
   }
 }

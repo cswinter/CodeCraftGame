@@ -7,6 +7,8 @@ import cwinter.codecraft.core.replay.DummyDroneController
 import cwinter.codecraft.core.{AuthoritativeServerConfig, DroneWorldSimulator}
 import spray.can.Http
 import spray.can.server.UHttp
+import spray.can.websocket.FrameCommand
+import spray.can.websocket.frame.TextFrame
 
 
 object Server {
@@ -70,33 +72,95 @@ class MultiplayerServer(displayGame: Boolean = false) extends Actor with ActorLo
 class TwoPlayerMultiplayerServer extends Actor with ActorLogging {
   val map = TheGameMaster.defaultMap()
 
-  private[this] val players = collection.mutable.Stack[Set[Player]](Set(BluePlayer), Set(OrangePlayer))
   private[this] var clients = Set.empty[RemoteClient]
+  private[this] var freeSlots = Seq(MultiplayerSlot(OrangePlayer), MultiplayerSlot(BluePlayer))
+  private[this] var slotAssignments = Map.empty[ActorRef, Connection]
+  private[this] var runningGame: Option[DroneWorldSimulator] = None
+
+  case class Connection(
+    rawConnection: ActorRef,
+    websocketActor: ActorRef,
+    worker: RemoteWebsocketClient,
+    assignedSlot: MultiplayerSlot
+  )
+
 
   def receive = {
-    case Http.Connected(remoteAddress, localAddress) =>
+    case m@Http.Connected(remoteAddress, localAddress) =>
       val serverConnection = sender()
-      val worker = new RemoteWebsocketClient(players.pop(), map)
-      val conn = context.actorOf(WebsocketActor.props(serverConnection, worker))
-      serverConnection ! Http.Register(conn)
-      clients += worker
-
-      if (players.isEmpty) {
-        startServer()
+      if (hasFreeSlot) {
+         acceptConnection(serverConnection)
+        if (freeSlotCount == 0) startGame()
+      } else {
+        // Connection will automatically be closed after 1 second if not registered.
+        // Could be handled better, but this will do for now.
       }
+    case Terminated(child) =>
+      log.info(s"Child $child has been terminated.")
+      log.info(s"Corresponding slot: ${slotAssignments.get(child)}")
+      unassignSlot(child)
+      for (simulator <- runningGame)
+        stopGame(simulator)
   }
 
+  private def acceptConnection(rawConnection: ActorRef): Connection = {
+    val slot = popSlot()
+    val worker = new RemoteWebsocketClient(slot.players, map)
+    val websocketActor = context.actorOf(WebsocketActor.props(rawConnection, worker))
+    rawConnection ! Http.Register(websocketActor)
+    clients += worker
+    context.watch(websocketActor)
 
-  def startServer(): Unit = {
-    val server = new DroneWorldSimulator(
+    val connection = Connection(rawConnection, websocketActor, worker, slot)
+    assignSlot(connection)
+    connection
+  }
+
+  private def startGame(): Unit = {
+    val simulator = new DroneWorldSimulator(
       map,
       Seq(new DummyDroneController, new DummyDroneController),
       t => Seq.empty,
       None,
       AuthoritativeServerConfig(Set.empty, Set(OrangePlayer, BluePlayer), clients)
     )
-    TheGameMaster.run(server)
+    runningGame = Some(simulator)
+    TheGameMaster.run(simulator)
   }
+
+  private def assignSlot(connection: Connection): Unit = {
+    slotAssignments += connection.websocketActor -> connection
+  }
+
+  private def unassignSlot(connection: ActorRef): Unit = {
+    val Connection(_, _, worker, slot) = slotAssignments(connection)
+    freeSlots :+= slot
+    clients -= worker
+    slotAssignments -= connection
+  }
+
+  private def stopGame(simulator: DroneWorldSimulator): Unit = {
+    simulator.terminate()
+    for ((websocketActor, connection) <- slotAssignments) {
+      context.unwatch(websocketActor)
+      context.stop(connection.rawConnection)
+      unassignSlot(websocketActor)
+    }
+  }
+
+  case class MultiplayerSlot(player: Player) {
+    val players: Set[Player] = Set(player)
+  }
+
+  private def popSlot(): MultiplayerSlot = {
+    val result = freeSlots.head
+    freeSlots = freeSlots.tail
+    result
+  }
+
+  def freeSlotCount: Int = freeSlots.length
+
+  def hasFreeSlot: Boolean = freeSlots.nonEmpty
 }
 
 

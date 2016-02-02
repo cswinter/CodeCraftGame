@@ -15,6 +15,7 @@ private[codecraft] trait Simulator {
   private[this] var targetFPS = 30
   @volatile private[this] var t = 0
   private[this] def frameMillis = 1000 / targetFPS
+  private[this] var stopped = true
 
   /**
    * Runs the game until the program is terminated.
@@ -23,7 +24,7 @@ private[codecraft] trait Simulator {
     require(!running, "Simulator.run() must only be called once.")
     running = true
     Future {
-      while (true) {
+      while (!stopped) {
         if (!paused) {
           performUpdate()
         }
@@ -45,6 +46,7 @@ private[codecraft] trait Simulator {
       update()
     } catch {
       case e: Throwable =>
+        if (stopped) return
         e.printStackTrace()
         paused = true
     }
@@ -57,6 +59,7 @@ private[codecraft] trait Simulator {
     val result = asyncUpdate()
     result.onFailure{
       case e: Exception =>
+        if (stopped) return Future.successful(Unit)
         e.printStackTrace()
         paused = true
     }
@@ -74,6 +77,7 @@ private[codecraft] trait Simulator {
     for (i <- 0 until steps) {
       if (!paused) {
         performUpdate()
+        if (stopped) return
       }
     }
   }
@@ -122,6 +126,13 @@ private[codecraft] trait Simulator {
    * Returns the initial camera position in the game world.
    */
   def initialCameraPos: Vector2 = Vector2.Null
+
+  /**
+   * Terminates any running game loops.
+   */
+  def terminate(): Unit = {
+    stopped = true
+  }
 
   private[codecraft] def worldState: Seq[WorldObjectDescriptor] = savedWorldState
   private[codecraft] def computeWorldState: Iterable[WorldObjectDescriptor]
