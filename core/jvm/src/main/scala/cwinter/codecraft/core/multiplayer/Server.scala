@@ -7,8 +7,10 @@ import cwinter.codecraft.core.replay.DummyDroneController
 import cwinter.codecraft.core.{AuthoritativeServerConfig, DroneWorldSimulator}
 import spray.can.Http
 import spray.can.server.UHttp
-import spray.can.websocket.FrameCommand
-import spray.can.websocket.frame.TextFrame
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
+import scala.language.postfixOps
 
 
 object Server {
@@ -84,6 +86,8 @@ class TwoPlayerMultiplayerServer extends Actor with ActorLogging {
     assignedSlot: MultiplayerSlot
   )
 
+  case class GameTimedOut(simulator: DroneWorldSimulator)
+
 
   def receive = {
     case m@Http.Connected(remoteAddress, localAddress) =>
@@ -101,6 +105,11 @@ class TwoPlayerMultiplayerServer extends Actor with ActorLogging {
       unassignSlot(child)
       for (simulator <- runningGame)
         stopGame(simulator)
+    case GameTimedOut(simulator) =>
+      for (
+        currentSimulator <- runningGame
+        if currentSimulator == simulator
+      ) stopGame(simulator)
   }
 
   private def acceptConnection(rawConnection: ActorRef): Connection = {
@@ -129,6 +138,7 @@ class TwoPlayerMultiplayerServer extends Actor with ActorLogging {
       log.info(s"Exception message ${e.getMessage}")
       stopGame(simulator)
     })
+    context.system.scheduler.scheduleOnce(5 minutes, self, GameTimedOut(simulator))
     runningGame = Some(simulator)
     TheGameMaster.run(simulator)
   }
