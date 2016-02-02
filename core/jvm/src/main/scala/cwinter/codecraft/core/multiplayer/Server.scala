@@ -124,6 +124,11 @@ class TwoPlayerMultiplayerServer extends Actor with ActorLogging {
       None,
       AuthoritativeServerConfig(Set.empty, Set(OrangePlayer, BluePlayer), clients)
     )
+    simulator.onException((e: Throwable) => {
+      log.info(s"Terminating running multiplayer game because of uncaught exception.")
+      log.info(s"Exception message ${e.getMessage}")
+      stopGame(simulator)
+    })
     runningGame = Some(simulator)
     TheGameMaster.run(simulator)
   }
