@@ -462,8 +462,7 @@ object SerializableSpawn {
 sealed trait MultiplayerMessage
 
 @key("Cmds") case class CommandsMessage(
-  commands: Seq[(Int, SerializableDroneCommand)],
-  identifier: Int = MultiplayerMessage.getID()
+  commands: Seq[(Int, SerializableDroneCommand)]
 ) extends MultiplayerMessage
 @key("State") case class WorldStateMessage(worldState: Iterable[DroneStateMessage]) extends MultiplayerMessage
 @key("Start") case class InitialSync(
@@ -488,12 +487,6 @@ sealed trait MultiplayerMessage
 
 
 object MultiplayerMessage {
-  var count = 0
-  def getID(): Int = {
-    count += 1
-    count
-  }
-
   def parse(json: String): MultiplayerMessage =
     read[MultiplayerMessage](json)
 
