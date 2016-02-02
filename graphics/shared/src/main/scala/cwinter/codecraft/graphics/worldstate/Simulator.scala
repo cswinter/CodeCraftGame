@@ -16,6 +16,7 @@ private[codecraft] trait Simulator {
   @volatile private[this] var t = 0
   private[this] def frameMillis = 1000 / targetFPS
   private[this] var stopped = true
+  private[this] var exceptionHandler: Option[Throwable => _] = None
 
   /**
    * Runs the game until the program is terminated.
@@ -46,6 +47,7 @@ private[codecraft] trait Simulator {
       update()
     } catch {
       case e: Throwable =>
+        exceptionHandler.foreach(_(e))
         if (stopped) return
         e.printStackTrace()
         paused = true
@@ -58,7 +60,8 @@ private[codecraft] trait Simulator {
     Debug.clear()
     val result = asyncUpdate()
     result.onFailure{
-      case e: Exception =>
+      case e: Throwable =>
+        exceptionHandler.foreach(_(e))
         if (stopped) return Future.successful(Unit)
         e.printStackTrace()
         paused = true
@@ -132,6 +135,10 @@ private[codecraft] trait Simulator {
    */
   def terminate(): Unit = {
     stopped = true
+  }
+
+  private[codecraft] def onException(callback: Throwable => _): Unit = {
+    exceptionHandler = Some(callback)
   }
 
   private[codecraft] def worldState: Seq[WorldObjectDescriptor] = savedWorldState

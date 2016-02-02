@@ -26,7 +26,7 @@ private[core] class WebsocketServerConnection(
   def handleMessage(client: WebsocketClient, message: String): Unit = {
     println(message)
     MultiplayerMessage.parse(message) match {
-      case CommandsMessage(commands, _) =>
+      case CommandsMessage(commands) =>
         serverCommands.success(commands)
       case WorldStateMessage(state) =>
         worldState.success(state)

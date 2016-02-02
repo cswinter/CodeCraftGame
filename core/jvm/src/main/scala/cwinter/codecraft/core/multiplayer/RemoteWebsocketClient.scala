@@ -19,7 +19,7 @@ private[core] class RemoteWebsocketClient(
     println(message)
     try {
       MultiplayerMessage.parse(message) match {
-        case CommandsMessage(commands, _) =>
+        case CommandsMessage(commands) =>
           clientCommands.success(commands)
         case WorldStateMessage(_) =>
           throw new Exception("Authoritative server received WorldStateMessage!")
