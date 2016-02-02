@@ -140,7 +140,7 @@ class TwoPlayerMultiplayerServer extends Actor with ActorLogging {
     })
     context.system.scheduler.scheduleOnce(5 minutes, self, GameTimedOut(simulator))
     runningGame = Some(simulator)
-    TheGameMaster.run(simulator)
+    simulator.run()
   }
 
   private def assignSlot(connection: Connection): Unit = {

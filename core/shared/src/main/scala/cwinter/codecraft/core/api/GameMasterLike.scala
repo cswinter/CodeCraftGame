@@ -192,18 +192,16 @@ private[codecraft] trait GameMasterLike {
   /**
    * Sets up a multiplayer game.
    */
-  def prepareMultiplayerGame(serverAddress: String): Future[(WorldMap, MultiplayerConfig)] = {
+  def prepareMultiplayerGame(serverAddress: String): Future[(WorldMap, MultiplayerConfig)] = async {
     val websocketClient = connectToWebsocket(s"ws://$serverAddress:8080")
     val serverConnection = new WebsocketServerConnection(websocketClient)
-    val sync = serverConnection.receiveInitialWorldState()
+    val sync = await { serverConnection.receiveInitialWorldState() }
 
-    sync.map(sync => {
-      val clientPlayers = sync.localPlayers
-      val serverPlayers = sync.remotePlayers
-      val map = sync.worldMap
-      val connection = MultiplayerClientConfig(clientPlayers, serverPlayers, serverConnection)
-      (map, connection)
-    })
+    val clientPlayers = sync.localPlayers
+    val serverPlayers = sync.remotePlayers
+    val map = sync.worldMap
+    val connection = MultiplayerClientConfig(clientPlayers, serverPlayers, serverConnection)
+    (map, connection)
   }
 
   protected def connectToWebsocket(connectionString: String): WebsocketClient
