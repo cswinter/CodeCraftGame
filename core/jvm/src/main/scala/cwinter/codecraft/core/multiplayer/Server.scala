@@ -28,15 +28,24 @@ object Server {
     system.awaitTermination()
   }
 
-  def start(): Unit = {
+  def start(): ActorRef = {
     implicit val system = ActorSystem()
     val server = system.actorOf(Props(classOf[TwoPlayerMultiplayerServer]), "websocket")
     IO(UHttp) ! Http.Bind(server, "0.0.0.0", 8080)
+    server
   }
 
   def main(args: Array[String]): Unit = {
     spawnServerInstance(false)
   }
+
+
+  object GetStatus
+  case class Status(
+    connections: Int,
+    runningGames: Int,
+    freeSlots: Int
+  )
 }
 
 
@@ -72,6 +81,8 @@ class MultiplayerServer(displayGame: Boolean = false) extends Actor with ActorLo
 }
 
 class TwoPlayerMultiplayerServer extends Actor with ActorLogging {
+  import Server.GetStatus
+  import Server.Status
   val map = TheGameMaster.defaultMap()
 
   private[this] var clients = Set.empty[RemoteClient]
@@ -110,6 +121,8 @@ class TwoPlayerMultiplayerServer extends Actor with ActorLogging {
         currentSimulator <- runningGame
         if currentSimulator == simulator
       ) stopGame(simulator)
+    case GetStatus =>
+      sender() ! Status(clients.size, runningGame.size, freeSlots.size)
   }
 
   private def acceptConnection(rawConnection: ActorRef): Connection = {
