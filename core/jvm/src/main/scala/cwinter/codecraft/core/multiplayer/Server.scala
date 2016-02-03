@@ -40,6 +40,7 @@ object Server {
   }
 
 
+  object Stop
   object GetStatus
   case class Status(
     connections: Int,
@@ -81,8 +82,7 @@ class MultiplayerServer(displayGame: Boolean = false) extends Actor with ActorLo
 }
 
 class TwoPlayerMultiplayerServer extends Actor with ActorLogging {
-  import Server.GetStatus
-  import Server.Status
+  import Server.{Stop, GetStatus, Status}
   val map = TheGameMaster.defaultMap()
 
   private[this] var clients = Set.empty[RemoteClient]
@@ -123,6 +123,10 @@ class TwoPlayerMultiplayerServer extends Actor with ActorLogging {
       ) stopGame(simulator)
     case GetStatus =>
       sender() ! Status(clients.size, runningGame.size, freeSlots.size)
+    case Stop =>
+      for (simulator <- runningGame)
+        stopGame(simulator)
+      context.stop(self)
   }
 
   private def acceptConnection(rawConnection: ActorRef): Connection = {
@@ -169,6 +173,7 @@ class TwoPlayerMultiplayerServer extends Actor with ActorLogging {
 
   private def stopGame(simulator: DroneWorldSimulator): Unit = {
     simulator.terminate()
+    if (runningGame.contains(simulator)) runningGame = None
     for ((websocketActor, connection) <- slotAssignments) {
       context.unwatch(websocketActor)
       context.stop(connection.rawConnection)
