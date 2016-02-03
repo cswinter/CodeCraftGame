@@ -10,7 +10,8 @@ import scala.language.postfixOps
 
 
 private[core] class WebsocketServerConnection(
-  val connection: WebsocketClient
+  val connection: WebsocketClient,
+  val debug: Boolean = false
 ) extends RemoteServer {
 
   val initialWorldState = Promise[InitialSync]
@@ -40,9 +41,11 @@ private[core] class WebsocketServerConnection(
     initialWorldState.future
 
   override def receiveCommands()(implicit context: SimulationContext): Future[Seq[(Int, DroneCommand)]] = {
-    println(s"[t=${context.timestep}] Waiting for commands...")
+    if (debug)
+      println(s"[t=${context.timestep}] Waiting for commands...")
     for (commands <- serverCommands.future) yield {
-      println("Commands received.")
+      if (debug)
+        println("Commands received.")
       serverCommands = Promise[Seq[(Int, SerializableDroneCommand)]]
       deserialize(commands)
     }
@@ -60,7 +63,8 @@ private[core] class WebsocketServerConnection(
       for ((id, command) <- commands)
         yield (id, command.toSerializable)
     val message = MultiplayerMessage.serialize(serializable)
-    println(s"sendCommands($message)")
+    if (debug)
+      println(s"sendCommands($message)")
     connection.sendMessage(message)
   }
 

@@ -10,13 +10,15 @@ import scala.concurrent.{Future, Promise}
 
 private[core] class RemoteWebsocketClient(
   override val players: Set[Player],
-  val map: WorldMap
+  val map: WorldMap,
+  val debug: Boolean = false
 ) extends RemoteClient with WebsocketWorker {
   private[this] var clientCommands = Promise[Seq[(Int, SerializableDroneCommand)]]
 
 
   override def receive(message: String): Unit = {
-    println(message)
+    if (debug)
+      println(message)
     try {
       MultiplayerMessage.parse(message) match {
         case CommandsMessage(commands) =>
@@ -45,11 +47,13 @@ private[core] class RemoteWebsocketClient(
     )
 
   override def waitForCommands()(implicit context: SimulationContext): Future[Seq[(Int, DroneCommand)]] = {
-    println(s"[t=${context.timestep}] Waiting for commands...")
+    if (debug)
+      println(s"[t=${context.timestep}] Waiting for commands...")
     for (
       commands <- clientCommands.future
     ) yield {
-      println("Commands received.")
+      if (debug)
+        println("Commands received.")
       clientCommands = Promise[Seq[(Int, SerializableDroneCommand)]]
       deserialize(commands)
     }

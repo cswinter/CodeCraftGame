@@ -380,10 +380,7 @@ class DroneWorldSimulator(
     for (
       (id, command) <- commands;
       drone = droneRegistry(id)
-    ) {
-      drone.inform(command.toString)
-      drone ! command
-    }
+    ) drone ! command
   }
 
   private def syncWorldState(): Future[Unit] = async {
