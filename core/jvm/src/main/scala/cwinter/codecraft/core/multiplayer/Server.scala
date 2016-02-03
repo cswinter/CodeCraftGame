@@ -16,22 +16,22 @@ import scala.language.postfixOps
 object Server {
   def spawnServerInstance(displayGame: Boolean = false): Unit = {
     implicit val system = ActorSystem()
-
     val server = system.actorOf(MultiplayerServer.props(displayGame), "websocket")
-
     IO(UHttp) ! Http.Bind(server, "0.0.0.0", 8080)
-
     system.awaitTermination()
   }
 
   def spawnServerInstance2(): Unit = {
     implicit val system = ActorSystem()
-
     val server = system.actorOf(Props(classOf[TwoPlayerMultiplayerServer]), "websocket")
-
     IO(UHttp) ! Http.Bind(server, "0.0.0.0", 8080)
-
     system.awaitTermination()
+  }
+
+  def start(): Unit = {
+    implicit val system = ActorSystem()
+    val server = system.actorOf(Props(classOf[TwoPlayerMultiplayerServer]), "websocket")
+    IO(UHttp) ! Http.Bind(server, "0.0.0.0", 8080)
   }
 
   def main(args: Array[String]): Unit = {
