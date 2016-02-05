@@ -16,7 +16,7 @@ private[codecraft] trait GameMasterLike {
   /**
    * Default dimensions for the size of the game world.
    */
-  final val DefaultWorldSize = Rectangle(-4000, 4000, -2500, 2500)
+  final val DefaultWorldSize = Rectangle(-3000, 3000, -2000, 2000)
 
   /**
    * Identifies the current version of the JavaScript API.
