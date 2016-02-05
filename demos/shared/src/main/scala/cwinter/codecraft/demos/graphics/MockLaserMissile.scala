@@ -1,8 +1,7 @@
 package cwinter.codecraft.demos.graphics
 
-import cwinter.codecraft.core.api.{RedPlayer, BluePlayer}
 import cwinter.codecraft.graphics.worldstate.{HomingMissileDescriptor, WorldObjectDescriptor}
-import cwinter.codecraft.util.maths.Rng
+import cwinter.codecraft.util.maths.{ColorRGB, Rng}
 
 import scala.collection.mutable
 import scala.util.Random
@@ -14,7 +13,7 @@ private[graphics] class MockLaserMissile(
   var orientation: Float,
   val lifetime: Int = 45
 ) extends MockObject {
-  val player = if (Rng.bernoulli(0.5f)) BluePlayer else RedPlayer
+  val player = if (Rng.bernoulli(0.5f)) ColorRGB(0, 0, 1) else ColorRGB(1, 0, 0)
   val speed = 10.0f
   val positions = 9
   val oldPositions = mutable.Queue((xPos, yPos))

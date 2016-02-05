@@ -1,8 +1,7 @@
 package cwinter.codecraft.demos.graphics
 
-import cwinter.codecraft.core.api
 import cwinter.codecraft.graphics.worldstate._
-import cwinter.codecraft.util.maths.Float0To1
+import cwinter.codecraft.util.maths.{ColorRGB, Float0To1}
 
 private[graphics] object Chaos {
   val sightRadius = Some(250)
@@ -85,7 +84,7 @@ private[graphics] object Chaos {
       hullState = Seq[Byte](2, 2, 2, 2, 2),
       shieldState = Some(1),
       size = 6,
-      api.BluePlayer,
+      playerColor = ColorRGB(0, 0, 1),
       constructionState = Some(Float0To1(math.max(time / 5000f, 1))),
       None, None
     )

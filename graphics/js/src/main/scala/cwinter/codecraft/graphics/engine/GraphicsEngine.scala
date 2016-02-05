@@ -4,7 +4,7 @@ import cwinter.codecraft.graphics.worldstate.Simulator
 import org.scalajs.dom
 import org.scalajs.dom.{html, document}
 
-private[graphics] object GraphicsEngine {
+private[codecraft] object GraphicsEngine {
   def run(simulator: Simulator): Unit = {
     val canvas = document.getElementById("webgl-canvas").asInstanceOf[html.Canvas]
     val renderer = new WebGLRenderer(canvas, simulator)

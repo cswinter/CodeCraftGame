@@ -4,6 +4,9 @@ import cwinter.codecraft.collisions.VisionTracker
 import cwinter.codecraft.graphics.engine.GraphicsEngine
 import cwinter.codecraft.graphics.worldstate.{Simulator, TestingObject, WorldObjectDescriptor}
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
 
 private[graphics] class GraphicsSimulator(
   customObjects: Seq[MockObject],
@@ -19,6 +22,11 @@ private[graphics] class GraphicsSimulator(
 
 
   import Generators._
+
+  override protected def asyncUpdate(): Future[Unit] = Future {
+    update()
+  }
+
   val minerals =
     for (i <- 0 until nRandomMinerals) yield
       new MockResource(

@@ -1,8 +1,7 @@
 package cwinter.codecraft.demos.graphics
 
-import cwinter.codecraft.core.api
 import cwinter.codecraft.graphics.worldstate._
-import cwinter.codecraft.util.maths.{VertexXY, Geometry}
+import cwinter.codecraft.util.maths.{ColorRGB, VertexXY, Geometry}
 
 private[graphics] object BlogpostDemo {
   def main(args: Array[String]): Unit = {
@@ -40,7 +39,7 @@ private[graphics] object BlogpostDemo {
         hullState = Seq.fill[Byte](size - 1)(2),
         Some(1),
         size = size,
-        player = api.BluePlayer
+        playerColor = ColorRGB(0, 0, 1)
       )
     }
   }
@@ -95,7 +94,7 @@ private[graphics] object BlogpostDemo {
     hullState = Seq.fill[Byte](5)(2),
     Some(1),
     6,
-    api.BluePlayer
+    ColorRGB(0, 0, 1)
   )
 
   val profilePic = DroneDescriptor(
@@ -109,7 +108,7 @@ private[graphics] object BlogpostDemo {
     ),
     hullState = Seq.fill[Byte](4)(2),
     Some(1),
-    5, api.BluePlayer
+    5, ColorRGB(0, 0, 1)
   )
 
   def generateObjects(t: Int): Seq[WorldObjectDescriptor] = {

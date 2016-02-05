@@ -5,10 +5,17 @@ import cwinter.codecraft.graphics.worldstate.{Simulator, WorldObjectDescriptor}
 import cwinter.codecraft.physics.{ConstantVelocityObject, PhysicsEngine}
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
 
 object TheObjectManager extends Simulator {
   type TObject = ConstantVelocityObject
 
+
+  override protected def asyncUpdate(): Future[Unit] = Future {
+    update()
+  }
 
   val N = 15
   val worldObjects = List.tabulate[MovingObject[TObject]](N * N)(i => {

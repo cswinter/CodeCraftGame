@@ -1,7 +1,7 @@
 package cwinter.codecraft.demos.graphics
 
-import cwinter.codecraft.core.api
 import cwinter.codecraft.graphics.worldstate._
+import cwinter.codecraft.util.maths.ColorRGB
 
 import scala.collection.mutable
 import scala.util.Random
@@ -111,16 +111,15 @@ private[graphics] class MockDrone(
       if (modules.contains(ShieldGeneratorDescriptor)) Some(1) else None,
       size,
 
-      api.BluePlayer,
-      None,
+      ColorRGB(0, 0, 1),
 
-      sightRadius,
-      sightRadius.map(_ => inSight.map(obj => (obj.xPos, obj.yPos)))
+      sightRadius = sightRadius,
+      inSight = sightRadius.map(_ => inSight.map(obj => (obj.xPos, obj.yPos)))
     )
 
   def extraState(): Seq[WorldObjectDescriptor] =
     sightRadius.toSeq.flatMap(_ => inSight.map(obj =>
-      ManipulatorArm(api.BluePlayer, xPos, yPos, obj.xPos, obj.yPos)
+      ManipulatorArm(ColorRGB(0, 0, 1), xPos, yPos, obj.xPos, obj.yPos)
     ))
 
 
