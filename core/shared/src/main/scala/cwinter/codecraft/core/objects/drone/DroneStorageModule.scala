@@ -41,7 +41,8 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
   }
 
   private def harvest(mineral: MineralCrystalImpl): Option[SimulatorEvent] = {
-    if (mineral.harvested) {
+    // need to check availableStorage in case another drone gave this one resources
+    if (mineral.harvested || availableStorage == 0) {
       harvesting = None
     } else {
       harvestCountdown -= positions.size
