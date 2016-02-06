@@ -72,7 +72,6 @@ private[core] class DroneImpl(
     } else {
       // process events
       eventQueue foreach {
-        case Spawned => controller.onSpawn()
         case Destroyed => // this should never be executed
         case MineralEntersSightRadius(mineral) =>
           controller.onMineralEntersVision(mineral.getHandle(player))
@@ -86,6 +85,7 @@ private[core] class DroneImpl(
           if (drone.player == player) drone.controller
           else new EnemyDrone(drone, player)
         )
+        case Spawned => /* this is handled by simulator to ensure onSpawn is called before any other events */
         case event => throw new Exception(s"Unhandled event! $event")
       }
       eventQueue.clear()

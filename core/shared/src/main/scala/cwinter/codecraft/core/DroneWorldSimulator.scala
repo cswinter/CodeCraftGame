@@ -52,6 +52,7 @@ class DroneWorldSimulator(
   private val missiles = collection.mutable.Map.empty[Int, HomingMissile]
   private def drones = _drones.values
   private var deadDrones = List.empty[DroneImpl]
+  private var newlySpawnedDrones = List.empty[DroneImpl]
 
   private val visionTracker = new VisionTracker[WorldObject](
     map.size.xMin.toInt, map.size.xMax.toInt,
@@ -127,6 +128,7 @@ class DroneWorldSimulator(
       physicsEngine.addObject(drone.dynamics.asInstanceOf[ComputedDroneDynamics])
     }
     drone.initialise(physicsEngine.time)
+    newlySpawnedDrones ::= drone
   }
 
   private def droneKilled(drone: DroneImpl): Unit = {
@@ -243,11 +245,15 @@ class DroneWorldSimulator(
     for (drone <- deadDrones) {
       drone.processEvents()
     }
+    for (drone <- newlySpawnedDrones) {
+      drone.controller.onSpawn()
+    }
 
     for (drone <- drones) {
       drone.processEvents()
     }
     deadDrones = List.empty[DroneImpl]
+    newlySpawnedDrones = List.empty[DroneImpl]
   }
 
   private def executeGameMechanics(): Seq[SimulatorEvent] = {
