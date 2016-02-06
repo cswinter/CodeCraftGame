@@ -9,7 +9,7 @@ class Replicator(
   val harvesterSpec = DroneSpec(storageModules = 1)
   val hunterSpec = DroneSpec(missileBatteries = 1)
   val destroyerSpec = DroneSpec(missileBatteries = 3, shieldGenerators = 1)
-  val replicatorSpec = DroneSpec(storageModules = 2, constructors = 2)
+  val replicatorSpec = DroneSpec(storageModules = 1, constructors = 2, missileBatteries = 1)
 
   var nextCrystal: Option[MineralCrystal] = None
   var assignedZone: Option[HarvestingZone] = None
@@ -32,6 +32,8 @@ class Replicator(
         case Some((spec, controller))
         if shouldBeginConstruction(spec.resourceCost) =>
           buildDrone(spec, controller())
+          nextCrystal.foreach(context.harvestCoordinator.abortHarvestingMission)
+          nextCrystal = None
         case _ =>
           harvest()
       }
@@ -69,7 +71,7 @@ class Replicator(
   }
 
   private def nextConstructionSpec: Option[(DroneSpec, () => DroneController)] = {
-    if (slaves.size < this.spec.constructors) {
+    if (slaves.size < this.spec.constructors - 1) {
       Some((harvesterSpec, () => new Harvester(this, context)))
     } else if (shouldBuildReplicator) {
       Some((replicatorSpec, () => new Replicator(context)))
