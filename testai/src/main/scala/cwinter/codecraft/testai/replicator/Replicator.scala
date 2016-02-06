@@ -5,13 +5,14 @@ import cwinter.codecraft.core.api.{MineralCrystal, DroneController, DroneSpec}
 
 class Replicator(
   ctx: ReplicatorContext
-) extends BaseController('Mothership, ctx) {
+) extends ReplicatorBase('Replicator, ctx) {
   val harvesterSpec = DroneSpec(storageModules = 1)
-  val hunterSpec = DroneSpec(missileBatteries = 1, engines = 1)
+  val hunterSpec = DroneSpec(missileBatteries = 1)
   val destroyerSpec = DroneSpec(missileBatteries = 3, shieldGenerators = 1)
-  val replicatorSpec = DroneSpec(storageModules = 2, constructors = 2, shieldGenerators = 1, missileBatteries = 2)
+  val replicatorSpec = DroneSpec(storageModules = 2, constructors = 2)
 
   var nextCrystal: Option[MineralCrystal] = None
+  var assignedZone: Option[HarvestingZone] = None
 
   def this() = this(new ReplicatorContext)
 
@@ -20,23 +21,29 @@ class Replicator(
 
 
   override def onSpawn(): Unit = {
+    super.onSpawn()
     context.initialise(worldSize)
   }
 
   override def onTick(): Unit = {
     if (!isConstructing) {
+      maybeRequestZone()
       nextConstructionSpec match {
-        case Some((spec, controller)) =>
-          if (shouldBeginConstruction(spec.resourceCost)) {
-            buildDrone(spec, controller())
-          } else if (slaves.isEmpty) {
-            harvest()
-          }
-        case None =>
+        case Some((spec, controller))
+        if shouldBeginConstruction(spec.resourceCost) =>
+          buildDrone(spec, controller())
+        case _ =>
+          harvest()
       }
     }
 
     handleWeapons()
+  }
+
+  def maybeRequestZone(): Unit = {
+    if (assignedZone.exists(_.exhausted)) assignedZone = None
+    if (assignedZone.isEmpty)
+      assignedZone = context.harvestCoordinator.requestHarvestingZone(position)
   }
 
   def shouldBeginConstruction(resourceCost: Int): Boolean = {
@@ -49,7 +56,7 @@ class Replicator(
   def harvest(): Unit = {
     if (nextCrystal.exists(_.harvested)) nextCrystal = None
     if (nextCrystal.isEmpty && availableStorage > 0) {
-      nextCrystal = context.harvestCoordinator.findClosestMineral(position)
+      nextCrystal = context.harvestCoordinator.findClosestMineral(position, assignedZone)
       nextCrystal.foreach(moveTo)
     }
   }
@@ -61,15 +68,23 @@ class Replicator(
     }
   }
 
-  def nextConstructionSpec: Option[(DroneSpec, () => DroneController)] = {
+  private def nextConstructionSpec: Option[(DroneSpec, () => DroneController)] = {
     if (slaves.size < this.spec.constructors) {
       Some((harvesterSpec, () => new Harvester(this, context)))
-    } else {
+    } else if (shouldBuildReplicator) {
       Some((replicatorSpec, () => new Replicator(context)))
+    } else {
+      Some((hunterSpec, () => new Hunter(context)))
     }
   }
 
+  private def shouldBuildReplicator =
+    (context.droneCount('Replicator) < 2 ||
+      context.harvestCoordinator.freeZoneCount > context.droneCount('Replicator) * 2) &&
+      context.droneCount('Replicator) < 4
+
   override def onDeath(): Unit = {
+    super.onDeath()
     for (m <- nextCrystal)
       context.harvestCoordinator.abortHarvestingMission(m)
   }
@@ -98,3 +113,4 @@ class Replicator(
     }
   }
 }
+

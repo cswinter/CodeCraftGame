@@ -3,11 +3,12 @@ package cwinter.codecraft.testai.replicator
 import cwinter.codecraft.core.api.{Drone, DroneController, MineralCrystal}
 
 
-abstract class BaseController(
+abstract class ReplicatorBase(
   val name: Symbol,
   val context: ReplicatorContext
 ) extends DroneController {
   var searchToken: Option[SearchToken] = None
+  context.droneCount.increment(name)
 
   def enemies: Set[Drone] =
     dronesInSight.filter(_.playerID != playerID)
@@ -49,6 +50,11 @@ abstract class BaseController(
         moveTo(t.pos)
       }
     }
+  }
+
+  override def onDeath(): Unit = {
+    for (st <- searchToken) context.searchCoordinator.returnSearchToken(st)
+    context.droneCount.decrement(name)
   }
 
   override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit =

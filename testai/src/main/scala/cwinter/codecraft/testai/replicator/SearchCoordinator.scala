@@ -28,4 +28,9 @@ class SearchCoordinator(worldSize: Rectangle) {
       Some(closest)
     }
   }
+
+  def returnSearchToken(searchToken: SearchToken): Unit = {
+    searchTokens += searchToken
+  }
 }
+

@@ -6,12 +6,13 @@ import cwinter.codecraft.core.api.{Drone, MineralCrystal}
 class Harvester(
   var mothership: Replicator,
   ctx: ReplicatorContext
-) extends BaseController('Harvester, ctx) {
+) extends ReplicatorBase('Harvester, ctx) {
   var hasReturned = false
   var nextCrystal: Option[MineralCrystal] = None
 
 
   override def onSpawn(): Unit = {
+    super.onSpawn()
     mothership.registerSlave(this)
   }
 
@@ -23,7 +24,6 @@ class Harvester(
     if (enemies.nonEmpty && closestEnemy.spec.missileBatteries > 0) {
       moveInDirection(position - closestEnemy.position)
     } else {
-
       if (availableStorage == 0 && !hasReturned) {
         moveTo(mothership)
         for (m <- nextCrystal if !m.harvested)
@@ -53,6 +53,7 @@ class Harvester(
   }
 
   override def onDeath(): Unit = {
+    super.onDeath()
     for (m <- nextCrystal)
       context.harvestCoordinator.abortHarvestingMission(m)
     mothership.slaveFailed(this)

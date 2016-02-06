@@ -6,6 +6,7 @@ import cwinter.codecraft.util.maths.Rectangle
 class ReplicatorContext  {
   val harvestCoordinator = new HarvestCoordinator
   val battleCoordinator = new BattleCoordinator
+  val droneCount = new DroneCounter
   private[this] var _searchCoordinator: SearchCoordinator = null
   def searchCoordinator = {
     require(_searchCoordinator != null, "Context is uninitialised.")
