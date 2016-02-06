@@ -87,7 +87,7 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
 
   private def calculateEnergyGlobePosition(index: Int): Vector2 = {
     val container = index / 7
-    val pos = ModulePosition(owner.size, positions.reverse(container)) +
+    val pos = ModulePosition(owner.size, positions(container)) +
       ModulePosition.energyPosition(index % 7)
     Vector2(pos.x, pos.y)
   }
