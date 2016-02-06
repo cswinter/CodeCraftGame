@@ -28,12 +28,12 @@ private[codecraft] trait GameMasterLike {
    * Default resource distribution.
    */
   final val DefaultResourceDistribution = Seq(
-      (25, 1), (25, 1),
-      (20, 2), (20, 2),
-      (20, 3), (20, 3),
-      (15, 4), (15, 4),
-      (15, 5), (15, 5),
-      (15, 6), (15, 6)
+      (15, 2), (15, 2),
+      (15, 3), (15, 3),
+      (10, 4), (10, 4),
+      (10, 5), (10, 6),
+      (10, 7), (10, 8),
+      (5, 9), (5, 10)
     )
 
   /**
@@ -42,7 +42,8 @@ private[codecraft] trait GameMasterLike {
   final val DefaultMothership = new DroneSpec(
     missileBatteries = 3,
     constructors = 3,
-    storageModules = 4
+    storageModules = 3,
+    shieldGenerators = 1
   )
 
 
