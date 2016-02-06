@@ -66,20 +66,12 @@ private[core] class DroneImpl(
   def processEvents(): Unit = {
     controller.willProcessEvents()
 
-    for (mineralCrystal <- storedMinerals) {
-      if (availableFactories >= mineralCrystal.size) {
-        startMineralProcessing(mineralCrystal)
-      }
-    }
-
     for (event <- dynamics.checkArrivalConditions()) {
       enqueueEvent(event)
     }
 
     if (isDead) {
-      // TODO: think about the semantics of thsi
       controller.onDeath()
-      for (s <- storage) s.destroyed()
     } else {
       // process events
       eventQueue foreach {
@@ -107,18 +99,14 @@ private[core] class DroneImpl(
   override def update(): Seq[SimulatorEvent] = {
     for (depositee <- mineralDepositee) {
       val capacity = depositee.availableStorage
-      val required = storedMinerals.minBy(_.size).size
-      if (capacity < required) {
-        inform(s"Cannot deposit minerals - only $capacity free storage available. Required: $required")
+      if (capacity == 0) {
+        inform(s"Cannot deposit minerals - storage is completely full.")
       } else {
-        for {
-          s <- storage
-          (min, pos) <- s.popMineralCrystal(capacity)
-        } {
-          depositee.depositMineral(min, pos)
-          if (s.storedMinerals.isEmpty) {
-            mineralDepositee = None
-          }
+        for (s <- storage) {
+          val amount = math.min(s.availableResources, capacity)
+          depositee.depositResources(amount)
+          s.subtractFromResources(amount)
+          mineralDepositee = None
         }
       }
     }
@@ -174,10 +162,6 @@ private[core] class DroneImpl(
         m <- manipulator
         d <- m.droneInConstruction
       } simulatorEvents ::= DroneConstructionCancelled(d)
-      for {
-        f <- refineries
-        c <- f.mineralCrystals
-      } simulatorEvents ::= MineralCrystalDestroyed(c)
     }
 
     // TODO: only do this in multiplayer games
@@ -197,7 +181,6 @@ private[core] class DroneImpl(
       case DepositMinerals(target) => depositMinerals(target)
       case FireMissiles(target) => fireWeapons(target)
       case HarvestMineral(mineral) => harvestResource(mineral)
-      case ProcessMineral(mineral) => startMineralProcessing(mineral)
     }
     if (!redundant) {
       context.replayRecorder.record(id, command)
@@ -228,23 +211,9 @@ private[core] class DroneImpl(
   def immobile = droneModules.exists(_.exists(_.cancelMovement)) || mineralDepositee.isDefined
 
 
-  def depositMineral(crystal: MineralCrystalImpl, pos: Vector2): Unit = {
-    for {
-      s <- storage
-    } s.depositMineral(crystal, pos)
-  }
-
-  private def startMineralProcessing(mineral: MineralCrystalImpl): Unit = {
-    if (!storage.exists(_.storedMinerals.contains(mineral))) {
-      warn("Tried to process mineral not stored in this drone!")
-    } else {
-      refineries match {
-        case Some(f) =>
-          storage.get.removeMineralCrystal(mineral)
-          f.startMineralProcessing(mineral)
-        case None => warn("Processing minerals requires a refinery module.")
-      }
-    }
+  def depositResources(amount: Int): Unit = {
+    for (s <- storage)
+      s.subtractFromResources(-amount)
   }
 
   private def fireWeapons(target: DroneImpl): Unit = {
@@ -270,7 +239,7 @@ private[core] class DroneImpl(
       warn("Drone is trying to deposit minerals into itself!")
     } else if (other.storage.isEmpty) {
       warn("Trying to deposit minerals into a drone without a storage module.")
-    } else if (storedMinerals.isEmpty) {
+    } else if (availableResources == 0) {
       warn("Drone has no minerals to deposit.")
     } else if ((other.position - position).lengthSquared > (radius + other.radius + 12) * (radius + other.radius + 12)) {
       warn("Too far away to deposit minerals.")
@@ -371,7 +340,6 @@ private[core] class DroneImpl(
 import upickle.default._
 private[core] sealed trait SerializableDroneCommand
 @key("Construct") private[core] case class SerializableConstructDrone(spec: DroneSpec, position: Vector2) extends SerializableDroneCommand
-@key("Process") private[core] case class SerializableProcessMineral(mineralID: Int) extends SerializableDroneCommand
 @key("FireMissiles") private[core] case class SerializableFireMissiles(targetID: Int) extends SerializableDroneCommand
 @key("Deposit") private[core] case class SerializableDepositMinerals(targetID: Int) extends SerializableDroneCommand
 @key("Harvest") private[core] case class SerializableHarvestMineral(mineralID: Int) extends SerializableDroneCommand
@@ -397,7 +365,6 @@ object DroneCommand {
     }
     serialized match {
       case SerializableConstructDrone(spec, position) => ConstructDrone(spec, new DummyDroneController, position)
-      case SerializableProcessMineral(mineral) => ProcessMineral(mineral)
       case SerializableFireMissiles(target) => FireMissiles(target)
       case SerializableDepositMinerals(target) => DepositMinerals(target)
       case SerializableHarvestMineral(mineral) => HarvestMineral(mineral)
@@ -416,9 +383,6 @@ private[core] case class ConstructDrone(
   position: Vector2
 ) extends DroneCommand {
   def toSerializable = SerializableConstructDrone(spec, position)
-}
-private[core] case class ProcessMineral(mineralCrystal: MineralCrystalImpl) extends DroneCommand {
-  def toSerializable = SerializableProcessMineral(mineralCrystal.id)
 }
 private[core] case class FireMissiles(target: DroneImpl) extends DroneCommand {
   def toSerializable = SerializableFireMissiles(target.id)

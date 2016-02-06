@@ -266,12 +266,6 @@ class DroneWorldSimulator(
     case MineralCrystalHarvested(mineralCrystal) =>
       visibleObjects.remove(mineralCrystal)
       visionTracker.remove(mineralCrystal)
-    case MineralCrystalDestroyed(mineralCrystal) =>
-      visibleObjects.remove(mineralCrystal)
-    case MineralCrystalActivated(mineralCrystal) =>
-      visibleObjects.add(mineralCrystal)
-    case MineralCrystalInactivated(mineralCrystal) =>
-      visibleObjects.remove(mineralCrystal)
     case DroneConstructionStarted(drone) =>
       visibleObjects.add(drone)
     case DroneConstructionCancelled(drone) =>
@@ -472,9 +466,6 @@ private[codecraft] sealed trait SimulatorEvent
 private[codecraft] case class MineralCrystalHarvested(mineralCrystal: MineralCrystalImpl) extends SimulatorEvent
 private[codecraft] case class DroneConstructionStarted(drone: DroneImpl) extends SimulatorEvent
 private[codecraft] case class SpawnDrone(drone: DroneImpl) extends SimulatorEvent
-private[codecraft] case class MineralCrystalActivated(mineralCrystal: MineralCrystalImpl) extends SimulatorEvent
-private[codecraft] case class MineralCrystalInactivated(mineralCrystal: MineralCrystalImpl) extends SimulatorEvent
-private[codecraft] case class MineralCrystalDestroyed(mineralCrystal: MineralCrystalImpl) extends SimulatorEvent
 private[codecraft] case class SpawnHomingMissile(player: Player, position: Vector2, missileID: Int, target: DroneImpl) extends SimulatorEvent
 private[codecraft] case class HomingMissileFaded(missile: HomingMissile) extends SimulatorEvent
 private[codecraft] case class MissileExplodes(homingMissile: HomingMissile) extends SimulatorEvent

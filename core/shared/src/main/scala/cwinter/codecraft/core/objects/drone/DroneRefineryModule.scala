@@ -21,7 +21,6 @@ private[core] class DroneRefineryModule(positions: Seq[Int], owner: DroneImpl)
     for (mineral <- newMinerals) {
       mineralProcessing ::= ((mineral, MineralResourceYield * MineralProcessingPeriod))
       mineralProcessing = mineralProcessing.sortBy(-_._1.size)
-      effects ::= MineralCrystalActivated(mineral)
     }
     newMinerals = List.empty[MineralCrystalImpl]
 
@@ -43,7 +42,6 @@ private[core] class DroneRefineryModule(positions: Seq[Int], owner: DroneImpl)
 
     mineralProcessing = mineralProcessing.filter {
       case (mineral, remaining) =>
-        if (remaining <= 0) effects ::= MineralCrystalDestroyed(mineral)
         remaining > 0
     }
 
@@ -88,7 +86,7 @@ private[core] class DroneRefineryModule(positions: Seq[Int], owner: DroneImpl)
 }
 
 // TODO: aggregate all constants
-private[drone] object DroneRefineryModule {
+private[core] object DroneRefineryModule {
   final val MineralProcessingPeriod = 100
   final val MineralResourceYield = 2
 }

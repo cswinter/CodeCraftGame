@@ -16,7 +16,7 @@ private[graphics] class MineralModelBuilder(mineral: MineralDescriptor)(implicit
 
   override protected def buildModel: Model[Unit] = {
     val size = mineral.size
-    val radius = math.sqrt(size).toFloat * 8
+    val radius = math.sqrt(size).toFloat * 6
 
     mineral.harvestingProgress match {
       case Some(p) =>

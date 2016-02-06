@@ -16,7 +16,7 @@ private[core] class ScoutingDroneController(val mothership: Mothership) extends 
       moveInDirection(position - closestEnemy.position)
     } else {
 
-      if (availableStorage == 0 && !hasReturned) {
+      if (availableStorage <= 0 && !hasReturned) {
         moveTo(mothership)
         nextCrystal = None
       } else if (hasReturned && availableStorage > 0 || nextCrystal.isEmpty) {
@@ -32,7 +32,7 @@ private[core] class ScoutingDroneController(val mothership: Mothership) extends 
   }
 
   override def onArrivesAtPosition(): Unit = {
-    if (availableStorage == 0) {
+    if (availableStorage <= 0) {
       giveMineralsTo(mothership)
       hasReturned = true
     } else {

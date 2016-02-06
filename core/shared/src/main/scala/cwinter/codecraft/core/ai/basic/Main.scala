@@ -105,7 +105,7 @@ private[core] class AttackDroneController extends DroneController {
   override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = ()
 
   override def onTick(): Unit = {
-    if (weaponsCooldown <= 0 && enemies.nonEmpty) {
+    if (weaponsCooldown == 0 && enemies.nonEmpty) {
       val enemy = enemies.minBy(x => (x.position - position).lengthSquared)
       if (isInMissileRange(enemy)) {
         fireMissilesAt(enemy)

@@ -28,10 +28,12 @@ private[codecraft] trait GameMasterLike {
    * Default resource distribution.
    */
   final val DefaultResourceDistribution = Seq(
-      (20, 1), (20, 1), (20, 1), (20, 1),
+      (25, 1), (25, 1),
       (20, 2), (20, 2),
-      (15, 3), (15, 3),
-      (15, 4), (15, 4)
+      (20, 3), (20, 3),
+      (15, 4), (15, 4),
+      (15, 5), (15, 5),
+      (15, 6), (15, 6)
     )
 
   /**
