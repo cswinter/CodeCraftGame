@@ -28,7 +28,6 @@ private[core] class DroneImpl(
   // TODO: move all this state into submodules?
   private[this] var hullState = List.fill[Byte](spec.size - 1)(2)
   private[core] var constructionProgress: Option[Int] = None
-  private[this] var mineralDepositee: Option[DroneImpl] = None
   private[this] var _hasDied: Boolean = false
   private[this] var automaticMineralProcessing: Boolean = true
 
@@ -96,21 +95,7 @@ private[core] class DroneImpl(
   }
 
   override def update(): Seq[SimulatorEvent] = {
-    for (depositee <- mineralDepositee) {
-      val capacity = depositee.availableStorage
-      if (capacity == 0) {
-        inform(s"Cannot deposit minerals - storage is completely full.")
-      } else {
-        for (s <- storage) {
-          val amount = math.min(s.storedResources, capacity)
-          depositee.depositResources(amount)
-          s.subtractFromResources(amount)
-          mineralDepositee = None
-        }
-      }
-    }
-
-    for (Some(m) <- droneModules) {
+     for(Some(m) <- droneModules) {
       val (events, resourceDepletions, resourceSpawns) = m.update(storedResources)
       simulatorEvents :::= events.toList
       for {
@@ -207,13 +192,7 @@ private[core] class DroneImpl(
     }
   }
 
-  def immobile = droneModules.exists(_.exists(_.cancelMovement)) || mineralDepositee.isDefined
-
-
-  def depositResources(amount: Int): Unit = {
-    for (s <- storage)
-      s.subtractFromResources(-amount)
-  }
+  def immobile = droneModules.exists(_.exists(_.cancelMovement))
 
   private def fireWeapons(target: DroneImpl): Unit = {
     if (target == this) {
@@ -243,7 +222,7 @@ private[core] class DroneImpl(
     } else if ((other.position - position).lengthSquared > (radius + other.radius + 12) * (radius + other.radius + 12)) {
       warn("Too far away to deposit minerals.")
     } else {
-      mineralDepositee = Some(other)
+      for (s <- storage) s.depositResources(other.storage)
     }
   }
 

@@ -3,7 +3,7 @@ package cwinter.codecraft.core.objects.drone
 import cwinter.codecraft.core._
 import cwinter.codecraft.core.objects.MineralCrystalImpl
 import cwinter.codecraft.graphics.worldstate._
-import cwinter.codecraft.util.maths.{Float0To1, Vector2}
+import cwinter.codecraft.util.maths.Vector2
 import cwinter.codecraft.util.modules.ModulePosition
 
 import scala.collection.mutable
@@ -21,29 +21,38 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
   private[this] var deposit: Option[DroneStorageModule] = None
   private[this] var harvesting: Option[MineralCrystalImpl] = None
   private[this] var harvestCountdown: Int = 0
+  private[this] var resourceDepositee: Option[DroneStorageModule] = None
 
 
   override def update(availableResources: Int): (Seq[SimulatorEvent], Seq[Vector2], Seq[Vector2]) = {
     var effects = List.empty[SimulatorEvent]
 
-    for (m <- harvesting) {
-      if (m.harvested) {
-        harvesting = None
-      } else {
-        harvestCountdown -= positions.size
-        if (harvestCountdown <= 0) {
-          val eventOption = performHarvest(m)
-          eventOption.foreach(effects ::= _)
-        }
-      }
-    }
+    // TODO: make sure this does not cause determinism problems
+    resourceDepositee.foreach(performResourceDeposit)
+
+    for {
+      m <- harvesting
+      event <- harvest(m)
+    } effects ::= event
 
     storedEnergyGlobes = storedEnergyGlobes.map(_.updated())
 
     (effects, Seq.empty[Vector2], Seq.empty[Vector2])
   }
 
-  def performHarvest(mineral: MineralCrystalImpl): Option[SimulatorEvent] = {
+  private def harvest(mineral: MineralCrystalImpl): Option[SimulatorEvent] = {
+    if (mineral.harvested) {
+      harvesting = None
+    } else {
+      harvestCountdown -= positions.size
+      if (harvestCountdown <= 0) {
+        return performHarvest(mineral)
+      }
+    }
+    None
+  }
+
+  private def performHarvest(mineral: MineralCrystalImpl): Option[SimulatorEvent] = {
     subtractFromResources(-1)
     mineral.decreaseSize()
     harvestCountdown = HarvestingDuration
@@ -54,6 +63,18 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
 
     if (mineral.size == 0) Some(MineralCrystalHarvested(mineral))
     else None
+  }
+
+  private def performResourceDeposit(depositee: DroneStorageModule): Unit = {
+    val capacity = depositee.availableStorage
+    if (capacity == 0) {
+      owner.inform(s"Cannot deposit minerals - storage is completely full.")
+    } else {
+      val amount = math.min(storedResources, capacity)
+      depositee.subtractFromResources(-amount)
+      subtractFromResources(amount)
+      resourceDepositee = None
+    }
   }
 
   def subtractFromResources(amount: Int): Unit = {
@@ -97,6 +118,10 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
     }
   }
 
+  def depositResources(other: Option[DroneStorageModule]): Unit = {
+    resourceDepositee = other
+  }
+
   def storedResources: Int = storedEnergyGlobes.size
 
   def availableStorage: Int =
@@ -128,7 +153,7 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
   }
 
 
-  override def cancelMovement: Boolean = harvesting.nonEmpty
+  override def cancelMovement: Boolean = harvesting.nonEmpty || resourceDepositee.nonEmpty
 }
 
 // TODO: aggregate all constants
