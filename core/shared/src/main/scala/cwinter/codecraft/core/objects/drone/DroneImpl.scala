@@ -29,7 +29,6 @@ private[core] class DroneImpl(
   private[this] var hullState = List.fill[Byte](spec.size - 1)(2)
   private[core] var constructionProgress: Option[Int] = None
   private[this] var _hasDied: Boolean = false
-  private[this] var automaticMineralProcessing: Boolean = true
 
   private[this] var _missileHits = List.empty[MissileHit]
   def popMissileHits(): Seq[MissileHit] = {
@@ -76,7 +75,7 @@ private[core] class DroneImpl(
         case Spawned => controller.onSpawn()
         case Destroyed => // this should never be executed
         case MineralEntersSightRadius(mineral) =>
-          controller.onMineralEntersVision(new MineralCrystal(mineral, player))
+          controller.onMineralEntersVision(mineral.getHandle(player))
         case ArrivedAtPosition => controller.onArrivesAtPosition()
         case ArrivedAtDrone(drone) =>
           val droneHandle = if (drone.player == player) drone.controller else new EnemyDrone(drone, player)
