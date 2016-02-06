@@ -64,9 +64,8 @@ class JSDroneController(
 
     buildDrone(
       controller,
-      storageModules = getOrElse0("storageModules"),
+      storageModules = getOrElse0("storageModules") + getOrElse0("refineries"),
       missileBatteries = getOrElse0("missileBatteries"),
-      refineries = getOrElse0("refineries"),
       constructors = getOrElse0("constructors"),
       engines = getOrElse0("engines"),
       shieldGenerators = getOrElse0("shieldGenerators")
@@ -85,9 +84,8 @@ class JSDroneController(
     val controller = droneControllerProvider(controllerName)
     buildDrone(
       controller,
-      storageModules = getOrElse0("storageModules"),
+      storageModules = getOrElse0("storageModules") + getOrElse0("refineries"),
       missileBatteries = getOrElse0("missileBatteries"),
-      refineries = getOrElse0("refineries"),
       constructors = getOrElse0("constructors"),
       engines = getOrElse0("engines"),
       shieldGenerators = getOrElse0("shieldGenerators")

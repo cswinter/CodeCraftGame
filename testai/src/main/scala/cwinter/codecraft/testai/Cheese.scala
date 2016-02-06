@@ -5,7 +5,7 @@ import cwinter.codecraft.util.maths.Vector2
 
 
 class CheesyMothership extends DroneController {
-  final val destroyerSpec = new DroneSpec(0, 3, 0, 0, 0, 1)
+  final val destroyerSpec = new DroneSpec(0, 3, 0, 0, 1)
 
   override def onSpawn(): Unit = {
     buildDrone(destroyerSpec, new CheesyDestroyer(-position))

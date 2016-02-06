@@ -172,7 +172,6 @@ trait DroneControllerBase extends Drone {
    * @param controller The drone controller that will govern the behaviour of the new drone.
    * @param storageModules The new drone's number of storage modules.
    * @param missileBatteries The new drone's number of missile batteries.
-   * @param refineries The new drone's number of refineries.
    * @param constructors The new drone's number of constructors.
    * @param engines The new drone's number of engines.
    * @param shieldGenerators The new drone's number of shield generators.
@@ -181,12 +180,11 @@ trait DroneControllerBase extends Drone {
     controller: DroneControllerBase,
     storageModules: Int = 0,
     missileBatteries: Int = 0,
-    refineries: Int = 0,
     constructors: Int = 0,
     engines: Int = 0,
     shieldGenerators: Int = 0
   ): Unit = {
-    val spec = new DroneSpec(storageModules, missileBatteries, refineries, constructors, engines, shieldGenerators)
+    val spec = new DroneSpec(storageModules, missileBatteries, constructors, engines, shieldGenerators)
     buildDrone(spec, controller)
   }
 

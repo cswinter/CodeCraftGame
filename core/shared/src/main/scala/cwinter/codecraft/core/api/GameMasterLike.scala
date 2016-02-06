@@ -40,10 +40,9 @@ private[codecraft] trait GameMasterLike {
    * Default number of modules for the initial mothership.
    */
   final val DefaultMothership = new DroneSpec(
-    missileBatteries = 2,
-    constructors = 2,
-    refineries = 3,
-    storageModules = 3
+    missileBatteries = 3,
+    constructors = 3,
+    storageModules = 4
   )
 
 

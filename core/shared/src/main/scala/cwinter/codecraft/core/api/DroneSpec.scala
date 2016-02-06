@@ -15,7 +15,6 @@ import scala.scalajs.js.annotation.JSExportAll
  *
  * @param storageModules Number of storage modules. Allows for storage of mineral crystals and energy globes.
  * @param missileBatteries Number of missile batteries. Allows for firing homing missiles.
- * @param refineries Number of refineries. Allows for processing mineral crystals into energy globes.
  * @param constructors Number of constructors. Allows for constructing new drones and moving minerals from/to other drones.
  * @param engines Number of engines. Increases move speed.
  * @param shieldGenerators Number of shield generators. Gives the drone an additional 7 hitpoints each. Shields regenerate over time.
@@ -24,14 +23,12 @@ import scala.scalajs.js.annotation.JSExportAll
 case class DroneSpec(
   storageModules: Int = 0,
   missileBatteries: Int = 0,
-  refineries: Int = 0,
   constructors: Int = 0,
   engines: Int = 0,
   shieldGenerators: Int = 0
 ) {
   require(storageModules >= 0)
   require(missileBatteries >= 0)
-  require(refineries >= 0)
   require(constructors >= 0)
   require(engines >= 0)
   require(shieldGenerators >= 0)
@@ -40,8 +37,7 @@ case class DroneSpec(
    * Total number of modules.
    */
   val moduleCount =
-    storageModules + missileBatteries + refineries +
-      constructors + engines + shieldGenerators
+    storageModules + missileBatteries + constructors + engines + shieldGenerators
 
   require(moduleCount <= ModulePosition.MaxModules, s"A drone cannot have more than ${ModulePosition.MaxModules} modules")
 
@@ -112,20 +108,19 @@ case class DroneSpec(
 
   private[core] def constructManipulatorModules(owner: DroneImpl): Option[DroneManipulatorModule] =
     if (constructors > 0) {
-      val startIndex = storageModules + missileBatteries + refineries
+      val startIndex = storageModules + missileBatteries
       Some(new DroneManipulatorModule(startIndex until startIndex + constructors, owner))
     } else None
 
   private[core] def constructEngineModules(owner: DroneImpl): Option[DroneEnginesModule] =
     if (engines > 0) {
-      val startIndex = storageModules + missileBatteries + refineries + constructors
+      val startIndex = storageModules + missileBatteries + constructors
       Some(new DroneEnginesModule(startIndex until startIndex + engines, owner))
     } else None
 
   private[core] def constructShieldGenerators(owner: DroneImpl): Option[DroneShieldGeneratorModule] =
     if (shieldGenerators > 0) {
-      val startIndex = storageModules + missileBatteries + refineries +
-        constructors + engines
+      val startIndex = storageModules + missileBatteries + constructors + engines
       Some(new DroneShieldGeneratorModule(startIndex until startIndex + shieldGenerators, owner))
     } else None
 
@@ -140,13 +135,5 @@ object DroneSpec {
   final val ResourceCost = 5
   final val SideLength = 40
   final val SightRadius = 500
-
-
-  final val CaseClassRegex = """(\w*?)\((.*)\)""".r
-  def apply(stringRepr: String): DroneSpec = {
-    val CaseClassRegex("DroneSpec", specParamsStr) = stringRepr
-    val specParams = specParamsStr.split(",")
-    new DroneSpec(specParams(0).toInt, specParams(1).toInt, specParams(2).toInt, specParams(3).toInt, specParams(4).toInt, specParams(5).toInt)
-  }
 }
 

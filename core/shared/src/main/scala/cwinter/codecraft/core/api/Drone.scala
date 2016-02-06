@@ -84,7 +84,6 @@ trait Drone {
       m(spec.shieldGenerators, "Shield Generator"),
       m(spec.constructors, "Constructor"),
       m(spec.missileBatteries, "Missile Battery"),
-      m(spec.refineries, "Refinery"),
       m(spec.storageModules, "Storage Module")
     )
     val moduleString =

@@ -257,7 +257,6 @@ private[core] class DroneImpl(
   def dronesInSight: Set[DroneImpl] = objectsInSight.filter(_.isInstanceOf[DroneImpl]).map { case d: DroneImpl => d }
   def isConstructing: Boolean = manipulator.exists(_.isConstructing)
   def storageCapacity = spec.storageModules
-  def processingCapacity = spec.refineries
   def size = spec.size
   def radius = spec.radius
   def player = context.player
