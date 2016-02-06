@@ -110,12 +110,6 @@ case class DroneSpec(
     )
     else None
 
-  private[core] def constructRefineries(owner: DroneImpl): Option[DroneRefineryModule] =
-    if (refineries > 0) {
-      val startIndex = storageModules + missileBatteries
-      Some(new DroneRefineryModule(startIndex until startIndex + refineries, owner))
-    } else None
-
   private[core] def constructManipulatorModules(owner: DroneImpl): Option[DroneManipulatorModule] =
     if (constructors > 0) {
       val startIndex = storageModules + missileBatteries + refineries

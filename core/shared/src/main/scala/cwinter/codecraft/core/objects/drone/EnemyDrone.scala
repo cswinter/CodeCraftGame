@@ -44,14 +44,11 @@ private[core] class EnemyDrone(
     }
   }
 
-  def totalAvailableResources: Int =
-   if (isVisible) {
-     drone.totalAvailableResources
-   } else {
-     val exception = new ObjectNotVisibleException(
-       "Cannot get the totalAvailableResources of an enemy drone that is not inside the sight radius of any of your drones.")
-     Errors.error(exception, drone.position)
-   }
+  @deprecated("The `storedResources` method now returns the same result and should be used instead.", "0.2.4.0")
+  def totalAvailableResources: Int = storedResources
+
+  def storedResources: Int = drone.storedResources
+
 
   override def isEnemy: Boolean = true
 

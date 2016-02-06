@@ -51,7 +51,13 @@ trait Drone {
    * Returns the total amount of resources available to this drone.
    * This includes any mineral crystals that are small enough to be processed by this drone.
    */
+  @deprecated("The `storedResources` method now returns the same result and should be used instead.", "0.2.4.0")
   def totalAvailableResources: Int
+
+  /**
+    * Returns the amount of resources store by this drone.
+    */
+  def storedResources: Int
 
   /**
    * Returns true if this drone is dead, false otherwise.

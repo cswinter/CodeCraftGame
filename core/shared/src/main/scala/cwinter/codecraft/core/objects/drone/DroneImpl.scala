@@ -50,12 +50,11 @@ private[core] class DroneImpl(
 
   val dynamics: DroneDynamics = spec.constructDynamics(this, initialPos, time)
   private[this] val weapons = spec.constructMissilesBatteries(this)
-  private[this] val refineries = spec.constructRefineries(this)
   private[core] val storage = spec.constructStorage(this, startingResources)
   private[this] val manipulator = spec.constructManipulatorModules(this)
   private[this] val shieldGenerators = spec.constructShieldGenerators(this)
   private[this] val engines = spec.constructEngineModules(this)
-  val droneModules = Seq(weapons, refineries, storage, manipulator, shieldGenerators, engines)
+  val droneModules = Seq(weapons, storage, manipulator, shieldGenerators, engines)
 
 
   def initialise(time: Double): Unit = {
@@ -103,7 +102,7 @@ private[core] class DroneImpl(
         inform(s"Cannot deposit minerals - storage is completely full.")
       } else {
         for (s <- storage) {
-          val amount = math.min(s.availableResources, capacity)
+          val amount = math.min(s.storedResources, capacity)
           depositee.depositResources(amount)
           s.subtractFromResources(amount)
           mineralDepositee = None
@@ -112,7 +111,7 @@ private[core] class DroneImpl(
     }
 
     for (Some(m) <- droneModules) {
-      val (events, resourceDepletions, resourceSpawns) = m.update(availableResources)
+      val (events, resourceDepletions, resourceSpawns) = m.update(storedResources)
       simulatorEvents :::= events.toList
       for {
         s <- storage
@@ -171,7 +170,7 @@ private[core] class DroneImpl(
   }
 
   @inline final def !(command: DroneCommand) = executeCommand(command)
-  
+
   def executeCommand(command: DroneCommand) = {
     var redundant = false
     command match {
@@ -192,7 +191,7 @@ private[core] class DroneImpl(
     assert(dynamics.isInstanceOf[RemoteDroneDynamics], "Trying to apply state to locally computed drone.")
     dynamics.asInstanceOf[RemoteDroneDynamics].update(state)
   }
-  
+
 
   //+------------------------------+
   //+ Command implementations      +
@@ -239,7 +238,7 @@ private[core] class DroneImpl(
       warn("Drone is trying to deposit minerals into itself!")
     } else if (other.storage.isEmpty) {
       warn("Trying to deposit minerals into a drone without a storage module.")
-    } else if (availableResources == 0) {
+    } else if (storedResources == 0) {
       warn("Drone has no minerals to deposit.")
     } else if ((other.position - position).lengthSquared > (radius + other.radius + 12) * (radius + other.radius + 12)) {
       warn("Too far away to deposit minerals.")
@@ -267,23 +266,9 @@ private[core] class DroneImpl(
     for (s <- storage) yield s.availableStorage
   }.getOrElse(0)
 
-  def availableFactories: Int = {
-    for (f <- refineries) yield f.currentCapacity
+  def storedResources: Int = {
+    for (s <- storage) yield s.storedResources
   }.getOrElse(0)
-
-  def availableResources: Int = {
-    for (s <- storage) yield s.availableResources
-  }.getOrElse(0)
-
-  def totalAvailableResources: Int = {
-    for (s <- storage) yield s.totalAvailableResources(processingCapacity)
-  }.getOrElse(0) + {
-    for (r <- refineries) yield r.unprocessedResourceAmount
-  }.getOrElse(0)
-
-  def storedMinerals: Iterable[MineralCrystalImpl] = {
-    for (s <- storage) yield s.storedMinerals
-  }.getOrElse(Seq())
 
   override def descriptor: Seq[WorldObjectDescriptor] = {
     Seq(

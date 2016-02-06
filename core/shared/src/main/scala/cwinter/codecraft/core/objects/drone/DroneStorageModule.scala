@@ -72,14 +72,14 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
   }
 
   def depositEnergyGlobe(position: Vector2): Unit = {
-    val targetPosition = calculateEnergyGlobePosition(availableResources)
+    val targetPosition = calculateEnergyGlobePosition(storedResources)
     val newEnergyGlobe = new MovingEnergyGlobe(targetPosition, position - owner.position, 20)
     storedEnergyGlobes.push(newEnergyGlobe)
   }
 
   def withdrawEnergyGlobe(): Vector2 = {
     storedEnergyGlobes.pop() match {
-      case StaticEnergyGlobe => calculateEnergyGlobePosition(availableResources)
+      case StaticEnergyGlobe => calculateEnergyGlobePosition(storedResources)
       case meg: MovingEnergyGlobe => meg.position
     }
   }.rotated(owner.dynamics.orientation) + owner.position
@@ -97,16 +97,10 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
     }
   }
 
-  def storedMinerals: Set[MineralCrystalImpl] = Set.empty // TODO: remove method and callers
-
-  def availableResources: Int = storedEnergyGlobes.size
-
-  def totalAvailableResources(refineries: Int): Int =
-    availableResources +
-      storedMinerals.filter(_.size <= refineries).foldLeft(0)(_ + _.size * DroneRefineryModule.MineralResourceYield)
+  def storedResources: Int = storedEnergyGlobes.size
 
   def availableStorage: Int =
-    positions.size * 7 - availableResources
+    positions.size * 7 - storedResources
 
   override def descriptors: Seq[DroneModuleDescriptor] = {
     val globeStorageIndices: Seq[Int] = positions

@@ -13,9 +13,10 @@ import scala.collection.JavaConverters._
  */
 class JDroneController extends DroneControllerBase {
   /**
-   * Gets all mineral crystals stored by this drone.
+   * Returns an empty list.
    */
-  def storedMinerals: java.util.List[MineralCrystal] = super.storedMineralsScala.asJava
+  @deprecated("Drones do not store mineral crystals anymore, only resources.", "0.2.4.0")
+  def storedMinerals: java.util.List[MineralCrystal] = new java.util.ArrayList()
   /**
    * Gets all drones currently within the sight radius of this drone.
    */

@@ -119,7 +119,8 @@ class JSDroneController(
    * Gets all mineral crystals stored by this drone.
    */
   @JSExport
-  def storedMinerals: js.Array[MineralCrystal] = super.storedMineralsScala.toJSArray
+  @deprecated("Drones do not store mineral crystals anymore, only resources.", "0.2.4.0")
+  def storedMinerals: js.Array[MineralCrystal] = Seq.empty[MineralCrystal].toJSArray
 
   /**
    * Gets all drones currently within the sight radius of this drone.

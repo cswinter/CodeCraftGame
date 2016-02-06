@@ -11,9 +11,10 @@ package cwinter.codecraft.core.api
  */
 class DroneController extends DroneControllerBase {
   /**
-   * Gets all mineral crystals stored by this drone.
+   * Returns an empty Seq.
    */
-   def storedMinerals: Seq[MineralCrystal] = super.storedMineralsScala
+  @deprecated("Drones do not store mineral crystals anymore, only resources.", "0.2.4.0")
+   def storedMinerals: Seq[MineralCrystal] = Seq.empty
 
   /**
    * Gets all drones currently within the sight radius of this drone.

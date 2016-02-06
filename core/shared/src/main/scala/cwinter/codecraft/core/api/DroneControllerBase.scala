@@ -246,16 +246,20 @@ trait DroneControllerBase extends Drone {
    * Returns the total amount of resources available to this drone.
    * If the drone has refineries, this includes unprocessed mineral crystals.
    */
-  def totalAvailableResources: Int = drone.totalAvailableResources
+  @deprecated("The `storedResources` method now returns the same result and should be used instead.", "0.2.4.0")
+  def totalAvailableResources: Int = storedResources
 
   /**
-   * Returns the number of unused refinery modules.
-   */
-  def availableRefineries: Int = drone.availableFactories
+    * Returns the total amount of resources stored by this drone.
+    */
+  def storedResources: Int = drone.storedResources
 
-  // TODO: make this O(1)
-  private[core] def storedMineralsScala: Seq[MineralCrystal] =
-    drone.storedMinerals.toSeq.map(new MineralCrystal(_, drone.player))
+  /**
+    * Returns 0.
+     */
+  @deprecated("The refinery module has been removed.", "0.2.4.0")
+  def availableRefineries: Int = 0
+
   private[core] def dronesInSightScala: Set[Drone] = drone.dronesInSight.map( d =>
       if (d.player == drone.player) d.controller
       else new EnemyDrone(d, drone.player)   // TODO: maybe create drone handles once for each player

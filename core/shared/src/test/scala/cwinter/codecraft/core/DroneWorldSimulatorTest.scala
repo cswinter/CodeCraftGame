@@ -5,9 +5,9 @@ import cwinter.codecraft.core.objects.drone.{HarvestMineral, DroneStorageModule,
 import cwinter.codecraft.core.objects.MineralCrystalImpl
 import cwinter.codecraft.core.replay.DummyDroneController
 import cwinter.codecraft.util.maths.{Vector2, Rectangle}
-import org.scalatest.FlatSpec
+import org.scalatest.{Matchers, FlatSpec}
 
-class DroneWorldSimulatorTest extends FlatSpec {
+class DroneWorldSimulatorTest extends FlatSpec with Matchers {
   val mineralSpawn = new MineralSpawn(1, Vector2(0, 0))
   val mockDroneSpec = new DroneSpec(storageModules = 2)
   val mockDrone = new DummyDroneController
@@ -30,6 +30,6 @@ class DroneWorldSimulatorTest extends FlatSpec {
   it must "prevent double harvesting of resources" in {
     mockDrone.drone ! HarvestMineral(mineral)
     simulator.run(DroneStorageModule.HarvestingDuration)
-    assert(mockDrone.storedMinerals.size == 1)
+    mockDrone.storedResources shouldBe 1
   }
 }
