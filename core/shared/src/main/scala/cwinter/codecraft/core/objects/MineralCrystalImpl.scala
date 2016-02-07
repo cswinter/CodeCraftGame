@@ -16,7 +16,7 @@ private[core] class MineralCrystalImpl(
 ) extends WorldObject {
   private[this] var _descriptor = Seq(createDescriptor)
   private var handles = Map.empty[Player, MineralCrystal]
-  private[objects] var harvester: Option[DroneStorageModule] = None
+  private[objects] var claimedBy: Option[DroneStorageModule] = None
 
   def position: Vector2 = _position
   def position_=(value: Vector2): Unit = { _position = value; updateDescriptor() }

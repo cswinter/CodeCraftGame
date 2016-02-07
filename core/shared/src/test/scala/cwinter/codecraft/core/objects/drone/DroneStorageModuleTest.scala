@@ -13,6 +13,7 @@ class DroneStorageModuleTest extends FlatSpec with Matchers {
   val mineralCrystal = new MineralCrystalImpl(mineralSize, 0, Vector2.Null)
   val storageModule1 = mockDrone1.storage.get
   val storageModule2 = mockDrone2.storage.get
+  val mineralCrystal2 = new MineralCrystalImpl(100, 1, Vector2.Null)
 
   "A drone storage module" should "harvest a mineral in less than 1000 timesteps" in {
     storageModule2.harvestMineral(mineralCrystal)
@@ -33,5 +34,18 @@ class DroneStorageModuleTest extends FlatSpec with Matchers {
 
     storageModule2.storedResources shouldBe 0
     storageModule1.storedResources shouldBe mineralSize
+  }
+
+  it should "not be able to harvest a mineral that is already being harvested by another drone" in {
+    storageModule1.harvestMineral(mineralCrystal2)
+    mockDrone1.update()
+
+    storageModule1.isHarvesting shouldBe true
+
+    storageModule2.harvestMineral(mineralCrystal2)
+    mockDrone2.update()
+
+    storageModule1.isHarvesting shouldBe true
+    storageModule2.isHarvesting shouldBe false
   }
 }

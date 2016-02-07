@@ -26,7 +26,11 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
   override def update(availableResources: Int): (Seq[SimulatorEvent], Seq[Vector2], Seq[Vector2]) = {
     var effects = List.empty[SimulatorEvent]
 
-    // TODO: make sure this does not cause determinism problems
+    // TODO: this is not deterministic (since no ordering on the update() method of different drones is enforced)
+    // Possible solution (will solve other potential issues as well):
+    // Assign a random number to each drone to establish a fair priority, use id as tie breaker.
+    // Keep list of drones in simulator sorted.
+    // This requires instantiating a rng for each DroneWorldSimulator, and syncing the seed in multiplayer/replays.
     resourceDepositee.foreach(performResourceDeposit)
 
     for {
@@ -42,7 +46,7 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
   private def harvest(mineral: MineralCrystalImpl): Option[SimulatorEvent] = {
     // need to check availableStorage in case another drone gave this one resources
     if (mineral.harvested || availableStorage == 0) {
-      harvesting = None
+      cancelHarvesting()
     } else {
       harvestCountdown -= positions.size
       if (harvestCountdown <= 0) {
@@ -56,10 +60,6 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
     subtractFromResources(-1)
     mineral.decreaseSize()
     harvestCountdown = HarvestingDuration
-
-    if (mineral.size == 0 || availableStorage == 0) {
-      harvesting = None
-    }
 
     if (mineral.size == 0) Some(MineralCrystalHarvested(mineral))
     else None
@@ -109,7 +109,7 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
     if (availableStorage == 0) {
       owner.warn(s"Trying to harvest mineral crystal, but storage is completely filled.")
     } else if ((owner.position - mineralCrystal.position).lengthSquared >
-        DroneConstants.HarvestingRange * DroneConstants.HarvestingRange) {
+      DroneConstants.HarvestingRange * DroneConstants.HarvestingRange) {
       val dist = (owner.position - mineralCrystal.position).length
       owner.warn(s"Too far away from mineral crystal to harvest. " +
         s"Required: ${DroneConstants.HarvestingRange} Actual: $dist.")
@@ -117,10 +117,22 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
       owner.warn("Trying to harvest mineral crystal that has already been harvested.")
     } else if (harvesting.contains(mineralCrystal)) {
       //owner.inform("This drone is already harvesting.")
+    } else if (mineralCrystal.claimedBy.exists(_ != this)) {
+      owner.warn("Trying to harvest a mineral crystal that is already being harvested by another drone.")
     } else {
       harvestCountdown = HarvestingDuration
+      mineralCrystal.claimedBy = Some(this)
       harvesting = Some(mineralCrystal)
     }
+  }
+
+  def droneHasDied(): Unit = {
+    cancelHarvesting()
+  }
+
+  def cancelHarvesting(): Unit = {
+    harvesting.foreach(_.claimedBy = None)
+    harvesting = None
   }
 
   def depositResources(other: Option[DroneStorageModule]): Unit = {

@@ -145,6 +145,7 @@ private[core] class DroneImpl(
         m <- manipulator
         d <- m.droneInConstruction
       } simulatorEvents ::= DroneConstructionCancelled(d)
+      for (s <- storage) s.droneHasDied()
     }
 
     // TODO: only do this in multiplayer games
