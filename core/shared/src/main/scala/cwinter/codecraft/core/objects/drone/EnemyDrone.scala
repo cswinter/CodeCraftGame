@@ -19,7 +19,8 @@ private[core] class EnemyDrone(
       drone.position
     } else {
       val exception = new ObjectNotVisibleException(
-        "Cannot get the position of an enemy drone that is not inside the sight radius of any of your drones.")
+        "Cannot get the position of an enemy drone that is not inside the sight radius of any of your drones. " +
+          "Use lastKnownPosition instead.")
       Errors.error(exception, drone.position)
     }
   }
@@ -44,6 +45,13 @@ private[core] class EnemyDrone(
     }
   }
 
+  override def isDead: Boolean = drone.isDead
+
+  /**
+    * The position of this drone at the last time it was seen by any of your drones.
+    */
+  override def lastKnownPosition: Vector2 = _lastKnownPosition
+
   @deprecated("The `storedResources` method now returns the same result and should be used instead.", "0.2.4.0")
   def totalAvailableResources: Int = storedResources
 
@@ -51,6 +59,9 @@ private[core] class EnemyDrone(
 
 
   override def isEnemy: Boolean = true
+
+  private[core] def recordPosition(): Unit =
+    if (isVisible) _lastKnownPosition = position
 
   def isVisible: Boolean = {
     drone.player == holder ||

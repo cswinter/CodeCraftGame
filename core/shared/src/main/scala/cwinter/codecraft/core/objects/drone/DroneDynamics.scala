@@ -12,4 +12,5 @@ private[core] trait DroneDynamics {
   def pos: Vector2
   def remove(): Unit
   def removed: Boolean
+  def isMoving: Boolean
 }

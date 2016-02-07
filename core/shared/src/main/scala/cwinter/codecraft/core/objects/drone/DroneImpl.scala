@@ -32,6 +32,8 @@ private[core] class DroneImpl(
   private[this] var _oldPosition = Vector2.Null
   private[this] var _hasMoved: Boolean = true
 
+  private[this] var handles = Map.empty[Player, EnemyDrone]
+
   private[this] var _missileHits = List.empty[MissileHit]
   def popMissileHits(): Seq[MissileHit] = {
     val result = _missileHits
@@ -87,7 +89,7 @@ private[core] class DroneImpl(
           controller.onArrivesAtMineral(new MineralCrystal(mineral, player))
         case DroneEntersSightRadius(drone) => controller.onDroneEntersVision(
           if (drone.player == player) drone.controller
-          else new EnemyDrone(drone, player)
+          else drone.wrapperFor(player)
         )
         case Spawned => /* this is handled by simulator to ensure onSpawn is called before any other events */
         case event => throw new Exception(s"Unhandled event! $event")
@@ -100,6 +102,8 @@ private[core] class DroneImpl(
   override def update(): Seq[SimulatorEvent] = {
     _hasMoved = _oldPosition != position
     _oldPosition = position
+
+    for ((_, wrapper) <- handles) wrapper.recordPosition()
 
     for (Some(m) <- droneModules) {
       val (events, resourceDepletions, resourceSpawns) = m.update(storedResources)
@@ -238,6 +242,7 @@ private[core] class DroneImpl(
   def dronesInSight: Set[DroneImpl] = objectsInSight.filter(_.isInstanceOf[DroneImpl]).map { case d: DroneImpl => d }
   def isConstructing: Boolean = manipulator.exists(_.isConstructing)
   def isHarvesting: Boolean = storage.exists(_.isHarvesting)
+  def isMoving: Boolean = dynamics.isMoving
   def storageCapacity = spec.storageModules
   def size = spec.size
   def radius = spec.radius
@@ -254,6 +259,13 @@ private[core] class DroneImpl(
   def isInHarvestingRange(mineral: MineralCrystalImpl): Boolean =
     (mineral.position - position).lengthSquared <=
       DroneConstants.HarvestingRange * DroneConstants.HarvestingRange
+
+  def wrapperFor(player: Player): EnemyDrone = {
+    require(player != this.player)
+    if (!handles.contains(player))
+      handles += player -> new EnemyDrone(this, player)
+    handles(player)
+  }
 
   override def descriptor: Seq[WorldObjectDescriptor] = {
     Seq(

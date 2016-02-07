@@ -104,7 +104,9 @@ trait DroneControllerBase extends Drone {
    */
   def moveTo(otherDrone: Drone): Unit = {
     // TODO: most validation is in DroneImpl, maybe make consistent?
-    if (otherDrone.isDead) {
+    if (otherDrone.isEnemy && !otherDrone.isVisible) {
+      drone.error("Cannot moveTo enemy drone that is not inside the sight radius of any of your drones.")
+    } else if (otherDrone.isDead) {
       drone.warn("Trying to moveTo a dead drone!")
     } else {
       drone ! MoveToDrone(otherDrone.drone)
@@ -253,6 +255,11 @@ trait DroneControllerBase extends Drone {
   def isHarvesting: Boolean = drone.isHarvesting
 
   /**
+    * Returns true of this drone has a movement command active or queued up, false otherwise.
+    */
+  def isMoving: Boolean = drone.isMoving
+
+  /**
    * Returns the number of free storage modules.
    */
   def availableStorage: Int = drone.availableStorage
@@ -277,7 +284,7 @@ trait DroneControllerBase extends Drone {
 
   private[core] def dronesInSightScala: Set[Drone] = drone.dronesInSight.map( d =>
       if (d.player == drone.player) d.controller
-      else new EnemyDrone(d, drone.player)   // TODO: maybe create drone handles once for each player
+      else d.wrapperFor(drone.player)
     )
 
   /**

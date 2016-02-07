@@ -190,6 +190,8 @@ private[core] class ComputedDroneDynamics(
     }
   }
 
+  def isMoving = _movementCommand != HoldPosition
+
   override def toString: String = s"DroneDynamics(pos=$pos, velocity=$velocity)"
   
   

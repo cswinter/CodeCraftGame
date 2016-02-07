@@ -35,5 +35,7 @@ private[core] class RemoteDroneDynamics(
   override def checkArrivalConditions(): Option[DroneEvent] = _arrivalEvent
   override def orientation: Double = _orientation
   override def pos: Vector2 = position
+
+  override def isMoving: Boolean = throw new Exception("RemoteDroneDynamics.isMoving should never be called.")
 }
 

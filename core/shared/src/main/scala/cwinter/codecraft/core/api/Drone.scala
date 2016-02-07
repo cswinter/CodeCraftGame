@@ -64,6 +64,11 @@ trait Drone {
    */
   def isDead: Boolean = hitpoints <= 0
 
+  /**
+    * The position of this drone at the last time it was seen by any of your drones.
+    */
+  def lastKnownPosition: Vector2 = position
+
   private[core] def drone: DroneImpl
 
   override def toString: String = {
