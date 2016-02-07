@@ -17,8 +17,11 @@ object Debug {
     staticObjects ::= worldObject
   }
 
-  def drawText(text: String, xPos: Double, yPos: Double, color: ColorRGBA): Unit = {
-    _textModels ::= TextModel(text, xPos.toFloat, yPos.toFloat, color)
+  def drawText(
+    text: String, xPos: Double, yPos: Double, color: ColorRGBA,
+    absolutePosition: Boolean = false, largeFont: Boolean = false
+  ): Unit = {
+    _textModels ::= TextModel(text, xPos.toFloat, yPos.toFloat, color, absolutePosition, largeFont, absolutePosition)
   }
 
 

@@ -12,6 +12,7 @@ trait Player {
   def id: Int
   private[codecraft] def char: Char
   private[codecraft] def color: ColorRGB
+  private[codecraft] def name: String
 }
 
 private[codecraft] object Player {
@@ -26,8 +27,9 @@ private[codecraft] object Player {
  * The blue player.
  */
 object BluePlayer extends Player {
-  private[codecraft] def color: ColorRGB = ColorRGB(0, 0, 1)
-  private[codecraft] def char = 'B'
+  private[codecraft] val color: ColorRGB = ColorRGB(0, 0, 1)
+  private[codecraft] val char = 'B'
+  private[codecraft] val name = "Blue Player"
 
   /**
    * Returns `0`.
@@ -39,8 +41,9 @@ object BluePlayer extends Player {
  * The red player.
  */
 object RedPlayer extends Player {
-  private[codecraft] def color: ColorRGB = ColorRGB(1, 0, 0)
-  private[codecraft] def char = 'R'
+  private[codecraft] val color: ColorRGB = ColorRGB(1, 0, 0)
+  private[codecraft] val char = 'R'
+  private[codecraft] val name = "Red Player"
 
   /**
    * Returns `1`.
@@ -52,8 +55,9 @@ object RedPlayer extends Player {
  * The orange player.
  */
 object OrangePlayer extends Player {
-  private[codecraft] def color: ColorRGB = ColorRGB(1, 0.25f, 0)
-  private[codecraft] def char = 'O'
+  private[codecraft] val color: ColorRGB = ColorRGB(1, 0.25f, 0)
+  private[codecraft] val char = 'O'
+  private[codecraft] val name = "Orange Player"
 
   /**
    * Returns `2`.

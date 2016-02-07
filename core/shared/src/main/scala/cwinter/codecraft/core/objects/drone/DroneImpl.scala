@@ -73,7 +73,6 @@ private[core] class DroneImpl(
     t += 1
     if (isDead) {
       controller.onDeath()
-      println(s"[$t]: onDeath $id")
     } else {
       // process events
       eventQueue foreach {

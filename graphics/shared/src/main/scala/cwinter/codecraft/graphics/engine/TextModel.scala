@@ -6,6 +6,9 @@ private[graphics] case class TextModel(
   text: String,
   xPos: Float,
   yPos: Float,
-  color: ColorRGBA
+  color: ColorRGBA,
+  absolutePos: Boolean = false,
+  largeFont: Boolean = false,
+  centered: Boolean = false
 )
 

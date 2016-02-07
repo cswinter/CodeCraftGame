@@ -1,18 +1,16 @@
 package cwinter.codecraft.graphics.engine
 
 import java.awt.{Font, TextField}
-
-import javax.media.opengl._
 import javax.media.opengl.GL._
+import javax.media.opengl._
 
 import com.jogamp.opengl.util.awt.TextRenderer
 import cwinter.codecraft.graphics.engine
-import cwinter.codecraft.util.maths.matrices.IdentityMatrix4x4
-import cwinter.codecraft.graphics.model.{VBO, TheModelCache, PrimitiveModelBuilder}
+import cwinter.codecraft.graphics.materials.Material
+import cwinter.codecraft.graphics.model.{PrimitiveModelBuilder, TheModelCache, VBO}
 import cwinter.codecraft.graphics.models.TheWorldObjectModelFactory
 import cwinter.codecraft.graphics.worldstate.Simulator
-import cwinter.codecraft.graphics.materials.Material
-import cwinter.codecraft.util.maths.{ColorRGBA, VertexXY}
+import cwinter.codecraft.util.maths.VertexXY
 import org.joda.time.DateTime
 
 
@@ -24,6 +22,7 @@ private[graphics] object RenderFrame extends GLEventListener {
   implicit var renderStack: JVMRenderStack = null
   var camera = new Camera2D
   var textRenderer: TextRenderer = null
+  var largeTextRenderer: TextRenderer = null
 
   var cullFaceToggle = false
   val FrametimeSamples = 100
@@ -104,14 +103,8 @@ private[graphics] object RenderFrame extends GLEventListener {
 
     textRenderer.beginRendering(width, height)
 
-    for (TextModel(text, xPos, yPos, color) <- Debug.textModels) {
-      textRenderer.setColor(color.r, color.g, color.b, color.a)
-      val bounds = textRenderer.getBounds(text)
-      val worldPos = VertexXY(xPos, yPos)
-      val position = (1 / camera.zoomFactor) * (worldPos - VertexXY(camera.x, camera.y)) +
-        VertexXY(width / 2 - bounds.getWidth.toFloat / 2, height / 2 + bounds.getHeight.toFloat / 2)
-      textRenderer.draw(text, position.x.toInt, position.y.toInt)
-    }
+    for (text <- Debug.textModels if !text.largeFont)
+      renderTextModel(textRenderer, text, width, height)
 
     textRenderer.setColor(1, 1, 1, 0.7f)
     var yPos = height - 15
@@ -122,7 +115,26 @@ private[graphics] object RenderFrame extends GLEventListener {
     }
 
     textRenderer.endRendering()
+
+    largeTextRenderer.beginRendering(width, height)
+    for (text <- Debug.textModels if text.largeFont)
+      renderTextModel(largeTextRenderer, text, width, height)
+    largeTextRenderer.endRendering()
   }
+
+  def renderTextModel(renderer: TextRenderer, textModel: TextModel, width: Int, height: Int): Unit = {
+    val TextModel(text, xPos, yPos, color, absolutePos, _, centered) = textModel
+    renderer.setColor(color.r, color.g, color.b, color.a)
+    val bounds = renderer.getBounds(text)
+    val worldPos = VertexXY(xPos, yPos)
+    var position =
+      if (absolutePos) VertexXY(xPos - bounds.getWidth.toFloat / 2, yPos + 8)
+      else (1 / camera.zoomFactor) * (worldPos - VertexXY(camera.x, camera.y)) +
+        VertexXY(width / 2 - bounds.getWidth.toFloat / 2, height / 2 + bounds.getHeight.toFloat / 2)
+    if (centered) position += VertexXY(width / 2, + height / 2)
+    renderer.draw(text, position.x.toInt, position.y.toInt)
+  }
+
 
   private def infoText: String =
     s"""Game speed target: ${gameWorld.framerateTarget}
@@ -160,6 +172,7 @@ private[graphics] object RenderFrame extends GLEventListener {
     fbo = new FramebufferObject
     renderStack = new JVMRenderStack
     textRenderer = new TextRenderer(new Font("SansSerif", Font.BOLD, 14))
+    largeTextRenderer = new TextRenderer(new Font("SansSerif", Font.BOLD, 90))
     camera.position = (gameWorld.initialCameraPos.x.toInt, gameWorld.initialCameraPos.y.toInt)
     gameWorld.run()
   }
@@ -170,6 +183,7 @@ private[graphics] object RenderFrame extends GLEventListener {
     fbo.resize(width, height)(gl)
 
     textRenderer = new TextRenderer(new Font("SansSerif", Font.BOLD, 14))
+    largeTextRenderer = new TextRenderer(new Font("SansSerif", Font.BOLD, 90))
   }
 
   def getGL(drawable: GLAutoDrawable): GL4 =

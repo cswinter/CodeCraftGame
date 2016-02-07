@@ -10,7 +10,7 @@ import cwinter.codecraft.core.replay._
 import cwinter.codecraft.graphics.engine.Debug
 import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.physics.PhysicsEngine
-import cwinter.codecraft.util.maths.{ColorRGB, Rng, Vector2}
+import cwinter.codecraft.util.maths.{ColorRGBA, ColorRGB, Rng, Vector2}
 import cwinter.codecraft.util.modules.ModulePosition
 
 import scala.async.Async.{async, await}
@@ -236,13 +236,15 @@ class DroneWorldSimulator(
   }
 
   private def checkWinConditions(): Unit = {
-    if (timestep % 30 == 0) {
-      for (
-        wc <- map.winCondition;
-        player <- players
-        if playerHasWon(wc, player)
-      ) showVictoryMessage(player)
-    }
+    for (
+      wc <- map.winCondition;
+      player <- players
+      if playerHasWon(wc, player)
+    ) showVictoryMessage(player)
+  }
+
+  def showVictoryMessage(winner: Player): Unit = {
+    Debug.drawText(s"${winner.name} has won!", 0, 0, ColorRGBA(winner.color, 0.6f), true, true)
   }
 
   private def processDroneEvents(): Unit = {
@@ -429,13 +431,6 @@ class DroneWorldSimulator(
 
   private def isLivingEnemyMothership(drone: DroneImpl, player: Player): Boolean =
     drone.player != player && !drone.isDead && drone.spec.constructors > 0
-
-  def showVictoryMessage(winner: Player): Unit = {
-    for (
-      drone <- drones
-      if drone.player == winner
-    ) Errors.inform("Victory!", drone.position)
-  }
 
 
   private[codecraft] override def computeWorldState: Iterable[WorldObjectDescriptor] = {

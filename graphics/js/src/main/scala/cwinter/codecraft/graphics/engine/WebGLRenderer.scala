@@ -143,8 +143,12 @@ private[codecraft] class WebGLRenderer(
       if (gameWorld.isPaused) {
         renderText(
           ctx,
-          TextModel("Game Paused. Press SPACEBAR to resume.", width / 2, height / 2, ColorRGBA(1, 1, 1, 1)),
-          absolutePos = true
+          TextModel(
+            "Game Paused. Press SPACEBAR to resume.",
+            width / 2, height / 2,
+            ColorRGBA(1, 1, 1, 1),
+            absolutePos = true
+          )
         )
       }
     }
@@ -167,23 +171,24 @@ private[codecraft] class WebGLRenderer(
     )*/
   }
 
-  private def renderText(context: CanvasRenderingContext2D, textModel: TextModel, absolutePos: Boolean = false): Unit = {
-    val TextModel(text, x, y, ColorRGBA(r, g, b, a)) = textModel
+  private def renderText(context: CanvasRenderingContext2D, textModel: TextModel): Unit = {
+    val TextModel(text, x, y, ColorRGBA(r, g, b, a), absolutePos, largeFont, centered) = textModel
     val width = context.canvas.width
     val height = context.canvas.height
 
     def int(f: Float) = Math.round(255 * f)
 
     context.fillStyle = s"rgba(${int(r)}, ${int(g)}, ${int(b)}, $a)"
-    context.font =  "16px serif bold"
+    context.font =  if (largeFont) "90px serif bold" else "16px serif bold"
     val textMetric = context.measureText(text)
     val worldPos = VertexXY(x, -y)
-    val position =
+    var position =
       if (absolutePos) VertexXY(x - textMetric.width.toFloat / 2, y + 8)
       else {
         (1 / camera.zoomFactor) * (worldPos - VertexXY(camera.x, -camera.y)) +
           VertexXY(width / 2 - textMetric.width.toFloat / 2, height / 2 + 8)
       }
+    if (centered) position += VertexXY(width / 2, + height / 2)
 
     context.fillText(text, position.x, position.y)
   }
