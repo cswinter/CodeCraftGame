@@ -76,8 +76,11 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
       owner.inform(s"Cannot deposit minerals - storage is completely full.")
     } else {
       val amount = math.min(storedResources, capacity)
-      depositee.subtractFromResources(-amount)
-      subtractFromResources(amount)
+      for (i <- 1 to amount) {
+        val localGlobePos = withdrawEnergyGlobe()
+        val transformedGlobePos = convertGlobeReferenceFrame(depositee.owner, localGlobePos)
+        depositee.depositEnergyGlobe(transformedGlobePos)
+      }
       resourceDepositee = None
     }
   }
@@ -97,9 +100,13 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
     Vector2(pos.x, pos.y)
   }
 
+  def convertGlobeReferenceFrame(other: DroneImpl, pos: Vector2): Vector2 = {
+    (pos - other.position).rotated(-other.dynamics.orientation)
+  }
+
   def depositEnergyGlobe(position: Vector2): Unit = {
     val targetPosition = calculateEnergyGlobePosition(storedResources)
-    val newEnergyGlobe = new MovingEnergyGlobe(targetPosition, position - owner.position, 20)
+    val newEnergyGlobe = new MovingEnergyGlobe(targetPosition, position, 20)
     storedEnergyGlobes.push(newEnergyGlobe)
   }
 
