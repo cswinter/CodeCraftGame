@@ -45,7 +45,7 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
 
   private def harvest(mineral: MineralCrystalImpl): Option[SimulatorEvent] = {
     // need to check availableStorage in case another drone gave this one resources
-    if (mineral.harvested || availableStorage == 0) {
+    if (shouldCancelHarvesting(mineral)) {
       cancelHarvesting()
     } else {
       harvestCountdown -= positions.size
@@ -55,6 +55,11 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
     }
     None
   }
+
+  private def shouldCancelHarvesting(mineral: MineralCrystalImpl): Boolean =
+    mineral.harvested ||
+    availableStorage == 0 ||
+    (owner.hasMoved && !owner.isInHarvestingRange(mineral))
 
   private def performHarvest(mineral: MineralCrystalImpl): Option[SimulatorEvent] = {
     subtractFromResources(-1)
@@ -108,8 +113,7 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
   def harvestMineral(mineralCrystal: MineralCrystalImpl): Unit = {
     if (availableStorage == 0) {
       owner.warn(s"Trying to harvest mineral crystal, but storage is completely filled.")
-    } else if ((owner.position - mineralCrystal.position).lengthSquared >
-      DroneConstants.HarvestingRange * DroneConstants.HarvestingRange) {
+    } else if (!owner.isInHarvestingRange(mineralCrystal)) {
       val dist = (owner.position - mineralCrystal.position).length
       owner.warn(s"Too far away from mineral crystal to harvest. " +
         s"Required: ${DroneConstants.HarvestingRange} Actual: $dist.")
@@ -176,7 +180,7 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
   }
 
 
-  override def cancelMovement: Boolean = harvesting.nonEmpty || resourceDepositee.nonEmpty
+  override def cancelMovement: Boolean = resourceDepositee.nonEmpty
 }
 
 // TODO: aggregate all constants

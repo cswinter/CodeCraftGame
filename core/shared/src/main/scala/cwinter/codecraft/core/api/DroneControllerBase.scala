@@ -234,8 +234,7 @@ trait DroneControllerBase extends Drone {
     * Returns true if `mineralCrystal` is within harvesting range, otherwise false.
     */
   def isInHarvestingRange(mineralCrystal: MineralCrystal): Boolean =
-    (mineralCrystal.position - drone.position).lengthSquared <=
-      DroneConstants.HarvestingRange * DroneConstants.HarvestingRange
+    drone.isInHarvestingRange(mineralCrystal.mineralCrystal)
 
   /**
    * Returns true if this drone is currently constructing another drone.

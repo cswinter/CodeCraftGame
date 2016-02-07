@@ -29,6 +29,8 @@ private[core] class DroneImpl(
   private[this] var hullState = List.fill[Byte](spec.size - 1)(2)
   private[core] var constructionProgress: Option[Int] = None
   private[this] var _hasDied: Boolean = false
+  private[this] var _oldPosition = Vector2.Null
+  private[this] var _hasMoved: Boolean = true
 
   private[this] var _missileHits = List.empty[MissileHit]
   def popMissileHits(): Seq[MissileHit] = {
@@ -94,7 +96,10 @@ private[core] class DroneImpl(
   }
 
   override def update(): Seq[SimulatorEvent] = {
-     for(Some(m) <- droneModules) {
+    _hasMoved = _oldPosition != position
+    _oldPosition = position
+
+    for (Some(m) <- droneModules) {
       val (events, resourceDepletions, resourceSpawns) = m.update(storedResources)
       simulatorEvents :::= events.toList
       for {
@@ -249,6 +254,10 @@ private[core] class DroneImpl(
     for (s <- storage) yield s.storedResources
   }.getOrElse(0)
 
+  def isInHarvestingRange(mineral: MineralCrystalImpl): Boolean =
+    (mineral.position - position).lengthSquared <=
+      DroneConstants.HarvestingRange * DroneConstants.HarvestingRange
+
   override def descriptor: Seq[WorldObjectDescriptor] = {
     Seq(
       DroneDescriptor(
@@ -296,6 +305,8 @@ private[core] class DroneImpl(
   }
 
   override def isDead = _hasDied
+
+  def hasMoved = _hasMoved
 
   override def toString: String = id.toString
 }
