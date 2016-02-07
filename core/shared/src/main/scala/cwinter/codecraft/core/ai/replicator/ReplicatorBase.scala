@@ -1,4 +1,4 @@
-package cwinter.codecraft.testai.replicator
+package cwinter.codecraft.core.ai.replicator
 
 import cwinter.codecraft.core.api.{Drone, DroneController, MineralCrystal}
 

@@ -101,6 +101,7 @@ private[codecraft] trait GameMasterLike {
   def level1AI(): DroneControllerBase = new ai.basic.Mothership
   def level2AI(): DroneControllerBase = new basicplus.Mothership
   def bonusLevelAI(): DroneControllerBase = new ai.cheese.Mothership
+  def replicatorAI(): DroneControllerBase = new ai.replicator.Replicator
 
   /**
    * Returns a [[WorldMap]] for the second level.
