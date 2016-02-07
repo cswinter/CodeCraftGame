@@ -1,9 +1,13 @@
 package cwinter.codecraft.core.ai.replicator
 
+import cwinter.codecraft.core.api.MetaController
 import cwinter.codecraft.util.maths.Rectangle
 
+import scala.util.Random
 
-class ReplicatorContext  {
+
+class ReplicatorContext extends MetaController {
+  val rng = new Random()
   val harvestCoordinator = new HarvestCoordinator
   val battleCoordinator = new BattleCoordinator
   val droneCount = new DroneCounter
@@ -22,5 +26,10 @@ class ReplicatorContext  {
   }
 
   def initialisationRequired: Boolean = _searchCoordinator == null
+
+  override def onTick(): Unit = {
+    harvestCoordinator.update()
+    battleCoordinator.update()
+  }
 }
 

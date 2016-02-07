@@ -105,5 +105,7 @@ class Replicator(
   def slaveFailed(slave: Harvester): Unit = {
     slaves -= slave
   }
+
+  override def metaController = Some(context)
 }
 

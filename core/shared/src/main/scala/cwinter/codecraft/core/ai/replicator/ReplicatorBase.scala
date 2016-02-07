@@ -37,10 +37,6 @@ abstract class ReplicatorBase(
     enemyStrength <= alliedStrength
   }
 
-  def requestSearchToken(): Option[SearchToken] = {
-    context.searchCoordinator.getSearchToken(position)
-  }
-
   def scout(): Unit = {
     if (searchToken.isEmpty) searchToken = requestSearchToken()
     for (t <- searchToken) {
@@ -50,6 +46,10 @@ abstract class ReplicatorBase(
         moveTo(t.pos)
       }
     }
+  }
+
+  def requestSearchToken(): Option[SearchToken] = {
+    context.searchCoordinator.getSearchToken(position)
   }
 
   override def onDeath(): Unit = {
@@ -66,8 +66,9 @@ abstract class ReplicatorBase(
 
   override def onDroneEntersVision(drone: Drone): Unit = {
     if (drone.isEnemy)
-    if (drone.isEnemy && drone.spec.size > 6) {
+    if (drone.isEnemy && drone.spec.constructors > 0) {
       context.battleCoordinator.foundCapitalShip(drone)
     }
   }
 }
+

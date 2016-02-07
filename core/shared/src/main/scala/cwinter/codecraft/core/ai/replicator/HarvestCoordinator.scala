@@ -12,7 +12,6 @@ class HarvestCoordinator {
   private var assignedZones = Set.empty[(Int, Int)]
 
   def findClosestMineral(position: Vector2, assignedZone: Option[HarvestingZone] = None): Option[MineralCrystal] = {
-    minerals = minerals.filter(!_.harvested)
     val filtered =
       for (
         m <- minerals -- claimedMinerals
@@ -27,23 +26,6 @@ class HarvestCoordinator {
     result
   }
 
-  def freeZoneCount: Int = {
-    zones = zones.filter(!_._2.exhausted)
-    (zones -- assignedZones).size
-  }
-
-  def requestHarvestingZone(position: Vector2): Option[HarvestingZone] = {
-    zones = zones.filter(!_._2.exhausted)
-    val candidates = zones -- assignedZones
-    if (candidates.isEmpty) None
-    else {
-      val (location, zone) =
-        candidates.minBy(x => (x._2.midpoint - position).lengthSquared)
-      assignedZones += location
-      Some(zone)
-    }
-  }
-
   def registerMineral(mineralCrystal: MineralCrystal): Unit = {
     minerals += mineralCrystal
     val zone@(x, y) = determineZone(mineralCrystal.position)
@@ -55,6 +37,27 @@ class HarvestCoordinator {
 
   def abortHarvestingMission(mineralCrystal: MineralCrystal): Unit = {
     claimedMinerals -= mineralCrystal
+  }
+
+  def requestHarvestingZone(position: Vector2): Option[HarvestingZone] = {
+    val candidates = zones -- assignedZones
+    if (candidates.isEmpty) None
+    else {
+      val (location, zone) =
+        candidates.minBy(x => (x._2.midpoint - position).lengthSquared)
+      assignedZones += location
+      Some(zone)
+    }
+  }
+
+  def freeZoneCount: Int = {
+    (zones -- assignedZones).size
+  }
+
+  def update(): Unit = {
+    minerals = minerals.filter(!_.harvested)
+    for ((_, zone) <- zones) zone.update()
+    zones = zones.filter(!_._2.exhausted)
   }
 }
 
@@ -78,9 +81,9 @@ class HarvestingZone(
     minerals += mineralCrystal
   }
 
-  def exhausted: Boolean = {
-    minerals = minerals.filter(!_.harvested)
-    minerals.isEmpty
-  }
+  def exhausted: Boolean = minerals.isEmpty
+
+  def update(): Unit = minerals = minerals.filter(!_.harvested)
 }
+
 

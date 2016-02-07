@@ -8,4 +8,3 @@ package cwinter.codecraft.core.api
 trait MetaController {
   def onTick(): Unit
 }
-
