@@ -62,6 +62,7 @@ private[core] class DroneImpl(
     controller.initialise(this)
   }
 
+  var t = 0
   def processEvents(): Unit = {
     controller.willProcessEvents()
 
@@ -69,8 +70,10 @@ private[core] class DroneImpl(
       enqueueEvent(event)
     }
 
+    t += 1
     if (isDead) {
       controller.onDeath()
+      println(s"[$t]: onDeath $id")
     } else {
       // process events
       eventQueue foreach {
@@ -144,12 +147,7 @@ private[core] class DroneImpl(
 
     if (hitpoints == 0) {
       dynamics.remove()
-      simulatorEvents ::= DroneKilled(this)
       _hasDied = true
-      for {
-        m <- manipulator
-        d <- m.droneInConstruction
-      } simulatorEvents ::= DroneConstructionCancelled(d)
       for (s <- storage) s.droneHasDied()
     }
 
@@ -305,6 +303,18 @@ private[core] class DroneImpl(
   }
 
   override def isDead = _hasDied
+
+  private[core] def deathEvents: Seq[SimulatorEvent] =
+    if (isDead) {
+      var events = List[SimulatorEvent](DroneKilled(this))
+      for {
+        m <- manipulator
+        d <- m.droneInConstruction
+      } events ::= DroneConstructionCancelled(d)
+      events
+    } else Seq.empty
+
+
 
   def hasMoved = _hasMoved
 

@@ -207,11 +207,15 @@ class DroneWorldSimulator(
 
   def updateWorldState(): Unit = {
     val events = executeGameMechanics()
-    processSimulatorEvents(events ++ debugEvents)
     physicsEngine.update()
+    processSimulatorEvents(events ++ debugEvents)
   }
 
   def completeUpdate(): Unit = {
+    val deathEvents =
+      for (drone <- drones; d <- drone.deathEvents)
+        yield d
+    processSimulatorEvents(deathEvents)
     processVisionTrackerEvents()
     Errors.updateMessages()
   }
