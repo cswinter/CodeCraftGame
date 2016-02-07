@@ -78,6 +78,12 @@ trait DroneControllerBase extends Drone {
     */
   def onConstructionCancelled(): Unit = ()
 
+  /**
+    * When you start the game, this method will be called once on your initial drone controller
+    * to give you an opportunity to provide a [[MetaController]].
+    */
+  def metaController: Option[MetaController] = None
+
   // drone commands
   /**
    * Order the drone to keep moving in the direction of `directionVector`.

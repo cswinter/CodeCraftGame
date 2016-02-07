@@ -45,6 +45,8 @@ class DroneWorldSimulator(
     if (replayer.isEmpty) ReplayFactory.replayRecorder
     else NullReplayRecorder
 
+  private val metaControllers =
+    for (c <- controllers; mc <- c.metaController) yield mc
   private val worldConfig = WorldConfig(map.size)
   private val visibleObjects = collection.mutable.Set.empty[WorldObject]
   private val dynamicObjects = collection.mutable.Set.empty[WorldObject]
@@ -248,6 +250,8 @@ class DroneWorldSimulator(
   }
 
   private def processDroneEvents(): Unit = {
+    for (mc <- metaControllers) mc.onTick()
+
     for (drone <- deadDrones) {
       drone.processEvents()
     }
