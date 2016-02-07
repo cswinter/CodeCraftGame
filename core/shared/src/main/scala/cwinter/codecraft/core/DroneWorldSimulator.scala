@@ -282,6 +282,7 @@ class DroneWorldSimulator(
       visibleObjects.add(drone)
     case DroneConstructionCancelled(drone) =>
       visibleObjects.remove(drone)
+      drone.controller.onConstructionCancelled()
     case SpawnHomingMissile(player, position, missileID, target) =>
       // TODO: remove this check once boundary collisions are done properly
       if (map.size.contains(position)) {

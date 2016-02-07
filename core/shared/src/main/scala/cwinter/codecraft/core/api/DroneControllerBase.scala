@@ -72,6 +72,12 @@ trait DroneControllerBase extends Drone {
    */
   def onArrivesAtDrone(drone: Drone): Unit = ()
 
+  /**
+    * Called if the drone constructing this drone is destroyed before construction completes.
+    * In such a case, this is the only event function to be called.
+    */
+  def onConstructionCancelled(): Unit = ()
+
   // drone commands
   /**
    * Order the drone to keep moving in the direction of `directionVector`.
