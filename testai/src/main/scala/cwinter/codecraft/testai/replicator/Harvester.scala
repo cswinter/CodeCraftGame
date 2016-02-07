@@ -33,10 +33,8 @@ class Harvester(
         hasReturned = false
         scout()
       } else {
-        for (
-          c <- nextCrystal
-          if !(c.position ~ position)
-        ) moveTo(c)
+        for (c <- nextCrystal if !isHarvesting)
+          moveTo(c)
       }
     }
   }

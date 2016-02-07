@@ -2,6 +2,7 @@ package cwinter.codecraft.core.objects
 
 import cwinter.codecraft.core.SimulatorEvent
 import cwinter.codecraft.core.api.{MineralCrystal, Player}
+import cwinter.codecraft.core.objects.drone.DroneStorageModule
 import cwinter.codecraft.core.replay.AsInt
 import cwinter.codecraft.graphics.worldstate.MineralDescriptor
 import cwinter.codecraft.util.maths.{Float0To1, Vector2}
@@ -15,6 +16,7 @@ private[core] class MineralCrystalImpl(
 ) extends WorldObject {
   private[this] var _descriptor = Seq(createDescriptor)
   private var handles = Map.empty[Player, MineralCrystal]
+  private[objects] var harvester: Option[DroneStorageModule] = None
 
   def position: Vector2 = _position
   def position_=(value: Vector2): Unit = { _position = value; updateDescriptor() }

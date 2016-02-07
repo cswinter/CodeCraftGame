@@ -58,7 +58,7 @@ private[core] class ScoutingDroneController(val mothership: Mothership) extends 
 
   override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = {
     if (nextCrystal.isEmpty && mineralCrystal.size <= availableStorage) {
-      moveTo(mineralCrystal.position)
+      moveTo(mineralCrystal)
       nextCrystal = Some(mineralCrystal)
     }
   }
@@ -72,22 +72,9 @@ private[core] class ScoutingDroneController(val mothership: Mothership) extends 
     }
   }
 
-  override def onArrivesAtPosition(): Unit = {
-    if (availableStorage == 0) {
-      giveMineralsTo(mothership)
-      hasReturned = true
-    } else {
-      if (nextCrystal.map(_.harvested) == Some(true)) {
-        nextCrystal = None
-      }
-      for (
-        mineral <- nextCrystal
-        if mineral.position ~ position
-      ) {
-        harvest(mineral)
-        nextCrystal = None
-      }
-    }
+  override def onArrivesAtMineral(mineral: MineralCrystal): Unit = {
+    harvest(mineral)
+    nextCrystal = None
   }
 
   override def onArrivesAtDrone(drone: Drone): Unit = {

@@ -2,7 +2,7 @@ package cwinter.codecraft.graphics.worldstate
 
 import cwinter.codecraft.graphics.models.MineralSignature
 import cwinter.codecraft.util.maths
-import cwinter.codecraft.util.maths.{ColorRGB, Float0To1, Rectangle}
+import cwinter.codecraft.util.maths.{Vector2, ColorRGB, Float0To1, Rectangle}
 
 
 
@@ -49,12 +49,12 @@ private[codecraft] case class DroneDescriptor(
 
 private[codecraft] sealed trait DroneModuleDescriptor
 
-private[codecraft] case class StorageModuleDescriptor(positions: Seq[Int], contents: StorageModuleContents, mergingProgress: Option[Float] = None) extends DroneModuleDescriptor {
-  for (x <- mergingProgress) {
-    assert(x >= 0)
-    assert(x <= 1)
-  }
-}
+private[codecraft] case class StorageModuleDescriptor(
+  position: Int,
+  contents: StorageModuleContents,
+  relativeMineralPosition: Option[Vector2] = None
+) extends DroneModuleDescriptor
+
 
 private[codecraft] sealed trait StorageModuleContents
 private[codecraft] case object EmptyStorage extends StorageModuleContents

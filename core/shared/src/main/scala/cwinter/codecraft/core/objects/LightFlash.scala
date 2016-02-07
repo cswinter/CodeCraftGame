@@ -14,7 +14,7 @@ private[core] class LightFlash(val position: Vector2) extends WorldObject {
   )
 
   def update(): Seq[SimulatorEvent] = {
-    stage += 1.0f / 5
+    stage += 1.0f / 10
 
     if (stage > 1) {
       Seq(LightFlashDestroyed(this))

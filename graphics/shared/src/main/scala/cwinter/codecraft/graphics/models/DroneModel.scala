@@ -106,8 +106,8 @@ private[graphics] class DroneModelBuilder(
           DroneShieldGeneratorModel(ModulePosition(sides, position), signature.playerColor)
         case ProcessingModuleDescriptor(positions, tMerging) =>
           ProcessingModuleModelBuilder(ModulePosition(sides, positions), signature.animationTime, tMerging, positions.size)
-        case StorageModuleDescriptor(positions, contents, tm) =>
-          DroneStorageModelBuilder(ModulePosition(sides, positions), contents, positions.size, tm)
+        case StorageModuleDescriptor(position, contents, mineralPosition) =>
+          DroneStorageModelBuilder(ModulePosition(sides, position), contents, mineralPosition)
         case ManipulatorDescriptor(position) =>
           DroneManipulatorModelBuilder(signature.playerColor, ModulePosition(sides, position))
       }).getModel

@@ -41,8 +41,8 @@ private[codecraft] object DrawingCanvas {
     textField = new TextField("FPS: -")
     jframe.getContentPane.add(textField, BorderLayout.NORTH)
 
-    jframe.setSize(1920, 1080)
     jframe.setResizable(true)
+    jframe.setSize(3840, 2160)
     jframe.setVisible(true)
 
 

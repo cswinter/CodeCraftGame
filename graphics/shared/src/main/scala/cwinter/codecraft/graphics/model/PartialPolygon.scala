@@ -17,6 +17,9 @@ private[graphics] case class PartialPolygon[TColor <: Vertex : ClassTag, TParams
   orientation: Float,
   fraction: Float
 ) extends PrimitiveModelBuilder[PartialPolygon[TColor, TParams], TColor, TParams] {
+  require(colorMidpoint.size == n, s"Require n=$n midpoint colors. Actual: ${colorMidpoint.size}")
+  require(colorOutside.size == 2 * n, s"Require 2*n=${2 * n} outside colors: Actual: ${colorOutside.size}")
+
   val shape = this
 
   protected override def computeVertexData(): Seq[(VertexXYZ, TColor)] = {
@@ -39,8 +42,8 @@ private[graphics] case class PartialPolygon[TColor <: Vertex : ClassTag, TParams
 
     val colors = new Array[TColor](vertexPos.length)
     for (i <- 0 until n) {
-      colors(3 * i + 1) = colorOutside(i)
-      colors(3 * i + 2) = colorOutside(i)
+      colors(3 * i + 1) = colorOutside(2 * i)
+      colors(3 * i + 2) = colorOutside(2 * i + 1)
       colors(3 * i) = colorMidpoint(i)
     }
 

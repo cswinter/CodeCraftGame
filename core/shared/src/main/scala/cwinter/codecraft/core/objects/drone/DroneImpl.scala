@@ -234,6 +234,7 @@ private[core] class DroneImpl(
   def hitpoints: Int = hullState.map(_.toInt).sum
   def dronesInSight: Set[DroneImpl] = objectsInSight.filter(_.isInstanceOf[DroneImpl]).map { case d: DroneImpl => d }
   def isConstructing: Boolean = manipulator.exists(_.isConstructing)
+  def isHarvesting: Boolean = storage.exists(_.isHarvesting)
   def storageCapacity = spec.storageModules
   def size = spec.size
   def radius = spec.radius

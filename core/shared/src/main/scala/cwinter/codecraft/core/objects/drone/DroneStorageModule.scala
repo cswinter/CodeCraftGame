@@ -18,7 +18,6 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
   private[this] var storedEnergyGlobes =
     mutable.Stack[EnergyGlobe](Seq.fill(startingResources)(StaticEnergyGlobe): _*)
 
-  private[this] var deposit: Option[DroneStorageModule] = None
   private[this] var harvesting: Option[MineralCrystalImpl] = None
   private[this] var harvestCountdown: Int = 0
   private[this] var resourceDepositee: Option[DroneStorageModule] = None
@@ -109,10 +108,15 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
   def harvestMineral(mineralCrystal: MineralCrystalImpl): Unit = {
     if (availableStorage == 0) {
       owner.warn(s"Trying to harvest mineral crystal, but storage is completely filled.")
-    } else if (owner.position !~ mineralCrystal.position) {
-      owner.warn("To far away from mineral crystal to harvest.")
+    } else if ((owner.position - mineralCrystal.position).lengthSquared >
+        DroneConstants.HarvestingRange * DroneConstants.HarvestingRange) {
+      val dist = (owner.position - mineralCrystal.position).length
+      owner.warn(s"Too far away from mineral crystal to harvest. " +
+        s"Required: ${DroneConstants.HarvestingRange} Actual: $dist.")
     } else if (mineralCrystal.harvested) {
       owner.warn("Trying to harvest mineral crystal that has already been harvested.")
+    } else if (harvesting.contains(mineralCrystal)) {
+      //owner.inform("This drone is already harvesting.")
     } else {
       harvestCountdown = HarvestingDuration
       harvesting = Some(mineralCrystal)
@@ -128,6 +132,8 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
   def availableStorage: Int =
     positions.size * 7 - storedResources
 
+  def isHarvesting: Boolean = harvesting.nonEmpty
+
   override def descriptors: Seq[DroneModuleDescriptor] = {
     val globeStorageIndices: Seq[Int] = positions
     val energyStorageDescriptors =
@@ -138,7 +144,11 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
             if eg == StaticEnergyGlobe
           ) yield i
         }.toSet
-        StorageModuleDescriptor(Seq(i), EnergyStorage(globes))
+        StorageModuleDescriptor(
+          i,
+          EnergyStorage(globes),
+          harvesting.map(m => (m.position - owner.position).rotated(-owner.dynamics.orientation))
+        )
       }
 
     energyStorageDescriptors.toSeq
