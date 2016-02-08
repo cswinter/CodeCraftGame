@@ -123,9 +123,6 @@ case class DroneSpec(
       val startIndex = storageModules + missileBatteries + constructors + engines
       Some(new DroneShieldGeneratorModule(startIndex until startIndex + shieldGenerators, owner))
     } else None
-
-
-
 }
 
 

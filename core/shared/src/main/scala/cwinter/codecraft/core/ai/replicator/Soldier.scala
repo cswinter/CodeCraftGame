@@ -3,7 +3,7 @@ package cwinter.codecraft.core.ai.replicator
 import cwinter.codecraft.util.maths.{Vector2, Rng}
 
 
-class Hunter(ctx: ReplicatorContext) extends ReplicatorBase('Hunter, ctx) {
+class Soldier(ctx: ReplicatorContext) extends ReplicatorBase('Soldier, ctx) {
   private[this] var _mission: Option[Mission] = None
 
 
@@ -18,6 +18,8 @@ class Hunter(ctx: ReplicatorContext) extends ReplicatorBase('Hunter, ctx) {
     if (enemies.nonEmpty) {
       val closest = closestEnemy
       moveInDirection(closest.position - position)
+      if (closest.spec.missileBatteries > 0)
+        context.battleCoordinator.requestAssistance(this)
     } else {
       for (m <- _mission) m.missionInstructions match {
         case Scout =>
@@ -32,6 +34,8 @@ class Hunter(ctx: ReplicatorContext) extends ReplicatorBase('Hunter, ctx) {
           if (!isMoving) {
             moveTo(position + radius * Vector2(2 * math.Pi * context.rng.nextDouble()))
           }
+        case AttackMove(position) =>
+          moveTo(position)
       }
     }
   }

@@ -45,6 +45,7 @@ class Replicator(
       }
     }
 
+    assessThreatLevel()
     handleWeapons()
   }
 
@@ -83,7 +84,7 @@ class Replicator(
     } else if (shouldBuildReplicator) {
       Some((replicatorSpec, () => new Replicator(context)))
     } else {
-      Some((hunterSpec, () => new Hunter(context)))
+      Some((hunterSpec, () => new Soldier(context)))
     }
   }
 
@@ -91,6 +92,14 @@ class Replicator(
     (context.droneCount('Replicator) < 2 ||
       context.harvestCoordinator.freeZoneCount > context.droneCount('Replicator) * 2) &&
       context.droneCount('Replicator) < 4
+
+  private def assessThreatLevel(): Unit = {
+    if (spec.missileBatteries <= 3) {
+      if (enemies.exists(_.spec.missileBatteries > 0)) {
+        context.battleCoordinator.requestAssistance(this)
+      }
+    }
+  }
 
   override def onDeath(): Unit = {
     super.onDeath()

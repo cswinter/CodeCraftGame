@@ -192,9 +192,7 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
 
 // TODO: aggregate all constants
 private[core] object DroneStorageModule {
-  final val HarvestingDuration = 50
-  final val MineralDepositTime = 45
-  final val UnmergingTime = 20
+  final val HarvestingDuration = 60
 }
 
 

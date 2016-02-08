@@ -71,10 +71,7 @@ trait Drone {
 
   private[core] def drone: DroneImpl
 
-  override def toString: String = {
-    if (this == null) {
-
-    }
+  def displayString: String = {
     if (spec == null) {
       return "[Uninitialised drone controller]"
     }
@@ -94,8 +91,8 @@ trait Drone {
     val moduleString =
       (for (Some(s) <- moduleDescrs) yield s).mkString("[", ", ", "]")
     s"""Modules:   $moduleString
-       |Hitpoints: $hitpoints/${spec.maxHitpoints}
-       |Position:  (${position.x},${position.y})
+       |Hitpoints: ${if (isVisible) hitpoints else "?"}/${spec.maxHitpoints}
+       |Position:  (${lastKnownPosition.x},${lastKnownPosition.y})
        |Max Speed: ${spec.maximumSpeed}
        |Radius:    ${spec.radius}
     """.stripMargin
