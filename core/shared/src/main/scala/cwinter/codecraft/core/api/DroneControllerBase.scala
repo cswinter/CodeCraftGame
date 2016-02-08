@@ -145,6 +145,13 @@ trait DroneControllerBase extends Drone {
   }
 
   /**
+    * Order the drone to stop moving.
+    */
+  def halt(): Unit = {
+    drone ! HoldPosition
+  }
+
+  /**
    * Order the drone to harvest `mineralCrystal`.
    * Must already be at the position of the `mineralCrystal`.
    *

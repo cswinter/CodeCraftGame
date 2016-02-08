@@ -40,6 +40,12 @@ trait Mission {
     else Set.empty
   }
 
+  def reduceAssignedToMax(): Unit = {
+    while (maxRequired < nAssigned) {
+      assigned.head.abortMission()
+    }
+  }
+
   def update(): Unit = ()
   def candidateFilter(drone: Drone): Boolean = true
 

@@ -2,7 +2,6 @@ package cwinter.codecraft.core.ai.replicator.combat
 
 import cwinter.codecraft.core.ai.replicator.Soldier
 import cwinter.codecraft.core.api.Drone
-import cwinter.codecraft.util.maths.Vector2
 
 
 class BattleCoordinator {
@@ -10,6 +9,7 @@ class BattleCoordinator {
   private[this] var warriors = Set.empty[Soldier]
   private[this] var _missions = List[Mission](ScoutingMission)
   private[this] var assisting = Map.empty[Drone, Assist]
+  private[this] var guarding = Map.empty[Drone, Guard]
 
   def update(): Unit = {
     _missions.foreach(_.update())
@@ -22,6 +22,7 @@ class BattleCoordinator {
     for (m <- expired) m.disband()
     _missions = active
     assisting = assisting.filter(!_._2.hasExpired)
+    guarding = guarding.filter(!_._2.hasExpired)
   }
 
   def reallocateWarriors(): Unit = {
@@ -51,6 +52,15 @@ class BattleCoordinator {
       val assistMission = new Assist(drone, priority, radius)
       assisting += drone -> assistMission
       _missions ::= assistMission
+    }
+  }
+
+  def requestGuards(drone: Drone, amount: Int): Unit = {
+    if (guarding.contains(drone)) guarding(drone).refresh(amount)
+    else {
+      val guardMission = new Guard(drone, amount)
+      guarding += drone -> guardMission
+      _missions ::= guardMission
     }
   }
 

@@ -14,6 +14,8 @@ abstract class ReplicatorBase(
     dronesInSight.filter(_.playerID != playerID)
 
   def closestEnemy: Drone = enemies.minBy(x => (x.position - position).lengthSquared)
+  def closestEnemyAndDist2: (Drone, Double) =
+    enemies.map(x => (x, (x.position - position).lengthSquared)).minBy(_._2)
 
   def handleWeapons(): Unit = {
     if (weaponsCooldown <= 0 && enemies.nonEmpty) {

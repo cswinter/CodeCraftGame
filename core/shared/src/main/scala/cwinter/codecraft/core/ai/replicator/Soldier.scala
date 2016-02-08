@@ -17,10 +17,11 @@ class Soldier(ctx: ReplicatorContext) extends ReplicatorBase('Soldier, ctx) {
     handleWeapons()
 
     if (enemies.nonEmpty) {
-      val closest = closestEnemy
-      moveInDirection(closest.position - position)
-      if (closest.spec.missileBatteries > 0)
-        context.battleCoordinator.requestAssistance(this)
+      val (closest, dist2) = closestEnemyAndDist2
+      val armed = closest.spec.missileBatteries > 0
+      if (!armed || dist2 > 200 * 200) moveInDirection(closest.position - position)
+      else halt()
+      if (armed) context.battleCoordinator.requestAssistance(this)
     } else _mission.foreach(executeInstructions)
   }
 
@@ -39,6 +40,18 @@ class Soldier(ctx: ReplicatorContext) extends ReplicatorBase('Soldier, ctx) {
       }
     case AttackMove(position) =>
       moveTo(position)
+    case Circle(center, radius) =>
+      val smoothnessFactor = 0.005f
+      val distance = (center - position).length - radius
+      val approachVector = (center - position).normalized
+      val orbitVector = Vector2(approachVector.y, -approachVector.x)
+      val weight = math.exp(-distance * smoothnessFactor * distance * smoothnessFactor)
+
+      val movementVector =
+        weight * orbitVector +
+        (1 - weight) * math.signum(distance) * approachVector
+
+      moveInDirection(movementVector)
   }
 
   def startMission(mission: Mission): Unit = {

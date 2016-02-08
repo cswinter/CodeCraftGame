@@ -94,10 +94,11 @@ class Replicator(
       context.droneCount('Replicator) < 4
 
   private def assessThreatLevel(): Unit = {
-    if (spec.missileBatteries <= 3) {
-      if (enemies.exists(_.spec.missileBatteries > 0)) {
-        context.battleCoordinator.requestAssistance(this)
-      }
+    val enemyFirepower = enemies.foldLeft(0)(_ + _.spec.missileBatteries)
+    val strength = spec.missileBatteries + spec.shieldGenerators
+    if (enemyFirepower >= strength) {
+      context.battleCoordinator.requestAssistance(this)
+      context.battleCoordinator.requestGuards(this, enemyFirepower - strength + 1)
     }
   }
 
