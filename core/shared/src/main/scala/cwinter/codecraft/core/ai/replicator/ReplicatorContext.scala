@@ -1,5 +1,6 @@
 package cwinter.codecraft.core.ai.replicator
 
+import cwinter.codecraft.core.ai.replicator.combat.BattleCoordinator
 import cwinter.codecraft.core.api.MetaController
 import cwinter.codecraft.util.maths.Rectangle
 

@@ -1,5 +1,6 @@
 package cwinter.codecraft.core.ai.replicator
 
+import cwinter.codecraft.core.ai.replicator.combat._
 import cwinter.codecraft.util.maths.{Vector2, Rng}
 
 
@@ -20,24 +21,24 @@ class Soldier(ctx: ReplicatorContext) extends ReplicatorBase('Soldier, ctx) {
       moveInDirection(closest.position - position)
       if (closest.spec.missileBatteries > 0)
         context.battleCoordinator.requestAssistance(this)
-    } else {
-      for (m <- _mission) m.missionInstructions match {
-        case Scout =>
-          scout()
-          if (searchToken.isEmpty && Rng.bernoulli(0.005)) {
-            moveTo(0.9 * Rng.vector2(worldSize))
-          }
-        case Attack(enemy, origin) =>
-          moveTo(enemy.lastKnownPosition)
-          if (enemy.lastKnownPosition ~ position) origin.notFound()
-        case Search(position, radius) =>
-          if (!isMoving) {
-            moveTo(position + radius * Vector2(2 * math.Pi * context.rng.nextDouble()))
-          }
-        case AttackMove(position) =>
-          moveTo(position)
+    } else _mission.foreach(executeInstructions)
+  }
+
+  def executeInstructions(mission: Mission): Unit = mission.missionInstructions match {
+    case Scout =>
+      scout()
+      if (searchToken.isEmpty && Rng.bernoulli(0.005)) {
+        moveTo(0.9 * Rng.vector2(worldSize))
       }
-    }
+    case Attack(enemy, origin) =>
+      moveTo(enemy.lastKnownPosition)
+      if (enemy.lastKnownPosition ~ position) origin.notFound()
+    case Search(position, radius) =>
+      if (!isMoving) {
+        moveTo(position + radius * Vector2(2 * math.Pi * context.rng.nextDouble()))
+      }
+    case AttackMove(position) =>
+      moveTo(position)
   }
 
   def startMission(mission: Mission): Unit = {
