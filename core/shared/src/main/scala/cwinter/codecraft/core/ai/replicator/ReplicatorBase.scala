@@ -49,6 +49,16 @@ abstract class ReplicatorBase(
     (enemyStrength, alliedStrength)
   }
 
+  def strengthDelta: Int = {
+    (dronesInSight + this).foldLeft(0){
+      case (a, d) =>
+        if (d.spec.missileBatteries > 0) {
+          val sign = if (d.isEnemy) 1 else -1
+          a + sign * (d.spec.missileBatteries + d.spec.shieldGenerators)
+        } else a
+    }
+  }
+
   def scout(): Unit = {
     if (searchToken.isEmpty) searchToken = requestSearchToken()
     for (t <- searchToken) {

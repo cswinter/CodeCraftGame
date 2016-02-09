@@ -1,17 +1,17 @@
 package cwinter.codecraft.core.ai.replicator.combat
 
-import cwinter.codecraft.core.api.Drone
+import cwinter.codecraft.core.ai.replicator.ReplicatorBase
 
 
 class Guard(
-  val friend: Drone,
-  required: Int
+  val friend: ReplicatorBase,
+  var maxRequired: Int
 ) extends Mission {
-  val minRequired = 1
   val priority = 10
-  var maxRequired = required
-  var timeout = 0
+  private var timeout = 0
   resetTimeout()
+
+  def minRequired = maxRequired - 4
 
   def locationPreference = Some(friend.position)
 
@@ -28,9 +28,9 @@ class Guard(
 
   private def resetTimeout(): Unit = timeout = 600
 
-  def refresh(required: Int): Unit = {
-    if (required > maxRequired) maxRequired = required
-    else if (required + 1 >= maxRequired) resetTimeout()
+  def refresh(max: Int): Unit = {
+    if (max > maxRequired) maxRequired = max
+    else if (max + 1 >= maxRequired) resetTimeout()
   }
 }
 

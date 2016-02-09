@@ -8,8 +8,8 @@ class BattleCoordinator {
   private[this] var _enemyCapitalShips = Set.empty[Drone]
   private[this] var warriors = Set.empty[Soldier]
   private[this] var _missions = List[Mission](ScoutingMission)
-  private[this] var assisting = Map.empty[Drone, Assist]
-  private[this] var guarding = Map.empty[Drone, Guard]
+  private[this] var assisting = Map.empty[ReplicatorBase, Assist]
+  private[this] var guarding = Map.empty[ReplicatorBase, Guard]
 
   def update(): Unit = {
     _missions.foreach(_.update())
@@ -49,13 +49,13 @@ class BattleCoordinator {
     else {
       val (priority, radius) =
         if (drone.spec.constructors > 0) (15, 950) else (5, 750)
-      val assistMission = new Assist(drone, priority, radius)
+      val assistMission = new Assist(drone, priority, drone.strengthDelta - 1, radius)
       assisting += drone -> assistMission
       _missions ::= assistMission
     }
   }
 
-  def requestGuards(drone: Drone, amount: Int): Unit = {
+  def requestGuards(drone: ReplicatorBase, amount: Int): Unit = {
     if (guarding.contains(drone)) guarding(drone).refresh(amount)
     else {
       val guardMission = new Guard(drone, amount)
