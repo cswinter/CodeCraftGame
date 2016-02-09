@@ -15,7 +15,7 @@ class HarvestCoordinator {
     val filtered =
       for (
         m <- minerals -- claimedMinerals
-        if !assignedZone.exists(z => (z.x, z.y) != determineZone(m.position))
+        if assignedZone.map(z => (z.x, z.y) == determineZone(m.position)).getOrElse(true)
       ) yield m
     val result =
       if (filtered.isEmpty) None

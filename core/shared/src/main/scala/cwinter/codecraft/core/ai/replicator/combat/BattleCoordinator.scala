@@ -1,6 +1,6 @@
 package cwinter.codecraft.core.ai.replicator.combat
 
-import cwinter.codecraft.core.ai.replicator.Soldier
+import cwinter.codecraft.core.ai.replicator.{ReplicatorBase, Soldier}
 import cwinter.codecraft.core.api.Drone
 
 
@@ -44,7 +44,7 @@ class BattleCoordinator {
     }
   }
 
-  def requestAssistance(drone: Drone): Unit = {
+  def requestAssistance(drone: ReplicatorBase): Unit = {
     if (assisting.contains(drone)) assisting(drone).refresh()
     else {
       val (priority, radius) =

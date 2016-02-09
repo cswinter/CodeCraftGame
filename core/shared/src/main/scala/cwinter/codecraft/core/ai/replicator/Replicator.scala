@@ -59,7 +59,7 @@ class Replicator(
 
   def maybeRequestZone(): Unit = {
     if (assignedZone.exists(_.exhausted)) assignedZone = None
-    if (assignedZone.isEmpty)
+    if (assignedZone.isEmpty && spec.moduleCount != 2)
       assignedZone = context.harvestCoordinator.requestHarvestingZone(position)
   }
 
