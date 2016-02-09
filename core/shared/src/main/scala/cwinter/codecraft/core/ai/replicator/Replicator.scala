@@ -38,12 +38,9 @@ class Replicator(
         case _ =>
           harvest()
       }
-    } else {
-      for (
-        n <- nextCrystal
-        if !isHarvesting
-      ) {
-        nextCrystal.foreach(context.harvestCoordinator.abortHarvestingMission)
+    } else if (!isHarvesting) {
+      for (n <- nextCrystal) {
+        context.harvestCoordinator.abortHarvestingMission(n)
         nextCrystal = None
       }
     }
@@ -112,6 +109,7 @@ class Replicator(
     if (enemyFirepower >= strength) {
       context.battleCoordinator.requestAssistance(this)
       context.battleCoordinator.requestGuards(this, enemyFirepower - strength + 2)
+      moveInDirection(position - closestEnemy.position)
     }
   }
 
