@@ -6,6 +6,7 @@ import cwinter.codecraft.util.maths.{Vector2, Rng}
 
 class Soldier(ctx: ReplicatorContext) extends ReplicatorBase('Soldier, ctx) {
   private[this] var _mission: Option[Mission] = None
+  private var flightTimer = 0
 
 
   override def onSpawn(): Unit = {
@@ -15,21 +16,34 @@ class Soldier(ctx: ReplicatorContext) extends ReplicatorBase('Soldier, ctx) {
 
   override def onTick(): Unit = {
     handleWeapons()
+    flightTimer -= 1
 
     if (enemies.nonEmpty) {
-      val (closest, dist2) = closestEnemyAndDist2
-      val armed = closest.spec.missileBatteries > 0
-      if (!armed || dist2 > 200 * 200) moveInDirection(closest.position - position)
-      else halt()
-      if (armed) context.battleCoordinator.requestAssistance(this)
+      if ((_mission.isEmpty || _mission.contains(ScoutingMission)) && enemyMuchStronger) {
+        val closest = closestEnemy
+        moveInDirection(position - closest.position)
+        for (s <- searchToken) {
+          searchToken = None
+          context.searchCoordinator.dangerous(s)
+          flightTimer = 150
+        }
+      } else {
+        val (closest, dist2) = closestEnemyAndDist2
+        val armed = closest.spec.missileBatteries > 0
+        if (!armed || dist2 > 200 * 200) moveInDirection(closest.position - position)
+        else halt()
+        if (armed) context.battleCoordinator.requestAssistance(this)
+      }
     } else _mission.foreach(executeInstructions)
   }
 
   def executeInstructions(mission: Mission): Unit = mission.missionInstructions match {
     case Scout =>
-      scout()
-      if (searchToken.isEmpty && Rng.bernoulli(0.005)) {
-        moveTo(0.9 * Rng.vector2(worldSize))
+      if (flightTimer <= 0) {
+        scout()
+        if (searchToken.isEmpty && Rng.bernoulli(0.005)) {
+          moveTo(0.9 * Rng.vector2(worldSize))
+        }
       }
     case Attack(enemy, origin) =>
       moveTo(enemy.lastKnownPosition)

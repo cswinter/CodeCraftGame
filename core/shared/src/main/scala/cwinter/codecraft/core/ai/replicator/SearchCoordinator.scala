@@ -3,9 +3,13 @@ package cwinter.codecraft.core.ai.replicator
 import cwinter.codecraft.core.api.DroneSpec
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 
+import scala.collection.mutable
+
 
 class SearchCoordinator(worldSize: Rectangle) {
-  var searchTokens: Set[SearchToken] = genSearchTokens
+  private var searchTokens: Set[SearchToken] = genSearchTokens
+  private val dangerousSearchTokens = mutable.Queue.empty[SearchToken]
+  private var cooldown = 300
 
   private def genSearchTokens: Set[SearchToken] = {
     val width = math.ceil(worldSize.width / DroneSpec.SightRadius).toInt
@@ -29,8 +33,22 @@ class SearchCoordinator(worldSize: Rectangle) {
     }
   }
 
+  def dangerous(searchToken: SearchToken): Unit = {
+    dangerousSearchTokens.enqueue(searchToken)
+  }
+
   def returnSearchToken(searchToken: SearchToken): Unit = {
     searchTokens += searchToken
+  }
+
+  def update(): Unit = {
+    if (dangerousSearchTokens.nonEmpty) {
+      cooldown -= 1
+      if (cooldown <= 0) {
+        cooldown = 300
+        searchTokens += dangerousSearchTokens.dequeue()
+      }
+    }
   }
 }
 

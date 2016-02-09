@@ -34,9 +34,19 @@ abstract class ReplicatorBase(
   }
 
   def canWin: Boolean = {
-    val enemyStrength = calculateStrength(dronesInSight.filter(_.isEnemy))
-    val alliedStrength = calculateStrength((dronesInSight + this).filterNot(_.isEnemy))
+    val (enemyStrength, alliedStrength) = calculateStrength
     enemyStrength <= alliedStrength
+  }
+
+  def enemyMuchStronger: Boolean = {
+    val (enemyStrength, alliedStrength) = calculateStrength
+    alliedStrength * 3 < enemyStrength
+  }
+
+  def calculateStrength: (Int, Int) = {
+    val enemyStrength = calculateStrength(dronesInSight.filter(_.isEnemy))
+    val alliedStrength = calculateStrength(dronesInSight.filterNot(_.isEnemy) + this)
+    (enemyStrength, alliedStrength)
   }
 
   def scout(): Unit = {

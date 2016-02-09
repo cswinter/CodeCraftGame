@@ -23,6 +23,7 @@ class Assist(
   def  hasExpired = timeout <= 0
   override def update(): Unit = timeout -= 1
   override def candidateFilter(drone: Drone): Boolean =
+    drone != friend &&
     (drone.position - friend.position).lengthSquared <= radius2
 
   def refresh(): Unit = timeout = 10
