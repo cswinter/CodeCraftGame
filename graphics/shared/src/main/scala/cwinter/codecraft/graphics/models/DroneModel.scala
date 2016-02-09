@@ -3,21 +3,43 @@ package cwinter.codecraft.graphics.models
 import cwinter.codecraft.graphics.engine.RenderStack
 import cwinter.codecraft.graphics.materials.Intensity
 import cwinter.codecraft.graphics.model._
-import cwinter.codecraft.graphics.models.DroneColors._
 import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.util.maths._
 import cwinter.codecraft.util.maths.matrices.{Matrix4x4, TranslationMatrix4x4}
 
 
-private[graphics] object DroneColors {
-  val Black = ColorRGB(0, 0, 0)
-  val White = ColorRGB(1, 1, 1)
-  val ColorBody = ColorRGB(0.05f, 0.05f, 0.05f)
-  val ColorHull = ColorRGB(0.95f, 0.95f, 0.95f)
-  val ColorHullDamaged = ColorRGB(0.6f, 0.6f, 0.6f)
-  val ColorHullBroken = ColorRGB(0.2f, 0.2f, 0.2f)
-  val ColorThrusters = ColorRGB(0, 0, 1)
-  val ColorBackplane = ColorRGB(0.1f, 0.1f, 0.1f)
+private[graphics] trait DroneColors {
+  val Black: ColorRGB
+  val White: ColorRGB
+  val ColorBody: ColorRGB
+  val ColorHull: ColorRGB
+  val ColorHullDamaged: ColorRGB
+  val ColorHullBroken: ColorRGB
+  val ColorThrusters: ColorRGB
+  val ColorBackplane: ColorRGB
+}
+
+private[graphics] object DefaultDroneColors extends DroneColors {
+  final val Black = ColorRGB(0, 0, 0)
+  final val White = ColorRGB(1, 1, 1)
+  final val ColorBody = ColorRGB(0.05f, 0.05f, 0.05f)
+  final val ColorHull = ColorRGB(0.95f, 0.95f, 0.95f)
+  final val ColorHullDamaged = ColorRGB(0.6f, 0.6f, 0.6f)
+  final val ColorHullBroken = ColorRGB(0.2f, 0.2f, 0.2f)
+  final val ColorThrusters = ColorRGB(0, 0, 1)
+  final val ColorBackplane = ColorRGB(0.1f, 0.1f, 0.1f)
+}
+
+private[graphics] object MutedDroneColors extends DroneColors {
+  final val dimmingFactor = 0.5f
+  final val Black = DefaultDroneColors.Black * dimmingFactor
+  final val White = DefaultDroneColors.White * dimmingFactor
+  final val ColorBody = DefaultDroneColors.ColorBody * dimmingFactor
+  final val ColorHull = DefaultDroneColors.ColorHull * dimmingFactor
+  final val ColorHullDamaged = DefaultDroneColors.ColorHullDamaged * dimmingFactor
+  final val ColorHullBroken = DefaultDroneColors.ColorHullBroken * dimmingFactor
+  final val ColorThrusters = DefaultDroneColors.ColorThrusters * dimmingFactor
+  final val ColorBackplane = DefaultDroneColors.ColorBackplane * dimmingFactor
 }
 
 
@@ -36,13 +58,14 @@ private[graphics] object DroneSignature {
     val hasAnimatedComponents = droneObject.modules.exists(m =>
       m.isInstanceOf[EnginesDescriptor] || m.isInstanceOf[ProcessingModuleDescriptor]
     )
+    val isBuilding = droneObject.constructionState.isDefined
     DroneSignature(
       droneObject.size,
       droneObject.modules,
       droneObject.modules.exists(_.isInstanceOf[ShieldGeneratorDescriptor]),
       droneObject.hullState,
-      droneObject.constructionState.isDefined,
-      if (hasAnimatedComponents) timestep % 100 else 0,
+      isBuilding,
+      if (hasAnimatedComponents && isBuilding) timestep % 100 else 0,
       droneObject.playerColor)
   }
 }
@@ -53,7 +76,7 @@ private[graphics] class DroneModelBuilder(
   timestep: Int
 )(implicit val rs: RenderStack) extends ModelBuilder[DroneSignature, DroneDescriptor] {
 
-  def signature: DroneSignature = DroneSignature(drone, timestep)
+  val signature: DroneSignature = DroneSignature(drone, timestep)
 
   import Geometry.circumradius
   import cwinter.codecraft.util.modules.ModulePosition
@@ -61,6 +84,15 @@ private[graphics] class DroneModelBuilder(
   import scala.math._
 
   protected def buildModel: Model[DroneDescriptor] = {
+    import signature._
+    val colorPalette =
+      if (signature.isBuilding) MutedDroneColors
+      else DefaultDroneColors
+    val playerColor =
+      if (isBuilding) signature.playerColor * 0.5f
+      else signature.playerColor
+    import colorPalette._
+
     val sides = drone.size
     val sideLength = 40
     val radiusBody = 0.5f * sideLength / sin(Pi / sides).toFloat
@@ -85,8 +117,8 @@ private[graphics] class DroneModelBuilder(
       PolygonRing(
         rs.MaterialXYZRGB,
         sides,
-        signature.playerColor +: hullColors,
-        signature.playerColor +: hullColors,
+        playerColor +: hullColors,
+        playerColor +: hullColors,
         radiusBody,
         radiusHull,
         NullVectorXY,
@@ -94,26 +126,26 @@ private[graphics] class DroneModelBuilder(
         0
       ).getModel
 
-    val modules =
+    val modulesModel =
       for {
-        module <- signature.modules
+        module <- modules
       } yield (module match {
         case EnginesDescriptor(position) =>
-          DroneEnginesModel(ModulePosition(sides, position), signature.playerColor, signature.animationTime)
+          DroneEnginesModel(ModulePosition(sides, position), colorPalette, playerColor, animationTime)
         case MissileBatteryDescriptor(position, n) =>
-          DroneMissileBatteryModelBuilder(signature.playerColor, ModulePosition(sides, position), n)
+          DroneMissileBatteryModelBuilder(colorPalette, playerColor, ModulePosition(sides, position), n)
         case ShieldGeneratorDescriptor(position) =>
-          DroneShieldGeneratorModel(ModulePosition(sides, position), signature.playerColor)
+          DroneShieldGeneratorModel(ModulePosition(sides, position), colorPalette, playerColor)
         case ProcessingModuleDescriptor(positions, tMerging) =>
-          ProcessingModuleModelBuilder(ModulePosition(sides, positions), signature.animationTime, tMerging, positions.size)
+          ProcessingModuleModelBuilder(ModulePosition(sides, positions), animationTime, tMerging, positions.size)
         case StorageModuleDescriptor(position, contents, mineralPosition) =>
-          DroneStorageModelBuilder(ModulePosition(sides, position), contents, mineralPosition)
+          DroneStorageModelBuilder(ModulePosition(sides, position), colorPalette, contents, mineralPosition)
         case ManipulatorDescriptor(position) =>
-          DroneManipulatorModelBuilder(signature.playerColor, ModulePosition(sides, position))
+          DroneManipulatorModelBuilder(colorPalette, playerColor, ModulePosition(sides, position))
       }).getModel
 
     val shields =
-      if (signature.hasShields) {
+      if (hasShields) {
         Some(PolygonRing(
           material = rs.TranslucentAdditivePIntensity,
           n = 50,
@@ -125,10 +157,10 @@ private[graphics] class DroneModelBuilder(
       } else None
 
     val thrusters =
-      if (!signature.isBuilding) {
+      if (!isBuilding) {
         new DynamicModel(
           new DroneThrusterTrailsModelFactory(
-            sideLength, radiusHull, sides, signature.playerColor).buildModel)
+            sideLength, radiusHull, sides, playerColor).buildModel)
       } else new EmptyModel[Seq[(Float, Float, Float)]]
 
 
@@ -147,7 +179,7 @@ private[graphics] class DroneModelBuilder(
 
 
 
-    new DroneModel(body, hull, modules, shields, thrusters, other, new ImmediateModeModel, rs)
+    new DroneModel(body, hull, modulesModel, shields, thrusters, other, new ImmediateModeModel, rs)
   }
 }
 
@@ -182,7 +214,7 @@ private[graphics] case class DroneModel(
       } yield new QuadStrip(
         rs.MaterialXYZRGB,
         Seq(VertexXY(x, y), VertexXY(a.xPos, a.yPos)),
-        Seq(ColorThrusters, ColorThrusters),
+        Seq(DefaultDroneColors.ColorThrusters, DefaultDroneColors.ColorThrusters),
         width = 1,
         zPos = 2
       ).noCaching.getModel.identityModelview

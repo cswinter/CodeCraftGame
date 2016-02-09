@@ -2,14 +2,14 @@ package cwinter.codecraft.graphics.models
 
 import cwinter.codecraft.graphics.engine.RenderStack
 import cwinter.codecraft.graphics.model._
-import cwinter.codecraft.graphics.models.DroneColors._
 import cwinter.codecraft.graphics.worldstate.{EmptyStorage, EnergyStorage, MineralStorage, StorageModuleContents}
-import cwinter.codecraft.util.maths.{Vector2, ColorRGBA, ColorRGB, VertexXY}
+import cwinter.codecraft.util.maths.{ColorRGB, ColorRGBA, Vector2, VertexXY}
 import cwinter.codecraft.util.modules.ModulePosition
 
 
 private[graphics] case class DroneStorageModelBuilder(
   position: VertexXY,
+  colors: DroneColors,
   moduleContents: StorageModuleContents,
   mineralPosition: Option[Vector2]
 )(implicit rs: RenderStack) extends ModelBuilder[DroneStorageModelBuilder, Unit] {
@@ -21,6 +21,7 @@ private[graphics] case class DroneStorageModelBuilder(
   def signature = this
 
   protected def buildModel: Model[Unit] = {
+    import colors._
     val body =
       Polygon(
         material = rs.MaterialXYZRGB,
