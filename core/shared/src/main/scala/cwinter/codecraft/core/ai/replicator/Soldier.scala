@@ -7,6 +7,7 @@ import cwinter.codecraft.util.maths.{Vector2, Rng}
 class Soldier(ctx: ReplicatorContext) extends ReplicatorBase('Soldier, ctx) {
   private[this] var _mission: Option[Mission] = None
   private var flightTimer = 0
+  private var onRoute = false
 
 
   override def onSpawn(): Unit = {
@@ -30,11 +31,16 @@ class Soldier(ctx: ReplicatorContext) extends ReplicatorBase('Soldier, ctx) {
       } else {
         val (closest, dist2) = closestEnemyAndDist2
         val armed = closest.spec.missileBatteries > 0
-        if (!armed || dist2 > 200 * 200) moveInDirection(closest.position - position)
-        else halt()
-        if (armed) context.battleCoordinator.requestAssistance(this)
+        if (dist2 <= 330 * 330 || !onRoute || !enemyMuchStronger) {
+          if (!armed || dist2 > 200 * 200) moveInDirection(closest.position - position)
+          else halt()
+          if (armed) context.battleCoordinator.requestAssistance(this)
+        }
       }
-    } else _mission.foreach(executeInstructions)
+    } else {
+      onRoute = false
+      _mission.foreach(executeInstructions)
+    }
   }
 
   def executeInstructions(mission: Mission): Unit = mission.missionInstructions match {
@@ -46,13 +52,15 @@ class Soldier(ctx: ReplicatorContext) extends ReplicatorBase('Soldier, ctx) {
         }
       }
     case Attack(enemy, origin) =>
+      onRoute = (enemy.lastKnownPosition - position).lengthSquared > 800 * 800
       moveTo(enemy.lastKnownPosition)
-      if (enemy.lastKnownPosition ~ position) origin.notFound()
+      if ((enemy.lastKnownPosition - position).lengthSquared < 50 * 50) origin.notFound()
     case Search(position, radius) =>
       if (!isMoving) {
         moveTo(position + radius * Vector2(2 * math.Pi * context.rng.nextDouble()))
       }
     case AttackMove(position) =>
+      onRoute = (position - this.position).lengthSquared > 800 * 800
       moveTo(position)
     case Circle(center, radius) =>
       val smoothnessFactor = 0.005f
@@ -66,6 +74,8 @@ class Soldier(ctx: ReplicatorContext) extends ReplicatorBase('Soldier, ctx) {
         (1 - weight) * math.signum(distance) * approachVector
 
       moveInDirection(movementVector)
+
+      onRoute = distance > 500
   }
 
   def startMission(mission: Mission): Unit = {
