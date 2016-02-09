@@ -68,7 +68,7 @@ trait DroneControllerBase extends Drone {
   /**
    * Called when this drone arrives at another drone after invoking the moveTo(drone: DroneHandle) command.
    *
-   * @param drone The [[Drone]] at which this drone has arrived.
+   * @param drone The [[cwinter.codecraft.core.api.Drone]] at which this drone has arrived.
    */
   def onArrivesAtDrone(drone: Drone): Unit = ()
 
@@ -80,7 +80,7 @@ trait DroneControllerBase extends Drone {
 
   /**
     * When you start the game, this method will be called once on your initial drone controller
-    * to give you an opportunity to provide a [[MetaController]].
+    * to give you an opportunity to provide a [[cwinter.codecraft.core.api.MetaController]].
     */
   def metaController: Option[MetaController] = None
 
