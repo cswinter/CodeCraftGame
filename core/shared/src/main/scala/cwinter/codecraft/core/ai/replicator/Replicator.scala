@@ -10,6 +10,9 @@ class Replicator(
   val hunterSpec = DroneSpec(missileBatteries = 1)
   val destroyerSpec = DroneSpec(missileBatteries = 3, shieldGenerators = 1)
   val replicatorSpec = DroneSpec(storageModules = 1, constructors = 2, missileBatteries = 1)
+  val shieldedReplicatorSpec = DroneSpec(storageModules = 1, constructors = 2, shieldGenerators = 1)
+  val minimalReplicatorSpec = DroneSpec(storageModules = 1, constructors = 1)
+  var nextReplicatorSpec = chooseNextReplicatorSpec()
 
   var nextCrystal: Option[MineralCrystal] = None
   var assignedZone: Option[HarvestingZone] = None
@@ -35,6 +38,7 @@ class Replicator(
         if shouldBeginConstruction(spec.resourceCost) =>
           buildDrone(spec, controller())
           currentConstruction = Some(spec)
+          if (spec == nextReplicatorSpec) nextReplicatorSpec = chooseNextReplicatorSpec()
         case _ =>
           harvest()
       }
@@ -82,34 +86,45 @@ class Replicator(
     }
   }
 
+
   private def nextConstructionSpec: Option[(DroneSpec, () => DroneController)] = {
     if (needMoreSlaves) {
       Some((harvesterSpec, () => new Harvester(this, context)))
     } else if (shouldBuildReplicator) {
-      Some((replicatorSpec, () => new Replicator(context)))
+      Some((nextReplicatorSpec, () => new Replicator(context)))
     } else {
       Some((hunterSpec, () => new Soldier(context)))
     }
   }
 
+  private def chooseNextReplicatorSpec(): DroneSpec =
+    context.rng.nextInt(10) match {
+      case 0 if context.droneCount('Hunter) >= 5 => shieldedReplicatorSpec
+      case 1 | 2 => minimalReplicatorSpec
+      case _ => replicatorSpec
+    }
+
   private def needMoreSlaves: Boolean =
     slaves.size < this.spec.constructors - 1
 
   private def shouldBuildReplicator =
+    spec.constructors > 1 && (
     (context.droneCount('Replicator) < 2 ||
       context.harvestCoordinator.freeZoneCount > context.droneCount('Replicator) * 2) &&
-      context.droneCount('Replicator) < 4
+      context.droneCount('Replicator) < 4)
 
   private def isStuck: Boolean =
     slaves.isEmpty && isConstructing && !isHarvesting && storedResources == 0
 
   private def assessThreatLevel(): Unit = {
     val enemyFirepower = enemies.foldLeft(0)(_ + _.spec.missileBatteries)
-    val strength = spec.missileBatteries + spec.shieldGenerators
+    val strength = spec.missileBatteries * (spec.shieldGenerators + 1)
     if (enemyFirepower >= strength) {
-      context.battleCoordinator.requestAssistance(this)
-      context.battleCoordinator.requestGuards(this, enemyFirepower - strength + 2)
-      moveInDirection(position - closestEnemy.position)
+      if (spec.moduleCount > 2) context.battleCoordinator.requestGuards(this, enemyFirepower - strength + 2)
+      if (enemyFirepower > 0) {
+        context.battleCoordinator.requestAssistance(this)
+        if (spec.shieldGenerators == 0) moveInDirection(position - closestEnemy.position)
+      }
     }
   }
 
