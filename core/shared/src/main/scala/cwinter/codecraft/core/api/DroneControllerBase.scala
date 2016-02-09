@@ -183,6 +183,13 @@ trait DroneControllerBase extends Drone {
    * @param controller The drone controller that will govern the behaviour of the new drone.
    */
   def buildDrone(spec: DroneSpec, controller: DroneControllerBase): Unit = {
+    def cap(value: Double, min: Double, max: Double): Double =
+      math.min(math.max(value, min), max)
+    val pos = drone.position - 110 * Rng.vector2()
+    val cappedPos = Vector2(
+      cap(pos.x, worldSize.xMin, worldSize.xMax),
+      cap(pos.y, worldSize.yMin, worldSize.yMax)
+    )
     drone ! ConstructDrone(spec, controller, drone.position - 110 * Rng.vector2())
   }
 
