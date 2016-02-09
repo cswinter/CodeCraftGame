@@ -7,4 +7,5 @@ object ScoutingMission extends Mission {
   val missionInstructions = Scout
   val priority = 1
   val hasExpired = false
+  val locationPreference = None
 }

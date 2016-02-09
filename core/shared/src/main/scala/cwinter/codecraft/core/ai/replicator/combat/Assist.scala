@@ -14,6 +14,7 @@ class Assist(
 
   val minRequired = 1
   val maxRequired = Int.MaxValue
+  val locationPreference = None
 
   def missionInstructions = AttackMove(
     if (friend.enemies.nonEmpty) friend.closestEnemy.lastKnownPosition

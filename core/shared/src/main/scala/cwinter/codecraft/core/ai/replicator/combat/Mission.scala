@@ -2,6 +2,7 @@ package cwinter.codecraft.core.ai.replicator.combat
 
 import cwinter.codecraft.core.ai.replicator.Soldier
 import cwinter.codecraft.core.api.Drone
+import cwinter.codecraft.util.maths.Vector2
 
 
 trait Mission {
@@ -12,6 +13,7 @@ trait Mission {
   def missionInstructions: MissionInstructions
   def priority: Int
   def hasExpired: Boolean
+  def locationPreference: Option[Vector2]
 
   private[this] def maxString = if (maxRequired == Int.MaxValue) "Inf" else maxRequired
   def assign(hunter: Soldier): Unit = {
@@ -33,11 +35,16 @@ trait Mission {
     val eligible =
       if (maxRequired == assigned.size) Set.empty[Soldier]
       else candidates.
-        filter(d => d.missionPriority < priority && candidateFilter(d)).
-        take(maxRequired - assigned.size)
+        filter(d => d.missionPriority < priority && candidateFilter(d))
 
-    if (eligible.size + assigned.size >= minRequired) eligible
-    else Set.empty
+    if (eligible.size + assigned.size < minRequired) Set.empty
+    else {
+      locationPreference match {
+        case None => eligible.take(maxRequired - assigned.size)
+        case Some(pos) =>
+          eligible.toSeq.sortBy(d => (d.position - pos).lengthSquared).take(maxRequired - assigned.size).toSet
+      }
+    }
   }
 
   def reduceAssignedToMax(): Unit = {

@@ -8,6 +8,8 @@ class AssaultCapitalShip(enemy: Drone) extends Mission {
   val maxRequired = minRequired * 2
   val priority = 10
 
+  def locationPreference = Some(enemy.lastKnownPosition)
+
   private var searchRadius = 0.0
 
   def missionInstructions: MissionInstructions =

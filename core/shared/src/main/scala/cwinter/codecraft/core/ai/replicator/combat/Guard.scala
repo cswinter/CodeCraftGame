@@ -13,6 +13,7 @@ class Guard(
   var timeout = 0
   resetTimeout()
 
+  def locationPreference = Some(friend.position)
 
   def missionInstructions = Circle(friend.position, 450)
   def hasExpired = maxRequired == 0 || friend.isDead
