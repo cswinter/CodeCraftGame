@@ -1,7 +1,8 @@
 package cwinter.codecraft.core.api
 
 import cwinter.codecraft.core.objects.drone._
-import cwinter.codecraft.util.maths.{Rectangle, Rng, Vector2}
+import cwinter.codecraft.graphics.engine.Debug
+import cwinter.codecraft.util.maths.{ColorRGBA, Rectangle, Rng, Vector2}
 
 import scala.scalajs.js.annotation.JSExportAll
 
@@ -295,6 +296,13 @@ trait DroneControllerBase extends Drone {
     * Returns the total amount of resources stored by this drone.
     */
   def storedResources: Int = drone.storedResources
+
+  /**
+    * Draws the specified text at the position of the drone on this timestep.
+    */
+  def showText(text: String): Unit = {
+    Debug.drawText(text, position.x, position.y, ColorRGBA(1, 1, 1, 1))
+  }
 
   /**
     * Returns 0.
