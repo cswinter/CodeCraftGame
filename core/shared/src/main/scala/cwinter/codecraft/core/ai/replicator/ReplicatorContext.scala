@@ -13,6 +13,7 @@ class ReplicatorContext extends MetaController {
   val battleCoordinator = new BattleCoordinator
   val mothershipCoordinator = new MothershipCoordinator
   val droneCount = new DroneCounter
+  var isReplicatorInConstruction: Boolean = false
   private[this] var _searchCoordinator: SearchCoordinator = null
   def searchCoordinator = {
     require(_searchCoordinator != null, "Context is uninitialised.")

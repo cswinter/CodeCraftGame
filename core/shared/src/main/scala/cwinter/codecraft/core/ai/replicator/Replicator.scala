@@ -20,6 +20,8 @@ class Replicator(
 
   def this() = this(new ReplicatorContext)
 
+  context.isReplicatorInConstruction = true
+
 
   private var slaves = Set.empty[Harvester]
 
@@ -27,6 +29,7 @@ class Replicator(
   override def onSpawn(): Unit = {
     super.onSpawn()
     context.initialise(worldSize)
+    context.isReplicatorInConstruction = false
   }
 
   override def onTick(): Unit = {
@@ -108,10 +111,10 @@ class Replicator(
     slaves.size < this.spec.constructors - 1
 
   private def shouldBuildReplicator =
-    spec.constructors > 1 && (
+    spec.constructors > 1 && !context.isReplicatorInConstruction && (
     (context.droneCount('Replicator) < 2 ||
       context.harvestCoordinator.freeZoneCount > context.droneCount('Replicator) * 2) &&
-      context.droneCount('Replicator) < 4)
+      context.droneCount('Replicator) < 7)
 
   private def isStuck: Boolean =
     slaves.isEmpty && isConstructing && !isHarvesting && storedResources == 0
@@ -132,6 +135,11 @@ class Replicator(
     super.onDeath()
     for (m <- nextCrystal)
       context.harvestCoordinator.abortHarvestingMission(m)
+  }
+
+  override def onConstructionCancelled(): Unit = {
+    super.onConstructionCancelled()
+    context.isReplicatorInConstruction = false
   }
 
   def hasSpareSlave: Boolean =
