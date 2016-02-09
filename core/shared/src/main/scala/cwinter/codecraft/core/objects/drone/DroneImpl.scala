@@ -239,7 +239,9 @@ private[core] class DroneImpl(
   override def position: Vector2 = dynamics.pos
   def weaponsCooldown: Int = weapons.map(_.cooldown).getOrElse(1)
   def hitpoints: Int = hullState.map(_.toInt).sum
-  def dronesInSight: Set[DroneImpl] = objectsInSight.filter(_.isInstanceOf[DroneImpl]).map { case d: DroneImpl => d }
+  def dronesInSight: Set[DroneImpl] =
+    if (isDead) Set.empty
+    else objectsInSight.filter(_.isInstanceOf[DroneImpl]).map { case d: DroneImpl => d }
   def isConstructing: Boolean = manipulator.exists(_.isConstructing)
   def isHarvesting: Boolean = storage.exists(_.isHarvesting)
   def isMoving: Boolean = dynamics.isMoving
