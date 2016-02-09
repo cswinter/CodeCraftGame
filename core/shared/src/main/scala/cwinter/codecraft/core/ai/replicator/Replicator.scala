@@ -30,6 +30,7 @@ class Replicator(
     super.onSpawn()
     context.initialise(worldSize)
     context.isReplicatorInConstruction = false
+    context.mothershipCoordinator.online(this)
   }
 
   override def onTick(): Unit = {
@@ -135,6 +136,7 @@ class Replicator(
     super.onDeath()
     for (m <- nextCrystal)
       context.harvestCoordinator.abortHarvestingMission(m)
+    context.mothershipCoordinator.offline(this)
   }
 
   override def onConstructionCancelled(): Unit = {
