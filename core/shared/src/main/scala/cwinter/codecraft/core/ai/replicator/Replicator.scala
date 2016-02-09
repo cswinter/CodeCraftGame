@@ -13,6 +13,7 @@ class Replicator(
 
   var nextCrystal: Option[MineralCrystal] = None
   var assignedZone: Option[HarvestingZone] = None
+  var currentConstruction: Option[DroneSpec] = None
 
   def this() = this(new ReplicatorContext)
 
@@ -27,11 +28,13 @@ class Replicator(
 
   override def onTick(): Unit = {
     if (!isConstructing) {
+      currentConstruction = None
       maybeRequestZone()
       nextConstructionSpec match {
         case Some((spec, controller))
         if shouldBeginConstruction(spec.resourceCost) =>
           buildDrone(spec, controller())
+          currentConstruction = Some(spec)
         case _ =>
           harvest()
       }
@@ -44,6 +47,10 @@ class Replicator(
         nextCrystal = None
       }
     }
+
+    if (!currentConstruction.contains(harvesterSpec) && needMoreSlaves)
+      context.mothershipCoordinator.requestHarvester(this)
+    if (isStuck) context.mothershipCoordinator.stuck(this)
 
     assessThreatLevel()
     handleWeapons()
@@ -79,7 +86,7 @@ class Replicator(
   }
 
   private def nextConstructionSpec: Option[(DroneSpec, () => DroneController)] = {
-    if (slaves.size < this.spec.constructors - 1) {
+    if (needMoreSlaves) {
       Some((harvesterSpec, () => new Harvester(this, context)))
     } else if (shouldBuildReplicator) {
       Some((replicatorSpec, () => new Replicator(context)))
@@ -88,17 +95,23 @@ class Replicator(
     }
   }
 
+  private def needMoreSlaves: Boolean =
+    slaves.size < this.spec.constructors - 1
+
   private def shouldBuildReplicator =
     (context.droneCount('Replicator) < 2 ||
       context.harvestCoordinator.freeZoneCount > context.droneCount('Replicator) * 2) &&
       context.droneCount('Replicator) < 4
+
+  private def isStuck: Boolean =
+    slaves.isEmpty && isConstructing && !isHarvesting && storedResources == 0
 
   private def assessThreatLevel(): Unit = {
     val enemyFirepower = enemies.foldLeft(0)(_ + _.spec.missileBatteries)
     val strength = spec.missileBatteries + spec.shieldGenerators
     if (enemyFirepower >= strength) {
       context.battleCoordinator.requestAssistance(this)
-      context.battleCoordinator.requestGuards(this, enemyFirepower - strength + 1)
+      context.battleCoordinator.requestGuards(this, enemyFirepower - strength + 2)
     }
   }
 
@@ -106,6 +119,15 @@ class Replicator(
     super.onDeath()
     for (m <- nextCrystal)
       context.harvestCoordinator.abortHarvestingMission(m)
+  }
+
+  def hasSpareSlave: Boolean =
+    slaves.size > 1 || slaves.size == 1 && !isConstructing
+
+  def relieveSlave(): Option[Harvester] = {
+    val s = slaves.headOption
+    s.foreach(slaves -= _)
+    s
   }
 
   def registerSlave(slave: Harvester): Unit = {

@@ -4,7 +4,7 @@ import cwinter.codecraft.core.api.{Drone, MineralCrystal}
 
 
 class Harvester(
-  var mothership: Replicator,
+  val mothership: Replicator,
   ctx: ReplicatorContext
 ) extends ReplicatorBase('Harvester, ctx) {
   var hasReturned = false

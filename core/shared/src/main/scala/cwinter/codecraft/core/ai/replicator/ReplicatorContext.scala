@@ -11,6 +11,7 @@ class ReplicatorContext extends MetaController {
   val rng = new Random()
   val harvestCoordinator = new HarvestCoordinator
   val battleCoordinator = new BattleCoordinator
+  val mothershipCoordinator = new MothershipCoordinator
   val droneCount = new DroneCounter
   private[this] var _searchCoordinator: SearchCoordinator = null
   def searchCoordinator = {

@@ -5,7 +5,7 @@ import cwinter.codecraft.testai.replicator.Replicator
 
 object RunTestAI {
   def main(args: Array[String]): Unit = {
-    TheGameMaster.startGame(TheGameMaster.replicatorAI(), new Replicator)
+    TheGameMaster.startGame(TheGameMaster.replicatorAI(), TheGameMaster.replicatorAI())
   }
 }
 

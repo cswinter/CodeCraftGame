@@ -14,7 +14,7 @@ class Guard(
   resetTimeout()
 
 
-  def missionInstructions = Circle(friend.position, 500)
+  def missionInstructions = Circle(friend.position, 450)
   def hasExpired = maxRequired == 0 || friend.isDead
   override def update(): Unit = {
     timeout -= 1
@@ -25,7 +25,7 @@ class Guard(
     }
   }
 
-  private def resetTimeout(): Unit = timeout = 450
+  private def resetTimeout(): Unit = timeout = 600
 
   def refresh(required: Int): Unit = {
     if (required > maxRequired) maxRequired = required
