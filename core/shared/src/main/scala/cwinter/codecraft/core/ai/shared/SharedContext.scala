@@ -6,7 +6,7 @@ import cwinter.codecraft.util.maths.Rectangle
 import scala.util.Random
 
 
-trait SharedContext extends MetaController {
+trait SharedContext[TCommand] extends MetaController {
   val rng = new Random()
   val droneCount = new DroneCounter
 
@@ -17,6 +17,7 @@ trait SharedContext extends MetaController {
   }
 
   val harvestCoordinator: BasicHarvestCoordinator
+  val battleCoordinator: BattleCoordinator[TCommand]
 
 
   def initialise(worldSize: Rectangle): Unit = {
@@ -29,6 +30,7 @@ trait SharedContext extends MetaController {
 
   override def onTick(): Unit = {
     harvestCoordinator.update()
+    battleCoordinator.update()
   }
 }
 

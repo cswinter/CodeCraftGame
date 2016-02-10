@@ -10,6 +10,7 @@ class ReplicatorBattleCoordinator extends BattleCoordinator[ReplicatorCommand] {
   private[this] var guarding = Map.empty[ReplicatorController, Guard]
   addMission(ScoutingMission)
 
+
   override def update(): Unit = {
     super.update()
     assisting = assisting.filter(!_._2.hasExpired)

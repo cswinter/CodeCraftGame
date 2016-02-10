@@ -14,6 +14,7 @@ trait BattleCoordinator[TCommand] {
     _missions.foreach(_.update())
     purgeExpiredMissions()
     reallocateWarriors()
+    _enemyCapitalShips = _enemyCapitalShips.filter(!_.isDead)
   }
 
   def purgeExpiredMissions(): Unit = {
@@ -46,4 +47,6 @@ trait BattleCoordinator[TCommand] {
   }
 
   def addMission(mission: Mission[TCommand]): Unit = _missions ::= mission
+
+  def enemyCapitalShips: Set[Drone] = _enemyCapitalShips
 }

@@ -3,7 +3,7 @@ package cwinter.codecraft.core.ai.shared
 import cwinter.codecraft.core.api.{Drone, DroneController, MineralCrystal}
 
 
-abstract class AugmentedController[TContext <: SharedContext](
+abstract class AugmentedController[TCommand, TContext <: SharedContext[TCommand]](
   val name: Symbol,
   val context: TContext
 ) extends DroneController {
@@ -85,6 +85,11 @@ abstract class AugmentedController[TContext <: SharedContext](
 
   override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit =
     context.harvestCoordinator.registerMineral(mineralCrystal)
+
+  override def onDroneEntersVision(drone: Drone): Unit =
+    if (drone.isEnemy && drone.spec.constructors > 0) {
+      context.battleCoordinator.foundCapitalShip(drone)
+    }
 
   override def metaController = Some(context)
 }

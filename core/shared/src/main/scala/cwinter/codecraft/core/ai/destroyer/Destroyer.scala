@@ -4,22 +4,17 @@ import cwinter.codecraft.core.api.MineralCrystal
 import cwinter.codecraft.util.maths.Vector2
 
 
-class Scout(ctx: DestroyerContext)
-extends DestroyerController('Scout, ctx) {
+class Destroyer(ctx: DestroyerContext)
+extends DestroyerController('Destroyer, ctx) {
   var hasReturned = false
   var nextCrystal: Option[MineralCrystal] = None
   var flightTimer = 0
 
   override def onTick(): Unit = {
-    flightTimer -= 1
-    if (flightTimer == 0) halt()
-
-    if (flightTimer <= 0) {
-      scout()
-      if (searchToken.isEmpty) scoutRandomly()
-      avoidThreats()
+    context.battleCoordinator.getTarget match {
+      case None => scoutRandomly()
+      case Some(target) => moveTo(target.lastKnownPosition)
     }
-
     handleWeapons()
   }
 
@@ -41,9 +36,9 @@ extends DestroyerController('Scout, ctx) {
           yield (threat, (threat.position - position).lengthSquared)
       }.minBy(_._2)
 
-      if (dist2 < 330 * 330) {
+      if (dist2 < 300 * 300) {
         moveInDirection(position - closest.position)
-        flightTimer = 30
+        flightTimer = 20
         for (n <- searchToken) {
           context.searchCoordinator.dangerous(n)
           searchToken = None

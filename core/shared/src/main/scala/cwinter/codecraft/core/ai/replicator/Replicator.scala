@@ -103,7 +103,7 @@ class Replicator(
 
   private def chooseNextReplicatorSpec(): DroneSpec =
     context.rng.nextInt(10) match {
-      case 0 if context.droneCount('Hunter) >= 5 => shieldedReplicatorSpec
+      case 0 if context.droneCount('Soldier) >= 5 => shieldedReplicatorSpec
       case 1 | 2 => minimalReplicatorSpec
       case _ => replicatorSpec
     }

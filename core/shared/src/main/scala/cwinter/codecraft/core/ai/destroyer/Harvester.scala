@@ -1,11 +1,10 @@
 package cwinter.codecraft.core.ai.destroyer
 
-import cwinter.codecraft.core.ai.shared.AugmentedController
 import cwinter.codecraft.core.api.{Drone, MineralCrystal}
 
 
 class Harvester(ctx: DestroyerContext)
-extends AugmentedController('Harvester, ctx) {
+extends DestroyerController('Harvester, ctx) {
   var hasReturned = false
   var nextCrystal: Option[MineralCrystal] = None
 
