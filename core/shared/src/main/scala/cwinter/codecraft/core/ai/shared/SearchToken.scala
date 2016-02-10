@@ -1,4 +1,4 @@
-package cwinter.codecraft.core.ai.replicator
+package cwinter.codecraft.core.ai.shared
 
 import cwinter.codecraft.core.api.DroneSpec
 import cwinter.codecraft.util.maths.Vector2

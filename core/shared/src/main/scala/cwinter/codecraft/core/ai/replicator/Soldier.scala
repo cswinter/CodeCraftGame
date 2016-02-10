@@ -1,10 +1,10 @@
 package cwinter.codecraft.core.ai.replicator
 
 import cwinter.codecraft.core.ai.replicator.combat._
-import cwinter.codecraft.util.maths.{Vector2, Rng}
+import cwinter.codecraft.util.maths.{Rng, Vector2}
 
 
-class Soldier(ctx: ReplicatorContext) extends ReplicatorBase('Soldier, ctx) {
+class Soldier(ctx: ReplicatorContext) extends ReplicatorController('Soldier, ctx) {
   private[this] var _mission: Option[Mission] = None
   private var flightTimer = 0
   private var onRoute = false

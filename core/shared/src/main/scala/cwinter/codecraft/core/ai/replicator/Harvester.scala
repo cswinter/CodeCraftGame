@@ -1,12 +1,13 @@
 package cwinter.codecraft.core.ai.replicator
 
+import cwinter.codecraft.core.ai.shared.AugmentedController
 import cwinter.codecraft.core.api.{Drone, MineralCrystal}
 
 
 class Harvester(
   mothership: Replicator,
   ctx: ReplicatorContext
-) extends ReplicatorBase('Harvester, ctx) {
+) extends AugmentedController('Harvester, ctx) {
   var hasReturned = false
   var nextCrystal: Option[MineralCrystal] = None
   var master: Option[Replicator] = Some(mothership)

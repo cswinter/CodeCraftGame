@@ -1,10 +1,10 @@
 package cwinter.codecraft.core.ai.replicator.combat
 
-import cwinter.codecraft.core.ai.replicator.ReplicatorBase
+import cwinter.codecraft.core.ai.replicator.ReplicatorController
 
 
 class Guard(
-  val friend: ReplicatorBase,
+  val friend: ReplicatorController,
   var maxRequired: Int
 ) extends Mission {
   val priority = 10

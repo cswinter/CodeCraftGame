@@ -1,11 +1,12 @@
 package cwinter.codecraft.core.ai.replicator
 
+import cwinter.codecraft.core.ai.shared.HarvestingZone
 import cwinter.codecraft.core.api.{DroneController, DroneSpec, MineralCrystal}
 
 
 class Replicator(
   ctx: ReplicatorContext
-) extends ReplicatorBase('Replicator, ctx) {
+) extends ReplicatorController('Replicator, ctx) {
   val harvesterSpec = DroneSpec(storageModules = 1)
   val hunterSpec = DroneSpec(missileBatteries = 1)
   val destroyerSpec = DroneSpec(missileBatteries = 3, shieldGenerators = 1)
@@ -159,7 +160,5 @@ class Replicator(
   def slaveFailed(slave: Harvester): Unit = {
     slaves -= slave
   }
-
-  override def metaController = Some(context)
 }
 

@@ -1,11 +1,11 @@
-package cwinter.codecraft.core.ai.replicator
+package cwinter.codecraft.core.ai.shared
 
 import cwinter.codecraft.core.api.{Drone, DroneController, MineralCrystal}
 
 
-abstract class ReplicatorBase(
+abstract class AugmentedController[TContext <: SharedContext](
   val name: Symbol,
-  val context: ReplicatorContext
+  val context: TContext
 ) extends DroneController {
   var searchToken: Option[SearchToken] = None
   context.droneCount.increment(name)
@@ -86,11 +86,6 @@ abstract class ReplicatorBase(
   override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit =
     context.harvestCoordinator.registerMineral(mineralCrystal)
 
-  override def onDroneEntersVision(drone: Drone): Unit = {
-    if (drone.isEnemy)
-    if (drone.isEnemy && drone.spec.constructors > 0) {
-      context.battleCoordinator.foundCapitalShip(drone)
-    }
-  }
+  override def metaController = Some(context)
 }
 

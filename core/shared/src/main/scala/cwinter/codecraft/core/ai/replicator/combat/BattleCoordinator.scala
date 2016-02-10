@@ -1,6 +1,6 @@
 package cwinter.codecraft.core.ai.replicator.combat
 
-import cwinter.codecraft.core.ai.replicator.{ReplicatorBase, Soldier}
+import cwinter.codecraft.core.ai.replicator.{ReplicatorController, Soldier}
 import cwinter.codecraft.core.api.Drone
 
 
@@ -8,8 +8,8 @@ class BattleCoordinator {
   private[this] var _enemyCapitalShips = Set.empty[Drone]
   private[this] var warriors = Set.empty[Soldier]
   private[this] var _missions = List[Mission](ScoutingMission)
-  private[this] var assisting = Map.empty[ReplicatorBase, Assist]
-  private[this] var guarding = Map.empty[ReplicatorBase, Guard]
+  private[this] var assisting = Map.empty[ReplicatorController, Assist]
+  private[this] var guarding = Map.empty[ReplicatorController, Guard]
 
   def update(): Unit = {
     _missions.foreach(_.update())
@@ -44,7 +44,7 @@ class BattleCoordinator {
     }
   }
 
-  def requestAssistance(drone: ReplicatorBase): Unit = {
+  def requestAssistance(drone: ReplicatorController): Unit = {
     if (assisting.contains(drone)) assisting(drone).refresh()
     else {
       val (priority, radius) =
@@ -55,7 +55,7 @@ class BattleCoordinator {
     }
   }
 
-  def requestGuards(drone: ReplicatorBase, amount: Int): Unit = {
+  def requestGuards(drone: ReplicatorController, amount: Int): Unit = {
     if (guarding.contains(drone)) guarding(drone).refresh(amount)
     else {
       val guardMission = new Guard(drone, amount)

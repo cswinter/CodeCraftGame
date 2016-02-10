@@ -1,11 +1,11 @@
 package cwinter.codecraft.core.ai.replicator.combat
 
-import cwinter.codecraft.core.ai.replicator.ReplicatorBase
+import cwinter.codecraft.core.ai.replicator.ReplicatorController
 import cwinter.codecraft.core.api.Drone
 
 
 class Assist(
-  val friend: ReplicatorBase,
+  val friend: ReplicatorController,
   val priority: Int,
   val minRequired: Int,
   radius: Int

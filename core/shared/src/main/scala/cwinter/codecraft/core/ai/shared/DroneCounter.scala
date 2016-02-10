@@ -1,4 +1,4 @@
-package cwinter.codecraft.core.ai.replicator
+package cwinter.codecraft.core.ai.shared
 
 class DroneCounter {
   private[this] var counts = Map.empty[Symbol, Int]
