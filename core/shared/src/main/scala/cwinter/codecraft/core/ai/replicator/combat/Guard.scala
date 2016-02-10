@@ -1,12 +1,13 @@
 package cwinter.codecraft.core.ai.replicator.combat
 
 import cwinter.codecraft.core.ai.replicator.ReplicatorController
+import cwinter.codecraft.core.ai.shared.Mission
 
 
 class Guard(
   val friend: ReplicatorController,
   var maxRequired: Int
-) extends Mission {
+) extends Mission[ReplicatorCommand] {
   val priority = 10
   private var timeout = 0
   resetTimeout()

@@ -1,6 +1,7 @@
 package cwinter.codecraft.core.ai.replicator.combat
 
 import cwinter.codecraft.core.ai.replicator.ReplicatorController
+import cwinter.codecraft.core.ai.shared.Mission
 import cwinter.codecraft.core.api.Drone
 
 
@@ -9,7 +10,7 @@ class Assist(
   val priority: Int,
   val minRequired: Int,
   radius: Int
-) extends Mission {
+) extends Mission[ReplicatorCommand] {
   val radius2 = radius * radius
   var timeout = 10
 

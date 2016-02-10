@@ -1,9 +1,10 @@
 package cwinter.codecraft.core.ai.replicator.combat
 
+import cwinter.codecraft.core.ai.shared.Mission
 import cwinter.codecraft.core.api.Drone
 
 
-class AssaultCapitalShip(enemy: Drone) extends Mission {
+class AssaultCapitalShip(enemy: Drone) extends Mission[ReplicatorCommand] {
   val minRequired = (enemy.spec.missileBatteries + 1) * (enemy.spec.shieldGenerators + 1)
   val maxRequired = minRequired * 2
   val priority = 10
@@ -12,7 +13,7 @@ class AssaultCapitalShip(enemy: Drone) extends Mission {
 
   private var searchRadius = 0.0
 
-  def missionInstructions: MissionInstructions =
+  def missionInstructions: ReplicatorCommand =
     if (enemy.isVisible || searchRadius == 0) Attack(enemy, this)
     else Search(enemy.lastKnownPosition, searchRadius)
 

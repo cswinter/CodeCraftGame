@@ -1,27 +1,27 @@
-package cwinter.codecraft.core.ai.replicator.combat
+package cwinter.codecraft.core.ai.shared
 
-import cwinter.codecraft.core.ai.replicator.Soldier
-import cwinter.codecraft.core.api.Drone
+import cwinter.codecraft.core.api.{Drone, DroneControllerBase}
 import cwinter.codecraft.util.maths.Vector2
 
 
-trait Mission {
-  private[this] var assigned = Set.empty[Soldier]
+trait Mission[TCommand] {
+  type Executor = DroneControllerBase with MissionExecutor[TCommand]
+  private[this] var assigned = Set.empty[Executor]
 
   def minRequired: Int
   def maxRequired: Int
-  def missionInstructions: MissionInstructions
+  def missionInstructions: TCommand
   def priority: Int
   def hasExpired: Boolean
   def locationPreference: Option[Vector2]
 
   private[this] def maxString = if (maxRequired == Int.MaxValue) "Inf" else maxRequired
-  def assign(hunter: Soldier): Unit = {
+  def assign(hunter: Executor): Unit = {
     assigned += hunter
     // println(s"$missionInstructions+ (${assigned.size}/$maxString)")
   }
 
-  def relieve(hunter: Soldier): Unit = {
+  def relieve(hunter: Executor): Unit = {
     assigned -= hunter
     // println(s"$missionInstructions- (${assigned.size}/$maxString)")
   }
@@ -31,9 +31,9 @@ trait Mission {
     // println(s"<$missionInstructions")
   }
 
-  def findSuitableRecruits(candidates: Set[Soldier]): Set[Soldier] = {
+  def findSuitableRecruits(candidates: Set[Executor]): Set[Executor] = {
     val eligible =
-      if (maxRequired == assigned.size) Set.empty[Soldier]
+      if (maxRequired == assigned.size) Set.empty[Executor]
       else candidates.
         filter(d => d.missionPriority < priority && candidateFilter(d))
 
@@ -58,3 +58,10 @@ trait Mission {
 
   def nAssigned: Int = assigned.size
 }
+
+trait MissionExecutor[TCommand] {
+  def abortMission(): Unit
+  def missionPriority: Int
+  def startMission(mission: Mission[TCommand]): Unit
+}
+

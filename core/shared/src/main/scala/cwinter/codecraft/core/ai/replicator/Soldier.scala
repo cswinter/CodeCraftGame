@@ -1,11 +1,14 @@
 package cwinter.codecraft.core.ai.replicator
 
 import cwinter.codecraft.core.ai.replicator.combat._
+import cwinter.codecraft.core.ai.shared.{MissionExecutor, Mission}
 import cwinter.codecraft.util.maths.{Rng, Vector2}
 
 
-class Soldier(ctx: ReplicatorContext) extends ReplicatorController('Soldier, ctx) {
-  private[this] var _mission: Option[Mission] = None
+class Soldier(ctx: ReplicatorContext)
+extends ReplicatorController('Soldier, ctx)
+with MissionExecutor[ReplicatorCommand] {
+  private[this] var _mission: Option[Mission[ReplicatorCommand]] = None
   private var flightTimer = 0
   private var onRoute = false
 
@@ -43,7 +46,7 @@ class Soldier(ctx: ReplicatorContext) extends ReplicatorController('Soldier, ctx
     }
   }
 
-  def executeInstructions(mission: Mission): Unit = mission.missionInstructions match {
+  def executeInstructions(mission: Mission[ReplicatorCommand]): Unit = mission.missionInstructions match {
     case Scout =>
       if (flightTimer <= 0) {
         scout()
@@ -78,7 +81,7 @@ class Soldier(ctx: ReplicatorContext) extends ReplicatorController('Soldier, ctx
       onRoute = distance > 500
   }
 
-  def startMission(mission: Mission): Unit = {
+  def startMission(mission: Mission[ReplicatorCommand]): Unit = {
     mission.assign(this)
     _mission = Some(mission)
   }
