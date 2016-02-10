@@ -4,8 +4,7 @@ import cwinter.codecraft.core.api.MineralCrystal
 import cwinter.codecraft.util.maths.Vector2
 
 
-class Scout(ctx: DestroyerContext)
-extends DestroyerController('Scout, ctx) {
+class Scout(ctx: DestroyerContext) extends DestroyerController(ctx) {
   var hasReturned = false
   var nextCrystal: Option[MineralCrystal] = None
   var flightTimer = 0

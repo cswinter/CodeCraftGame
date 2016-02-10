@@ -4,11 +4,10 @@ import cwinter.codecraft.core.api.{Drone, DroneController, MineralCrystal}
 
 
 abstract class AugmentedController[TCommand, TContext <: SharedContext[TCommand]](
-  val name: Symbol,
   val context: TContext
 ) extends DroneController {
   var searchToken: Option[SearchToken] = None
-  context.droneCount.increment(name)
+  context.droneCount.increment(getClass)
 
   def enemies: Set[Drone] =
     dronesInSight.filter(_.playerID != playerID)
@@ -76,11 +75,11 @@ abstract class AugmentedController[TCommand, TContext <: SharedContext[TCommand]
 
   override def onDeath(): Unit = {
     for (st <- searchToken) context.searchCoordinator.returnSearchToken(st)
-    context.droneCount.decrement(name)
+    context.droneCount.decrement(getClass)
   }
 
   override def onConstructionCancelled(): Unit = {
-    context.droneCount.decrement(name)
+    context.droneCount.decrement(getClass)
   }
 
   override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit =

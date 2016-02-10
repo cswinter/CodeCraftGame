@@ -4,9 +4,7 @@ import cwinter.codecraft.core.ai.shared.HarvestingZone
 import cwinter.codecraft.core.api.{DroneController, DroneSpec, MineralCrystal}
 
 
-class Replicator(
-  ctx: ReplicatorContext
-) extends ReplicatorController('Replicator, ctx) {
+class Replicator(ctx: ReplicatorContext) extends ReplicatorController(ctx) {
   val harvesterSpec = DroneSpec(storageModules = 1)
   val hunterSpec = DroneSpec(missileBatteries = 1)
   val destroyerSpec = DroneSpec(missileBatteries = 3, shieldGenerators = 1)
@@ -103,7 +101,7 @@ class Replicator(
 
   private def chooseNextReplicatorSpec(): DroneSpec =
     context.rng.nextInt(10) match {
-      case 0 if context.droneCount('Soldier) >= 5 => shieldedReplicatorSpec
+      case 0 if context.droneCount[Soldier] >= 5 => shieldedReplicatorSpec
       case 1 | 2 => minimalReplicatorSpec
       case _ => replicatorSpec
     }
@@ -113,9 +111,9 @@ class Replicator(
 
   private def shouldBuildReplicator =
     spec.constructors > 1 && !context.isReplicatorInConstruction && (
-    (context.droneCount('Replicator) < 2 ||
-      context.harvestCoordinator.freeZoneCount > context.droneCount('Replicator) * 2) &&
-      context.droneCount('Replicator) < 7)
+    (context.droneCount[Replicator] < 2 ||
+      context.harvestCoordinator.freeZoneCount > context.droneCount[Replicator] * 2) &&
+      context.droneCount[Replicator] < 7)
 
   private def isStuck: Boolean =
     slaves.isEmpty && isConstructing && !isHarvesting && storedResources == 0

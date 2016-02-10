@@ -1,17 +1,15 @@
 package cwinter.codecraft.core.ai.shared
 
 class DroneCounter {
-  private[this] var counts = Map.empty[Symbol, Int]
+  private[this] var counts = Map.empty[Class[_], Int]
 
-  def apply(name: Symbol): Int = {
-    counts.getOrElse(name, 0)
-  }
+  def apply[T](implicit m: Manifest[T]): Int =
+    counts.getOrElse(m.runtimeClass, 0)
 
-  def increment(name: Symbol): Unit = {
-    counts = counts.updated(name, this(name) + 1)
-  }
+  def increment[T](clazz: Class[T]): Unit =
+    counts = counts.updated(clazz, counts.getOrElse(clazz, 0) + 1)
 
-  def decrement(name: Symbol): Unit = {
-    counts = counts.updated(name, this(name) - 1)
-  }
+  def decrement[T](clazz: Class[T]): Unit =
+    counts = counts.updated(clazz, counts.getOrElse(clazz, 0) - 1)
 }
+

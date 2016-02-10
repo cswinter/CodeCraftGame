@@ -5,8 +5,7 @@ import cwinter.codecraft.core.ai.shared.{MissionExecutor, Mission}
 import cwinter.codecraft.util.maths.{Rng, Vector2}
 
 
-class Soldier(ctx: ReplicatorContext)
-extends ReplicatorController('Soldier, ctx)
+class Soldier(ctx: ReplicatorContext) extends ReplicatorController(ctx)
 with MissionExecutor[ReplicatorCommand] {
   private[this] var _mission: Option[Mission[ReplicatorCommand]] = None
   private var flightTimer = 0

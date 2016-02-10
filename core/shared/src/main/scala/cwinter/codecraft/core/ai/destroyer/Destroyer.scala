@@ -4,8 +4,7 @@ import cwinter.codecraft.core.api.MineralCrystal
 import cwinter.codecraft.util.maths.Vector2
 
 
-class Destroyer(ctx: DestroyerContext)
-extends DestroyerController('Destroyer, ctx) {
+class Destroyer(ctx: DestroyerContext) extends DestroyerController(ctx) {
   var hasReturned = false
   var nextCrystal: Option[MineralCrystal] = None
   var flightTimer = 0

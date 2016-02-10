@@ -4,9 +4,7 @@ import cwinter.codecraft.core.ai.shared.HarvestingZone
 import cwinter.codecraft.core.api.{DroneController, DroneSpec, MineralCrystal}
 
 
-class Mothership(
-  ctx: DestroyerContext
-) extends DestroyerController('Mothership, ctx) {
+class Mothership(ctx: DestroyerContext) extends DestroyerController(ctx) {
   val harvesterSpec = DroneSpec(storageModules = 1)
   val scoutSpec = DroneSpec(engines = 1)
   val destroyerSpec = DroneSpec(shieldGenerators = 2, missileBatteries = 2)
@@ -66,11 +64,11 @@ class Mothership(
   }
 
   private def nextConstructionSpec: Option[(DroneSpec, () => DroneController)] = {
-    if (context.droneCount('Harvester) < 2) {
+    if (context.droneCount[Harvester] < 2) {
       Some((harvesterSpec, () => new Harvester(context)))
-    } else if (context.droneCount('Scout) < 2) {
+    } else if (context.droneCount[Scout] < 2) {
       Some((scoutSpec, () => new Scout(context)))
-    } else if (context.droneCount('Destroyer) < 3) {
+    } else if (context.droneCount[Destroyer] < 3) {
       Some((destroyerSpec, () => new Destroyer(context)))
     } else {
       None
