@@ -11,7 +11,7 @@ class ReplicatorContext extends SharedContext {
   var isReplicatorInConstruction: Boolean = false
 
   override def onTick(): Unit = {
-    harvestCoordinator.update()
+    super.onTick()
     battleCoordinator.update()
   }
 }

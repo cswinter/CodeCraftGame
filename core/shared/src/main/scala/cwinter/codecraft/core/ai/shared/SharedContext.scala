@@ -26,5 +26,9 @@ trait SharedContext extends MetaController {
   }
 
   def initialisationRequired: Boolean = _searchCoordinator == null
+
+  override def onTick(): Unit = {
+    harvestCoordinator.update()
+  }
 }
 
