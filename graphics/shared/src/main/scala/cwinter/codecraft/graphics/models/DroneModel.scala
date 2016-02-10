@@ -65,7 +65,7 @@ private[graphics] object DroneSignature {
       droneObject.modules.exists(_.isInstanceOf[ShieldGeneratorDescriptor]),
       droneObject.hullState,
       isBuilding,
-      if (hasAnimatedComponents && isBuilding) timestep % 100 else 0,
+      if (hasAnimatedComponents && !isBuilding) timestep % 100 else 0,
       droneObject.playerColor)
   }
 }
