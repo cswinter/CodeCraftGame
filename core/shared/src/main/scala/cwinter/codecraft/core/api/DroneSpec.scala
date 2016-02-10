@@ -54,7 +54,7 @@ case class DroneSpec(
   /**
    * Returns the amount of hitpoints that a drone with this spec will have when it is at full health.
    */
-  def maxHitpoints: Int = 2 * (size - 1)
+  def maxHitpoints: Int = 2 * (size - 1) + shieldGenerators * 7
 
   /**
    * Returns the amount of resources it will cost to build a drone with this spec.

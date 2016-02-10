@@ -238,7 +238,7 @@ private[core] class DroneImpl(
   //+------------------------------+
   override def position: Vector2 = dynamics.pos
   def weaponsCooldown: Int = weapons.map(_.cooldown).getOrElse(1)
-  def hitpoints: Int = hullState.map(_.toInt).sum
+  def hitpoints: Int = hullState.map(_.toInt).sum + shieldGenerators.map(_.currHitpoints).getOrElse(0)
   def dronesInSight: Set[DroneImpl] =
     if (isDead) Set.empty
     else objectsInSight.filter(_.isInstanceOf[DroneImpl]).map { case d: DroneImpl => d }
