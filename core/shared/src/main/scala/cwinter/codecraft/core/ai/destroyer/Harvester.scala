@@ -9,9 +9,8 @@ extends AugmentedController('Harvester, ctx) {
   var hasReturned = false
   var nextCrystal: Option[MineralCrystal] = None
 
-
   override def onTick(): Unit = {
-    if (nextCrystal.exists(_.harvested)) nextCrystal = None
+    if (nextCrystal.exists(_.harvested)) abortHarvestingMission()
     if (nextCrystal.isEmpty && availableStorage > 0)
       nextCrystal = context.harvestCoordinator.findClosestMineral(position)
 
@@ -20,9 +19,7 @@ extends AugmentedController('Harvester, ctx) {
     } else {
       if (availableStorage == 0 && !hasReturned) {
         moveTo(context.mothership)
-        for (m <- nextCrystal if !m.harvested)
-          context.harvestCoordinator.abortHarvestingMission(m)
-        nextCrystal = None
+        abortHarvestingMission()
       } else if (hasReturned && availableStorage > 0 || nextCrystal.isEmpty) {
         hasReturned = false
         scout()
@@ -44,10 +41,15 @@ extends AugmentedController('Harvester, ctx) {
     hasReturned = true
   }
 
-  override def onDeath(): Unit = {
-    super.onDeath()
+  def abortHarvestingMission(): Unit = {
     for (m <- nextCrystal)
       context.harvestCoordinator.abortHarvestingMission(m)
+    nextCrystal = None
+  }
+
+  override def onDeath(): Unit = {
+    super.onDeath()
+    abortHarvestingMission()
   }
 }
 

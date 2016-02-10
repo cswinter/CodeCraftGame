@@ -8,6 +8,7 @@ class Mothership(
   ctx: DestroyerContext
 ) extends AugmentedController('Mothership, ctx) {
   val harvesterSpec = DroneSpec(storageModules = 1)
+  val scoutSpec = DroneSpec(engines = 1)
 
   var nextCrystal: Option[MineralCrystal] = None
   var assignedZone: Option[HarvestingZone] = None
@@ -66,6 +67,8 @@ class Mothership(
   private def nextConstructionSpec: Option[(DroneSpec, () => DroneController)] = {
     if (context.droneCount('Harvester) < 2) {
       Some((harvesterSpec, () => new Harvester(context)))
+    } else if (context.droneCount('Scout) < 2) {
+      Some((scoutSpec, () => new Scout(context)))
     } else {
       None
     }
