@@ -225,7 +225,7 @@ private[core] class DroneImpl(
       warn("Trying to deposit minerals into a drone without a storage module.")
     } else if (storedResources == 0) {
       warn("Drone has no minerals to deposit.")
-    } else if ((other.position - position).lengthSquared > (radius + other.radius + 12) * (radius + other.radius + 12)) {
+    } else if ((other.position - position).lengthSquared > (radius + other.radius + 20) * (radius + other.radius + 20)) {
       warn("Too far away to deposit minerals.")
     } else {
       for (s <- storage) s.depositResources(other.storage)

@@ -70,10 +70,9 @@ class Replicator(
   def shouldBeginConstruction(resourceCost: Int): Boolean = {
     val allResourcesAvailable =
       storedResources >= resourceCost
-    val mustStartEarly =
-      storedResources + availableStorage < resourceCost && (
-        storedResources >= 14 || availableStorage == 0)
-    allResourcesAvailable || mustStartEarly
+    val shouldStartEarly =
+      availableStorage == 0 || storedResources >= 14
+    allResourcesAvailable || shouldStartEarly
   }
 
   def harvest(): Unit = {

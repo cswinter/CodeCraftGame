@@ -75,7 +75,7 @@ case class DroneSpec(
   def weight = size + moduleCount
 
   /**
-   * Returns the speed of a drone with this spec, measured in units distance per timestep.
+   * Returns the speed of a drone with this spec, measured in units distance per second (30 timesteps).
    */
   def maximumSpeed: Double = 1000 * (1 + engines)  / weight
 

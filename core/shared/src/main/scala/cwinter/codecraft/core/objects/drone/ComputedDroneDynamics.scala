@@ -89,10 +89,10 @@ private[core] class ComputedDroneDynamics(
       // TODO: create a rigorous method to get within radius of some position, unify with moveToDrone
     case MoveToMineralCrystal(mc)
     if (mc.position - this.pos).lengthSquared <=
-      (DroneConstants.HarvestingRange - 5 + 0.11f) * (DroneConstants.HarvestingRange - 5) =>
+      (DroneConstants.HarvestingRange - 4) * (DroneConstants.HarvestingRange - 4) =>
       Some(ArrivedAtMineral(mc))
     case MoveToDrone(other) =>
-      val r = other.radius + drone.radius + 10 + Vector2.epsilon
+      val r = other.radius + drone.radius + 18
       if ((other.position - pos).lengthSquared <= r * r) {
         Some(ArrivedAtDrone(other))
       } else None
@@ -149,7 +149,7 @@ private[core] class ComputedDroneDynamics(
             moveToPosition(targetPos)
           case MoveToDrone(other) =>
             val targetDirection = (other.position - pos).normalized
-            val targetPos = other.position - (other.radius + drone.radius + 10) * targetDirection
+            val targetPos = other.position - (other.radius + drone.radius + 12) * targetDirection
             moveToPosition(targetPos)
           case HoldPosition =>
             Vector2.Null

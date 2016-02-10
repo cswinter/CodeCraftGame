@@ -25,7 +25,10 @@ private[codecraft] class SquareGrid[T: Positionable](
   def insert(obj: T): Unit = insert(obj, computeCell(obj))
 
   def insert(obj: T, cell: (Int, Int)): Unit = {
-    assert(Rectangle(xMin, xMax, yMin, yMax).contains(obj.position))
+    assert(
+      Rectangle(xMin, xMax, yMin, yMax).contains(obj.position),
+      s"Cell does not match: ${obj.position} ([$xMin, $xMax], [$yMin, $yMax])"
+    )
     val (x, y) = cell
     cells(x)(y) += obj
   }
