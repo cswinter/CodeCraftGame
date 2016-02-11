@@ -1,6 +1,7 @@
 package cwinter.codecraft.scalajs
 
-import cwinter.codecraft.core.api.TheGameMaster
+import cwinter.codecraft.core.DroneWorldSimulator
+import cwinter.codecraft.core.api.{DroneControllerBase, TheGameMaster}
 import cwinter.codecraft.demos.graphics.BlogpostDemo
 import cwinter.codecraft.demos.physics.TheObjectManager
 import cwinter.codecraft.graphics.engine.{AsciiVisualizer, Debug}
@@ -23,14 +24,13 @@ object Main {
       TheModelCache.clear()
       Debug.clearDrawAlways()
     }
-
     TheGameMaster.canvas = canvas
-    TheGameMaster.runL3vL3()
+    run(TheGameMaster.replicatorAI(), TheGameMaster.replicatorAI())
 
     document.getElementById("btn-gameplay").asInstanceOf[html.Button].onclick = (e: dom.Event) => {
       reset()
-      TheGameMaster.runL3vL3()
-    }
+      run(TheGameMaster.replicatorAI(), TheGameMaster.replicatorAI())
+    }/*
     document.getElementById("btn-physics").asInstanceOf[html.Button].onclick = (e: dom.Event) => {
       reset()
       TheObjectManager.main(Array())
@@ -38,7 +38,16 @@ object Main {
     document.getElementById("btn-graphics").asInstanceOf[html.Button].onclick = (e: dom.Event) => {
       reset()
       BlogpostDemo.main(Array())
-    }
+    }*/
+  }
+
+  def run(m1: DroneControllerBase, m2: DroneControllerBase): Unit = {
+    val simulator = new DroneWorldSimulator(
+      TheGameMaster.defaultMap(),
+      Seq(m1, m2),
+      t => Seq.empty
+    )
+    TheGameMaster.run(simulator)
   }
 
   def render(target: html.Pre)(objects: Seq[WorldObjectDescriptor], mapSize: Rectangle): Unit = {

@@ -42,8 +42,7 @@ private[graphics] class MockDrone(
       case StorageModuleDescriptor(positions, rc, t) =>
         StorageModuleDescriptor(
           positions,
-          rc,
-          t.map(x => ((x + 1) % 250) / 250f)
+          rc
         )
       case m => m
     }

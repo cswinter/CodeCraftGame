@@ -22,7 +22,9 @@ private[graphics] object Chaos {
       yPos = 0,
       orientation = north,
       modules = Seq(
-        StorageModuleDescriptor(Seq(0, 1, 2), EmptyStorage, Some(1)),
+        StorageModuleDescriptor(0, EmptyStorage),
+        StorageModuleDescriptor(1, EmptyStorage),
+        StorageModuleDescriptor(2, EmptyStorage),
         EnginesDescriptor(3)
       ),
       size = 5,
@@ -33,34 +35,11 @@ private[graphics] object Chaos {
       yPos = 0,
       orientation = north,
       modules = Seq(
-        StorageModuleDescriptor(Seq(0, 1), EmptyStorage),
+        StorageModuleDescriptor(0, EmptyStorage),
+        StorageModuleDescriptor(1, EmptyStorage),
         ProcessingModuleDescriptor(Seq(2, 3))
       ),
       size = 5,
-      sightRadius = sightRadius
-    ),
-    new MockDrone(
-      xPos = 400,
-      yPos = 0,
-      orientation = north,
-      modules = Seq(
-        StorageModuleDescriptor(Seq(0), EnergyStorage()),
-        StorageModuleDescriptor(Seq(1, 2, 3), MineralStorage),
-        ProcessingModuleDescriptor(Seq(4, 5, 6), mergingProgress = Some(1))
-      ),
-      size = 6,
-      sightRadius = sightRadius
-    ),
-    new MockDrone(
-      xPos = 550,
-      yPos = 0,
-      orientation = north,
-      modules = Seq(
-        StorageModuleDescriptor(Seq(0, 1), MineralStorage),
-        StorageModuleDescriptor(Seq(2, 3, 4), MineralStorage),
-        StorageModuleDescriptor(Seq(5, 6, 7, 8, 9), MineralStorage)
-      ),
-      size = 7,
       sightRadius = sightRadius
     )
   )
@@ -75,9 +54,9 @@ private[graphics] object Chaos {
       modules = Seq(
         EnginesDescriptor(0),
         MissileBatteryDescriptor(1, 0),
-        StorageModuleDescriptor(Seq(2), EmptyStorage),
+        StorageModuleDescriptor(2, EmptyStorage),
         ShieldGeneratorDescriptor(3),
-        StorageModuleDescriptor(Seq(4), EmptyStorage),
+        StorageModuleDescriptor(4, EmptyStorage),
         MissileBatteryDescriptor(5,3),
         MissileBatteryDescriptor(6, 3)
       ),

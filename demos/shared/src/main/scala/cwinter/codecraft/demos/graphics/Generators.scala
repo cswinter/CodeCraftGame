@@ -30,7 +30,7 @@ private[graphics] object Generators {
 
   def randomModule(position: Int) = rnd(
     50 -> StorageModuleDescriptor(
-      Seq(position), if (Rng.bernoulli(0.3f)) MineralStorage else EnergyStorage(rndset(7))),
+      position, if (Rng.bernoulli(0.3f)) MineralStorage else EnergyStorage(rndset(7))),
     2 -> MissileBatteryDescriptor(position, rni(4)),
     2 -> EnginesDescriptor(position),
     2 -> ShieldGeneratorDescriptor(position),

@@ -3,7 +3,7 @@ package cwinter.codecraft.demos.graphics
 import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.util.maths.{ColorRGB, VertexXY, Geometry}
 
-private[graphics] object BlogpostDemo {
+private[codecraft] object BlogpostDemo {
   def main(args: Array[String]): Unit = {
     val s = new GraphicsSimulator(
       customObjects = modules,
@@ -58,9 +58,9 @@ private[graphics] object BlogpostDemo {
   }
 
   def modules = Seq[DroneModuleDescriptor](
-    StorageModuleDescriptor(Seq(0), EmptyStorage),
-    StorageModuleDescriptor(Seq(0), EnergyStorage(Set(0, 3, 4, 5))),
-    StorageModuleDescriptor(Seq(0), MineralStorage),
+    StorageModuleDescriptor(0, EmptyStorage),
+    StorageModuleDescriptor(0, EnergyStorage(Set(0, 3, 4, 5))),
+    StorageModuleDescriptor(0, MineralStorage),
     EnginesDescriptor(0),
     ShieldGeneratorDescriptor(0),
     ProcessingModuleDescriptor(Seq(0)),
@@ -85,7 +85,7 @@ private[graphics] object BlogpostDemo {
     modules = Seq(
       MissileBatteryDescriptor(0),
       EnginesDescriptor(1),
-      StorageModuleDescriptor(Seq(2), EnergyStorage((0 to 6).toSet)),
+      StorageModuleDescriptor(2, EnergyStorage((0 to 6).toSet)),
       ShieldGeneratorDescriptor(3),
       MissileBatteryDescriptor(4),
       MissileBatteryDescriptor(5),
@@ -104,7 +104,7 @@ private[graphics] object BlogpostDemo {
       EnginesDescriptor(0),
       MissileBatteryDescriptor(3),
       ShieldGeneratorDescriptor(2),
-      StorageModuleDescriptor(Seq(1), EnergyStorage())
+      StorageModuleDescriptor(1, EnergyStorage())
     ),
     hullState = Seq.fill[Byte](4)(2),
     Some(1),
@@ -123,3 +123,4 @@ private[graphics] object BlogpostDemo {
     }
   }
 }
+

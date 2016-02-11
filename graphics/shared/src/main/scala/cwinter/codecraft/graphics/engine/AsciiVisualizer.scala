@@ -4,7 +4,7 @@ import cwinter.codecraft.graphics.worldstate.{HomingMissileDescriptor, MineralDe
 import cwinter.codecraft.util.maths.{Vector2, Rectangle, ColorRGB}
 
 
-private[graphics] object AsciiVisualizer {
+private[codecraft] object AsciiVisualizer {
   final val ratio = 75
   final val margin = ratio * 2
 
