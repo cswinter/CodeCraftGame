@@ -7,6 +7,8 @@ import cwinter.codecraft.util.maths.Vector2
 trait Mission[TCommand] {
   type Executor = DroneControllerBase with MissionExecutor[TCommand]
   private[this] var assigned = Set.empty[Executor]
+  private var _isDeactivated: Boolean = false
+  def isDeactivated: Boolean = _isDeactivated
 
   def minRequired: Int
   def maxRequired: Int
@@ -32,17 +34,20 @@ trait Mission[TCommand] {
   }
 
   def findSuitableRecruits(candidates: Set[Executor]): Set[Executor] = {
-    val eligible =
-      if (maxRequired == assigned.size) Set.empty[Executor]
-      else candidates.
-        filter(d => d.missionPriority < priority && candidateFilter(d))
-
-    if (eligible.size + assigned.size < minRequired) Set.empty
+    if (_isDeactivated) Set.empty
     else {
-      locationPreference match {
-        case None => eligible.take(maxRequired - assigned.size)
-        case Some(pos) =>
-          eligible.toSeq.sortBy(d => (d.position - pos).lengthSquared).take(maxRequired - assigned.size).toSet
+      val eligible =
+        if (maxRequired == assigned.size) Set.empty[Executor]
+        else candidates.
+          filter(d => d.missionPriority < priority && candidateFilter(d))
+
+      if (eligible.size + assigned.size < minRequired) Set.empty
+      else {
+        locationPreference match {
+          case None => eligible.take(maxRequired - assigned.size)
+          case Some(pos) =>
+            eligible.toSeq.sortBy(d => (d.position - pos).lengthSquared).take(maxRequired - assigned.size).toSet
+        }
       }
     }
   }
@@ -56,12 +61,32 @@ trait Mission[TCommand] {
   def update(): Unit = ()
   def candidateFilter(drone: Drone): Boolean = true
 
+  def deactivate(): Unit = {
+    disband()
+    _isDeactivated = true
+  }
+
+  def reactivate(): Unit = _isDeactivated = false
+
   def nAssigned: Int = assigned.size
 }
 
 trait MissionExecutor[TCommand] {
-  def abortMission(): Unit
-  def missionPriority: Int
-  def startMission(mission: Mission[TCommand]): Unit
+  self: DroneControllerBase =>
+
+  private[this] var _mission: Option[Mission[TCommand]] = None
+  def mission: Option[Mission[TCommand]] = _mission
+
+  def startMission(mission: Mission[TCommand]): Unit = {
+    mission.assign(this)
+    _mission = Some(mission)
+  }
+
+  def abortMission(): Unit = {
+    for (m <- _mission) m.relieve(this)
+    _mission = None
+  }
+
+  def missionPriority: Int = _mission.map(_.priority).getOrElse(-1)
 }
 

@@ -38,9 +38,11 @@ class ReplicatorBattleCoordinator extends BattleCoordinator[ReplicatorCommand] {
   }
 
   override def foundCapitalShip(drone: Drone): Unit = {
+    if (!enemyCapitalShips.contains(drone)) {
+      val newMission = new AssaultCapitalShip(drone)
+      addMission(newMission)
+    }
     super.foundCapitalShip(drone)
-    val newMission = new AssaultCapitalShip(drone)
-    addMission(newMission)
   }
 }
 

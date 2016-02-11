@@ -1,20 +1,34 @@
 package cwinter.codecraft.core.ai.destroyer
 
+import cwinter.codecraft.core.ai.shared.MissionExecutor
 import cwinter.codecraft.core.api.MineralCrystal
 import cwinter.codecraft.util.maths.Vector2
 
 
-class Destroyer(ctx: DestroyerContext) extends DestroyerController(ctx) {
+class Destroyer(ctx: DestroyerContext) extends DestroyerController(ctx)
+with MissionExecutor[DestroyerCommand] {
   var hasReturned = false
   var nextCrystal: Option[MineralCrystal] = None
   var flightTimer = 0
 
+  override def onSpawn(): Unit = {
+    super.onSpawn()
+    context.battleCoordinator.online(this)
+  }
+
   override def onTick(): Unit = {
-    context.battleCoordinator.getTarget match {
+    mission match {
       case None => scoutRandomly()
-      case Some(target) => moveTo(target.lastKnownPosition)
+      case Some(mission) => executeCommand(mission.missionInstructions)
     }
     handleWeapons()
+  }
+
+  def executeCommand(command: DestroyerCommand): Unit = command match {
+    case Attack(enemy, notFound) =>
+      if ((enemy.lastKnownPosition - position).lengthSquared < 100 && !enemy.isVisible) {
+        notFound()
+      } else moveTo(enemy.lastKnownPosition)
   }
 
   def scoutRandomly(): Unit = {
@@ -27,23 +41,11 @@ class Destroyer(ctx: DestroyerContext) extends DestroyerController(ctx) {
     }
   }
 
-  def avoidThreats(): Unit = {
-    val threats = enemies.filter(_.spec.missileBatteries > 0)
-    if (threats.nonEmpty) {
-      val (closest, dist2) = {
-        for (threat <- threats)
-          yield (threat, (threat.position - position).lengthSquared)
-      }.minBy(_._2)
 
-      if (dist2 < 300 * 300) {
-        moveInDirection(position - closest.position)
-        flightTimer = 20
-        for (n <- searchToken) {
-          context.searchCoordinator.dangerous(n)
-          searchToken = None
-        }
-      }
-    }
+  override def onDeath(): Unit = {
+    super.onDeath()
+    context.battleCoordinator.offline(this)
+    abortMission()
   }
 }
 

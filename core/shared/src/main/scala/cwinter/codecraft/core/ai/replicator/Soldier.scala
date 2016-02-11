@@ -7,7 +7,6 @@ import cwinter.codecraft.util.maths.{Rng, Vector2}
 
 class Soldier(ctx: ReplicatorContext) extends ReplicatorController(ctx)
 with MissionExecutor[ReplicatorCommand] {
-  private[this] var _mission: Option[Mission[ReplicatorCommand]] = None
   private var flightTimer = 0
   private var onRoute = false
 
@@ -22,7 +21,7 @@ with MissionExecutor[ReplicatorCommand] {
     flightTimer -= 1
 
     if (enemies.nonEmpty) {
-      if ((_mission.isEmpty || _mission.contains(ScoutingMission)) && enemyMuchStronger) {
+      if ((mission.isEmpty || mission.contains(ScoutingMission)) && enemyMuchStronger) {
         val closest = closestEnemy
         moveInDirection(position - closest.position)
         for (s <- searchToken) {
@@ -41,7 +40,7 @@ with MissionExecutor[ReplicatorCommand] {
       }
     } else {
       onRoute = false
-      _mission.foreach(executeInstructions)
+      mission.foreach(executeInstructions)
     }
   }
 
@@ -80,25 +79,12 @@ with MissionExecutor[ReplicatorCommand] {
       onRoute = distance > 500
   }
 
-  def startMission(mission: Mission[ReplicatorCommand]): Unit = {
-    mission.assign(this)
-    _mission = Some(mission)
-  }
-
-  def abortMission(): Unit = {
-    for (m <- _mission)
-      m.relieve(this)
-    _mission = None
-  }
-
   override def onDeath(): Unit = {
     super.onDeath()
     context.battleCoordinator.offline(this)
     abortMission()
   }
 
-  def isIdle: Boolean = _mission.isEmpty
-
-  def missionPriority: Int = _mission.map(_.priority).getOrElse(-1)
+  def isIdle: Boolean = mission.isEmpty
 }
 
