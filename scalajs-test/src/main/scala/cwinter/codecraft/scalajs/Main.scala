@@ -25,6 +25,7 @@ object Main {
       Debug.clearDrawAlways()
     }
     TheGameMaster.canvas = canvas
+    TheGameMaster.outputFPS = true
     run(TheGameMaster.replicatorAI(), TheGameMaster.replicatorAI())
 
     document.getElementById("btn-gameplay").asInstanceOf[html.Button].onclick = (e: dom.Event) => {

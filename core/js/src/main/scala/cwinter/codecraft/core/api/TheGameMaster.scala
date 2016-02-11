@@ -4,6 +4,7 @@ import cwinter.codecraft.core.multiplayer.{WebsocketClient, JSWebsocketClient, W
 import cwinter.codecraft.core.{DroneWorldSimulator, MultiplayerClientConfig, MultiplayerConfig, WorldMap}
 import cwinter.codecraft.graphics.engine.{Debug, WebGLRenderer}
 import cwinter.codecraft.graphics.model.TheModelCache
+import cwinter.codecraft.util.maths.ColorRGBA
 import org.scalajs.dom
 import org.scalajs.dom.html
 
@@ -21,7 +22,9 @@ import scala.util.{Failure, Success}
 object TheGameMaster extends GameMasterLike {
   var canvas: html.Canvas = null
   private[this] var intervalID: Option[Int] = None
+  private var running: Future[Unit] = Future.successful(Unit)
   private[this] var runContext: Option[RunContext] = None
+  private[codecraft] var outputFPS: Boolean = false
 
 
   def run(simulator: DroneWorldSimulator): DroneWorldSimulator = {
@@ -35,7 +38,12 @@ object TheGameMaster extends GameMasterLike {
     simulator
   }
 
+
   def run(context: RunContext): Unit = {
+    if (outputFPS) {
+      context.fps.drawFPS()
+      if (context.simulator.timestep % 100 == 0) context.fps.printFPS()
+    }
     context.renderer.render()
     val updateFuture =
       if (context.simulator.isPaused) Future.successful(Unit)
@@ -43,6 +51,7 @@ object TheGameMaster extends GameMasterLike {
 
     updateFuture.onComplete {
       case Success(_) =>
+        context.fps.computeCurrFPS()
         if (!context.stopped) {
           dom.setTimeout(
             () => run(context),
@@ -73,6 +82,7 @@ class RunContext(
   val targetMillisPerFrame: Int,
   var lastCompletionTime: Double = js.Date.now()
 ) {
+  val fps = new FPSMeter(this)
   private[this] var _stopped = false
   def stopped: Boolean = _stopped
   def stop(): Unit = _stopped = true
@@ -85,4 +95,30 @@ class RunContext(
   }
 }
 
+class FPSMeter(context: RunContext) {
+  val startTime = js.Date.now()
+  var lastTime = js.Date.now()
+  var fps = 0
+
+
+  def drawFPS(): Unit = {
+    Debug.drawText(fpsString, 0, -900, ColorRGBA(1, 1, 1, 0.75f), true, false)
+  }
+
+  def printFPS(): Unit = println(fpsString)
+
+  def fpsString: String = {
+    val elapsedSeconds = (js.Date.now() - startTime) / 1000
+    s"T=${context.simulator.timestep}," +
+      s" Average FPS: ${(context.simulator.timestep / elapsedSeconds).toInt}, " +
+      s"FPS: $fps"
+  }
+
+  def computeCurrFPS(): Unit = {
+    if (context.simulator.timestep % 30 == 0) {
+      fps = math.round(30 * 1000 / (js.Date.now() - lastTime)).toInt
+      lastTime = js.Date.now()
+    }
+  }
+}
 
