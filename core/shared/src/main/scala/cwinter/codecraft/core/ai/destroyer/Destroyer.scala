@@ -18,7 +18,7 @@ with MissionExecutor[DestroyerCommand] {
 
   override def onTick(): Unit = {
     mission match {
-      case None => scoutRandomly()
+      case None => patrolMinerals()
       case Some(mission) => executeCommand(mission.missionInstructions)
     }
     handleWeapons()
@@ -26,23 +26,34 @@ with MissionExecutor[DestroyerCommand] {
 
   def executeCommand(command: DestroyerCommand): Unit = command match {
     case Attack(enemy, notFound) =>
-      if ((enemy.lastKnownPosition - position).lengthSquared < 100 && !enemy.isVisible) {
+      if ((enemy.lastKnownPosition - position).lengthSquared < 100 * 100 && !enemy.isVisible) {
         notFound()
       } else moveTo(enemy.lastKnownPosition)
     case MoveTo(position) =>
       moveTo(position)
   }
 
-  def scoutRandomly(): Unit = {
-    import context.rng
-    if (!isMoving) {
-      moveTo(Vector2(
-        rng.nextDouble() * (worldSize.xMax - worldSize.xMin) + worldSize.xMin,
-        rng.nextDouble() * (worldSize.yMax - worldSize.yMin) + worldSize.yMin
-      ))
+  def patrolMinerals(): Unit = {
+    if (isMoving) return
+    val minerals = context.harvestCoordinator.minerals
+    if (minerals.isEmpty) return
+
+    val totalSize = minerals.foldLeft(0)(_ + _.size)
+    val rand = context.rng.nextInt(totalSize)
+
+    var cumulative = 0
+    val randMineral = minerals.find { m =>
+      cumulative += m.size
+      rand < cumulative
     }
+
+    randMineral.foreach(moveTo)
   }
 
+  override def abortMission(): Unit = {
+    super.abortMission()
+    halt()
+  }
 
   override def onDeath(): Unit = {
     super.onDeath()

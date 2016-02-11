@@ -5,17 +5,18 @@ import cwinter.codecraft.util.maths.Vector2
 
 
 class BasicHarvestCoordinator {
-  private var minerals = Set.empty[MineralCrystal]
+  private var _minerals = Set.empty[MineralCrystal]
+  def minerals = _minerals
   private var claimedMinerals = Set.empty[MineralCrystal]
 
   def findClosestMineral(position: Vector2): Option[MineralCrystal] = {
-    closestUnclaimedMineral(position, minerals)
+    closestUnclaimedMineral(position, _minerals)
   }
 
   protected def closestUnclaimedMineral(position: Vector2, eligible: Set[MineralCrystal]): Option[MineralCrystal] = {
     val filtered =
       for (
-        m <- minerals -- claimedMinerals
+        m <- _minerals -- claimedMinerals
       ) yield m
     val result =
       if (filtered.isEmpty) None
@@ -27,7 +28,7 @@ class BasicHarvestCoordinator {
   }
 
   def registerMineral(mineralCrystal: MineralCrystal): Unit = {
-    minerals += mineralCrystal
+    _minerals += mineralCrystal
   }
 
   def abortHarvestingMission(mineralCrystal: MineralCrystal): Unit = {
@@ -35,7 +36,7 @@ class BasicHarvestCoordinator {
   }
 
   def update(): Unit = {
-    minerals = minerals.filter(!_.harvested)
+    _minerals = _minerals.filter(!_.harvested)
   }
 }
 

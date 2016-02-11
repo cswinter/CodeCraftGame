@@ -39,15 +39,16 @@ class AssaultCapitalShip(enemy: Drone) extends Mission[DestroyerCommand] {
     math.ceil(math.sqrt(enemy.spec.maxHitpoints * enemy.spec.missileBatteries / (22 * 2.0))).toInt
   val maxRequired = (minRequired * 1.5).toInt
   val priority = 10 - enemy.spec.missileBatteries + enemy.spec.constructors
+  private var assemble = minRequired > 1
 
 
   def locationPreference = Some(enemy.lastKnownPosition)
 
   def missionInstructions: DestroyerCommand =
-    if (nAssigned <= 1 || allClose) Attack(enemy, notFound)
+    if (nAssigned <= 1 || !assemble) Attack(enemy, notFound)
     else MoveTo(midpoint)
 
-  private def allClose: Boolean = {
+  private def allClose: Boolean = nAssigned == 1 || {
     for {
       pair <- assigned.sliding(2)
       e1 = pair.head
@@ -64,6 +65,8 @@ class AssaultCapitalShip(enemy: Drone) extends Mission[DestroyerCommand] {
 
   override def update(): Unit = {
     if (isDeactivated && enemy.isVisible) reactivate()
+    if (assemble && allClose) assemble = false
+    if (minRequired > 1 && nAssigned == 0) assemble = true
   }
 
   def hasExpired = enemy.isDead
