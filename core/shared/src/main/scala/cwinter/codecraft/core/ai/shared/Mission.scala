@@ -6,7 +6,8 @@ import cwinter.codecraft.util.maths.Vector2
 
 trait Mission[TCommand] {
   type Executor = DroneControllerBase with MissionExecutor[TCommand]
-  private[this] var assigned = Set.empty[Executor]
+  private[this] var _assigned = Set.empty[Executor]
+  def assigned: Set[Executor] = _assigned
   private var _isDeactivated: Boolean = false
   def isDeactivated: Boolean = _isDeactivated
 
@@ -19,17 +20,17 @@ trait Mission[TCommand] {
 
   private[this] def maxString = if (maxRequired == Int.MaxValue) "Inf" else maxRequired
   def assign(hunter: Executor): Unit = {
-    assigned += hunter
-    // println(s"$missionInstructions+ (${assigned.size}/$maxString)")
+    _assigned += hunter
+    // println(s"$missionInstructions+ (${_assigned.size}/$maxString)")
   }
 
   def relieve(hunter: Executor): Unit = {
-    assigned -= hunter
-    // println(s"$missionInstructions- (${assigned.size}/$maxString)")
+    _assigned -= hunter
+    // println(s"$missionInstructions- (${_assigned.size}/$maxString)")
   }
 
   def disband(): Unit = {
-    for (a <- assigned) a.abortMission()
+    for (a <- _assigned) a.abortMission()
     // println(s"<$missionInstructions")
   }
 
@@ -37,16 +38,16 @@ trait Mission[TCommand] {
     if (_isDeactivated) Set.empty
     else {
       val eligible =
-        if (maxRequired == assigned.size) Set.empty[Executor]
+        if (maxRequired == _assigned.size) Set.empty[Executor]
         else candidates.
           filter(d => d.missionPriority < priority && candidateFilter(d))
 
-      if (eligible.size + assigned.size < minRequired) Set.empty
+      if (eligible.size + _assigned.size < minRequired) Set.empty
       else {
         locationPreference match {
-          case None => eligible.take(maxRequired - assigned.size)
+          case None => eligible.take(maxRequired - _assigned.size)
           case Some(pos) =>
-            eligible.toSeq.sortBy(d => (d.position - pos).lengthSquared).take(maxRequired - assigned.size).toSet
+            eligible.toSeq.sortBy(d => (d.position - pos).lengthSquared).take(maxRequired - _assigned.size).toSet
         }
       }
     }
@@ -54,7 +55,7 @@ trait Mission[TCommand] {
 
   def reduceAssignedToMax(): Unit = {
     while (maxRequired < nAssigned) {
-      assigned.head.abortMission()
+      _assigned.head.abortMission()
     }
   }
 
@@ -68,7 +69,7 @@ trait Mission[TCommand] {
 
   def reactivate(): Unit = _isDeactivated = false
 
-  def nAssigned: Int = assigned.size
+  def nAssigned: Int = _assigned.size
 }
 
 trait MissionExecutor[TCommand] {

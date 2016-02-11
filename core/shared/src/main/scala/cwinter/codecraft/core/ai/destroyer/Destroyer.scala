@@ -29,6 +29,8 @@ with MissionExecutor[DestroyerCommand] {
       if ((enemy.lastKnownPosition - position).lengthSquared < 100 && !enemy.isVisible) {
         notFound()
       } else moveTo(enemy.lastKnownPosition)
+    case MoveTo(position) =>
+      moveTo(position)
   }
 
   def scoutRandomly(): Unit = {

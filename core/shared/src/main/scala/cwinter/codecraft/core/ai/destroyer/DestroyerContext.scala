@@ -2,7 +2,7 @@ package cwinter.codecraft.core.ai.destroyer
 
 import cwinter.codecraft.core.ai.shared.{Mission, BattleCoordinator, BasicHarvestCoordinator, SharedContext}
 import cwinter.codecraft.core.api.Drone
-import cwinter.codecraft.util.maths.Rectangle
+import cwinter.codecraft.util.maths.{Vector2, Rectangle}
 
 
 class DestroyerContext extends SharedContext[DestroyerCommand] {
@@ -32,6 +32,7 @@ class DestroyerBattleCoordinator extends BattleCoordinator[DestroyerCommand] {
 sealed trait DestroyerCommand
 
 case class Attack(enemy: Drone, notFound: () => Unit) extends DestroyerCommand
+case class MoveTo(position: Vector2) extends DestroyerCommand
 
 class AssaultCapitalShip(enemy: Drone) extends Mission[DestroyerCommand] {
   val minRequired =
@@ -42,7 +43,20 @@ class AssaultCapitalShip(enemy: Drone) extends Mission[DestroyerCommand] {
 
   def locationPreference = Some(enemy.lastKnownPosition)
 
-  def missionInstructions: DestroyerCommand = Attack(enemy, notFound)
+  def missionInstructions: DestroyerCommand =
+    if (nAssigned <= 1 || allClose) Attack(enemy, notFound)
+    else MoveTo(midpoint)
+
+  private def allClose: Boolean = {
+    for {
+      pair <- assigned.sliding(2)
+      e1 = pair.head
+      e2 = pair.tail.head
+    } yield (e1.position - e2.position).lengthSquared <= 150 * 150
+  }.forall(close => close)
+
+  private def midpoint: Vector2 =
+    assigned.foldLeft(Vector2.Null)(_ + _.position) / nAssigned
 
   def notFound(): Unit = {
     deactivate()
