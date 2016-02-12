@@ -101,7 +101,7 @@ class Replicator(ctx: ReplicatorContext) extends ReplicatorController(ctx) {
 
   private def chooseNextReplicatorSpec(): DroneSpec =
     context.rng.nextInt(10) match {
-      case 0 if context.droneCount[Soldier] >= 5 => shieldedReplicatorSpec
+      case 0 if context.droneCount(classOf[Soldier]) >= 5 => shieldedReplicatorSpec
       case 1 | 2 => minimalReplicatorSpec
       case _ => replicatorSpec
     }
@@ -111,9 +111,9 @@ class Replicator(ctx: ReplicatorContext) extends ReplicatorController(ctx) {
 
   private def shouldBuildReplicator =
     spec.constructors > 1 && !context.isReplicatorInConstruction && (
-    (context.droneCount[Replicator] < 2 ||
-      context.harvestCoordinator.freeZoneCount > context.droneCount[Replicator] * 2) &&
-      context.droneCount[Replicator] < 7)
+    (context.droneCount(classOf[Replicator]) < 2 ||
+      context.harvestCoordinator.freeZoneCount > context.droneCount(classOf[Replicator]) * 2) &&
+      context.droneCount(classOf[Replicator]) < 7)
 
   private def isStuck: Boolean =
     slaves.isEmpty && isConstructing && !isHarvesting && storedResources == 0

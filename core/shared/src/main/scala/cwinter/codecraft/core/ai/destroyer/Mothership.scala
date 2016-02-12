@@ -64,11 +64,11 @@ class Mothership(ctx: DestroyerContext) extends DestroyerController(ctx) {
   }
 
   private def nextConstructionSpec: Option[(DroneSpec, () => DroneController)] = {
-    if (context.droneCount[Harvester] < 2) {
+    if (context.droneCount(classOf[Harvester]) < 2) {
       Some((harvesterSpec, () => new Harvester(context)))
-    } else if (context.droneCount[Scout] < 2) {
+    } else if (context.droneCount(classOf[Scout]) < 2) {
       Some((scoutSpec, () => new Scout(context)))
-    } else if (context.droneCount[Destroyer] < 3) {
+    } else if (context.droneCount(classOf[Destroyer]) < 3) {
       Some((destroyerSpec, () => new Destroyer(context)))
     } else {
       None
