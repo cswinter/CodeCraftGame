@@ -6,7 +6,7 @@ import cwinter.codecraft.graphics.models.TheWorldObjectModelFactory
 import cwinter.codecraft.graphics.worldstate.Simulator
 import cwinter.codecraft.util.maths.{ColorRGBA, VertexXY, Rectangle, Vector2}
 import org.scalajs.dom
-import org.scalajs.dom.raw.{CanvasRenderingContext2D, HTMLCanvasElement, WebGLRenderingContext => GL}
+import org.scalajs.dom.raw.{WebGLRenderingContext => GL, HTMLDivElement, CanvasRenderingContext2D, HTMLCanvasElement}
 import org.scalajs.dom.{document, html}
 
 
@@ -27,14 +27,7 @@ private[codecraft] class WebGLRenderer(
   canvas.onmousedown = onmousedownHandler _
   canvas.onmouseup = onmouseupHandler _
   canvas.onmousemove = onmousemoveHandler _
-  val textCanvas = document.getElementById("text-canvas").asInstanceOf[HTMLCanvasElement]
-  if (textCanvas != null) {
-    textCanvas.onkeypress = onkeypressHandler _
-    textCanvas.onmousewheel = onmousewheelHandler _
-    textCanvas.onmousedown = onmousedownHandler _
-    textCanvas.onmouseup = onmouseupHandler _
-    textCanvas.onmousemove = onmousemoveHandler _
-  }
+
 
   def onkeypressHandler(e: dom.KeyboardEvent) = {
     val key = e.keyCode match {
@@ -125,30 +118,25 @@ private[codecraft] class WebGLRenderer(
       mcurr = mcurr.tail
     }
 
-    val textCanvas = document.getElementById("text-canvas").asInstanceOf[HTMLCanvasElement]
-    if (textCanvas == null) {
-      println("Could not find canvas #text-canvas. Without this, text cannot be rendered.")
+    val textDiv = document.getElementById("text-container").asInstanceOf[HTMLDivElement]
+    if (textDiv == null) {
+      println("Could not find div #text-container. Without this, text cannot be rendered.")
     } else {
-      val width = textCanvas.clientWidth
-      val height = textCanvas.clientHeight
-      if (width != textCanvas.width || height != textCanvas.height) {
-        textCanvas.width = width
-        textCanvas.height = height
-      }
-      val ctx = textCanvas.getContext("2d").asInstanceOf[CanvasRenderingContext2D]
-      ctx.clearRect(0, 0, width, height)
+      textDiv.innerHTML = ""
       for (text <- Debug.textModels) {
-        renderText(ctx, text)
+        renderText(textDiv, text, width, height)
       }
       if (gameWorld.isPaused) {
         renderText(
-          ctx,
+          textDiv,
           TextModel(
             "Game Paused. Press SPACEBAR to resume.",
             width / 2, height / 2,
             ColorRGBA(1, 1, 1, 1),
             absolutePos = true
-          )
+          ),
+          width,
+          height
         )
       }
     }
@@ -169,6 +157,42 @@ private[codecraft] class WebGLRenderer(
         f"Allocated VBOs: ${VBO.count}   " +
         f"Last cached model: ${TheModelCache.lastCachedModel}"
     )*/
+  }
+
+  private def renderText(container: HTMLDivElement, textModel: TextModel, width: Int, height: Int): Unit = {
+    val TextModel(text, x, y, ColorRGBA(r, g, b, a), absolutePos, largeFont, centered) = textModel
+    def int(f: Float) = Math.round(255 * f)
+
+
+    val position =
+      if (absolutePos) screenToBrowserCoords(x, y, width, height)
+      else worldToBrowserCoords(x, y, width, height)
+
+    // FIXME: need to know bounds
+    if (position.x < 0 || position.y < 0 || position.x > width || position.y > height) {
+      println(s"Discarded (${position.x}, ${position.y}):  $textModel")
+      return
+    }
+
+    val textElem = document.createElement("div").asInstanceOf[HTMLDivElement]
+    textElem.className = if (largeFont) "large-floating-text" else "floating-text"
+    textElem.style.color = s"rgba(${int(r)}, ${int(g)}, ${int(b)}, $a)"
+    textElem.innerHTML = text
+    textElem.style.left = s"${position.x.toInt}px"
+    textElem.style.top = s"${position.y.toInt}px"
+    container.appendChild(textElem)
+  }
+
+  private def worldToBrowserCoords(x: Float, y: Float, width: Int, height: Int): VertexXY = {
+    val worldPos = VertexXY(x, -y)
+    val cameraPos = (1 / camera.zoomFactor) * (worldPos - VertexXY(camera.x, -camera.y)) +
+        VertexXY(width / 2f, height / 2f)
+    cameraPos
+  }
+
+  private def screenToBrowserCoords(x: Float, y: Float, width: Int, height: Int): VertexXY = {
+    require(-1 <= x); require(x <= 1); require(-1 <= y); require(y <= 1)
+    VertexXY(x * width / 2f, -y * height / 2f) + VertexXY(width / 2f, height / 2f)
   }
 
   private def renderText(context: CanvasRenderingContext2D, textModel: TextModel): Unit = {
@@ -198,7 +222,7 @@ private[codecraft] class WebGLRenderer(
     if (gl == null) {
       dom.alert("Could not initialise WebGL. INSERT LINK TO FIX HERE.")
     }
-    gl.viewport(0, 0, canvas.width, canvas.height)
+    gl.viewport(-1, 1, canvas.width, canvas.height)
     gl
   }
 }

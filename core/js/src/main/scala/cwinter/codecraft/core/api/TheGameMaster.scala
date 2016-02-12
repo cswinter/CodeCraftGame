@@ -40,7 +40,8 @@ object TheGameMaster extends GameMasterLike {
 
 
   def run(context: RunContext): Unit = {
-    if (outputFPS) {
+    context.fps.computeCurrFPS()
+    if (outputFPS && !context.simulator.isPaused) {
       context.fps.drawFPS()
       if (context.simulator.timestep % 100 == 0) context.fps.printFPS()
     }
@@ -51,7 +52,6 @@ object TheGameMaster extends GameMasterLike {
 
     updateFuture.onComplete {
       case Success(_) =>
-        context.fps.computeCurrFPS()
         if (!context.stopped) {
           dom.setTimeout(
             () => run(context),
@@ -102,7 +102,7 @@ class FPSMeter(context: RunContext) {
 
 
   def drawFPS(): Unit = {
-    Debug.drawText(fpsString, 0, -900, ColorRGBA(1, 1, 1, 0.75f), true, false)
+    Debug.drawText(fpsString, -1, 1, ColorRGBA(1, 1, 1, 1), true, false)
   }
 
   def printFPS(): Unit = println(fpsString)
