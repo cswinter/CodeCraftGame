@@ -7,7 +7,7 @@ import cwinter.codecraft.util.PrecomputeHash
 import cwinter.codecraft.util.maths.{ColorRGBA, ColorRGB}
 
 
-private[graphics] case class MineralSignature(size: Int, harvested: Boolean, harvestingProgress: Option[Float])
+private[graphics] case class MineralSignature(size: Int)
 extends PrecomputeHash
 
 private[graphics] class MineralModelBuilder(mineral: MineralDescriptor)(implicit val rs: RenderStack)
@@ -18,25 +18,13 @@ private[graphics] class MineralModelBuilder(mineral: MineralDescriptor)(implicit
     val size = mineral.size
     val radius = math.sqrt(size).toFloat * 6
 
-    mineral.harvestingProgress match {
-      case Some(p) =>
-        Polygon(
-          rs.TranslucentProportional,
-          n = 5,
-          colorMidpoint = ColorRGBA(0.03f, 0.6f, 0.03f, p),
-          colorOutside = ColorRGBA(0.0f, 0.1f, 0.0f, p),
-          radius = radius,
-          zPos = 2
-        ).getModel
-      case None =>
-        Polygon(
-          rs.BloomShader,
-          n = 5,
-          colorMidpoint = ColorRGB(0.03f, 0.6f, 0.03f),
-          colorOutside = ColorRGB(0.0f, 0.1f, 0.0f),
-          radius = radius,
-          zPos = if (signature.harvested) 2 else -1
-        ).getModel
-    }
+    Polygon(
+      rs.BloomShader,
+      n = 5,
+      colorMidpoint = ColorRGB(0.03f, 0.6f, 0.03f),
+      colorOutside = ColorRGB(0.0f, 0.1f, 0.0f),
+      radius = radius,
+      zPos = -1
+    ).getModel
   }
 }

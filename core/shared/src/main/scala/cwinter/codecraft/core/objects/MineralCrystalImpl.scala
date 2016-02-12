@@ -4,7 +4,7 @@ import cwinter.codecraft.core.SimulatorEvent
 import cwinter.codecraft.core.api.{MineralCrystal, Player}
 import cwinter.codecraft.core.objects.drone.DroneStorageModule
 import cwinter.codecraft.core.replay.AsInt
-import cwinter.codecraft.graphics.worldstate.MineralDescriptor
+import cwinter.codecraft.graphics.worldstate.{ModelDescriptor, MineralDescriptor}
 import cwinter.codecraft.util.maths.{Float0To1, Vector2}
 
 
@@ -29,10 +29,13 @@ private[core] class MineralCrystalImpl(
 
   @inline final private[this] def updateDescriptor(): Unit = _descriptor = Seq(createDescriptor)
 
-  private def createDescriptor: MineralDescriptor =
-      MineralDescriptor(id, position.x.toFloat, position.y.toFloat, 0, size, harvested)
+  private def createDescriptor: ModelDescriptor =
+    ModelDescriptor(
+      position.x.toFloat, position.y.toFloat, 0,
+      MineralDescriptor(size)
+    )
 
-  override private[core] def descriptor: Seq[MineralDescriptor] = _descriptor
+  override private[core] def descriptor: Seq[ModelDescriptor] = _descriptor
 
   override private[core] def isDead = false
 

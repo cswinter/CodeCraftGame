@@ -177,13 +177,15 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
     energyStorageDescriptors.toSeq
   }
 
-  def energyGlobeAnimations: Seq[WorldObjectDescriptor] = {
+  def energyGlobeAnimations: Seq[ModelDescriptor] = {
     for {
       eg <- storedEnergyGlobes
       if eg.isInstanceOf[MovingEnergyGlobe]
       meg = eg.asInstanceOf[MovingEnergyGlobe]
       position = meg.position.rotated(owner.dynamics.orientation) + owner.position
-    } yield EnergyGlobeDescriptor(position.x.toFloat, position.y.toFloat)
+      xPos = position.x.toFloat
+      yPos = position.y.toFloat
+    } yield ModelDescriptor(xPos, yPos, 0, EnergyGlobeDescriptor())
   }
 
 

@@ -5,7 +5,7 @@ import cwinter.codecraft.core.api.{Player, DroneControllerBase, DroneSpec, Miner
 import cwinter.codecraft.core.errors.Errors
 import cwinter.codecraft.core.objects._
 import cwinter.codecraft.core.replay._
-import cwinter.codecraft.graphics.worldstate.{DroneDescriptor, DroneModuleDescriptor, WorldObjectDescriptor}
+import cwinter.codecraft.graphics.worldstate.{ModelDescriptor, DroneDescriptor, DroneModuleDescriptor, WorldObjectDescriptor}
 import cwinter.codecraft.util.maths.{Rectangle, Float0To1, Vector2}
 
 
@@ -269,22 +269,23 @@ private[core] class DroneImpl(
     handles(player)
   }
 
-  override def descriptor: Seq[WorldObjectDescriptor] = {
+  override def descriptor: Seq[ModelDescriptor] = {
     Seq(
-      DroneDescriptor(
-        id,
+      ModelDescriptor(
         position.x.toFloat,
         position.y.toFloat,
         dynamics.orientation.toFloat,
-        Seq(), //oldPositions :+ (position.x.toFloat, position.y.toFloat, dynamics.orientation.toFloat),
-        moduleDescriptors,
-        hullState,
-        shieldGenerators.map(_.hitpointPercentage),
-        spec.size,
-        player.color,
-        constructionProgress.map(p => Float0To1(p / spec.buildTime.toFloat))
-      )) ++ manipulator.toSeq.flatMap(_.manipulatorGraphics) ++
-      storage.toSeq.flatMap(_.energyGlobeAnimations)
+        DroneDescriptor(
+          Seq(), //oldPositions :+ (position.x.toFloat, position.y.toFloat, dynamics.orientation.toFloat),
+          moduleDescriptors,
+          hullState,
+          shieldGenerators.map(_.hitpointPercentage),
+          spec.size,
+          player.color,
+          constructionProgress.map(p => Float0To1(p / spec.buildTime.toFloat))
+        )
+      )
+    ) ++ manipulator.toSeq.flatMap(_.manipulatorGraphics) ++ storage.toSeq.flatMap(_.energyGlobeAnimations)
   }
 
   private def moduleDescriptors: Seq[DroneModuleDescriptor] = {

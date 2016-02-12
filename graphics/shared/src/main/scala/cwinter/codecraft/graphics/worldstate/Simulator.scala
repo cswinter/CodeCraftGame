@@ -7,7 +7,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 private[codecraft] trait Simulator {
-  @volatile private[this] var savedWorldState = Seq.empty[WorldObjectDescriptor]
+  @volatile private[this] var savedWorldState = Seq.empty[ModelDescriptor]
 
   @volatile private[this] var running = false
   private[this] var paused = false
@@ -141,8 +141,8 @@ private[codecraft] trait Simulator {
     exceptionHandler = Some(callback)
   }
 
-  private[codecraft] def worldState: Seq[WorldObjectDescriptor] = savedWorldState
-  private[codecraft] def computeWorldState: Iterable[WorldObjectDescriptor]
+  private[codecraft] def worldState: Seq[ModelDescriptor] = savedWorldState
+  private[codecraft] def computeWorldState: Iterable[ModelDescriptor]
   private[codecraft] def handleKeypress(keychar: Char): Unit = ()
   private[codecraft] def additionalInfoText: String = ""
 }

@@ -79,7 +79,7 @@ class DroneWorldSimulator(
       )
   }.toMap
 
-  Debug.drawAlways(DrawRectangle(0, map.size))
+  Debug.drawAlways(ModelDescriptor(0, 0, 0, DrawRectangle(map.size)))
 
 
   replayer.foreach { r => Rng.seed = r.seed }
@@ -228,11 +228,21 @@ class DroneWorldSimulator(
       for (
         d <- drones
         if d.spec.missileBatteries > 0
-      ) Debug.draw(DrawCircleOutline(d.position.x.toFloat, d.position.y.toFloat, DroneConstants.MissileLockOnRadius, ColorRGB(1, 0, 0)))
+      ) Debug.draw(
+          ModelDescriptor(
+            d.position.x.toFloat, d.position.y.toFloat, 0,
+            DrawCircleOutline(DroneConstants.MissileLockOnRadius, ColorRGB(1, 0, 0))
+          )
+        )
     }
     if (showSightRadius) {
       for (d <- drones) {
-        Debug.draw(DrawCircleOutline(d.position.x.toFloat, d.position.y.toFloat, DroneSpec.SightRadius, ColorRGB(0, 1, 0)))
+        Debug.draw(
+          ModelDescriptor(
+            d.position.x.toFloat, d.position.y.toFloat, 0,
+            DrawCircleOutline(DroneSpec.SightRadius, ColorRGB(0, 1, 0))
+          )
+        )
       }
     }
   }
@@ -438,7 +448,7 @@ class DroneWorldSimulator(
     drone.player != player && !drone.isDead && drone.spec.constructors > 0
 
 
-  private[codecraft] override def computeWorldState: Iterable[WorldObjectDescriptor] = {
+  private[codecraft] override def computeWorldState: Iterable[ModelDescriptor] = {
     visibleObjects.flatMap(_.descriptor)
   }
 

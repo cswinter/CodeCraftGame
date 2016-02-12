@@ -2,7 +2,7 @@ package cwinter.codecraft.core.objects.drone
 
 import cwinter.codecraft.core._
 import cwinter.codecraft.core.api.DroneSpec
-import cwinter.codecraft.graphics.worldstate.{ManipulatorArm, ManipulatorDescriptor, DroneModuleDescriptor}
+import cwinter.codecraft.graphics.worldstate.{ModelDescriptor, ManipulatorArm, ManipulatorDescriptor, DroneModuleDescriptor}
 import cwinter.codecraft.util.maths.Vector2
 
 private[core] class DroneManipulatorModule(positions: Seq[Int], owner: DroneImpl)
@@ -70,7 +70,7 @@ private[core] class DroneManipulatorModule(positions: Seq[Int], owner: DroneImpl
   }
 
 
-  def manipulatorGraphics: Seq[ManipulatorArm] =
+  def manipulatorGraphics: Seq[ModelDescriptor] =
     droneConstruction.toSeq.flatMap {
       case (drone, progress) =>
         var i = 0
@@ -81,10 +81,14 @@ private[core] class DroneManipulatorModule(positions: Seq[Int], owner: DroneImpl
           val t = 50 * i + progress
           i += 1
           val offset = 0.8f * drone.radius * Vector2(math.sin(t / (10.5 - i)), math.cos(t / (7.1 + i)))
-          ManipulatorArm(
-            owner.player.color,
-            pos.x.toFloat, pos.y.toFloat,
-            (offset.x + drone.position.x).toFloat, (offset.y + drone.position.y).toFloat)
+          ModelDescriptor(
+            0, 0, 0,
+            ManipulatorArm(
+              owner.player.color,
+              pos.x.toFloat, pos.y.toFloat,
+              (offset.x + drone.position.x).toFloat, (offset.y + drone.position.y).toFloat
+            )
+          )
         }
     }
 

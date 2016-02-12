@@ -1,7 +1,7 @@
 package cwinter.codecraft.core.objects
 
 import cwinter.codecraft.core.{RemoveEnergyGlobeAnimation, SimulatorEvent}
-import cwinter.codecraft.graphics.worldstate.{EnergyGlobeDescriptor, WorldObjectDescriptor}
+import cwinter.codecraft.graphics.worldstate.{ModelDescriptor, EnergyGlobeDescriptor, WorldObjectDescriptor}
 import cwinter.codecraft.util.maths.Vector2
 
 private[core] class EnergyGlobeObject(
@@ -14,12 +14,14 @@ private[core] class EnergyGlobeObject(
   var fade = FadeTime
   val id = -1
 
-  override private[core] def descriptor: Seq[WorldObjectDescriptor] = Seq(
-    if (tta > 0) {
-      EnergyGlobeDescriptor(position.x.toFloat, position.y.toFloat)
-    } else {
-      EnergyGlobeDescriptor(position.x.toFloat, position.y.toFloat, fade / FadeTime.toFloat)
-    }
+  override private[core] def descriptor: Seq[ModelDescriptor] = Seq(
+    ModelDescriptor(
+      position.x.toFloat,
+      position.y.toFloat,
+      0,
+      if (tta > 0) EnergyGlobeDescriptor()
+      else EnergyGlobeDescriptor(fade / FadeTime.toFloat)
+    )
   )
 
   override def update(): Seq[SimulatorEvent] = {

@@ -105,9 +105,9 @@ private[codecraft] class WebGLRenderer(
 
       var objcurr = worldObjects ++ Debug.debugObjects
       while (objcurr != Nil) {
-        val worldObject = objcurr.head
-        if (worldObject.intersects(onScreen)) {
-          val model = TheWorldObjectModelFactory.generateModel(worldObject, gameWorld.timestep)
+        val modelDescriptor = objcurr.head
+        if (modelDescriptor.intersects(onScreen)) {
+          val model = TheWorldObjectModelFactory.generateModel(modelDescriptor, gameWorld.timestep)
           model.draw(material)
         }
 

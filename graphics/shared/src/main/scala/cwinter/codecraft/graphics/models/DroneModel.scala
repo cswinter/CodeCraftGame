@@ -206,19 +206,6 @@ private[graphics] case class DroneModel(
     constructionState = a.constructionState.map(f => (f * vertexCount / 3).toInt)
 
     shields.foreach(_.update(Intensity(a.shieldState.getOrElse(0))))
-
-    val sightLines: Iterable[Model[Unit]] =
-      for {
-        inSight <- a.inSight.toIterable
-        (x, y) <- inSight
-      } yield new QuadStrip(
-        rs.MaterialXYZRGB,
-        Seq(VertexXY(x, y), VertexXY(a.xPos, a.yPos)),
-        Seq(DefaultDroneColors.ColorThrusters, DefaultDroneColors.ColorThrusters),
-        width = 1,
-        zPos = 2
-      ).noCaching.getModel.identityModelview
-    immediateMode.update(sightLines.toSeq)
   }
 
   override def draw(modelview: Matrix4x4, material: GenericMaterial): Unit = {

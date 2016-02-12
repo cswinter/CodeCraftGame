@@ -1,19 +1,19 @@
 package cwinter.codecraft.graphics.engine
 
-import cwinter.codecraft.graphics.worldstate.WorldObjectDescriptor
+import cwinter.codecraft.graphics.worldstate.{ModelDescriptor, WorldObjectDescriptor}
 import cwinter.codecraft.util.maths.{Vector2, ColorRGBA}
 
 
 object Debug {
-  private[this] var objects = List.empty[WorldObjectDescriptor]
-  private[this] var staticObjects = List.empty[WorldObjectDescriptor]
+  private[this] var objects = List.empty[ModelDescriptor]
+  private[this] var staticObjects = List.empty[ModelDescriptor]
   private[this] var _textModels = List.empty[TextModel]
 
-  private[codecraft] def draw(worldObject: WorldObjectDescriptor): Unit = {
+  private[codecraft] def draw(worldObject: ModelDescriptor): Unit = {
     objects ::= worldObject
   }
 
-  private[codecraft] def drawAlways(worldObject: WorldObjectDescriptor): Unit = {
+  private[codecraft] def drawAlways(worldObject: ModelDescriptor): Unit = {
     staticObjects ::= worldObject
   }
 
@@ -39,11 +39,11 @@ object Debug {
   private[engine] def textModels = _textModels
 
   private[codecraft] def clear(): Unit = {
-    objects = List.empty[WorldObjectDescriptor]
+    objects = List.empty[ModelDescriptor]
     _textModels = List.empty[TextModel]
   }
 
   private[cwinter] def clearDrawAlways(): Unit = {
-    objects = List.empty[WorldObjectDescriptor]
+    objects = List.empty[ModelDescriptor]
   }
 }

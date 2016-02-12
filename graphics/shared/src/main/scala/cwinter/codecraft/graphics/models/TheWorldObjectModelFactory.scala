@@ -8,17 +8,17 @@ import cwinter.codecraft.util.maths.VertexXY
 
 
 private[graphics] object TheWorldObjectModelFactory {
-  def generateModel(worldObject: WorldObjectDescriptor, timestep: Int)
+  def generateModel(modelDescriptor: ModelDescriptor, timestep: Int)
       (implicit renderStack: RenderStack): ClosedModel[_] = {
 
-    val xPos = worldObject.xPos
-    val yPos = worldObject.yPos
-    val orientation = worldObject.orientation
+    val xPos = modelDescriptor.xPos
+    val yPos = modelDescriptor.yPos
+    val orientation = modelDescriptor.orientation
     val modelview =
       if (renderStack.modelviewTranspose) new RotationZTranslationXYTransposedMatrix4x4(orientation, xPos, yPos)
       else new RotationZTranslationXYMatrix4x4(orientation, xPos, yPos)
 
-    worldObject match {
+    modelDescriptor.objectDescriptor match {
       case mineral: MineralDescriptor => new ClosedModel[Unit](
         Unit,
         new MineralModelBuilder(mineral).getModel,
@@ -31,7 +31,7 @@ private[graphics] object TheWorldObjectModelFactory {
         lightFlash,
         new LightFlashModelBuilder(lightFlash).getModel,
         modelview)
-      case HomingMissileDescriptor(_, positions, maxPos, player) => new ClosedModel[Unit](
+      case HomingMissileDescriptor(positions, maxPos, player) => new ClosedModel[Unit](
         Unit,
         HomingMissileModelFactory.build(positions, maxPos, player),
         modelview)
@@ -40,9 +40,9 @@ private[graphics] object TheWorldObjectModelFactory {
         ManipulatorArmModelFactory.build(player, x1, y1, x2, y2),
         IdentityMatrix4x4
       )
-      case EnergyGlobeDescriptor(x, y, f) => new ClosedModel[Unit](
+      case EnergyGlobeDescriptor(f) => new ClosedModel[Unit](
         Unit,
-        EnergyGlobeModelFactory.build(VertexXY(x, y), f).noCaching.getModel,
+        EnergyGlobeModelFactory.build(VertexXY(xPos, yPos), f).noCaching.getModel,
         IdentityMatrix4x4
       )
       case TestingObject(t) => new ClosedModel[Unit](
@@ -53,7 +53,7 @@ private[graphics] object TheWorldObjectModelFactory {
         Unit,
         CircleModelBuilder(circle.radius, circle.identifier).getModel,
         modelview)
-      case DrawCircleOutline(x, y, radius, color) => new ClosedModel[Unit](
+      case DrawCircleOutline(radius, color) => new ClosedModel[Unit](
         Unit,
         new PolygonRing(
           renderStack.MaterialXYZRGB, 40, Seq.fill(40)(color), Seq.fill(40)(color),

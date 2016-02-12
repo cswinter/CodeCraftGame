@@ -1,6 +1,6 @@
 package cwinter.codecraft.graphics.engine
 
-import cwinter.codecraft.graphics.worldstate.{HomingMissileDescriptor, MineralDescriptor, DroneDescriptor, WorldObjectDescriptor}
+import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.util.maths.{Vector2, Rectangle, ColorRGB}
 
 
@@ -8,7 +8,7 @@ private[codecraft] object AsciiVisualizer {
   final val ratio = 75
   final val margin = ratio * 2
 
-  def show(worldState: Iterable[WorldObjectDescriptor], bounds: Rectangle): String = {
+  def show(worldState: Iterable[ModelDescriptor], bounds: Rectangle): String = {
     def gridpoint(pos: Vector2): (Int, Int) = (
       ((pos.x - bounds.xMin + margin) / ratio).toInt,
       ((pos.y - bounds.yMin + margin) / ratio).toInt
@@ -18,12 +18,12 @@ private[codecraft] object AsciiVisualizer {
     val height = ((bounds.height + 2 * margin) / ratio).toInt
     val image = Array.fill[Char](height, width)(' ')
 
-    for (obj <- worldState) obj match {
+    for (obj <- worldState) obj.objectDescriptor match {
       case d: DroneDescriptor =>
-        val (x, y) = gridpoint(Vector2(d.xPos, d.yPos))
+        val (x, y) = gridpoint(Vector2(obj.xPos, obj.yPos))
         image(y)(x) = toChar(d.playerColor)
       case m: MineralDescriptor =>
-        val (x, y) = gridpoint(Vector2(m.xPos, m.yPos))
+        val (x, y) = gridpoint(Vector2(obj.xPos, obj.yPos))
         image(y)(x) = '*'
       case l: HomingMissileDescriptor =>
         val (x, y) = gridpoint(Vector2(l.positions.head._1, l.positions.head._2))
