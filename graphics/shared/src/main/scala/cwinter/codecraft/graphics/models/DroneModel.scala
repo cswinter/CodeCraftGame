@@ -220,7 +220,8 @@ private[graphics] case class DroneModel(
 
 
     super.draw(modelview2, material)
-    setVertexCount(Integer.MAX_VALUE)
+    // we need to restore vertex count, since models for submodules may be shared with other drones
+    if (constructionState.nonEmpty) setVertexCount(Integer.MAX_VALUE)
   }
 }
 
