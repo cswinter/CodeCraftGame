@@ -2,7 +2,7 @@ package cwinter.codecraft.graphics.models
 
 import cwinter.codecraft.graphics.engine.RenderStack
 import cwinter.codecraft.util.maths.matrices._
-import cwinter.codecraft.graphics.model.{PolygonRing, ClosedModel}
+import cwinter.codecraft.graphics.model.{Model, PolygonRing, ClosedModel}
 import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.util.maths.VertexXY
 
@@ -18,15 +18,21 @@ private[graphics] object TheWorldObjectModelFactory {
       if (renderStack.modelviewTranspose) new RotationZTranslationXYTransposedMatrix4x4(orientation, xPos, yPos)
       else new RotationZTranslationXYMatrix4x4(orientation, xPos, yPos)
 
+
     modelDescriptor.objectDescriptor match {
       case mineral: MineralDescriptor => new ClosedModel[Unit](
         Unit,
         new MineralModelBuilder(mineral).getModel,
         modelview)
-      case drone: DroneDescriptor => new ClosedModel(
-        drone,
-        new DroneModelBuilder(drone, timestep).getModel,
-        modelview)
+      case drone: DroneDescriptor =>
+        if (modelDescriptor.objectDescriptor.cachedModel.isEmpty) {
+          modelDescriptor.objectDescriptor.cachedModel = new DroneModelBuilder(drone, timestep).getModel
+        }
+        new ClosedModel(
+          drone,
+          modelDescriptor.objectDescriptor.cachedModel.get.asInstanceOf[Model[DroneDescriptor]],
+          modelview
+        )
       case lightFlash: LightFlashDescriptor => new ClosedModel(
         lightFlash,
         new LightFlashModelBuilder(lightFlash).getModel,

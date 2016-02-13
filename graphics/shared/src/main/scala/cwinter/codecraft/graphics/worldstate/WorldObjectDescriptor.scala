@@ -1,5 +1,6 @@
 package cwinter.codecraft.graphics.worldstate
 
+import cwinter.codecraft.graphics.model.Model
 import cwinter.codecraft.graphics.models.MineralSignature
 import cwinter.codecraft.util.maths
 import cwinter.codecraft.util.maths.{Vector2, ColorRGB, Float0To1, Rectangle}
@@ -30,6 +31,11 @@ private[codecraft] sealed trait WorldObjectDescriptor {
     yPos + size > rectangle.yMin &&
     yPos - size < rectangle.yMax
   }
+
+
+  private[this] var _cachedModel: Option[Model[_]] = None
+  private[graphics] def cachedModel_=(value: Model[_]): Unit = _cachedModel = Some(value)
+  private[graphics] def cachedModel: Option[Model[_]] = _cachedModel
 }
 
 private[codecraft] case class DroneDescriptor(
