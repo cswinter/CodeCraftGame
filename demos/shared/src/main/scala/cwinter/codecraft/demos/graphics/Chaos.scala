@@ -44,28 +44,29 @@ private[graphics] object Chaos {
     )
   )
 
-  def droneConstruction(time: Int): DroneDescriptor = {
-    DroneDescriptor(
-      identifier = -2,
+  def droneConstruction(time: Int): ModelDescriptor = {
+    ModelDescriptor(
       xPos = 100,
       yPos = 100,
       orientation = 2,
-      positions = Seq(),
-      modules = Seq(
-        EnginesDescriptor(0),
-        MissileBatteryDescriptor(1, 0),
-        StorageModuleDescriptor(2, EmptyStorage),
-        ShieldGeneratorDescriptor(3),
-        StorageModuleDescriptor(4, EmptyStorage),
-        MissileBatteryDescriptor(5,3),
-        MissileBatteryDescriptor(6, 3)
-      ),
-      hullState = Seq[Byte](2, 2, 2, 2, 2),
-      shieldState = Some(1),
-      size = 6,
-      playerColor = ColorRGB(0, 0, 1),
-      constructionState = Some(Float0To1(math.max(time / 5000f, 1))),
-      None, None
+      DroneDescriptor(
+        positions = Seq(),
+        modules = Seq(
+          EnginesDescriptor(0),
+          MissileBatteryDescriptor(1, 0),
+          StorageModuleDescriptor(2, EmptyStorage),
+          ShieldGeneratorDescriptor(3),
+          StorageModuleDescriptor(4, EmptyStorage),
+          MissileBatteryDescriptor(5, 3),
+          MissileBatteryDescriptor(6, 3)
+        ),
+        hullState = Seq[Byte](2, 2, 2, 2, 2),
+        shieldState = Some(1),
+        size = 6,
+        playerColor = ColorRGB(0, 0, 1),
+        constructionState = Some(Float0To1(math.max(time / 5000f, 1))),
+        None, None
+      )
     )
   }
 

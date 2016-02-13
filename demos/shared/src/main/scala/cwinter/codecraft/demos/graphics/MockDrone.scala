@@ -33,7 +33,6 @@ private[graphics] class MockDrone(
   val nPos = 12
 
 
-
   override def update(): Unit = {
     // update timer on engines
     modules = modules.map {
@@ -99,11 +98,9 @@ private[graphics] class MockDrone(
     if (oldPositions.length > nPos) oldPositions.dequeue()
   }
 
-  override def state(): WorldObjectDescriptor =
+  override def state(): ModelDescriptor = ModelDescriptor(
+    xPos, yPos, orientation,
     DroneDescriptor(
-      identifier,
-      xPos, yPos,
-      orientation,
       oldPositions.clone(),
       modules,
       hullState,
@@ -115,16 +112,17 @@ private[graphics] class MockDrone(
       sightRadius = sightRadius,
       inSight = sightRadius.map(_ => inSight.map(obj => (obj.xPos, obj.yPos)))
     )
+  )
 
-  def extraState(): Seq[WorldObjectDescriptor] =
+  def extraState(): Seq[ModelDescriptor] =
     sightRadius.toSeq.flatMap(_ => inSight.map(obj =>
-      ManipulatorArm(ColorRGB(0, 0, 1), xPos, yPos, obj.xPos, obj.yPos)
+      ModelDescriptor(0, 0, 0, ManipulatorArm(ColorRGB(0, 0, 1), xPos, yPos, obj.xPos, obj.yPos))
     ))
 
 
   def vx = math.cos(orientation).toFloat * speed
-  def vy = math.sin(orientation).toFloat * speed
 
+  def vy = math.sin(orientation).toFloat * speed
 
 
   def rnd() = Random.nextDouble().toFloat

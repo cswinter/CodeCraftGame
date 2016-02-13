@@ -1,6 +1,6 @@
 package cwinter.codecraft.demos.physics
 
-import cwinter.codecraft.graphics.worldstate.{DrawCircle, WorldObjectDescriptor}
+import cwinter.codecraft.graphics.worldstate.{ModelDescriptor, DrawCircle, WorldObjectDescriptor}
 import cwinter.codecraft.physics.{ConstantVelocityObject, DynamicObject}
 import cwinter.codecraft.util.maths.{Rng, Vector2}
 
@@ -11,7 +11,11 @@ class MovingObject[TDynamics](
 ) {
   val id = UID()
 
-  def state: WorldObjectDescriptor = DrawCircle(id, objectDynamics.pos.x.toFloat, objectDynamics.pos.y.toFloat, radius.toFloat)
+  def state: ModelDescriptor =
+    ModelDescriptor(
+      objectDynamics.pos.x.toFloat, objectDynamics.pos.y.toFloat, 0,
+      DrawCircle(radius.toFloat, id)
+    )
 
   override def toString: String = id.toString
 }

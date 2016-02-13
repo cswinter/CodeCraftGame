@@ -1,7 +1,7 @@
 package cwinter.codecraft.demos.physics
 
 import cwinter.codecraft.graphics.engine.GraphicsEngine
-import cwinter.codecraft.graphics.worldstate.{Simulator, WorldObjectDescriptor}
+import cwinter.codecraft.graphics.worldstate.{ModelDescriptor, Simulator, WorldObjectDescriptor}
 import cwinter.codecraft.physics.{ConstantVelocityObject, PhysicsEngine}
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 
@@ -29,7 +29,7 @@ object TheObjectManager extends Simulator {
   worldObjects.foreach(x => physicsEngine.addObject(x.objectDynamics.unwrap))
 
 
-  override def computeWorldState: Iterable[WorldObjectDescriptor] =
+  override def computeWorldState: Iterable[ModelDescriptor] =
     worldObjects.map(_.state)
 
 

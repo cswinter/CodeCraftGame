@@ -51,7 +51,7 @@ object Main {
     TheGameMaster.run(simulator)
   }
 
-  def render(target: html.Pre)(objects: Seq[WorldObjectDescriptor], mapSize: Rectangle): Unit = {
+  def render(target: html.Pre)(objects: Seq[ModelDescriptor], mapSize: Rectangle): Unit = {
     target.innerHTML = AsciiVisualizer.show(objects, mapSize)
   }
 }

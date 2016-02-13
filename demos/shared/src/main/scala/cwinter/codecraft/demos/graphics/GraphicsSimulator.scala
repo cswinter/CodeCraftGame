@@ -2,7 +2,7 @@ package cwinter.codecraft.demos.graphics
 
 import cwinter.codecraft.collisions.VisionTracker
 import cwinter.codecraft.graphics.engine.GraphicsEngine
-import cwinter.codecraft.graphics.worldstate.{Simulator, TestingObject, WorldObjectDescriptor}
+import cwinter.codecraft.graphics.worldstate.{ModelDescriptor, Simulator, TestingObject, WorldObjectDescriptor}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -10,7 +10,7 @@ import scala.concurrent.Future
 
 private[graphics] class GraphicsSimulator(
   customObjects: Seq[MockObject],
-  customChangingObjects: Int => Seq[WorldObjectDescriptor],
+  customChangingObjects: Int => Seq[ModelDescriptor],
   spawnedObjects: Int => Seq[MockObject],
   val sightRadius: Option[Int] = None,
   nRandomDrones: Int = 0,
@@ -54,8 +54,8 @@ private[graphics] class GraphicsSimulator(
   val objects = collection.mutable.Set(minerals ++ drones ++ customObjects:_*)
   objects.foreach(vision.insert(_))
 
-  override def computeWorldState: Iterable[WorldObjectDescriptor] = {
-    objects.map(_.state()) + TestingObject(time) ++ customChangingObjects(time) ++
+  override def computeWorldState: Iterable[ModelDescriptor] = {
+    objects.map(_.state()) + ModelDescriptor(0, 0, 0, TestingObject(time)) ++ customChangingObjects(time) ++
       objects.flatMap{case drone: MockDrone => drone.extraState() case _ => Seq()}
   }
 

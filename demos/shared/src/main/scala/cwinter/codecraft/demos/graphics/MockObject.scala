@@ -1,7 +1,7 @@
 package cwinter.codecraft.demos.graphics
 
 import cwinter.codecraft.collisions.Positionable
-import cwinter.codecraft.graphics.worldstate.WorldObjectDescriptor
+import cwinter.codecraft.graphics.worldstate.{ModelDescriptor, WorldObjectDescriptor}
 import cwinter.codecraft.util.maths.Vector2
 
 
@@ -9,7 +9,7 @@ private[graphics] trait MockObject {
   val identifier = MockObject.genID()
 
   def update(): Unit
-  def state(): WorldObjectDescriptor
+  def state(): ModelDescriptor
   def dead: Boolean
 
   def xPos: Float

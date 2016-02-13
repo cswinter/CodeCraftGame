@@ -15,6 +15,7 @@ private[codecraft] object BlogpostDemo {
 
 
   val sideLength = 40
+
   def radius(size: Int): Double = {
     val radiusBody = 0.5f * sideLength / math.sin(math.Pi / size).toFloat
     radiusBody + Geometry.circumradius(4, size)
@@ -29,31 +30,32 @@ private[codecraft] object BlogpostDemo {
       val orientation = math.Pi.toFloat / 2
       xPos += 2.3f * r
 
-      DroneDescriptor(
-        identifier = i,
+      ModelDescriptor(
         xPos = position.x,
         yPos = position.y,
         orientation = orientation,
-        positions = Seq(),
-        modules = Seq(),
-        hullState = Seq.fill[Byte](size - 1)(2),
-        Some(1),
-        size = size,
-        playerColor = ColorRGB(0, 0, 1)
+        DroneDescriptor(
+          positions = Seq(),
+          modules = Seq(),
+          hullState = Seq.fill[Byte](size - 1)(2),
+          Some(1),
+          size = size,
+          playerColor = ColorRGB(0, 0, 1)
+        )
       )
     }
   }
 
   def minerals = {
     Seq(
-      MineralDescriptor(0, 100, -500, 1, 1),
-      MineralDescriptor(1, 130, -520, 2, 1),
-      MineralDescriptor(2, 80, -525, 3, 1),
-      MineralDescriptor(3, 140, -490, 5, 1),
-      MineralDescriptor(4, 95, -550, 4, 1),
-      MineralDescriptor(5, 105, -530, 9, 2),
-      MineralDescriptor(6, 150, -550, 7, 2),
-      MineralDescriptor(7, 180, -500, 8, 4)
+      ModelDescriptor(100, -500, 0, MineralDescriptor(1)),
+      ModelDescriptor(130, -520, 0, MineralDescriptor(1)),
+      ModelDescriptor(80, -525, 0, MineralDescriptor(1)),
+      ModelDescriptor(140, -490, 0, MineralDescriptor(1)),
+      ModelDescriptor(95, -550, 0, MineralDescriptor(1)),
+      ModelDescriptor(105, -530, 0, MineralDescriptor(2)),
+      ModelDescriptor(150, -550, 0, MineralDescriptor(2)),
+      ModelDescriptor(180, -500, 0, MineralDescriptor(4))
     )
   }
 
@@ -79,39 +81,43 @@ private[codecraft] object BlogpostDemo {
       )
   }
 
-  val largeDrone = DroneDescriptor(
-    identifier = 1, xPos = 170, yPos = 300, orientation = 0,
-    positions = Seq(),
-    modules = Seq(
-      MissileBatteryDescriptor(0),
-      EnginesDescriptor(1),
-      StorageModuleDescriptor(2, EnergyStorage((0 to 6).toSet)),
-      ShieldGeneratorDescriptor(3),
-      MissileBatteryDescriptor(4),
-      MissileBatteryDescriptor(5),
-      MissileBatteryDescriptor(6)
-    ),
-    hullState = Seq.fill[Byte](5)(2),
-    Some(1),
-    6,
-    ColorRGB(0, 0, 1)
+  val largeDrone = ModelDescriptor(
+    xPos = 170, yPos = 300, orientation = 0,
+    DroneDescriptor(
+      positions = Seq(),
+      modules = Seq(
+        MissileBatteryDescriptor(0),
+        EnginesDescriptor(1),
+        StorageModuleDescriptor(2, EnergyStorage((0 to 6).toSet)),
+        ShieldGeneratorDescriptor(3),
+        MissileBatteryDescriptor(4),
+        MissileBatteryDescriptor(5),
+        MissileBatteryDescriptor(6)
+      ),
+      hullState = Seq.fill[Byte](5)(2),
+      Some(1),
+      6,
+      ColorRGB(0, 0, 1)
+    )
   )
 
-  val profilePic = DroneDescriptor(
-    identifier = 9000, xPos = -400, yPos = 0, orientation = 1,
-    positions = Seq(),
-    modules = Seq(
-      EnginesDescriptor(0),
-      MissileBatteryDescriptor(3),
-      ShieldGeneratorDescriptor(2),
-      StorageModuleDescriptor(1, EnergyStorage())
-    ),
-    hullState = Seq.fill[Byte](4)(2),
-    Some(1),
-    5, ColorRGB(0, 0, 1)
+  val profilePic = ModelDescriptor(
+    xPos = -400, yPos = 0, orientation = 1,
+    DroneDescriptor(
+      positions = Seq(),
+      modules = Seq(
+        EnginesDescriptor(0),
+        MissileBatteryDescriptor(3),
+        ShieldGeneratorDescriptor(2),
+        StorageModuleDescriptor(1, EnergyStorage())
+      ),
+      hullState = Seq.fill[Byte](4)(2),
+      Some(1),
+      5, ColorRGB(0, 0, 1)
+    )
   )
 
-  def generateObjects(t: Int): Seq[WorldObjectDescriptor] = {
+  def generateObjects(t: Int): Seq[ModelDescriptor] = {
     hulls ++ minerals :+ largeDrone :+ profilePic
   }
 
