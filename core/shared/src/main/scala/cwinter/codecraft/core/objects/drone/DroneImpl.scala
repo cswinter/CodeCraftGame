@@ -27,10 +27,15 @@ private[core] class DroneImpl(
 
   // TODO: move all this state into submodules?
   private[this] var hullState = List.fill[Byte](spec.size - 1)(2)
-  private[core] var constructionProgress: Option[Int] = None
   private[this] var _hasDied: Boolean = false
   private[this] var _oldPosition = Vector2.Null
   private[this] var _hasMoved: Boolean = true
+  private[this] var _constructionProgress: Option[Int] = None
+  def constructionProgress: Option[Int] = _constructionProgress
+  def constructionProgress_=(value: Option[Int]): Unit = {
+    _constructionProgress = value
+    mustUpdateModel()
+  }
 
   private[this] var handles = Map.empty[Player, EnemyDrone]
 
@@ -40,6 +45,8 @@ private[core] class DroneImpl(
     _missileHits = List.empty[MissileHit]
     result
   }
+
+  private[this] var cachedDescriptor: Option[DroneDescriptor] = None
 
   final val MessageCooldown = 30
   private[this] var messageCooldown = 0
@@ -153,6 +160,8 @@ private[core] class DroneImpl(
       _hasDied = true
       for (s <- storage) s.droneHasDied()
     }
+
+    mustUpdateModel()
 
     // TODO: only do this in multiplayer games
     if (context.isLocallyComputed) {
@@ -269,23 +278,34 @@ private[core] class DroneImpl(
     handles(player)
   }
 
+  private[drone] def mustUpdateModel(): Unit = {
+    cachedDescriptor = None
+  }
+
   override def descriptor: Seq[ModelDescriptor] = {
     Seq(
       ModelDescriptor(
         position.x.toFloat,
         position.y.toFloat,
         dynamics.orientation.toFloat,
-        DroneDescriptor(
-          Seq(), //oldPositions :+ (position.x.toFloat, position.y.toFloat, dynamics.orientation.toFloat),
-          moduleDescriptors,
-          hullState,
-          shieldGenerators.map(_.hitpointPercentage),
-          spec.size,
-          player.color,
-          constructionProgress.map(p => Float0To1(p / spec.buildTime.toFloat))
-        )
+        cachedDescriptor.getOrElse(recreateDescriptor())
       )
     ) ++ manipulator.toSeq.flatMap(_.manipulatorGraphics) ++ storage.toSeq.flatMap(_.energyGlobeAnimations)
+  }
+
+  private def recreateDescriptor(): DroneDescriptor = {
+    val newDescriptor =
+      DroneDescriptor(
+        Seq(), //oldPositions :+ (position.x.toFloat, position.y.toFloat, dynamics.orientation.toFloat),
+        moduleDescriptors,
+        hullState,
+        shieldGenerators.map(_.hitpointPercentage),
+        spec.size,
+        player.color,
+        constructionProgress.map(p => Float0To1(p / spec.buildTime.toFloat))
+      )
+    cachedDescriptor = Some(newDescriptor)
+    newDescriptor
   }
 
   private def moduleDescriptors: Seq[DroneModuleDescriptor] = {

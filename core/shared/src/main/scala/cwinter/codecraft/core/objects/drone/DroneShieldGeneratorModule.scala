@@ -20,6 +20,7 @@ private[core] class DroneShieldGeneratorModule(positions: Seq[Int], owner: Drone
     if (_currHitpoints < maxHitpoints) {
       regenCooldown = regenCooldown - 1
       if (regenCooldown == 0) {
+        if (_currHitpoints != maxHitpoints) owner.mustUpdateModel()
         _currHitpoints = math.min(maxHitpoints, _currHitpoints + nShieldGenerators)
         regenCooldown = ShieldRegenPeriod
       }
@@ -36,6 +37,7 @@ private[core] class DroneShieldGeneratorModule(positions: Seq[Int], owner: Drone
    * @return Returns the amount of damage which couldn't be absorbed.
    */
   def absorbDamage(damage: Int): Int = {
+    owner.mustUpdateModel()
     val absorbed = math.min(damage, _currHitpoints)
     _currHitpoints -= absorbed
     damage - absorbed

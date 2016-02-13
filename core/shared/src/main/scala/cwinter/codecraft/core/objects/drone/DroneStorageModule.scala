@@ -38,7 +38,11 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
       event <- harvest(m)
     } effects ::= event
 
-    storedEnergyGlobes = storedEnergyGlobes.map(_.updated())
+    storedEnergyGlobes = storedEnergyGlobes.map{ x =>
+      val updated = x.updated()
+      if (x ne updated) owner.mustUpdateModel()
+      updated
+    }
 
     (effects, Seq.empty[Vector2], Seq.empty[Vector2])
   }
@@ -86,6 +90,7 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
   }
 
   def subtractFromResources(amount: Int): Unit = {
+    owner.mustUpdateModel()
     if (amount > 0) {
       for (_ <- 0 until amount) storedEnergyGlobes.pop()
     } else if (amount < 0) {
@@ -105,12 +110,14 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
   }
 
   def depositEnergyGlobe(position: Vector2): Unit = {
+    owner.mustUpdateModel()
     val targetPosition = calculateEnergyGlobePosition(storedResources)
     val newEnergyGlobe = new MovingEnergyGlobe(targetPosition, position, 20)
     storedEnergyGlobes.push(newEnergyGlobe)
   }
 
   def withdrawEnergyGlobe(): Vector2 = {
+    owner.mustUpdateModel()
     storedEnergyGlobes.pop() match {
       case StaticEnergyGlobe => calculateEnergyGlobePosition(storedResources)
       case meg: MovingEnergyGlobe => meg.position
@@ -133,6 +140,7 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
     } else {
       harvestCountdown = HarvestingDuration
       mineralCrystal.claimedBy = Some(this)
+      if (!harvesting.contains(mineralCrystal)) owner.mustUpdateModel()
       harvesting = Some(mineralCrystal)
     }
   }
@@ -142,6 +150,7 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
   }
 
   def cancelHarvesting(): Unit = {
+    owner.mustUpdateModel()
     harvesting.foreach(_.claimedBy = None)
     harvesting = None
   }
