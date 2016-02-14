@@ -99,7 +99,7 @@ private[graphics] class MockDrone(
   }
 
   override def state(): ModelDescriptor = ModelDescriptor(
-    xPos, yPos, orientation,
+    PositionDescriptor(xPos, yPos, orientation),
     DroneDescriptor(
       oldPositions.clone(),
       modules,

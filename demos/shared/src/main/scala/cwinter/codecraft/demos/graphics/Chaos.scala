@@ -46,9 +46,11 @@ private[graphics] object Chaos {
 
   def droneConstruction(time: Int): ModelDescriptor = {
     ModelDescriptor(
-      xPos = 100,
-      yPos = 100,
-      orientation = 2,
+      PositionDescriptor(
+        x = 100,
+        y = 100,
+        orientation = 2
+      ),
       DroneDescriptor(
         positions = Seq(),
         modules = Seq(

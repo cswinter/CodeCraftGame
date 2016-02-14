@@ -1,6 +1,6 @@
 package cwinter.codecraft.demos.graphics
 
-import cwinter.codecraft.graphics.worldstate.{ModelDescriptor, MineralDescriptor, WorldObjectDescriptor}
+import cwinter.codecraft.graphics.worldstate.{PositionDescriptor, ModelDescriptor, MineralDescriptor, WorldObjectDescriptor}
 
 
 private[graphics] class MockResource(
@@ -13,7 +13,10 @@ private[graphics] class MockResource(
   override def update(): Unit = ()
 
   override def state(): ModelDescriptor =
-    ModelDescriptor(xPos, yPos, orientation, MineralDescriptor(size))
+    ModelDescriptor(
+      PositionDescriptor(xPos, yPos, orientation),
+      MineralDescriptor(size)
+    )
 
   def dead = false
 }

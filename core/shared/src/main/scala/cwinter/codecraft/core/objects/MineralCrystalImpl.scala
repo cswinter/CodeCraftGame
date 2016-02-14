@@ -3,9 +3,8 @@ package cwinter.codecraft.core.objects
 import cwinter.codecraft.core.SimulatorEvent
 import cwinter.codecraft.core.api.{MineralCrystal, Player}
 import cwinter.codecraft.core.objects.drone.DroneStorageModule
-import cwinter.codecraft.core.replay.AsInt
-import cwinter.codecraft.graphics.worldstate.{ModelDescriptor, MineralDescriptor}
-import cwinter.codecraft.util.maths.{Float0To1, Vector2}
+import cwinter.codecraft.graphics.worldstate.{MineralDescriptor, ModelDescriptor, PositionDescriptor}
+import cwinter.codecraft.util.maths.{Rng, Vector2}
 
 
 private[core] class MineralCrystalImpl(
@@ -17,6 +16,8 @@ private[core] class MineralCrystalImpl(
   private[this] var _descriptor = Seq(createDescriptor)
   private var handles = Map.empty[Player, MineralCrystal]
   private[objects] var claimedBy: Option[DroneStorageModule] = None
+  private[this] var orientation = (2 * math.Pi * Rng.double()).toFloat
+
 
   def position: Vector2 = _position
   def position_=(value: Vector2): Unit = { _position = value; updateDescriptor() }
@@ -31,7 +32,7 @@ private[core] class MineralCrystalImpl(
 
   private def createDescriptor: ModelDescriptor =
     ModelDescriptor(
-      position.x.toFloat, position.y.toFloat, 0,
+      PositionDescriptor(position.x.toFloat, position.y.toFloat, orientation),
       MineralDescriptor(size)
     )
 

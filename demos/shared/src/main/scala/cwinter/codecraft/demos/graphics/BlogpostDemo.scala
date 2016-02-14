@@ -31,9 +31,11 @@ private[codecraft] object BlogpostDemo {
       xPos += 2.3f * r
 
       ModelDescriptor(
-        xPos = position.x,
-        yPos = position.y,
-        orientation = orientation,
+        PositionDescriptor(
+          x = position.x,
+          y = position.y,
+          orientation = orientation
+        ),
         DroneDescriptor(
           positions = Seq(),
           modules = Seq(),
@@ -48,14 +50,14 @@ private[codecraft] object BlogpostDemo {
 
   def minerals = {
     Seq(
-      ModelDescriptor(100, -500, 0, MineralDescriptor(1)),
-      ModelDescriptor(130, -520, 0, MineralDescriptor(1)),
-      ModelDescriptor(80, -525, 0, MineralDescriptor(1)),
-      ModelDescriptor(140, -490, 0, MineralDescriptor(1)),
-      ModelDescriptor(95, -550, 0, MineralDescriptor(1)),
-      ModelDescriptor(105, -530, 0, MineralDescriptor(2)),
-      ModelDescriptor(150, -550, 0, MineralDescriptor(2)),
-      ModelDescriptor(180, -500, 0, MineralDescriptor(4))
+      ModelDescriptor(PositionDescriptor(100, -500, 0), MineralDescriptor(1)),
+      ModelDescriptor(PositionDescriptor(130, -520, 0), MineralDescriptor(1)),
+      ModelDescriptor(PositionDescriptor(80, -525, 0), MineralDescriptor(1)),
+      ModelDescriptor(PositionDescriptor(140, -490, 0), MineralDescriptor(1)),
+      ModelDescriptor(PositionDescriptor(95, -550, 0), MineralDescriptor(1)),
+      ModelDescriptor(PositionDescriptor(105, -530, 0), MineralDescriptor(2)),
+      ModelDescriptor(PositionDescriptor(150, -550, 0), MineralDescriptor(2)),
+      ModelDescriptor(PositionDescriptor(180, -500, 0), MineralDescriptor(4))
     )
   }
 
@@ -82,7 +84,7 @@ private[codecraft] object BlogpostDemo {
   }
 
   val largeDrone = ModelDescriptor(
-    xPos = 170, yPos = 300, orientation = 0,
+    PositionDescriptor(170, 300, 0),
     DroneDescriptor(
       positions = Seq(),
       modules = Seq(
@@ -102,7 +104,7 @@ private[codecraft] object BlogpostDemo {
   )
 
   val profilePic = ModelDescriptor(
-    xPos = -400, yPos = 0, orientation = 1,
+    PositionDescriptor(-400, 0, 1),
     DroneDescriptor(
       positions = Seq(),
       modules = Seq(

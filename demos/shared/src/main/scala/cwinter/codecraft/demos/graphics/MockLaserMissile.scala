@@ -1,6 +1,6 @@
 package cwinter.codecraft.demos.graphics
 
-import cwinter.codecraft.graphics.worldstate.{ModelDescriptor, HomingMissileDescriptor, WorldObjectDescriptor}
+import cwinter.codecraft.graphics.worldstate.{HomingMissileDescriptor, ModelDescriptor, NullPositionDescriptor}
 import cwinter.codecraft.util.maths.{ColorRGB, Rng}
 
 import scala.collection.mutable
@@ -35,7 +35,7 @@ private[graphics] class MockLaserMissile(
 
   override def state(): ModelDescriptor =
     ModelDescriptor(
-      0, 0, 0,
+      NullPositionDescriptor,
       HomingMissileDescriptor(oldPositions.clone().toSeq, math.min(positions, age), player)
     )
 

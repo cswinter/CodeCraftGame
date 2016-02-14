@@ -3,23 +3,35 @@ package cwinter.codecraft.graphics.worldstate
 import cwinter.codecraft.graphics.model.Model
 import cwinter.codecraft.graphics.models.MineralSignature
 import cwinter.codecraft.util.maths
+import cwinter.codecraft.util.maths.matrices.Matrix4x4
 import cwinter.codecraft.util.maths.{Vector2, ColorRGB, Float0To1, Rectangle}
 
 
 
 private[codecraft] case class ModelDescriptor(
-  xPos: Float,
-  yPos: Float,
-  orientation: Float,
+  position: PositionDescriptor,
   objectDescriptor: WorldObjectDescriptor
 ) {
-  assert(!xPos.toDouble.isNaN)
-  assert(!yPos.toDouble.isNaN)
+  @inline final def intersects(rectangle: Rectangle): Boolean =
+    objectDescriptor.intersects(position.x, position.y, rectangle)
+}
+
+private[codecraft] case class PositionDescriptor(
+  x: Float,
+  y: Float,
+  orientation: Float = 0
+) {
+  assert(!x.toDouble.isNaN)
+  assert(!y.toDouble.isNaN)
   assert(!orientation.toDouble.isNaN)
 
-  @inline final def intersects(rectangle: Rectangle): Boolean =
-    objectDescriptor.intersects(xPos, yPos, rectangle)
+  private[this] var _cachedModelviewMatrix: Option[Matrix4x4] = None
+  private[graphics] def cachedModelviewMatrix_=(value: Matrix4x4): Unit =
+    _cachedModelviewMatrix = Some(value)
+  private[graphics] def cachedModelviewMatrix = _cachedModelviewMatrix
 }
+
+private[codecraft] object NullPositionDescriptor extends PositionDescriptor(0, 0, 0)
 
 private[codecraft] sealed trait WorldObjectDescriptor {
   def intersects(xPos: Float, yPos: Float, rectangle: Rectangle): Boolean = true
@@ -83,7 +95,7 @@ private[codecraft] case class ManipulatorDescriptor(
 ) extends DroneModuleDescriptor
 
 private[codecraft] case class EnergyGlobeDescriptor(
-  fade: Float = 1
+  fade: Float
 ) extends WorldObjectDescriptor {
   assert(fade >= 0)
   assert(fade <= 1)
@@ -91,6 +103,8 @@ private[codecraft] case class EnergyGlobeDescriptor(
   override def intersects(xPos: Float, yPos: Float, rectangle: Rectangle): Boolean =
     intersects(xPos, yPos, rectangle, 20) // FIXME
 }
+
+object PlainEnergyGlobeDescriptor extends EnergyGlobeDescriptor(1)
 
 private[codecraft] case class MineralDescriptor(size: Int) extends WorldObjectDescriptor {
   private[graphics] val signature = MineralSignature(size)

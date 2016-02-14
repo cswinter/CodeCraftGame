@@ -3,7 +3,7 @@ package cwinter.codecraft.core.objects
 import cwinter.codecraft.core._
 import cwinter.codecraft.core.api.Player
 import cwinter.codecraft.core.objects.drone.DroneImpl
-import cwinter.codecraft.graphics.worldstate.{ModelDescriptor, HomingMissileDescriptor, WorldObjectDescriptor}
+import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.util.maths.Vector2
 
 private[core] class HomingMissile(
@@ -51,7 +51,7 @@ private[core] class HomingMissile(
   override def position: Vector2 = dynamics.pos
   override private[core] def descriptor: Seq[ModelDescriptor] = Seq(
     ModelDescriptor(
-      0, 0, 0,
+      NullPositionDescriptor,
       HomingMissileDescriptor(
         previousPositions.map{case Vector2(x, y) => (x.toFloat, y.toFloat)},
         math.min(MaxLifetime - lifetime, positions), player.color)

@@ -5,7 +5,7 @@ import cwinter.codecraft.core.api.{Player, DroneControllerBase, DroneSpec, Miner
 import cwinter.codecraft.core.errors.Errors
 import cwinter.codecraft.core.objects._
 import cwinter.codecraft.core.replay._
-import cwinter.codecraft.graphics.worldstate.{ModelDescriptor, DroneDescriptor, DroneModuleDescriptor, WorldObjectDescriptor}
+import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.util.maths.{Rectangle, Float0To1, Vector2}
 
 
@@ -29,6 +29,7 @@ private[core] class DroneImpl(
   private[this] var hullState = List.fill[Byte](spec.size - 1)(2)
   private[this] var _hasDied: Boolean = false
   private[this] var _oldPosition = Vector2.Null
+  private[this] var _oldOrientation = 0.0
   private[this] var _hasMoved: Boolean = true
   private[this] var _constructionProgress: Option[Int] = None
   def constructionProgress: Option[Int] = _constructionProgress
@@ -285,9 +286,11 @@ private[core] class DroneImpl(
   override def descriptor: Seq[ModelDescriptor] = {
     Seq(
       ModelDescriptor(
-        position.x.toFloat,
-        position.y.toFloat,
-        dynamics.orientation.toFloat,
+        PositionDescriptor(
+          position.x.toFloat,
+          position.y.toFloat,
+          dynamics.orientation.toFloat
+        ),
         cachedDescriptor.getOrElse(recreateDescriptor())
       )
     ) ++ storage.toSeq.flatMap(_.energyGlobeAnimations)

@@ -20,10 +20,10 @@ private[codecraft] object AsciiVisualizer {
 
     for (obj <- worldState) obj.objectDescriptor match {
       case d: DroneDescriptor =>
-        val (x, y) = gridpoint(Vector2(obj.xPos, obj.yPos))
+        val (x, y) = gridpoint(Vector2(obj.position.x, obj.position.y))
         image(y)(x) = toChar(d.playerColor)
       case m: MineralDescriptor =>
-        val (x, y) = gridpoint(Vector2(obj.xPos, obj.yPos))
+        val (x, y) = gridpoint(Vector2(obj.position.x, obj.position.y))
         image(y)(x) = '*'
       case l: HomingMissileDescriptor =>
         val (x, y) = gridpoint(Vector2(l.positions.head._1, l.positions.head._2))

@@ -2,7 +2,7 @@ package cwinter.codecraft.demos.graphics
 
 import cwinter.codecraft.collisions.VisionTracker
 import cwinter.codecraft.graphics.engine.GraphicsEngine
-import cwinter.codecraft.graphics.worldstate.{ModelDescriptor, Simulator, TestingObject}
+import cwinter.codecraft.graphics.worldstate.{ModelDescriptor, NullPositionDescriptor, Simulator, TestingObject}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -55,7 +55,7 @@ private[graphics] class GraphicsSimulator(
   objects.foreach(vision.insert(_))
 
   override def computeWorldState: Iterable[ModelDescriptor] = {
-    objects.map(_.state()) + ModelDescriptor(0, 0, 0, TestingObject(time)) ++ customChangingObjects(time)
+    objects.map(_.state()) + ModelDescriptor(NullPositionDescriptor, TestingObject(time)) ++ customChangingObjects(time)
   }
 
   override def update(): Unit = {

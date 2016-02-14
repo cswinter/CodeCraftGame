@@ -11,12 +11,17 @@ private[graphics] object TheWorldObjectModelFactory {
   def generateModel(modelDescriptor: ModelDescriptor, timestep: Int)
       (implicit renderStack: RenderStack): ClosedModel[_] = {
 
-    val xPos = modelDescriptor.xPos
-    val yPos = modelDescriptor.yPos
-    val orientation = modelDescriptor.orientation
-    val modelview =
-      if (renderStack.modelviewTranspose) new RotationZTranslationXYTransposedMatrix4x4(orientation, xPos, yPos)
-      else new RotationZTranslationXYMatrix4x4(orientation, xPos, yPos)
+    val pos = modelDescriptor.position
+    if (pos.cachedModelviewMatrix.isEmpty) {
+      val xPos = pos.x
+      val yPos = pos.y
+      val orientation = pos.orientation
+      val modelviewMatrix =
+        if (renderStack.modelviewTranspose) new RotationZTranslationXYTransposedMatrix4x4(orientation, xPos, yPos)
+        else new RotationZTranslationXYMatrix4x4(orientation, xPos, yPos)
+      pos.cachedModelviewMatrix = modelviewMatrix
+    }
+    val modelview = pos.cachedModelviewMatrix.get
 
 
     modelDescriptor.objectDescriptor match {
@@ -43,7 +48,7 @@ private[graphics] object TheWorldObjectModelFactory {
         modelview)
       case EnergyGlobeDescriptor(f) => new ClosedModel[Unit](
         Unit,
-        EnergyGlobeModelFactory.build(VertexXY(xPos, yPos), f).noCaching.getModel,
+        EnergyGlobeModelFactory.build((pos.x, pos.y), f).noCaching.getModel,
         IdentityMatrix4x4
       )
       case TestingObject(t) => new ClosedModel[Unit](

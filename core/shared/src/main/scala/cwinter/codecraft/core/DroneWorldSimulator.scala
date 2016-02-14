@@ -79,7 +79,7 @@ class DroneWorldSimulator(
       )
   }.toMap
 
-  Debug.drawAlways(ModelDescriptor(0, 0, 0, DrawRectangle(map.size)))
+  Debug.drawAlways(ModelDescriptor(NullPositionDescriptor, DrawRectangle(map.size)))
 
 
   replayer.foreach { r => Rng.seed = r.seed }
@@ -230,7 +230,7 @@ class DroneWorldSimulator(
         if d.spec.missileBatteries > 0
       ) Debug.draw(
           ModelDescriptor(
-            d.position.x.toFloat, d.position.y.toFloat, 0,
+            PositionDescriptor(d.position.x.toFloat, d.position.y.toFloat, 0),
             DrawCircleOutline(DroneConstants.MissileLockOnRadius, ColorRGB(1, 0, 0))
           )
         )
@@ -239,7 +239,7 @@ class DroneWorldSimulator(
       for (d <- drones) {
         Debug.draw(
           ModelDescriptor(
-            d.position.x.toFloat, d.position.y.toFloat, 0,
+            PositionDescriptor(d.position.x.toFloat, d.position.y.toFloat, 0),
             DrawCircleOutline(DroneSpec.SightRadius, ColorRGB(0, 1, 0))
           )
         )

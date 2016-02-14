@@ -196,7 +196,10 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
       position = meg.position.rotated(owner.dynamics.orientation) + owner.position
       xPos = position.x.toFloat
       yPos = position.y.toFloat
-    } yield ModelDescriptor(xPos, yPos, 0, EnergyGlobeDescriptor())
+    } yield ModelDescriptor(
+      PositionDescriptor(xPos, yPos, 0),
+      PlainEnergyGlobeDescriptor
+    )
   }
 
 
