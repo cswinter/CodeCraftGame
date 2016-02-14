@@ -140,8 +140,8 @@ private[graphics] class DroneModelBuilder(
           ProcessingModuleModelBuilder(ModulePosition(sides, positions), animationTime, tMerging, positions.size)
         case StorageModuleDescriptor(position, contents, mineralPosition) =>
           DroneStorageModelBuilder(ModulePosition(sides, position), colorPalette, contents, mineralPosition)
-        case ManipulatorDescriptor(position) =>
-          DroneManipulatorModelBuilder(colorPalette, playerColor, ModulePosition(sides, position))
+        case ManipulatorDescriptor(position, constructionPos, active) =>
+          DroneManipulatorModelBuilder(colorPalette, playerColor, ModulePosition(sides, position), constructionPos, active)
       }).getModel
 
     val shields =

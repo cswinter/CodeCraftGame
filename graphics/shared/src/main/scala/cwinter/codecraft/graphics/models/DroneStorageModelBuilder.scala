@@ -91,11 +91,11 @@ private[graphics] case class DroneStorageModelBuilder(
         val color = 1 - Math.abs(i - midpoint) / range
         ColorRGBA(color / 2, color, color / 2, 0)
       }).flatMap(x => Seq(x, x)) :+ ColorRGBA(0, 0, 0, 0),
-      85,
+      75,
       position,
       0,
       angle,
-      fraction = 0.06f
+      fraction = 0.03f
     ).getModel
   }
 }

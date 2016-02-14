@@ -76,7 +76,11 @@ private[codecraft] case class EnginesDescriptor(position: Int) extends DroneModu
 private[codecraft] case class ProcessingModuleDescriptor(positions: Seq[Int], mergingProgress: Option[Int] = None) extends DroneModuleDescriptor
 private[codecraft] case class ShieldGeneratorDescriptor(position: Int) extends DroneModuleDescriptor
 private[codecraft] case class MissileBatteryDescriptor(position: Int, n: Int = 3) extends DroneModuleDescriptor
-private[codecraft] case class ManipulatorDescriptor(position: Int) extends DroneModuleDescriptor
+private[codecraft] case class ManipulatorDescriptor(
+  position: Int,
+  relativeConstructionPosition: Option[Vector2],
+  active: Boolean
+) extends DroneModuleDescriptor
 
 private[codecraft] case class EnergyGlobeDescriptor(
   fade: Float = 1
@@ -86,18 +90,6 @@ private[codecraft] case class EnergyGlobeDescriptor(
 
   override def intersects(xPos: Float, yPos: Float, rectangle: Rectangle): Boolean =
     intersects(xPos, yPos, rectangle, 20) // FIXME
-}
-
-private[codecraft] case class ManipulatorArm(playerColor: ColorRGB, x1: Float, y1: Float, x2: Float, y2: Float)
-  extends WorldObjectDescriptor {
-
-  override def intersects(xPos: Float, yPos: Float, rectangle: Rectangle): Boolean = {
-    val left = math.min(x1, x2)
-    val right = math.max(x1, x2)
-    val bot = math.min(y1, y2)
-    val top = math.max(y1, y2)
-    rectangle intersects Rectangle(left, right, bot, top) // FIXME
-  }
 }
 
 private[codecraft] case class MineralDescriptor(size: Int) extends WorldObjectDescriptor {

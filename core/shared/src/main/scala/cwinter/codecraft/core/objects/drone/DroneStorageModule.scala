@@ -24,6 +24,8 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
 
 
   override def update(availableResources: Int): (Seq[SimulatorEvent], Seq[Vector2], Seq[Vector2]) = {
+    if (isHarvesting && owner.hasMoved) owner.mustUpdateModel()
+
     var effects = List.empty[SimulatorEvent]
 
     // TODO: this is not deterministic (since no ordering on the update() method of different drones is enforced)

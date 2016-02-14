@@ -114,11 +114,6 @@ private[graphics] class MockDrone(
     )
   )
 
-  def extraState(): Seq[ModelDescriptor] =
-    sightRadius.toSeq.flatMap(_ => inSight.map(obj =>
-      ModelDescriptor(0, 0, 0, ManipulatorArm(ColorRGB(0, 0, 1), xPos, yPos, obj.xPos, obj.yPos))
-    ))
-
 
   def vx = math.cos(orientation).toFloat * speed
 

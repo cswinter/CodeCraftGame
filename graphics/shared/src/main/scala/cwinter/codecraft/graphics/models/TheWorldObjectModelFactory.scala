@@ -41,11 +41,6 @@ private[graphics] object TheWorldObjectModelFactory {
         Unit,
         HomingMissileModelFactory.build(positions, maxPos, player),
         modelview)
-      case ManipulatorArm(player, x1, y1, x2, y2) => new ClosedModel[Unit](
-        Unit,
-        ManipulatorArmModelFactory.build(player, x1, y1, x2, y2),
-        IdentityMatrix4x4
-      )
       case EnergyGlobeDescriptor(f) => new ClosedModel[Unit](
         Unit,
         EnergyGlobeModelFactory.build(VertexXY(xPos, yPos), f).noCaching.getModel,

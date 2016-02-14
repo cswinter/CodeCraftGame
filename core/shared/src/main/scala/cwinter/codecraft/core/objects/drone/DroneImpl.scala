@@ -290,7 +290,7 @@ private[core] class DroneImpl(
         dynamics.orientation.toFloat,
         cachedDescriptor.getOrElse(recreateDescriptor())
       )
-    ) ++ manipulator.toSeq.flatMap(_.manipulatorGraphics) ++ storage.toSeq.flatMap(_.energyGlobeAnimations)
+    ) ++ storage.toSeq.flatMap(_.energyGlobeAnimations)
   }
 
   private def recreateDescriptor(): DroneDescriptor = {

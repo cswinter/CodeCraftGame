@@ -35,7 +35,7 @@ private[graphics] object Generators {
     2 -> EnginesDescriptor(position),
     2 -> ShieldGeneratorDescriptor(position),
     6 -> ProcessingModuleDescriptor(Seq(position)),
-    50 -> ManipulatorDescriptor(position)
+    50 -> ManipulatorDescriptor(position, None, false)
   )
 
   val ModuleCount = Map(3 -> 1, 4 -> 2, 5 -> 4, 6 -> 7, 7 -> 10).withDefaultValue(0)
