@@ -11,18 +11,7 @@ private[graphics] object TheWorldObjectModelFactory {
   def generateModel(modelDescriptor: ModelDescriptor, timestep: Int)
       (implicit renderStack: RenderStack): ClosedModel[_] = {
 
-    val pos = modelDescriptor.position
-    if (pos.cachedModelviewMatrix.isEmpty) {
-      val xPos = pos.x
-      val yPos = pos.y
-      val orientation = pos.orientation
-      val modelviewMatrix =
-        if (renderStack.modelviewTranspose) new RotationZTranslationXYTransposedMatrix4x4(orientation, xPos, yPos)
-        else new RotationZTranslationXYMatrix4x4(orientation, xPos, yPos)
-      pos.cachedModelviewMatrix = modelviewMatrix
-    }
-    val modelview = pos.cachedModelviewMatrix.get
-
+    val modelview = obtainModelview(modelDescriptor.position)
 
     modelDescriptor.objectDescriptor match {
       case mineral: MineralDescriptor => new ClosedModel[Unit](
@@ -46,10 +35,10 @@ private[graphics] object TheWorldObjectModelFactory {
         Unit,
         HomingMissileModelFactory.build(positions, maxPos, player),
         modelview)
-      case EnergyGlobeDescriptor(f) => new ClosedModel[Unit](
+      case energyGlobe: EnergyGlobeDescriptor => new ClosedModel[Unit](
         Unit,
-        EnergyGlobeModelFactory.build((pos.x, pos.y), f).noCaching.getModel,
-        IdentityMatrix4x4
+        new EnergyGlobeModelBuilder(energyGlobe).getModel,
+        modelview
       )
       case TestingObject(t) => new ClosedModel[Unit](
         Unit,
@@ -72,4 +61,18 @@ private[graphics] object TheWorldObjectModelFactory {
         modelview)
     }
   }
+
+  def obtainModelview(pos: PositionDescriptor)(implicit renderStack: RenderStack): Matrix4x4 = {
+    if (pos.cachedModelviewMatrix.isEmpty) {
+      val xPos = pos.x
+      val yPos = pos.y
+      val orientation = pos.orientation
+      val modelviewMatrix =
+        if (renderStack.modelviewTranspose) new RotationZTranslationXYTransposedMatrix4x4(orientation, xPos, yPos)
+        else new RotationZTranslationXYMatrix4x4(orientation, xPos, yPos)
+      pos.cachedModelviewMatrix = modelviewMatrix
+    }
+    pos.cachedModelviewMatrix.get
+  }
+
 }

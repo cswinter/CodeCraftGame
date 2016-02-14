@@ -4,7 +4,7 @@ import cwinter.codecraft.graphics.engine.RenderStack
 import cwinter.codecraft.graphics.model.{Model, ModelBuilder, Polygon}
 import cwinter.codecraft.graphics.worldstate.MineralDescriptor
 import cwinter.codecraft.util.PrecomputeHash
-import cwinter.codecraft.util.maths.{ColorRGBA, ColorRGB}
+import cwinter.codecraft.util.maths.ColorRGB
 
 
 private[graphics] case class MineralSignature(size: Int)
