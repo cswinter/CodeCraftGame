@@ -1,5 +1,6 @@
 package cwinter.codecraft.graphics.model
 
+
 private[graphics] trait VBO {
   val size: Int
   def withSize(size: Int): VBO
