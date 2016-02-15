@@ -18,4 +18,7 @@ private[graphics] class ImmediateModeModel extends Model[Seq[Model[Unit]]] {
   override def vertexCount: Int = models.vertexCount
 
   override def hasMaterial(material: GenericMaterial): Boolean = models.hasMaterial(material)
+
+  def prettyPrintTree(depth: Int): String =
+    prettyPrintNode(depth, "ImmediateModeModel")
 }

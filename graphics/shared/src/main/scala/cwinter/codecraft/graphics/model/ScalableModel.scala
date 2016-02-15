@@ -23,4 +23,9 @@ private[graphics] class ScalableModel[T](val model: Model[T], transpose: Boolean
   override def hasMaterial(material: GenericMaterial): Boolean = model.hasMaterial(material)
 
   def vertexCount = model.vertexCount
+
+
+  def prettyPrintTree(depth: Int): String =
+    prettyPrintWrapper(depth, "Scalable", model)
 }
+

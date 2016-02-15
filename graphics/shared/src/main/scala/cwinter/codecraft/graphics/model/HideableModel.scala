@@ -24,6 +24,9 @@ private[graphics] class HideableModel[T](val model: Model[T]) extends Model[(IsH
     model.hasMaterial(material)
 
   def vertexCount = model.vertexCount
+
+  def prettyPrintTree(depth: Int): String =
+    prettyPrintWrapper(depth, "Hideable", model)
 }
 
 private[graphics] case class IsHidden(value: Boolean) extends AnyVal

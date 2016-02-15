@@ -9,13 +9,10 @@ private[graphics] class EmptyModel[T] extends Model[T] {
   def draw(modelview: Matrix4x4, material: GenericMaterial) = ()
   def hasMaterial(material: GenericMaterial) = false
   def vertexCount = 0
+
+  def prettyPrintTree(depth: Int): String =
+    prettyPrintNode(depth, "Empty")
 }
 
-private[graphics] object EmptyModel extends Model[Unit] {
-  def update(params: Unit) = ()
-  def setVertexCount(n: Int) = ()
-  def draw(modelview: Matrix4x4, material: GenericMaterial) = ()
-  def hasMaterial(material: GenericMaterial) = false
-  def vertexCount = 0
-}
+private[graphics] object EmptyModel extends EmptyModel[Unit]
 

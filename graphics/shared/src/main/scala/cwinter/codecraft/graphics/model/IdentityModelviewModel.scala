@@ -16,4 +16,7 @@ private[graphics] class IdentityModelviewModel[T](val model: Model[T]) extends M
     model.hasMaterial(material)
 
   def vertexCount = model.vertexCount
+
+  def prettyPrintTree(depth: Int): String =
+    prettyPrintWrapper(depth, "IdentityModelview", model)
 }

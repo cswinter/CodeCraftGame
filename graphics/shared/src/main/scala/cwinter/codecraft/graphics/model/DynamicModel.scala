@@ -20,4 +20,8 @@ private[graphics] class DynamicModel[T](val modelFactory: T => Model[Unit]) exte
   }
 
   def vertexCount = model.vertexCount
+
+  def prettyPrintTree(depth: Int): String =
+    prettyPrintNode(depth, "Dynamic")
 }
+

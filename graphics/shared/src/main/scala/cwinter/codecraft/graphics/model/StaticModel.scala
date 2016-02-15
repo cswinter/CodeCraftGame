@@ -27,4 +27,9 @@ private[graphics] class StaticModel[TPosition <: Vertex, TColor <: Vertex, TPara
     activeVertexCount = n
   }
   def vertexCount = vbo.size
+
+
+  def prettyPrintTree(depth: Int): String =
+    prettyPrintNode(depth, s"Static[${material.getClass.getSimpleName}]($vertexCount)")
 }
+

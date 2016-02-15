@@ -23,9 +23,12 @@ private[graphics] object TheWorldObjectModelFactory {
         if (modelDescriptor.objectDescriptor.cachedModel.isEmpty) {
           modelDescriptor.objectDescriptor.cachedModel = new DroneModelBuilder(drone, timestep).getModel
         }
+        val model =
+          modelDescriptor.objectDescriptor.cachedModel.get.asInstanceOf[Model[DroneDescriptor]]
+        //println(model.prettyTreeView)
         new ClosedModel(
           drone,
-          modelDescriptor.objectDescriptor.cachedModel.get.asInstanceOf[Model[DroneDescriptor]],
+          model,
           modelview
         )
       case lightFlash: LightFlashDescriptor => new ClosedModel(

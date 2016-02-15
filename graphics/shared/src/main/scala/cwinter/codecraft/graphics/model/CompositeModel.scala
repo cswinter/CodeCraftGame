@@ -39,4 +39,13 @@ private[graphics] trait CompositeModel[T] <: Model[T] {
     } model.draw(modelview, material)
 
   def vertexCount = models.map(_.vertexCount).sum
+
+  def prettyPrintTree(depth: Int): String = {
+    val root = prettyPrintNode(depth, s"Composite(${models.length})")
+    val children =
+      for (model <- models) yield model.prettyPrintTree(depth + 1)
+
+    root + "\n" + children.mkString("\n")
+  }
 }
+

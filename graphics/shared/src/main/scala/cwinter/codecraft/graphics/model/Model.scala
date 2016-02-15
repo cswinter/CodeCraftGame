@@ -3,7 +3,6 @@ package cwinter.codecraft.graphics.model
 import cwinter.codecraft.util.maths.matrices.Matrix4x4
 
 
-
 private[graphics] trait Model[T] {
   def update(params: T): Unit
   def setVertexCount(n: Int): Unit
@@ -16,19 +15,18 @@ private[graphics] trait Model[T] {
 
   def scalable(transpose: Boolean = false): ScalableModel[T] = new ScalableModel(this, transpose)
   def identityModelview: IdentityModelviewModel[T] = new IdentityModelviewModel[T](this)
+
+  def prettyPrintTree(depth: Int): String
+
+  def prettyTreeView: String = prettyPrintTree(0)
+  protected def prettyPrintNode(depth: Int, contents: String): String = {
+    if (depth == 0) contents
+    else "   " * (depth - 1) + "+--" + contents
+  }
+  protected def prettyPrintWrapper(depth: Int, contents: String, child: Model[_]): String = {
+    val rootNode = prettyPrintNode(depth, contents)
+    val childTree = child.prettyPrintTree(depth + 1)
+    s"$rootNode\n$childTree"
+  }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
