@@ -1,8 +1,9 @@
 package cwinter.codecraft.graphics.models
 
 import cwinter.codecraft.graphics.engine.RenderStack
+import cwinter.codecraft.graphics.primitives.PolygonRing
 import cwinter.codecraft.util.maths.matrices._
-import cwinter.codecraft.graphics.model.{Model, PolygonRing, ClosedModel}
+import cwinter.codecraft.graphics.model.{Model, ClosedModel}
 import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.util.maths.VertexXY
 

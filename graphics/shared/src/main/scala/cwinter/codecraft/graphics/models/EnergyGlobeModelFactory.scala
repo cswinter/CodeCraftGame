@@ -1,7 +1,7 @@
 package cwinter.codecraft.graphics.models
 
 import cwinter.codecraft.graphics.engine.RenderStack
-import cwinter.codecraft.graphics.model.Polygon
+import cwinter.codecraft.graphics.primitives.Polygon
 import cwinter.codecraft.util.maths.{ColorRGB, ColorRGBA, VertexXY}
 
 

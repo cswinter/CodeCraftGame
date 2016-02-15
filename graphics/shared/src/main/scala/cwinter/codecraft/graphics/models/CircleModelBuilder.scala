@@ -1,7 +1,8 @@
 package cwinter.codecraft.graphics.models
 
 import cwinter.codecraft.graphics.engine.RenderStack
-import cwinter.codecraft.graphics.model.{Model, ModelBuilder, Polygon}
+import cwinter.codecraft.graphics.model.{Model, ModelBuilder}
+import cwinter.codecraft.graphics.primitives.Polygon
 import cwinter.codecraft.util.maths.ColorRGB
 
 

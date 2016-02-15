@@ -1,7 +1,8 @@
 package cwinter.codecraft.graphics.models
 
 import cwinter.codecraft.graphics.engine.RenderStack
-import cwinter.codecraft.graphics.model.{EmptyModel, Model, RichQuadStrip, StaticCompositeModel}
+import cwinter.codecraft.graphics.model.{EmptyModel, Model, StaticCompositeModel}
+import cwinter.codecraft.graphics.primitives.RichQuadStrip
 import cwinter.codecraft.util.maths.Geometry._
 import cwinter.codecraft.util.maths.{ColorRGB, ColorRGBA, VertexXY}
 

@@ -1,6 +1,7 @@
-package cwinter.codecraft.graphics.model
+package cwinter.codecraft.graphics.primitives
 
 import cwinter.codecraft.graphics.materials.Material
+import cwinter.codecraft.graphics.model.PrimitiveModelBuilder
 import cwinter.codecraft.util.maths._
 
 import scala.reflect.ClassTag

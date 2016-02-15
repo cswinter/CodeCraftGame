@@ -2,6 +2,7 @@ package cwinter.codecraft.graphics.models
 
 import cwinter.codecraft.graphics.engine.RenderStack
 import cwinter.codecraft.graphics.model._
+import cwinter.codecraft.graphics.primitives.{Polygon, PolygonRing}
 import cwinter.codecraft.util.maths.Geometry._
 import cwinter.codecraft.util.maths.{ColorRGB, VertexXY}
 

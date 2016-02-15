@@ -2,7 +2,8 @@ package cwinter.codecraft.graphics.models
 
 import cwinter.codecraft.graphics.engine.RenderStack
 import cwinter.codecraft.graphics.materials.Intensity
-import cwinter.codecraft.graphics.model.{CompositeModel, Model, ModelBuilder, Polygon}
+import cwinter.codecraft.graphics.model.{CompositeModel, Model, ModelBuilder}
+import cwinter.codecraft.graphics.primitives.Polygon
 import cwinter.codecraft.graphics.worldstate.LightFlashDescriptor
 import cwinter.codecraft.util.maths.ColorRGBA
 

@@ -1,6 +1,7 @@
-package cwinter.codecraft.graphics.model
+package cwinter.codecraft.graphics.primitives
 
 import cwinter.codecraft.graphics.materials.Material
+import cwinter.codecraft.graphics.model.PrimitiveModelBuilder
 import cwinter.codecraft.util.maths.{Vertex, VertexXY, VertexXYZ}
 
 import scala.reflect.ClassTag
@@ -50,5 +51,3 @@ private[graphics] case class PartialPolygon[TColor <: Vertex : ClassTag, TParams
     vertexPos zip colors
   }
 }
-
-
