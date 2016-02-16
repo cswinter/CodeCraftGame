@@ -5,7 +5,8 @@ import cwinter.codecraft.util.maths.{Vertex, VertexXYZ}
 
 
 
-private[graphics] trait PrimitiveModelBuilder[TShape, TColor <: Vertex, TParams] <: ModelBuilder[TShape, TParams] {
+private[graphics] trait PrimitiveModelBuilder[TShape, TColor <: Vertex, TParams]
+extends ModelBuilder[TShape, TParams] {
   val material: Material[VertexXYZ, TColor, TParams]
   val shape: TShape
   private[this] var _cacheable = true

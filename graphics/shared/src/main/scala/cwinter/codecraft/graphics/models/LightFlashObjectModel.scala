@@ -2,7 +2,7 @@ package cwinter.codecraft.graphics.models
 
 import cwinter.codecraft.graphics.engine.RenderStack
 import cwinter.codecraft.graphics.materials.Intensity
-import cwinter.codecraft.graphics.model.{CompositeModel, Model, ModelBuilder}
+import cwinter.codecraft.graphics.model.{ProjectedParamsModel, CompositeModel, Model, ModelBuilder}
 import cwinter.codecraft.graphics.primitives.Polygon
 import cwinter.codecraft.graphics.worldstate.LightFlashDescriptor
 import cwinter.codecraft.util.maths.ColorRGBA
@@ -24,18 +24,19 @@ private[graphics] class LightFlashModelBuilder(lightFlash: LightFlashDescriptor)
       zPos = -1
     ).getModel.scalable(rs.modelviewTranspose)
 
-    new LightFlashModel(flash)
+    val flashConnected = ProjectedParamsModel(
+      flash,
+      (lf: LightFlashDescriptor) => {
+        val intensity = Intensity(1 - lightFlash.stage)
+        val radius = 60 * lightFlash.stage + 5
+        (intensity, radius)
+      }
+    )
+
+    CompositeModel(
+      Seq.empty,
+      Seq(flashConnected)
+    )
   }
 }
 
-
-private[graphics] class LightFlashModel(val flash: Model[(Intensity, Float)]) extends CompositeModel[LightFlashDescriptor] {
-  val models = Seq(flash)
-
-  override def update(lightFlash: LightFlashDescriptor): Unit = {
-    val intensity = Intensity(1 - lightFlash.stage)
-    val radius = 60 * lightFlash.stage + 5
-
-    flash.update((intensity, radius))
-  }
-}

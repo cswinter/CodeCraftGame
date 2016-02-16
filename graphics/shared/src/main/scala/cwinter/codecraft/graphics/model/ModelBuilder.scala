@@ -13,3 +13,4 @@ private[graphics] trait ModelBuilder[TStatic, TDynamic] {
 
   def isCacheable: Boolean = true
 }
+

@@ -145,27 +145,8 @@ private[graphics] class DroneModelBuilder(
           DroneManipulatorModelBuilder(colorPalette, playerColor, ModulePosition(sides, position), constructionPos, active)
       }).getModel
 
-    val shields =
-      if (hasShields) {
-        Some(PolygonRing(
-          material = rs.TranslucentAdditivePIntensity,
-          n = 50,
-          colorInside = ColorRGBA(ColorThrusters, 0f),
-          colorOutside = ColorRGBA(White, 0.7f),
-          outerRadius = radiusHull + 2,
-          innerRadius = Geometry.inradius(radiusHull, sides) * 0.85f
-        ).getModel)
-      } else None
 
-    val thrusters =
-      if (!isBuilding) {
-        new DynamicModel(
-          new DroneThrusterTrailsModelFactory(
-            sideLength, radiusHull, sides, playerColor).buildModel)
-      } else new EmptyModel[Seq[(Float, Float, Float)]]
-
-
-    val other = {
+    val sightRadius = {
       for (r <- drone.sightRadius)
         yield PolygonRing(
           material = rs.MaterialXYZRGB,
@@ -179,50 +160,39 @@ private[graphics] class DroneModelBuilder(
     }.toSeq
 
 
+    val staticModels = body +: hull +: (modulesModel ++ sightRadius)
 
-    new DroneModel(body, hull, modulesModel, shields, thrusters, other, new ImmediateModeModel, rs)
-  }
-}
+    var dynamicModels = Seq.empty[Model[DroneDescriptor]]
+    if (hasShields) {
+      dynamicModels :+=
+        PolygonRing(
+          material = rs.TranslucentAdditivePIntensity,
+          n = 50,
+          colorInside = ColorRGBA(ColorThrusters, 0f),
+          colorOutside = ColorRGBA(White, 0.7f),
+          outerRadius = radiusHull + 2,
+          innerRadius = Geometry.inradius(radiusHull, sides) * 0.85f
+        ).getModel.wireParameters[DroneDescriptor](d => Intensity(d.shieldState.get))
+    }
 
-
-private[graphics] case class DroneModel(
-  body: Model[Unit],
-  hull: Model[Unit],
-  modules: Seq[Model[Unit]],
-  shields: Option[Model[Intensity]],
-  thrusterTrails: Model[Seq[(Float, Float, Float)]],
-  other: Seq[Model[Unit]],
-  immediateMode: ImmediateModeModel,
-  rs: RenderStack
-) extends CompositeModel[DroneDescriptor] {
-  private[this] var constructionState: Option[Int] = None
-
-  // MAKE SURE TO ADD NEW COMPONENTS HERE:
-  val models: Seq[Model[_]] =
-    Seq(body, hull, thrusterTrails, immediateMode) ++ modules ++ shields.toSeq ++ other
-
-  override def update(a: DroneDescriptor): Unit = {
-    thrusterTrails.update(a.positions)
-
-    constructionState = a.constructionState.map(f => (f * vertexCount / 3).toInt)
-
-    shields.foreach(_.update(Intensity(a.shieldState.getOrElse(0))))
-  }
-
-  override def draw(modelview: Matrix4x4, material: GenericMaterial): Unit = {
-    for (t <- constructionState) setVertexCount(t * 3)
-
-    // TODO: rs.modelviewTranspose is brittle (because of code like this)
-    val modelview2 =
-      if (constructionState.isDefined) {
-        if (rs.modelviewTranspose) modelview * new TranslationMatrix4x4(0, 0, -1).transposed
-        else new TranslationMatrix4x4(0, 0, -1) * modelview
-      } else modelview
+    if (!isBuilding) {
+      dynamicModels :+=
+        new DynamicModel(
+          new DroneThrusterTrailsModelFactory(
+            sideLength, radiusHull, sides, playerColor
+          ).buildModel
+        ).wireParameters[DroneDescriptor](d => d.positions)
+    }
 
 
-    super.draw(modelview2, material)
-    // we need to restore vertex count, since models for submodules may be shared with other drones
-    if (constructionState.nonEmpty) setVertexCount(Integer.MAX_VALUE)
+    val baseModel = CompositeModel(staticModels, dynamicModels)
+
+    if (isBuilding) {
+      baseModel.
+        translated(VertexXYZ(0, 0, -1), rs.modelviewTranspose).
+        withDynamicVertexCount.
+        wireParameters[DroneDescriptor](d => (d.constructionState.get, d))
+    } else baseModel
   }
 }
 
