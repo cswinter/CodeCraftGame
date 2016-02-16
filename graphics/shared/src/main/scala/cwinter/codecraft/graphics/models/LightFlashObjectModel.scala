@@ -8,11 +8,11 @@ import cwinter.codecraft.graphics.worldstate.LightFlashDescriptor
 import cwinter.codecraft.util.maths.ColorRGBA
 
 
-private[graphics] case class LightFlashSign(rs: RenderStack)
+private[graphics] case class LightFlashSignature(rs: RenderStack) extends AnyRef
 
-private[graphics] class LightFlashModelBuilder(lightFlash: LightFlashDescriptor)(implicit val rs: RenderStack)
-  extends ModelBuilder[LightFlashSign, LightFlashDescriptor] {
-  val signature = LightFlashSign(rs)
+private[graphics] class LightFlashModelBuilder(implicit val rs: RenderStack)
+  extends ModelBuilder[LightFlashSignature, LightFlashDescriptor] {
+  val signature = LightFlashSignature(rs)
 
   override protected def buildModel: Model[LightFlashDescriptor] = {
     val flash = Polygon(
@@ -24,14 +24,13 @@ private[graphics] class LightFlashModelBuilder(lightFlash: LightFlashDescriptor)
       zPos = -1
     ).getModel.scalable(rs.modelviewTranspose)
 
-    val flashConnected = ProjectedParamsModel(
-      flash,
-      (lf: LightFlashDescriptor) => {
-        val intensity = Intensity(1 - lightFlash.stage)
-        val radius = 60 * lightFlash.stage + 5
-        (intensity, radius)
+    val flashConnected =
+      flash.wireParameters[LightFlashDescriptor]{
+        lf =>
+          val intensity = Intensity(1 - lf.stage)
+          val radius = 60 * lf.stage + 5
+          (intensity, radius)
       }
-    )
 
     CompositeModel(
       Seq.empty,

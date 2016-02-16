@@ -33,7 +33,7 @@ private[graphics] object TheWorldObjectModelFactory {
         )
       case lightFlash: LightFlashDescriptor => new ClosedModel(
         lightFlash,
-        new LightFlashModelBuilder(lightFlash).getModel,
+        new LightFlashModelBuilder().getModel,
         modelview)
       case HomingMissileDescriptor(positions, maxPos, player) => new ClosedModel[Unit](
         Unit,

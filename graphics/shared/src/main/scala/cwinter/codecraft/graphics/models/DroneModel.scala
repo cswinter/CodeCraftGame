@@ -128,7 +128,7 @@ private[graphics] class DroneModelBuilder(
   override protected def decorate(model: Model[DroneDescriptor]): Model[DroneDescriptor] =
     if (signature.isBuilding)
       model
-        .translated(VertexXYZ(0, 0, -1), rs.modelviewTranspose)
+        .translated(VertexXYZ(0, 0, -3), rs.modelviewTranspose)
         .withDynamicVertexCount
         .wireParameters[DroneDescriptor](d => (d.constructionState.get, d))
     else model
