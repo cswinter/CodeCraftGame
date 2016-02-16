@@ -1,7 +1,7 @@
 package cwinter.codecraft.graphics.models
 
 import cwinter.codecraft.graphics.engine.RenderStack
-import cwinter.codecraft.graphics.model.{Model, ModelBuilder, StaticCompositeModel}
+import cwinter.codecraft.graphics.model.{CompositeModelBuilder, ModelBuilder}
 import cwinter.codecraft.graphics.primitives.SquarePrimitive
 import cwinter.codecraft.util.maths.{ColorRGB, VertexXY}
 
@@ -11,10 +11,11 @@ private[graphics] case class DroneMissileBatteryModelBuilder(
   playerColor: ColorRGB,
   position: VertexXY,
   n: Int
-)(implicit rs: RenderStack) extends ModelBuilder[DroneMissileBatteryModelBuilder, Unit] {
+)(implicit rs: RenderStack) extends CompositeModelBuilder[DroneMissileBatteryModelBuilder, Unit] {
   override def signature: DroneMissileBatteryModelBuilder = this
 
-  override protected def buildModel: Model[Unit] = {
+
+  override protected def build: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, Unit]]) = {
     /*
     val positions = Seq(
           VertexXY(1, 1), VertexXY(0, 1), VertexXY(-1, 1),
@@ -30,11 +31,11 @@ private[graphics] case class DroneMissileBatteryModelBuilder(
         segment <- buildSegment(offset + position)
       } yield segment
 
-    new StaticCompositeModel(components)
+    (components, Seq.empty)
   }
 
 
-  def buildSegment(midpoint: VertexXY): Seq[Model[Unit]] = {
+  def buildSegment(midpoint: VertexXY): Seq[ModelBuilder[_, Unit]] = {
     val background =
       SquarePrimitive(
         rs.MaterialXYZRGB,
@@ -43,7 +44,7 @@ private[graphics] case class DroneMissileBatteryModelBuilder(
         2.5f,
         playerColor,
         1
-      ).getModel
+      )
 
     val element =
       SquarePrimitive(
@@ -53,7 +54,7 @@ private[graphics] case class DroneMissileBatteryModelBuilder(
         1.5f,
         colors.White,
         2
-      ).getModel
+      )
 
     Seq(background, element)
   }

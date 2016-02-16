@@ -12,10 +12,10 @@ private[graphics] case class DroneManipulatorModelBuilder(
   position: VertexXY,
   constructionPosition: Option[Vector2],
   active: Boolean
-)(implicit rs: RenderStack) extends ModelBuilder[DroneManipulatorModelBuilder, Unit] {
+)(implicit rs: RenderStack) extends CompositeModelBuilder[DroneManipulatorModelBuilder, Unit] {
   override def signature: DroneManipulatorModelBuilder = this
 
-  override protected def buildModel: Model[Unit] = {
+  override protected def build: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, Unit]]) = {
     val module = Polygon(
       rs.GaussianGlow,
       20,
@@ -26,18 +26,15 @@ private[graphics] case class DroneManipulatorModelBuilder(
       zPos = 1,
       orientation = 0,
       colorEdges = true
-    ).getModel
+    )
 
-    constructionPosition match {
-      case None => module
-      case Some(pos) => new StaticCompositeModel(Seq(
-        module,
-        constructionBeamModel(pos)
-      ))
-    }
+    (constructionPosition match {
+      case None => Seq(module)
+      case Some(pos) => Seq(module, constructionBeamModel(pos))
+    }, Seq.empty)
   }
 
-  private def constructionBeamModel(mineralPosition: Vector2): Model[Unit] = {
+  private def constructionBeamModel(mineralPosition: Vector2): ModelBuilder[_, Unit] = {
     val dist = position.toVector2 - mineralPosition
     val angle =
       if (dist.x == 0 && dist.y == 0) 0
@@ -64,7 +61,7 @@ private[graphics] case class DroneManipulatorModelBuilder(
       0,
       angle,
       fraction = 0.05f
-    ).getModel
+    )
   }
 }
 

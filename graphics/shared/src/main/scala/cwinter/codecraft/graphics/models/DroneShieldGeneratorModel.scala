@@ -12,11 +12,11 @@ private[graphics] case class DroneShieldGeneratorModel(
   colors: DroneColors,
   playerColor: ColorRGB
 )(implicit rs: RenderStack)
-  extends ModelBuilder[DroneShieldGeneratorModel, Unit] {
+  extends CompositeModelBuilder[DroneShieldGeneratorModel, Unit] {
   def signature = this
 
 
-  protected def buildModel: Model[Unit] = {
+  override protected def build: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, Unit]]) = {
     val radius = 3
     val gridposRadius = 2 * inradius(radius, 6)
     val gridpoints = VertexXY(0, 0) +: polygonVertices(6, radius = gridposRadius)
@@ -32,7 +32,7 @@ private[graphics] case class DroneShieldGeneratorModel(
           outerRadius = radius,
           position = pos + position,
           zPos = 1
-        ).getModel
+        )
 
     val filling =
       for (pos <- gridpoints)
@@ -45,8 +45,8 @@ private[graphics] case class DroneShieldGeneratorModel(
           radius = radius - 0.5f,
           position = pos + position,
           zPos = 1
-        ).getModel
+        )
 
-    new StaticCompositeModel(hexgrid ++ filling)
+    (hexgrid ++ filling, Seq.empty)
   }
 }

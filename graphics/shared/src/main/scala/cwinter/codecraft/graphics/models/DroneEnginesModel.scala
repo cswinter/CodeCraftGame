@@ -1,7 +1,7 @@
 package cwinter.codecraft.graphics.models
 
 import cwinter.codecraft.graphics.engine.RenderStack
-import cwinter.codecraft.graphics.model.{Model, ModelBuilder, StaticCompositeModel}
+import cwinter.codecraft.graphics.model.{CompositeModelBuilder, Model, ModelBuilder, StaticCompositeModel}
 import cwinter.codecraft.graphics.primitives.Polygon
 import cwinter.codecraft.util.maths.{ColorRGB, Geometry, VertexXY}
 
@@ -12,11 +12,12 @@ private[graphics] case class DroneEnginesModel(
   playerColor: ColorRGB,
   t: Int
 )(implicit rs: RenderStack)
-  extends ModelBuilder[DroneEnginesModel, Unit] {
+  extends CompositeModelBuilder[DroneEnginesModel, Unit] {
 
   def signature: DroneEnginesModel = this
 
-  protected def buildModel: Model[Unit] = {
+
+  override protected def build: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, Unit]]) = {
     val enginePositions = Geometry.polygonVertices2(3, radius = 5, orientation = 2 * math.Pi.toFloat * t / 100)
     val engines =
       for ((offset, i) <- enginePositions.zipWithIndex)
@@ -29,8 +30,8 @@ private[graphics] case class DroneEnginesModel(
         position = position + offset,
         orientation = -2 * math.Pi.toFloat * t / 125,
         zPos = 1
-      ).getModel
+      )
 
-    new StaticCompositeModel(engines)
+    (engines, Seq.empty)
   }
 }

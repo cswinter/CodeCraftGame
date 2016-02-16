@@ -13,7 +13,7 @@ private[graphics] case class DroneStorageModelBuilder(
   colors: DroneColors,
   moduleContents: StorageModuleContents,
   mineralPosition: Option[Vector2]
-)(implicit rs: RenderStack) extends ModelBuilder[DroneStorageModelBuilder, Unit] {
+)(implicit rs: RenderStack) extends CompositeModelBuilder[DroneStorageModelBuilder, Unit] {
 
   val radius = 8
   val outlineWidth = 1
@@ -21,7 +21,7 @@ private[graphics] case class DroneStorageModelBuilder(
 
   def signature = this
 
-  protected def buildModel: Model[Unit] = {
+  override protected def build: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, Unit]]) = {
     import colors._
     val body =
       Polygon(
@@ -32,7 +32,7 @@ private[graphics] case class DroneStorageModelBuilder(
         radius = radius - outlineWidth,
         position = position,
         zPos = 1
-      ).getModel
+      )
 
     val hull =
       PolygonRing(
@@ -44,15 +44,15 @@ private[graphics] case class DroneStorageModelBuilder(
         outerRadius = radius,
         position = position,
         zPos = 1
-      ).getModel
+      )
 
-    val contents = moduleContents match {
+    val contents: Seq[ModelBuilder[_, Unit]] = moduleContents match {
       case EnergyStorage(filledSlots) =>
         for {
           i <- 0 until 7
           if filledSlots.contains(i)
           globePos = ModulePosition.energyPosition(i) + position
-        } yield EnergyGlobeModelFactory.build(globePos).getModel
+        } yield EnergyGlobeModelFactory.build(globePos)
       case MineralStorage =>
         Seq(
           Polygon(
@@ -63,7 +63,7 @@ private[graphics] case class DroneStorageModelBuilder(
             radius = 6.5f,
             zPos = 2,
             position = position
-          ).getModel
+          )
         )
       case EmptyStorage => Seq()
     }
@@ -71,10 +71,10 @@ private[graphics] case class DroneStorageModelBuilder(
 
     val beamModel = mineralPosition.map(buildBeamModel)
 
-    new StaticCompositeModel((body +: hull +: contents) ++ beamModel.toSeq)
+    ((body +: hull +: contents) ++ beamModel.toSeq, Seq.empty)
   }
 
-  private def buildBeamModel(mineralPosition: Vector2): Model[Unit] = {
+  private def buildBeamModel(mineralPosition: Vector2): ModelBuilder[_, Unit] = {
     val dist = position.toVector2 - mineralPosition
     val angle =
       if (dist.x == 0 && dist.y == 0) 0
@@ -97,7 +97,7 @@ private[graphics] case class DroneStorageModelBuilder(
       0,
       angle,
       fraction = 0.03f
-    ).getModel
+    )
   }
 }
 
