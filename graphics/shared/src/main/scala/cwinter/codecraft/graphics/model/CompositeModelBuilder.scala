@@ -1,13 +1,13 @@
 package cwinter.codecraft.graphics.model
 
 import cwinter.codecraft.graphics.materials.Material
-import cwinter.codecraft.util.maths.{VertexXYZ, Vertex}
+import cwinter.codecraft.util.maths.{Vertex, VertexXYZ}
 
 import scala.collection.mutable
-import scala.collection.mutable.{ArrayBuffer, ListBuffer}
+import scala.collection.mutable.ListBuffer
 
 
-private[graphics] trait CompositeModelBuilder[TStatic, TDynamic]
+private[graphics] trait CompositeModelBuilder[TStatic <: AnyRef, TDynamic]
 extends ModelBuilder[TStatic, TDynamic] {
   def signature: TStatic
 

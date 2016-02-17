@@ -2,10 +2,12 @@ package cwinter.codecraft.graphics.worldstate
 
 import cwinter.codecraft.graphics.model.Model
 import cwinter.codecraft.graphics.models.MineralSignature
-import cwinter.codecraft.util.maths
+import cwinter.codecraft.util.{PrecomputedHashcode, maths}
 import cwinter.codecraft.util.maths.matrices.Matrix4x4
 import cwinter.codecraft.util.maths.{Vector2, ColorRGB, Float0To1, Rectangle}
 
+import scala.runtime
+import scala.runtime.ScalaRunTime
 
 
 private[codecraft] case class ModelDescriptor(
@@ -33,7 +35,9 @@ private[codecraft] case class PositionDescriptor(
 
 private[codecraft] object NullPositionDescriptor extends PositionDescriptor(0, 0, 0)
 
-private[codecraft] sealed trait WorldObjectDescriptor {
+private[codecraft] sealed trait WorldObjectDescriptor extends PrecomputedHashcode {
+  self: Product =>
+
   def intersects(xPos: Float, yPos: Float, rectangle: Rectangle): Boolean = true
   @inline final protected def intersects(
     xPos: Float, yPos: Float, rectangle: Rectangle, size: Float
@@ -49,6 +53,7 @@ private[codecraft] sealed trait WorldObjectDescriptor {
   private[graphics] def cachedModel_=(value: Model[_]): Unit = _cachedModel = Some(value)
   private[graphics] def cachedModel: Option[Model[_]] = _cachedModel
 }
+
 
 private[codecraft] case class DroneDescriptor(
   positions: Seq[(Float, Float, Float)],
