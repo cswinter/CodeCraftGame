@@ -74,8 +74,7 @@ private[codecraft] sealed trait DroneModuleDescriptor
 
 private[codecraft] case class StorageModuleDescriptor(
   position: Int,
-  contents: StorageModuleContents,
-  relativeMineralPosition: Option[Vector2] = None
+  contents: StorageModuleContents
 ) extends DroneModuleDescriptor
 
 
@@ -92,6 +91,12 @@ private[codecraft] case class ManipulatorDescriptor(
   relativeConstructionPosition: Option[Vector2],
   active: Boolean
 ) extends DroneModuleDescriptor
+
+private[codecraft] case class HarvestingBeamsDescriptor(
+  droneSize: Int,
+  moduleIndices: Seq[Int],
+  relativeMineralPosition: Vector2
+) extends WorldObjectDescriptor
 
 private[codecraft] case class EnergyGlobeDescriptor(
   fade: Float

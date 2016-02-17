@@ -11,8 +11,7 @@ import cwinter.codecraft.util.modules.ModulePosition
 private[graphics] case class DroneStorageModelBuilder(
   position: VertexXY,
   colors: DroneColors,
-  moduleContents: StorageModuleContents,
-  mineralPosition: Option[Vector2]
+  moduleContents: StorageModuleContents
 )(implicit rs: RenderStack) extends CompositeModelBuilder[DroneStorageModelBuilder, Unit] {
 
   val radius = 8
@@ -68,36 +67,7 @@ private[graphics] case class DroneStorageModelBuilder(
       case EmptyStorage => Seq()
     }
 
-
-    val beamModel = mineralPosition.map(buildBeamModel)
-
-    ((body +: hull +: contents) ++ beamModel.toSeq, Seq.empty)
-  }
-
-  private def buildBeamModel(mineralPosition: Vector2): ModelBuilder[_, Unit] = {
-    val dist = position.toVector2 - mineralPosition
-    val angle =
-      if (dist.x == 0 && dist.y == 0) 0
-      else (position.toVector2 - mineralPosition).orientation.toFloat
-
-    val n = 5
-    val n2 = n - 1
-    val midpoint = (n2 - 1) / 2f
-    val range = (n2 + 1) / 2f
-    PartialPolygon(
-      rs.TranslucentAdditive,
-      n,
-      Seq.fill(n)(ColorRGBA(0.5f, 1f, 0.5f, 0.7f)),
-      ColorRGBA(0, 0, 0, 0) +: Seq.tabulate(n2)(i => {
-        val color = 1 - Math.abs(i - midpoint) / range
-        ColorRGBA(color / 2, color, color / 2, 0)
-      }).flatMap(x => Seq(x, x)) :+ ColorRGBA(0, 0, 0, 0),
-      75,
-      position,
-      0,
-      angle,
-      fraction = 0.03f
-    )
+    (body +: hull +: contents, Seq.empty)
   }
 }
 

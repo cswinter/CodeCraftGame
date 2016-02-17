@@ -22,9 +22,11 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
   private[this] var harvestCountdown: Int = 0
   private[this] var resourceDepositee: Option[DroneStorageModule] = None
 
+  private[this] var _beamDescriptor: Option[HarvestingBeamsDescriptor] = None
+
 
   override def update(availableResources: Int): (Seq[SimulatorEvent], Seq[Vector2], Seq[Vector2]) = {
-    if (isHarvesting && owner.hasMoved) owner.mustUpdateModel()
+    if (isHarvesting && owner.hasMoved) updateBeamDescriptor()
 
     var effects = List.empty[SimulatorEvent]
 
@@ -142,8 +144,8 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
     } else {
       harvestCountdown = HarvestingDuration
       mineralCrystal.claimedBy = Some(this)
-      if (!harvesting.contains(mineralCrystal)) owner.mustUpdateModel()
       harvesting = Some(mineralCrystal)
+      updateBeamDescriptor()
     }
   }
 
@@ -152,9 +154,9 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
   }
 
   def cancelHarvesting(): Unit = {
-    owner.mustUpdateModel()
     harvesting.foreach(_.claimedBy = None)
     harvesting = None
+    updateBeamDescriptor()
   }
 
   def depositResources(other: Option[DroneStorageModule]): Unit = {
@@ -180,12 +182,22 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
         }.toSet
         StorageModuleDescriptor(
           i,
-          EnergyStorage(globes),
-          harvesting.map(m => (m.position - owner.position).rotated(-owner.dynamics.orientation))
+          EnergyStorage(globes)
         )
       }
 
     energyStorageDescriptors.toSeq
+  }
+
+  def beamDescriptor: Option[HarvestingBeamsDescriptor] = _beamDescriptor
+
+  def updateBeamDescriptor(): Unit = {
+    val newDescriptor =
+      for {
+        m <- harvesting
+        relativeMineralPos = (m.position - owner.position).rotated(-owner.dynamics.orientation)
+      } yield HarvestingBeamsDescriptor(owner.size, positions, relativeMineralPos)
+    _beamDescriptor = newDescriptor
   }
 
   def energyGlobeAnimations: Seq[ModelDescriptor] = {

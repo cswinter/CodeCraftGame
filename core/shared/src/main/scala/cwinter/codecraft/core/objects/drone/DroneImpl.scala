@@ -284,16 +284,24 @@ private[core] class DroneImpl(
   }
 
   override def descriptor: Seq[ModelDescriptor] = {
+    val positionDescr =
+      PositionDescriptor(
+        position.x.toFloat,
+        position.y.toFloat,
+        dynamics.orientation.toFloat
+      )
+    val beams =
+      for {
+        s <- storage
+        d <- s.beamDescriptor
+      } yield ModelDescriptor(positionDescr, d)
+
     Seq(
       ModelDescriptor(
-        PositionDescriptor(
-          position.x.toFloat,
-          position.y.toFloat,
-          dynamics.orientation.toFloat
-        ),
+        positionDescr,
         cachedDescriptor.getOrElse(recreateDescriptor())
       )
-    ) ++ storage.toSeq.flatMap(_.energyGlobeAnimations)
+    ) ++ storage.toSeq.flatMap(_.energyGlobeAnimations) ++ beams.toSeq
   }
 
   private def recreateDescriptor(): DroneDescriptor = {

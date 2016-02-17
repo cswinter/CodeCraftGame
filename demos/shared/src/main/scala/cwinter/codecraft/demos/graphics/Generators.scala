@@ -34,7 +34,7 @@ private[graphics] object Generators {
     2 -> MissileBatteryDescriptor(position, rni(4)),
     2 -> EnginesDescriptor(position),
     2 -> ShieldGeneratorDescriptor(position),
-    50 -> ManipulatorDescriptor(position, None, false)
+    50 -> ManipulatorDescriptor(position)
   )
 
   val ModuleCount = Map(3 -> 1, 4 -> 2, 5 -> 4, 6 -> 7, 7 -> 10).withDefaultValue(0)
