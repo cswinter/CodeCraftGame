@@ -33,6 +33,11 @@ private[graphics] class JVMMaterial[TPosition <: Vertex, TColor <: Vertex, TPara
   val colVM: VertexManifest[TColor]
 ) extends Material[TPosition, TColor, TParams] {
 
+  val nCompPos = posVM.nComponents
+  val nCompCol = colVM.nComponents
+  val nComponents = nCompPos + nCompCol
+
+
   /******************
    * INITIALISATION *
    ******************/
@@ -108,25 +113,10 @@ private[graphics] class JVMMaterial[TPosition <: Vertex, TColor <: Vertex, TPara
 
   /**
    * Allocates a VBO handle, loads vertex data into GPU and defines attribute pointers.
-   * @param vertexData The data for the VBO.
+   * @param data The data for the VBO.
    * @return Returns a `robowars.graphics.model.VBO` class which give the handle and number of data of the vbo.
    */
-  def createVBO(vertexData: Seq[(TPosition, TColor)], dynamic: Boolean = false): VBO = {
-    val nCompPos = posVM.nComponents
-    val nCompCol = colVM.nComponents
-    val nComponents = nCompPos + nCompCol
-    val data = new Array[Float](nComponents * vertexData.size)
-    for (((pos, col), i) <- vertexData.zipWithIndex) {
-      for (j <- 0 until nCompPos) {
-        data(i * nComponents + j) = pos(j)
-      }
-      for (j <- 0 until nCompCol) {
-        assert(col != null)
-        data(i * nComponents + j + nCompPos) = col(j)
-      }
-    }
-
-
+  def createVBO(data: Array[Float], dynamic: Boolean): VBO = {
     // create vbo handle
     val vboRef = new Array[Int](1)
     glGenBuffers(1, vboRef, 0)
@@ -152,7 +142,7 @@ private[graphics] class JVMMaterial[TPosition <: Vertex, TColor <: Vertex, TPara
     glBindBuffer(GL_ARRAY_BUFFER, 0)
 
     VBO._count += 1
-    JVMVBO(vboHandle, vertexData.length, vao)
+    JVMVBO(vboHandle, data.length / nComponents, vao)
   }
 
 

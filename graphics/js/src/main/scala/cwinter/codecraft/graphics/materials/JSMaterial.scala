@@ -109,25 +109,10 @@ private[graphics] class JSMaterial[TPosition <: Vertex, TColor <: Vertex, TParam
 
   /**
    * Allocates a VBO handle, loads vertex data into GPU and defines attribute pointers.
-   * @param vertexData The data for the VBO.
+   * @param data The data for the VBO.
    * @return Returns a `robowars.graphics.model.VBO` class which give the handle and number of data of the vbo.
    */
-  def createVBO(vertexData: Seq[(TPosition, TColor)], dynamic: Boolean = false): VBO = {
-    val nCompPos = posVM.nComponents
-    val nCompCol = colVM.nComponents
-    val nComponents = nCompPos + nCompCol
-    val data = new Array[Float](nComponents * vertexData.size)
-    for (((pos, col), i) <- vertexData.zipWithIndex) {
-      for (j <- 0 until nCompPos) {
-        data(i * nComponents + j) = pos(j)
-      }
-      for (j <- 0 until nCompCol) {
-        assert(col != null)
-        data(i * nComponents + j + nCompPos) = col(j)
-      }
-    }
-
-
+  def createVBO(data: Array[Float], dynamic: Boolean): VBO = {
     // create vbo handle
     val vboHandle = gl.createBuffer()
 
@@ -136,7 +121,7 @@ private[graphics] class JSMaterial[TPosition <: Vertex, TColor <: Vertex, TParam
     gl.bufferData(GL.ARRAY_BUFFER, data, if (dynamic) GL.DYNAMIC_DRAW else GL.STATIC_DRAW)
 
     VBO._count += 1
-    JSVBO(vboHandle, vertexData.length)
+    JSVBO(vboHandle, data.length / nComponents)
   }
 
 

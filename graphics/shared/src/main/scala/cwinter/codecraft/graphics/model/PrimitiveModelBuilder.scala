@@ -25,6 +25,8 @@ extends ModelBuilder[TShape, TParams] {
   }
 
   protected def computeVertexData(): Seq[(VertexXYZ, TColor)]
+
+  def getVertexData: Seq[(VertexXYZ, TColor)] = computeVertexData()
 }
 
 private[graphics] object PrimitiveModelBuilder {
@@ -35,7 +37,4 @@ private[graphics] object PrimitiveModelBuilder {
     toDispose = List.empty[VBO]
   }
 }
-
-
-
 
