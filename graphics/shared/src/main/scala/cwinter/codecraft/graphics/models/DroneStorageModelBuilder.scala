@@ -21,7 +21,7 @@ private[graphics] case class DroneStorageModelBuilder(
 
   def signature = this
 
-  override protected def build: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, Unit]]) = {
+  override protected def buildSubcomponents: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, Unit]]) = {
     import colors._
     val body =
       Polygon(

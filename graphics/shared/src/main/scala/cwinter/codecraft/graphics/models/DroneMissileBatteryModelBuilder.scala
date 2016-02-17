@@ -15,7 +15,7 @@ private[graphics] case class DroneMissileBatteryModelBuilder(
   override def signature: DroneMissileBatteryModelBuilder = this
 
 
-  override protected def build: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, Unit]]) = {
+  override protected def buildSubcomponents: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, Unit]]) = {
     /*
     val positions = Seq(
           VertexXY(1, 1), VertexXY(0, 1), VertexXY(-1, 1),

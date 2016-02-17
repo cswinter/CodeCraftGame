@@ -16,7 +16,7 @@ private[graphics] case class DroneShieldGeneratorModel(
   def signature = this
 
 
-  override protected def build: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, Unit]]) = {
+  override protected def buildSubcomponents: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, Unit]]) = {
     val radius = 3
     val gridposRadius = 2 * inradius(radius, 6)
     val gridpoints = VertexXY(0, 0) +: polygonVertices(6, radius = gridposRadius)

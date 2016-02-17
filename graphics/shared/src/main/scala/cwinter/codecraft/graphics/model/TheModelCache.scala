@@ -25,5 +25,6 @@ private[codecraft] object TheModelCache {
 
   def clear(): Unit = {
     cache.clear()
+    TheCompositeModelBuilderCache.clear()
   }
 }

@@ -15,7 +15,7 @@ private[graphics] case class DroneManipulatorModelBuilder(
 )(implicit rs: RenderStack) extends CompositeModelBuilder[DroneManipulatorModelBuilder, Unit] {
   override def signature: DroneManipulatorModelBuilder = this
 
-  override protected def build: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, Unit]]) = {
+  override protected def buildSubcomponents: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, Unit]]) = {
     val module = Polygon(
       rs.GaussianGlow,
       20,

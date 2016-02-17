@@ -17,7 +17,7 @@ private[graphics] case class DroneEnginesModel(
   def signature: DroneEnginesModel = this
 
 
-  override protected def build: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, Unit]]) = {
+  override protected def buildSubcomponents: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, Unit]]) = {
     val enginePositions = Geometry.polygonVertices2(3, radius = 5, orientation = 2 * math.Pi.toFloat * t / 100)
     val engines =
       for ((offset, i) <- enginePositions.zipWithIndex)

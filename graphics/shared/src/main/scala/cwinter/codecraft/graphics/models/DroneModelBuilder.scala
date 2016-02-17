@@ -20,7 +20,7 @@ private[graphics] class DroneModelBuilder(
 
   import scala.math._
 
-  override protected def build: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, DroneDescriptor]]) = {
+  override protected def buildSubcomponents: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, DroneDescriptor]]) = {
     import signature._
     val colorPalette =
       if (signature.isBuilding) MutedDroneColors

@@ -4,16 +4,21 @@ import cwinter.codecraft.graphics.materials.Material
 import cwinter.codecraft.util.maths.{VertexXYZ, Vertex}
 
 import scala.collection.mutable
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
 
 private[graphics] trait CompositeModelBuilder[TStatic, TDynamic]
 extends ModelBuilder[TStatic, TDynamic] {
   def signature: TStatic
 
-  protected def build: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, TDynamic]])
+  protected def buildSubcomponents: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, TDynamic]])
+
+  def subcomponents: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, TDynamic]]) =
+    if (isCacheable) TheCompositeModelBuilderCache.getOrElseUpdate(signature)(optimized.buildSubcomponents)
+    else buildSubcomponents
 
   def buildModel: Model[TDynamic] = {
-    val (staticComponents, dynamicComponents) = build
+    val (staticComponents, dynamicComponents) = subcomponents
     decorate(CompositeModel(
       staticComponents.map(_.getModel),
       dynamicComponents.map(_.getModel)
@@ -23,7 +28,7 @@ extends ModelBuilder[TStatic, TDynamic] {
   protected def decorate(model: Model[TDynamic]): Model[TDynamic] = model
 
 
-  override def optimized: ModelBuilder[TStatic, TDynamic] = {
+  override def optimized: CompositeModelBuilder[TStatic, TDynamic] = {
     val (allStatic, allDynamic) = flatten
 
     val compactedStatic = compact(allStatic)
@@ -32,7 +37,7 @@ extends ModelBuilder[TStatic, TDynamic] {
     new CompositeModelBuilder[TStatic, TDynamic] {
       override def decorate(model: Model[TDynamic]) = self.decorate(model)
       override def signature = self.signature
-      override def build = (compactedStatic, allDynamic)
+      override def buildSubcomponents = (compactedStatic, allDynamic)
     }
   }
 
@@ -40,7 +45,7 @@ extends ModelBuilder[TStatic, TDynamic] {
     val allStatic = mutable.UnrolledBuffer.empty[ModelBuilder[_, Unit]]
     val allDynamic = mutable.UnrolledBuffer.empty[ModelBuilder[_, TDynamic]]
 
-    val (staticComponents, dynamicComponents) = build
+    val (staticComponents, dynamicComponents) = buildSubcomponents
 
     for (static <- staticComponents) static match {
       case compositeChild: CompositeModelBuilder[_, Unit] =>
@@ -62,24 +67,39 @@ extends ModelBuilder[TStatic, TDynamic] {
   }
 
   def compact(models: Seq[ModelBuilder[_, Unit]]): Seq[ModelBuilder[_, Unit]] = {
-    val (primitives, other) =
+    val (compactable, other) =
       models
-        .partition(model => model.isInstanceOf[PrimitiveModelBuilder[_, _ <: Vertex, Unit]])
-        .asInstanceOf[(Seq[PrimitiveModelBuilder[_, _ <: Vertex, Unit]], Seq[ModelBuilder[_, Unit]])]
-    val groupedPrimitives =
-      primitives.groupBy(_.material)
+        .partition(isCompactable)
+        .asInstanceOf[(Seq[ModelBuilder[_, TDynamic]], Seq[ModelBuilder[_, Unit]])]
+
+    val groupedCompactables =
+      compactable.groupBy {
+        case p: PrimitiveModelBuilder[_, _, _] => p.material
+        case c: VertexCollectionModelBuilder[_] => c.material
+        case x => throw new Exception(s"Trying to compact model builder of type ${x.getClass}")
+      }
 
     val compactedPrimitives =
-      for ((material, primitives) <- groupedPrimitives) yield {
-        if (primitives.size == 1) primitives.head
+      for ((material, compactables) <- groupedCompactables) yield {
+        if (compactables.size == 1) compactables.head
         else {
-          val allVertices =
-            for (p <- primitives) yield p.getVertexData
-          VertexCollectionModelBuilder(allVertices, material.asInstanceOf[Material[VertexXYZ, Vertex, Unit]])
+          val allVertices = ListBuffer.empty[Seq[(VertexXYZ, Vertex)]]
+          for (compactable <- compactables) compactable match {
+            case p: PrimitiveModelBuilder[_, _, _] =>
+              allVertices.append(p.getVertexData)
+            case c: VertexCollectionModelBuilder[_] =>
+              for (vertices <- c.vertexData)
+                allVertices.append(vertices)
+          }
+          VertexCollectionModelBuilder(allVertices.toList, material.asInstanceOf[Material[VertexXYZ, Vertex, Unit]])
         }
       }
 
-    compactedPrimitives.toSeq ++ other
+    compactedPrimitives.toSeq.asInstanceOf[Seq[ModelBuilder[_, Unit]]] ++ other
   }
+
+  private def isCompactable(modelBuilder: ModelBuilder[_, Unit]): Boolean =
+    modelBuilder.isInstanceOf[PrimitiveModelBuilder[_, _ , Unit]] ||
+    modelBuilder.isInstanceOf[VertexCollectionModelBuilder[_]]
 }
 
