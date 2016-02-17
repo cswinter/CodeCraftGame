@@ -36,8 +36,6 @@ private[graphics] class MockDrone(
   override def update(): Unit = {
     // update timer on engines
     modules = modules.map {
-      case ProcessingModuleDescriptor(pos, t) =>
-        ProcessingModuleDescriptor(pos, t.map(x => (x + 1) % 250))
       case StorageModuleDescriptor(positions, rc, t) =>
         StorageModuleDescriptor(
           positions,

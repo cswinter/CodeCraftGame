@@ -67,7 +67,6 @@ private[codecraft] object BlogpostDemo {
     StorageModuleDescriptor(0, MineralStorage),
     EnginesDescriptor(0),
     ShieldGeneratorDescriptor(0),
-    ProcessingModuleDescriptor(Seq(0)),
     MissileBatteryDescriptor(0)
   ).zipWithIndex.map {
     case (module, i) =>

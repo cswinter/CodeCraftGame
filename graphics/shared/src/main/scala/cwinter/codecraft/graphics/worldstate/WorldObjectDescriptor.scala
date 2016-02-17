@@ -85,7 +85,6 @@ private[codecraft] case object MineralStorage extends StorageModuleContents
 private[codecraft] case class EnergyStorage(filledPositions: Set[Int] = Set(0, 1, 2, 3, 4, 5, 6)) extends StorageModuleContents
 
 private[codecraft] case class EnginesDescriptor(position: Int) extends DroneModuleDescriptor
-private[codecraft] case class ProcessingModuleDescriptor(positions: Seq[Int], mergingProgress: Option[Int] = None) extends DroneModuleDescriptor
 private[codecraft] case class ShieldGeneratorDescriptor(position: Int) extends DroneModuleDescriptor
 private[codecraft] case class MissileBatteryDescriptor(position: Int, n: Int = 3) extends DroneModuleDescriptor
 private[codecraft] case class ManipulatorDescriptor(

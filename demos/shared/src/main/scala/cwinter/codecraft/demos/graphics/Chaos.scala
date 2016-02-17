@@ -8,16 +8,6 @@ private[graphics] object Chaos {
   val north = (math.Pi / 2).toFloat
   val customDrones = Seq(
     new MockDrone(
-      xPos = 100,
-      yPos = 0,
-      orientation = north,
-      modules = Seq(
-        ProcessingModuleDescriptor(Seq(0, 1))
-      ),
-      size = 4,
-      sightRadius = sightRadius
-    ),
-    new MockDrone(
       xPos = 200,
       yPos = 0,
       orientation = north,
@@ -26,18 +16,6 @@ private[graphics] object Chaos {
         StorageModuleDescriptor(1, EmptyStorage),
         StorageModuleDescriptor(2, EmptyStorage),
         EnginesDescriptor(3)
-      ),
-      size = 5,
-      sightRadius = sightRadius
-    ),
-    new MockDrone(
-      xPos = 300,
-      yPos = 0,
-      orientation = north,
-      modules = Seq(
-        StorageModuleDescriptor(0, EmptyStorage),
-        StorageModuleDescriptor(1, EmptyStorage),
-        ProcessingModuleDescriptor(Seq(2, 3))
       ),
       size = 5,
       sightRadius = sightRadius

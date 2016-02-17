@@ -34,7 +34,6 @@ private[graphics] object Generators {
     2 -> MissileBatteryDescriptor(position, rni(4)),
     2 -> EnginesDescriptor(position),
     2 -> ShieldGeneratorDescriptor(position),
-    6 -> ProcessingModuleDescriptor(Seq(position)),
     50 -> ManipulatorDescriptor(position, None, false)
   )
 

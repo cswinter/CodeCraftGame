@@ -72,8 +72,6 @@ private[graphics] class DroneModelBuilder(
           DroneMissileBatteryModelBuilder(colorPalette, playerColor, ModulePosition(sides, position), n)
         case ShieldGeneratorDescriptor(position) =>
           DroneShieldGeneratorModel(ModulePosition(sides, position), colorPalette, playerColor)
-        case ProcessingModuleDescriptor(positions, tMerging) =>
-          ProcessingModuleModelBuilder(ModulePosition(sides, positions), animationTime, tMerging, positions.size)
         case StorageModuleDescriptor(position, contents, mineralPosition) =>
           DroneStorageModelBuilder(ModulePosition(sides, position), colorPalette, contents, mineralPosition)
         case ManipulatorDescriptor(position, constructionPos, active) =>
@@ -147,9 +145,7 @@ private[graphics] case class DroneSignature(
 
 private[graphics] object DroneSignature {
   def apply(droneObject: DroneDescriptor, timestep: Int): DroneSignature = {
-    val hasAnimatedComponents = droneObject.modules.exists(m =>
-      m.isInstanceOf[EnginesDescriptor] || m.isInstanceOf[ProcessingModuleDescriptor]
-    )
+    val hasAnimatedComponents = droneObject.modules.exists(m => m.isInstanceOf[EnginesDescriptor])
     val isBuilding = droneObject.constructionState.isDefined
     DroneSignature(
       droneObject.size,
