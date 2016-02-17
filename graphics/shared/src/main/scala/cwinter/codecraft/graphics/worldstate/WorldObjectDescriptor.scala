@@ -86,16 +86,19 @@ private[codecraft] case class EnergyStorage(filledPositions: Set[Int] = Set(0, 1
 private[codecraft] case class EnginesDescriptor(position: Int) extends DroneModuleDescriptor
 private[codecraft] case class ShieldGeneratorDescriptor(position: Int) extends DroneModuleDescriptor
 private[codecraft] case class MissileBatteryDescriptor(position: Int, n: Int = 3) extends DroneModuleDescriptor
-private[codecraft] case class ManipulatorDescriptor(
-  position: Int,
-  relativeConstructionPosition: Option[Vector2],
-  active: Boolean
-) extends DroneModuleDescriptor
+private[codecraft] case class ManipulatorDescriptor(position: Int) extends DroneModuleDescriptor
 
 private[codecraft] case class HarvestingBeamsDescriptor(
   droneSize: Int,
   moduleIndices: Seq[Int],
   relativeMineralPosition: Vector2
+) extends WorldObjectDescriptor
+
+private[codecraft] case class ConstructionBeamDescriptor(
+  droneSize: Int,
+  modules: Seq[(Int, Boolean)],
+  relativeConstructionPosition: Vector2,
+  playerColor: ColorRGB
 ) extends WorldObjectDescriptor
 
 private[codecraft] case class EnergyGlobeDescriptor(

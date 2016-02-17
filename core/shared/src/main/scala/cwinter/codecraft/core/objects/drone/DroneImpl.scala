@@ -290,10 +290,15 @@ private[core] class DroneImpl(
         position.y.toFloat,
         dynamics.orientation.toFloat
       )
-    val beams =
+    val harvestBeams =
       for {
         s <- storage
         d <- s.beamDescriptor
+      } yield ModelDescriptor(positionDescr, d)
+    val constructionBeams =
+      for {
+        m <- manipulator
+        d <- m.beamDescriptor
       } yield ModelDescriptor(positionDescr, d)
 
     Seq(
@@ -301,7 +306,7 @@ private[core] class DroneImpl(
         positionDescr,
         cachedDescriptor.getOrElse(recreateDescriptor())
       )
-    ) ++ storage.toSeq.flatMap(_.energyGlobeAnimations) ++ beams.toSeq
+    ) ++ storage.toSeq.flatMap(_.energyGlobeAnimations) ++ harvestBeams.toSeq ++ constructionBeams.toSeq
   }
 
   private def recreateDescriptor(): DroneDescriptor = {

@@ -2,7 +2,7 @@ package cwinter.codecraft.core.objects.drone
 
 import cwinter.codecraft.core._
 import cwinter.codecraft.core.api.DroneSpec
-import cwinter.codecraft.graphics.worldstate.{DroneModuleDescriptor, ManipulatorDescriptor}
+import cwinter.codecraft.graphics.worldstate.{ConstructionBeamDescriptor, DroneModuleDescriptor, ManipulatorDescriptor}
 import cwinter.codecraft.util.maths.Vector2
 
 private[core] class DroneManipulatorModule(positions: Seq[Int], owner: DroneImpl)
@@ -12,9 +12,12 @@ private[core] class DroneManipulatorModule(positions: Seq[Int], owner: DroneImpl
   private[this] var droneConstruction: Option[(DroneImpl, Int)] = None
   private[this] val constructorEnergy = new Array[Int](positions.length)
 
+  private[this] var _beamDescriptor: Option[ConstructionBeamDescriptor] = None
+
 
   override def update(availableResources: Int): (Seq[SimulatorEvent], Seq[Vector2], Seq[Vector2]) = {
-    if (isConstructing && owner.hasMoved) owner.mustUpdateModel()
+    var shouldUpdateBeamDescriptor = false
+    if (isConstructing && owner.hasMoved) updateBeamDescriptor()
 
     var effects = List.empty[SimulatorEvent]
     var remainingResources = availableResources
@@ -23,6 +26,7 @@ private[core] class DroneManipulatorModule(positions: Seq[Int], owner: DroneImpl
     // start new drone constructions
     for (newDrone <- newDrone) {
       droneConstruction = Some((newDrone, 0))
+      shouldUpdateBeamDescriptor = true
       effects ::= DroneConstructionStarted(newDrone)
     }
     newDrone = None
@@ -36,6 +40,7 @@ private[core] class DroneManipulatorModule(positions: Seq[Int], owner: DroneImpl
             remainingResources -= 1
             resourceDepletions ::= absoluteModulePositions(i)
             constructorEnergy(i) = DroneSpec.ConstructionPeriod
+            shouldUpdateBeamDescriptor = true
           }
           if (constructorEnergy(i) > 0 && progress + furtherProgress < drone.spec.buildTime) {
             constructorEnergy(i) -= 1
@@ -46,10 +51,10 @@ private[core] class DroneManipulatorModule(positions: Seq[Int], owner: DroneImpl
         val progress2 = progress + furtherProgress
         drone.constructionProgress = Some(progress2)
         if (progress2 == drone.spec.buildTime) {
-          owner.mustUpdateModel()
           effects ::= SpawnDrone(drone)
           droneConstruction = None
           drone.constructionProgress = None
+          shouldUpdateBeamDescriptor = true
         }
 
         (drone, progress2)
@@ -60,6 +65,8 @@ private[core] class DroneManipulatorModule(positions: Seq[Int], owner: DroneImpl
         progress < drone.spec.buildTime
     }
 
+    if (shouldUpdateBeamDescriptor) updateBeamDescriptor()
+
     (effects, resourceDepletions, Seq.empty[Vector2])
   }
 
@@ -67,7 +74,6 @@ private[core] class DroneManipulatorModule(positions: Seq[Int], owner: DroneImpl
 
   def startDroneConstruction(command: ConstructDrone): Unit = {
     if (droneConstruction.isEmpty) {
-      owner.mustUpdateModel()
       val ConstructDrone(spec, controller, pos) = command
       newDrone = Some(new DroneImpl(spec, controller, owner.context, pos, -1))
     }
@@ -75,11 +81,17 @@ private[core] class DroneManipulatorModule(positions: Seq[Int], owner: DroneImpl
 
   override def descriptors: Seq[DroneModuleDescriptor] =
     for ((i, energy) <- positions zip constructorEnergy) yield
-      ManipulatorDescriptor(
-        i,
-        droneInConstruction.map(d => (d.position - owner.position).rotated(-owner.dynamics.orientation)),
-        energy > 0
-      )
+      ManipulatorDescriptor(i)
+
+  def beamDescriptor = _beamDescriptor
+
+  private def updateBeamDescriptor(): Unit =
+    _beamDescriptor =
+      for {
+        d <- droneInConstruction
+        relativeConstructionPos = (d.position - owner.position).rotated(-owner.dynamics.orientation)
+        modules = positions zip constructorEnergy.map(_ > 0)
+      } yield ConstructionBeamDescriptor(owner.size, modules, relativeConstructionPos, owner.player.color)
 
   def droneInConstruction: Option[DroneImpl] = droneConstruction.map(_._1)
   override def cancelMovement: Boolean = isConstructing

@@ -114,7 +114,6 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
   }
 
   def depositEnergyGlobe(position: Vector2): Unit = {
-    owner.mustUpdateModel()
     val targetPosition = calculateEnergyGlobePosition(storedResources)
     val newEnergyGlobe = new MovingEnergyGlobe(targetPosition, position, 20)
     storedEnergyGlobes.push(newEnergyGlobe)
@@ -191,14 +190,12 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
 
   def beamDescriptor: Option[HarvestingBeamsDescriptor] = _beamDescriptor
 
-  def updateBeamDescriptor(): Unit = {
-    val newDescriptor =
+  private def updateBeamDescriptor(): Unit =
+    _beamDescriptor =
       for {
         m <- harvesting
         relativeMineralPos = (m.position - owner.position).rotated(-owner.dynamics.orientation)
       } yield HarvestingBeamsDescriptor(owner.size, positions, relativeMineralPos)
-    _beamDescriptor = newDescriptor
-  }
 
   def energyGlobeAnimations: Seq[ModelDescriptor] = {
     for {

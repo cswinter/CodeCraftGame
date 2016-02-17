@@ -36,6 +36,11 @@ private[graphics] object TheWorldObjectModelFactory {
         HarvestingBeamModelBuilder(h).getModel,
         modelview
       )
+      case c: ConstructionBeamDescriptor => new ClosedModel[Unit](
+        Unit,
+        ConstructionBeamsModelBuilder(c).getModel,
+        modelview
+      )
       case lightFlash: LightFlashDescriptor => new ClosedModel(
         lightFlash,
         new LightFlashModelBuilder().getModel,

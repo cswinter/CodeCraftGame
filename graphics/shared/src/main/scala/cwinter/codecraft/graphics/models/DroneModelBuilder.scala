@@ -74,8 +74,8 @@ private[graphics] class DroneModelBuilder(
           DroneShieldGeneratorModel(ModulePosition(sides, position), colorPalette, playerColor)
         case StorageModuleDescriptor(position, contents) =>
           DroneStorageModelBuilder(ModulePosition(sides, position), colorPalette, contents)
-        case ManipulatorDescriptor(position, constructionPos, active) =>
-          DroneManipulatorModelBuilder(colorPalette, playerColor, ModulePosition(sides, position), constructionPos, active)
+        case ManipulatorDescriptor(position) =>
+          DroneManipulatorModelBuilder(colorPalette, playerColor, ModulePosition(sides, position))
       }
 
 
