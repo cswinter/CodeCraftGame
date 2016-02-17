@@ -15,10 +15,15 @@ private[graphics] object TheWorldObjectModelFactory {
     val modelview = obtainModelview(modelDescriptor.position)
 
     modelDescriptor.objectDescriptor match {
-      case mineral: MineralDescriptor => new ClosedModel[Unit](
-        Unit,
-        new MineralModelBuilder(mineral).getModel,
-        modelview)
+      case mineral: MineralDescriptor =>
+        if (modelDescriptor.objectDescriptor.cachedModel.isEmpty) {
+          modelDescriptor.objectDescriptor.cachedModel = new MineralModelBuilder(mineral).getModel
+        }
+        new ClosedModel[Unit](
+          Unit,
+          modelDescriptor.objectDescriptor.cachedModel.get.asInstanceOf[Model[Unit]],
+          modelview
+        )
       case drone: DroneDescriptor =>
         if (modelDescriptor.objectDescriptor.cachedModel.isEmpty) {
           modelDescriptor.objectDescriptor.cachedModel = new DroneModelBuilder(drone, timestep).getModel
@@ -31,16 +36,24 @@ private[graphics] object TheWorldObjectModelFactory {
           model,
           modelview
         )
-      case h: HarvestingBeamsDescriptor => new ClosedModel[Unit](
-        Unit,
-        HarvestingBeamModelBuilder(h).getModel,
-        modelview
-      )
-      case c: ConstructionBeamDescriptor => new ClosedModel[Unit](
-        Unit,
-        ConstructionBeamsModelBuilder(c).getModel,
-        modelview
-      )
+      case h: HarvestingBeamsDescriptor =>
+        if (modelDescriptor.objectDescriptor.cachedModel.isEmpty) {
+          modelDescriptor.objectDescriptor.cachedModel = HarvestingBeamModelBuilder(h).getModel
+        }
+        new ClosedModel[Unit](
+          Unit,
+          modelDescriptor.objectDescriptor.cachedModel.get.asInstanceOf[Model[Unit]],
+          modelview
+        )
+      case c: ConstructionBeamDescriptor =>
+        if (modelDescriptor.objectDescriptor.cachedModel.isEmpty) {
+          modelDescriptor.objectDescriptor.cachedModel = ConstructionBeamsModelBuilder(c).getModel
+        }
+        new ClosedModel[Unit](
+          Unit,
+          modelDescriptor.objectDescriptor.cachedModel.get.asInstanceOf[Model[Unit]],
+          modelview
+        )
       case lightFlash: LightFlashDescriptor => new ClosedModel(
         lightFlash,
         new LightFlashModelBuilder().getModel,
