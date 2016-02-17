@@ -3,7 +3,7 @@ package cwinter.codecraft.graphics.model
 
 private[codecraft] object TheModelCache {
   private[this] var nModels = 0
-  private[this] val cache = new collection.mutable.HashMap[Any, Model[_]]()
+  private[this] val cache = new java.util.HashMap[Any, Model[_]]()
   private[this] var _lastCachedModel = ""
 
 
@@ -12,12 +12,15 @@ private[codecraft] object TheModelCache {
   }
 
   def getOrElseUpdate[T](key: Any)(generator: => Model[T]): Model[T] = {
-    cache.getOrElseUpdate(key, {
+    val result = cache.get(key)
+    if (result == null) {
       nModels += 1
       _lastCachedModel = key.toString
-      generator
-    }).asInstanceOf[Model[T]]
-  }
+      val value = generator
+      cache.put(key, value)
+      value
+    } else result
+  }.asInstanceOf[Model[T]]
 
   def CachedModelCount = nModels
 
