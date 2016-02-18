@@ -34,7 +34,8 @@ class DroneWorldSimulator(
   controllers: Seq[DroneControllerBase],
   eventGenerator: Int => Seq[SimulatorEvent],
   replayer: Option[Replayer] = None,
-  multiplayerConfig: MultiplayerConfig = SingleplayerConfig
+  multiplayerConfig: MultiplayerConfig = SingleplayerConfig,
+  forceReplayRecorder: Option[ReplayRecorder] = None
 ) extends Simulator {
   private final val MaxDroneRadius = 60
 
@@ -42,7 +43,8 @@ class DroneWorldSimulator(
   private var showMissileRadius = false
 
   private val replayRecorder: ReplayRecorder =
-    if (replayer.isEmpty) ReplayFactory.replayRecorder
+    if (forceReplayRecorder.nonEmpty) forceReplayRecorder.get
+    else if (replayer.isEmpty) ReplayFactory.replayRecorder
     else NullReplayRecorder
 
   private val metaControllers =
