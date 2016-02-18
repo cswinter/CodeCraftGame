@@ -43,6 +43,8 @@ private[codecraft] trait Simulator {
 
   private def performUpdate(): Unit = {
     Debug.clear()
+    savedWorldState = Seq(computeWorldState.toSeq: _*)
+    t += 1
     try {
       update()
     } catch {
@@ -52,12 +54,12 @@ private[codecraft] trait Simulator {
         e.printStackTrace()
         paused = true
     }
-    t += 1
-    savedWorldState = Seq(computeWorldState.toSeq: _*)
   }
 
   private[codecraft] def performAsyncUpdate(): Future[Unit] = {
     Debug.clear()
+    savedWorldState = Seq(computeWorldState.toSeq: _*)
+    t += 1
     val result = asyncUpdate()
     result.onFailure{
       case e: Throwable =>
@@ -66,11 +68,7 @@ private[codecraft] trait Simulator {
         e.printStackTrace()
         paused = true
     }
-    result.map {x =>
-      t += 1
-      savedWorldState = Seq(computeWorldState.toSeq: _*)
-      x
-    }
+    result
   }
 
   /**

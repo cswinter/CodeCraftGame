@@ -40,28 +40,16 @@ object TheGameMaster extends GameMasterLike {
 
 
   def run(context: RunContext): Unit = {
+    dom.requestAnimationFrame((d: Double) => run(context))
+
     context.fps.computeCurrFPS()
     if (outputFPS && !context.simulator.isPaused) {
       context.fps.drawFPS()
       if (context.simulator.timestep % 100 == 0) context.fps.printFPS()
     }
-    context.renderer.render()
-    val updateFuture =
-      if (context.simulator.isPaused) Future.successful(Unit)
-      else context.simulator.performAsyncUpdate()
 
-    updateFuture.onComplete {
-      case Success(_) =>
-        if (!context.stopped) {
-          dom.setTimeout(
-            () => run(context),
-            context.computeWaitTime()
-          )
-        }
-      case Failure(x) =>
-        println("Uncaught exception thrown by game engine:")
-        println(x.getMessage)
-    }
+    context.renderer.render()
+    if (!context.simulator.isPaused) context.simulator.performAsyncUpdate()
   }
 
   def stop(): Unit = {
@@ -90,7 +78,8 @@ class RunContext(
   def computeWaitTime(): Double = {
     val time = js.Date.now()
     val elapsed = time - lastCompletionTime
-    lastCompletionTime = elapsed
+    lastCompletionTime = time
+    println(s"computeWaitTime: $time, $lastCompletionTime, $elapsed ${math.max(0, targetMillisPerFrame - elapsed)}")
     math.max(0, targetMillisPerFrame - elapsed)
   }
 }
