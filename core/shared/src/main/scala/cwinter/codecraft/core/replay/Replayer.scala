@@ -72,7 +72,10 @@ class Replayer(lines: Iterator[String]) {
       currRecord match {
         case Timestep(t) =>
           currTime = t
-        case Command(droneID, d) =>
+        case c@Command(droneID, d) =>
+          if (!context.droneRegistry.contains(droneID)) {
+            println(s"[t=$currTime] Trying to execute $c, but drone doe not exist!")
+          }
           context.drone(droneID).executeCommand(DroneCommand(d))
         case t => throw new Exception(s"""Error while parsing replay. Expected a "Timestep" or "Command" on line $lineNumber, instead: $currLine""")
       }

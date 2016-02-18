@@ -19,6 +19,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.scalajs.js.annotation.JSExport
+import scala.util.Random
 
 
 /**
@@ -47,16 +48,20 @@ class DroneWorldSimulator(
     else if (replayer.isEmpty) ReplayFactory.replayRecorder
     else NullReplayRecorder
 
+  replayer.foreach { r => Rng.seed = r.seed }
+
   private val metaControllers =
     for (c <- controllers; mc <- c.metaController) yield mc
   private val worldConfig = WorldConfig(map.size)
   private val visibleObjects = collection.mutable.Set.empty[WorldObject]
   private val dynamicObjects = collection.mutable.Set.empty[WorldObject]
+  private val dronesSorted = collection.mutable.TreeSet.empty[DroneImpl](DroneOrdering)
   private var _drones = Map.empty[Int, DroneImpl]
   private val missiles = collection.mutable.Map.empty[Int, HomingMissile]
   private def drones = _drones.values
   private var deadDrones = List.empty[DroneImpl]
   private var newlySpawnedDrones = List.empty[DroneImpl]
+  private val rng = new Random(Rng.seed)
 
   private val visionTracker = new VisionTracker[WorldObject](
     map.size.xMin.toInt, map.size.xMax.toInt,
@@ -76,6 +81,7 @@ class DroneWorldSimulator(
         if (shouldRecordCommands(player)) Some(multiplayerConfig.commandRecorder)
         else None,
         new IDGenerator(player.id),
+        rng,
         !multiplayerConfig.isInstanceOf[MultiplayerClientConfig],
         replayRecorder
       )
@@ -84,7 +90,6 @@ class DroneWorldSimulator(
   Debug.drawAlways(ModelDescriptor(NullPositionDescriptor, DrawRectangle(map.size)))
 
 
-  replayer.foreach { r => Rng.seed = r.seed }
 
   replayRecorder.recordInitialWorldState(map)
 
@@ -125,7 +130,7 @@ class DroneWorldSimulator(
 
   private def spawnDrone(drone: DroneImpl): Unit = {
     visibleObjects.add(drone)
-    dynamicObjects.add(drone)
+    dronesSorted.add(drone)
     _drones += drone.id -> drone
     visionTracker.insert(drone, generateEvents=true)
     if (drone.dynamics.isInstanceOf[ComputedDroneDynamics]) {
@@ -137,7 +142,7 @@ class DroneWorldSimulator(
 
   private def droneKilled(drone: DroneImpl): Unit = {
     visibleObjects.remove(drone)
-    dynamicObjects.remove(drone)
+    dronesSorted.remove(drone)
     _drones -= drone.id
     visionTracker.remove(drone)
     if (drone.dynamics.isInstanceOf[ComputedDroneDynamics]) {
@@ -280,6 +285,9 @@ class DroneWorldSimulator(
 
   private def executeGameMechanics(): Seq[SimulatorEvent] = {
     for (obj <- dynamicObjects.toSeq; event <- obj.update())
+      yield event
+  } ++ {
+    for (drone <- dronesSorted.toSeq; event <- drone.update())
       yield event
   }
 

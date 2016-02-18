@@ -8,7 +8,7 @@ import cwinter.codecraft.util.maths.Vector2
 private[core] class DroneManipulatorModule(positions: Seq[Int], owner: DroneImpl)
   extends DroneModule(positions, owner) {
 
-  private[this] var newDrone: Option[DroneImpl] = None
+  private[this] var newDrone: Option[ConstructDrone] = None
   private[this] var droneConstruction: Option[(DroneImpl, Int)] = None
   private[this] val constructorEnergy = new Array[Int](positions.length)
 
@@ -24,7 +24,8 @@ private[core] class DroneManipulatorModule(positions: Seq[Int], owner: DroneImpl
     var resourceDepletions = List.empty[Vector2]
 
     // start new drone constructions
-    for (newDrone <- newDrone) {
+    for (ConstructDrone(spec, controller, pos) <- newDrone) {
+      val newDrone = new DroneImpl(spec, controller, owner.context, pos, -1)
       droneConstruction = Some((newDrone, 0))
       shouldUpdateBeamDescriptor = true
       effects ::= DroneConstructionStarted(newDrone)
@@ -74,8 +75,7 @@ private[core] class DroneManipulatorModule(positions: Seq[Int], owner: DroneImpl
 
   def startDroneConstruction(command: ConstructDrone): Unit = {
     if (droneConstruction.isEmpty) {
-      val ConstructDrone(spec, controller, pos) = command
-      newDrone = Some(new DroneImpl(spec, controller, owner.context, pos, -1))
+      newDrone = Some(command)
     }
   }
 

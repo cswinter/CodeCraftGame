@@ -6,6 +6,8 @@ import cwinter.codecraft.core.objects.IDGenerator
 import cwinter.codecraft.core.replay.DummyDroneController
 import cwinter.codecraft.util.maths.{Vector2, Rectangle}
 
+import scala.util.Random
+
 
 object DroneFactory {
   val blueDroneContext = mockDroneContext(BluePlayer)
@@ -16,6 +18,7 @@ object DroneFactory {
     WorldConfig(Rectangle(-100, 100, -100, 100)),
     None,
     new IDGenerator(player.id),
+    new Random(),
     true
   )
 

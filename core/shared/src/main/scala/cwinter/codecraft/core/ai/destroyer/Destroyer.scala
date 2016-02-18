@@ -52,7 +52,7 @@ with MissionExecutor[DestroyerCommand] {
 
   override def abortMission(): Unit = {
     super.abortMission()
-    halt()
+    if (!isDead) halt()
   }
 
   override def onDeath(): Unit = {

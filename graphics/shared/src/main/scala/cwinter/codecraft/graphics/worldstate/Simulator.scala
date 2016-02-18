@@ -13,7 +13,7 @@ private[codecraft] trait Simulator {
   private[this] var paused = false
   private[this] var tFrameCompleted = System.nanoTime()
   private[this] var targetFPS = 30
-  @volatile private[this] var t = 0
+  @volatile private[this] var t = -1
   private[this] def frameMillis = 1000 / targetFPS
   private[this] var stopped = false
   private[this] var exceptionHandler: Option[Throwable => _] = None

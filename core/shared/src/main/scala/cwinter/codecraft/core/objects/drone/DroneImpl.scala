@@ -20,6 +20,7 @@ private[core] class DroneImpl(
   require(context.worldConfig != null)
 
   val id = context.idGenerator.getAndIncrement()
+  val priority = context.rng.nextInt()
 
   var objectsInSight: Set[WorldObject] = Set.empty[WorldObject]
 
@@ -76,10 +77,6 @@ private[core] class DroneImpl(
   def processEvents(): Unit = {
     controller.willProcessEvents()
 
-    for (event <- dynamics.checkArrivalConditions()) {
-      enqueueEvent(event)
-    }
-
     t += 1
     if (isDead) {
       controller.onDeath()
@@ -130,6 +127,10 @@ private[core] class DroneImpl(
     oldPositions.enqueue((position.x.toFloat, position.y.toFloat, dynamics.orientation.toFloat))
     if (oldPositions.length > NJetPositions) oldPositions.dequeue()
 
+    for (event <- dynamics.checkArrivalConditions()) {
+      enqueueEvent(event)
+    }
+
     val events = simulatorEvents
     simulatorEvents = List.empty[SimulatorEvent]
     events
@@ -172,7 +173,11 @@ private[core] class DroneImpl(
 
   @inline final def !(command: DroneCommand) = executeCommand(command)
 
-  def executeCommand(command: DroneCommand) = {
+  def executeCommand(command: DroneCommand): Unit = {
+    if (isDead) {
+      warn(s"Command $command given to dead drone.")
+      return
+    }
     var redundant = false
     command match {
       case mc: MovementCommand =>
@@ -512,4 +517,9 @@ object MultiplayerMessage {
   def register: String = write(Register)
 }
 
+object DroneOrdering extends Ordering[DroneImpl] {
+  override def compare(d1: DroneImpl, d2: DroneImpl): Int =
+    if (d1.priority == d2.priority) d1.id - d2.id
+    else d1.priority - d2.id
+}
 

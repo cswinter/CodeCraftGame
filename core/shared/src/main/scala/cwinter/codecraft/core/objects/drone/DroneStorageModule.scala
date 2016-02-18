@@ -30,11 +30,6 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
 
     var effects = List.empty[SimulatorEvent]
 
-    // TODO: this is not deterministic (since no ordering on the update() method of different drones is enforced)
-    // Possible solution (will solve other potential issues as well):
-    // Assign a random number to each drone to establish a fair priority, use id as tie breaker.
-    // Keep list of drones in simulator sorted.
-    // This requires instantiating a rng for each DroneWorldSimulator, and syncing the seed in multiplayer/replays.
     resourceDepositee.foreach(performResourceDeposit)
 
     for {

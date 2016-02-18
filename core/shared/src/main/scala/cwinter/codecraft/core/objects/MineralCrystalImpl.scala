@@ -13,10 +13,10 @@ private[core] class MineralCrystalImpl(
   private[this] var _position: Vector2,
   private[this] var _harvested: Boolean = false
 ) extends WorldObject {
+  private[this] val orientation = (2 * math.Pi * Rng.double()).toFloat
   private[this] var _descriptor = Seq(createDescriptor)
   private var handles = Map.empty[Player, MineralCrystal]
   private[objects] var claimedBy: Option[DroneStorageModule] = None
-  private[this] var orientation = (2 * math.Pi * Rng.double()).toFloat
 
 
   def position: Vector2 = _position
