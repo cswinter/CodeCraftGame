@@ -520,6 +520,6 @@ object MultiplayerMessage {
 object DroneOrdering extends Ordering[DroneImpl] {
   override def compare(d1: DroneImpl, d2: DroneImpl): Int =
     if (d1.priority == d2.priority) d1.id - d2.id
-    else d1.priority - d2.id
+    else d1.id - d2.id
 }
 
