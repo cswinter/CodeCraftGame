@@ -4,7 +4,7 @@ import cwinter.codecraft.core.api._
 
 object RunTestAI {
   def main(args: Array[String]): Unit = {
-    TheGameMaster.startGame(TheGameMaster.replicatorAI(), TheGameMaster.destroyerAI())
+    TheGameMaster.startGame(TheGameMaster.destroyerAI(), TheGameMaster.level2AI())
   }
 }
 

@@ -14,6 +14,7 @@ class Harvester(ctx: DestroyerContext) extends DestroyerController(ctx) {
 
     if (enemies.nonEmpty && closestEnemy.spec.missileBatteries > 0) {
       moveInDirection(position - closestEnemy.position)
+      context.battleCoordinator.requestBigDaddy()
     } else {
       if (availableStorage == 0 && !hasReturned) {
         moveTo(context.mothership)
@@ -45,8 +46,14 @@ class Harvester(ctx: DestroyerContext) extends DestroyerController(ctx) {
     nextCrystal = None
   }
 
+  override def onSpawn(): Unit = {
+    super.onSpawn()
+    context.battleCoordinator.harvesterOnline(this)
+  }
+
   override def onDeath(): Unit = {
     super.onDeath()
+    context.battleCoordinator.harvesterOffline(this)
     abortHarvestingMission()
   }
 }

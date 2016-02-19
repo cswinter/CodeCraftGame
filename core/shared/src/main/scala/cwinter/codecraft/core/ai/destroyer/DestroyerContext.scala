@@ -7,7 +7,8 @@ import cwinter.codecraft.util.maths.{Vector2, Rectangle}
 
 class DestroyerContext extends SharedContext[DestroyerCommand] {
   val harvestCoordinator = new BasicHarvestCoordinator
-  override val battleCoordinator = new DestroyerBattleCoordinator
+  override val battleCoordinator = new DestroyerBattleCoordinator(this)
+
   private var _mothership: Mothership = null
   def mothership: Mothership = _mothership
 
@@ -18,13 +19,36 @@ class DestroyerContext extends SharedContext[DestroyerCommand] {
   }
 }
 
-class DestroyerBattleCoordinator extends BattleCoordinator[DestroyerCommand] {
+class DestroyerBattleCoordinator(context: DestroyerContext) extends BattleCoordinator[DestroyerCommand] {
+  private var harvesters = Set.empty[Harvester]
+  private var protectHarvesters = Option.empty[ProtectHarvesters]
+
+
   override def foundCapitalShip(drone: Drone): Unit = {
     if (!enemyCapitalShips.contains(drone)) {
       val newMission = new AssaultCapitalShip(drone)
       addMission(newMission)
     }
     super.foundCapitalShip(drone)
+  }
+
+  def requestBigDaddy(): Unit = {
+    protectHarvesters match {
+      case Some(protect) if !protect.hasExpired =>
+        protect.refresh()
+      case _ =>
+        val newMission = new ProtectHarvesters(context.mothership, harvesters)
+        addMission(newMission)
+        protectHarvesters = Some(newMission)
+    }
+  }
+
+  def harvesterOnline(harvester: Harvester): Unit = {
+    harvesters += harvester
+  }
+
+  def harvesterOffline(harvester: Harvester): Unit = {
+    harvesters -= harvester
   }
 }
 
@@ -36,10 +60,16 @@ case class MoveTo(position: Vector2) extends DestroyerCommand
 
 class AssaultCapitalShip(enemy: Drone) extends Mission[DestroyerCommand] {
   val minRequired =
-    math.ceil(math.sqrt(enemy.spec.maxHitpoints * enemy.spec.missileBatteries / (22 * 2.0))).toInt
+    math.max(1, math.ceil(math.sqrt(enemy.spec.maxHitpoints * enemy.spec.missileBatteries / (22 * 2.0))).toInt)
   val maxRequired = (minRequired * 1.5).toInt
-  val priority = 10 - enemy.spec.missileBatteries + enemy.spec.constructors
+  val basePriority = 10 - enemy.spec.missileBatteries + enemy.spec.constructors
   private var assemble = minRequired > 1
+
+  def priority = basePriority + priorityBoost
+
+  def priorityBoost =
+    if (minRequired > 1 && nAssigned == minRequired) 5
+    else 0
 
 
   def locationPreference = Some(enemy.lastKnownPosition)
@@ -70,5 +100,52 @@ class AssaultCapitalShip(enemy: Drone) extends Mission[DestroyerCommand] {
   }
 
   def hasExpired = enemy.isDead
+}
+
+class ProtectHarvesters(
+  mothership: Mothership,
+  harvesters: => Set[Harvester]
+) extends Mission[DestroyerCommand] {
+  val minRequired: Int = 1
+  val maxRequired: Int = 1
+  val priority: Int = 15
+
+  var timeout = 1500
+  def hasExpired: Boolean = timeout < 0 || harvesters.isEmpty
+
+  override def update(): Unit = timeout -= 1
+
+  def refresh() = timeout = 1500
+
+  def locationPreference: Option[Vector2] = harvesters.headOption.map(_.position)
+
+  private def furthestHarvester: Option[Harvester] = {
+    if (harvesters.isEmpty) None
+    else {
+      val mothershipPos =
+        if (mothership.isDead) Vector2.Null
+        else mothership.position
+      Some(harvesters.maxBy(h => (h.position - mothershipPos).lengthSquared))
+    }
+  }
+
+  def missionInstructions: DestroyerCommand = {
+    val enemies = harvesters.flatMap(_.enemies).filter(_.spec.missileBatteries > 0)
+    if (enemies.nonEmpty) {
+      val targetPos = furthestHarvester.map(_.position).getOrElse(Vector2.Null)
+      val closestEnemy = enemies.minBy(e => (targetPos - e.position).lengthSquared)
+      MoveTo(closestEnemy.lastKnownPosition)
+    } else {
+      furthestHarvester match {
+        case Some(harvester) =>
+          MoveTo(harvester.position + Vector2(harvester.orientation) * 125)
+        case None =>
+          MoveTo(Vector2.Null)
+      }
+    }
+  }
+
+  override def candidateFilter(drone: Drone): Boolean =
+    (drone.position - locationPreference.getOrElse(Vector2.Null)).lengthSquared <= 1500 * 1500
 }
 

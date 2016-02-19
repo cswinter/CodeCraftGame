@@ -8,6 +8,8 @@ class Mothership(ctx: DestroyerContext) extends DestroyerController(ctx) {
   val harvesterSpec = DroneSpec(storageModules = 1)
   val scoutSpec = DroneSpec(engines = 1)
   val destroyerSpec = DroneSpec(shieldGenerators = 2, missileBatteries = 2)
+  val destroyerSpec2 = DroneSpec(shieldGenerators = 3, missileBatteries = 3, engines = 1)
+  val battlecruiserSpec = DroneSpec(shieldGenerators = 3, missileBatteries = 4, engines = 3)
 
   var nextCrystal: Option[MineralCrystal] = None
   var assignedZone: Option[HarvestingZone] = None
@@ -70,8 +72,10 @@ class Mothership(ctx: DestroyerContext) extends DestroyerController(ctx) {
       Some((scoutSpec, () => new Scout(context)))
     } else if (context.droneCount(classOf[Destroyer]) < 3) {
       Some((destroyerSpec, () => new Destroyer(context)))
+    } else if (context.droneCount(classOf[Destroyer]) < 5) {
+      Some((destroyerSpec2, () => new Destroyer(context)))
     } else {
-      None
+      Some((battlecruiserSpec, () => new Destroyer(context)))
     }
   }
 }

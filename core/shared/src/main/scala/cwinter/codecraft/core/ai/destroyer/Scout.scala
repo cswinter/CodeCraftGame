@@ -8,9 +8,11 @@ class Scout(ctx: DestroyerContext) extends DestroyerController(ctx) {
   var hasReturned = false
   var nextCrystal: Option[MineralCrystal] = None
   var flightTimer = 0
+  var afraid = 0
 
   override def onTick(): Unit = {
     flightTimer -= 1
+    afraid -= 1
     if (flightTimer == 0) halt()
 
     if (flightTimer <= 0) {
@@ -42,7 +44,9 @@ class Scout(ctx: DestroyerContext) extends DestroyerController(ctx) {
 
       if (dist2 < 330 * 330) {
         moveInDirection(position - closest.position)
-        flightTimer = 30
+        if (afraid > 0) flightTimer = 60
+        else flightTimer = 30
+        afraid = 90
         for (n <- searchToken) {
           context.searchCoordinator.dangerous(n)
           searchToken = None
