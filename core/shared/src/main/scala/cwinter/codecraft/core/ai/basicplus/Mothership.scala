@@ -15,7 +15,7 @@ private[core] class Mothership extends BasicPlusController('Mothership) {
   def lastCapitalShipSighting: Option[Vector2] = _lastCapitalShipSighting
 
   private val scoutSpec = DroneSpec(storageModules = 1)
-  private val collectorSpec = DroneSpec(storageModules = 2)
+  private val collectorSpec = DroneSpec(storageModules = 1)
   private val hunterSpec = DroneSpec(missileBatteries = 1, engines = 1)
   private val destroyerSpec = DroneSpec(missileBatteries = 3, shieldGenerators = 1)
   private[basicplus] var searchTokens: Set[SearchToken] = null
@@ -32,7 +32,7 @@ private[core] class Mothership extends BasicPlusController('Mothership) {
     if (!isConstructing) {
       if (DroneCount('Harvester) < 1 ||
         (DroneCount('Hunter) > 0 && DroneCount('Harvester) < 3) ||
-        (DroneCount('Destroyer) > 0 && DroneCount('Hunter) > 0 && DroneCount('Harvester) < 4)) {
+        (DroneCount('Destroyer) > 0 && DroneCount('Hunter) > 0 && DroneCount('Harvester) < 3)) {
         buildDrone(collectorSpec, new ScoutingDroneController(this))
       } else if (2 * DroneCount('Hunter) / math.max(DroneCount('Destroyer), 1) < 1) {
         buildDrone(hunterSpec, new Hunter(this))
@@ -68,9 +68,9 @@ private[core] class Mothership extends BasicPlusController('Mothership) {
     _lastCapitalShipSighting = Some(drone.position)
   }
 
-  def findClosestMineral(maxSize: Int, position: Vector2): Option[MineralCrystal] = {
+  def findClosestMineral(position: Vector2): Option[MineralCrystal] = {
     minerals = minerals.filter(!_.harvested)
-    val filtered = minerals.filter(m => m.size <= maxSize && !claimedMinerals.contains(m))
+    val filtered = minerals -- claimedMinerals
     val result =
       if (filtered.isEmpty) None
       else Some(filtered.minBy(m => (m.position - position).lengthSquared))

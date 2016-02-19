@@ -9,16 +9,16 @@ private[core] class ScoutingDroneController(val mothership: Mothership) extends 
 
   override def onTick(): Unit = {
     if (nextCrystal.exists(_.harvested)) nextCrystal = None
-    if (nextCrystal.isEmpty) nextCrystal = mothership.findClosestMineral(availableStorage, position)
+    if (nextCrystal.isEmpty && availableStorage > 0) nextCrystal = mothership.findClosestMineral(position)
 
     if (enemies.nonEmpty && closestEnemy.spec.missileBatteries > 0) {
       moveInDirection(position - closestEnemy.position)
     } else {
-
       if (availableStorage <= 0 && !hasReturned) {
         moveTo(mothership)
+        nextCrystal.foreach(mothership.abortHarvestingMission)
         nextCrystal = None
-      } else if (hasReturned && availableStorage > 0 || nextCrystal.isEmpty) {
+      } else if (hasReturned && availableStorage > 0 || (nextCrystal.isEmpty && !isHarvesting)) {
         hasReturned = false
         scout()
       } else {
@@ -32,7 +32,6 @@ private[core] class ScoutingDroneController(val mothership: Mothership) extends 
 
   override def onArrivesAtMineral(mineral: MineralCrystal): Unit = {
     harvest(mineral)
-    nextCrystal = None
   }
 
   override def onArrivesAtDrone(drone: Drone): Unit = {
