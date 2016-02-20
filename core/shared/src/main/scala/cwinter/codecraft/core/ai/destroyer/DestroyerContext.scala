@@ -50,18 +50,27 @@ class DestroyerBattleCoordinator(context: DestroyerContext) extends BattleCoordi
   def harvesterOffline(harvester: Harvester): Unit = {
     harvesters -= harvester
   }
+
+  def needScouting = enemyCapitalShips.isEmpty
 }
 
 
 sealed trait DestroyerCommand
 
-case class Attack(enemy: Drone, notFound: () => Unit) extends DestroyerCommand
-case class MoveTo(position: Vector2) extends DestroyerCommand
+case class Attack(
+  enemy: Drone,
+  notFound: () => Unit,
+  metResistance: Int => Unit
+) extends DestroyerCommand
+case class MoveTo(
+  position: Vector2
+) extends DestroyerCommand
 
 class AssaultCapitalShip(enemy: Drone) extends Mission[DestroyerCommand] {
-  val minRequired =
-    math.max(1, math.ceil(math.sqrt(enemy.spec.maxHitpoints * enemy.spec.missileBatteries / (22 * 2.0))).toInt)
-  val maxRequired = (minRequired * 1.5).toInt
+  private var enemyStrength = enemy.spec.maxHitpoints * enemy.spec.missileBatteries
+  def minRequired =
+    math.max(1, math.ceil(math.sqrt(enemyStrength /  (22 * 2.0))).toInt)
+  def maxRequired = (minRequired * 1.5).toInt
   val basePriority = 10 - enemy.spec.missileBatteries + enemy.spec.constructors
   private var assemble = minRequired > 1
 
@@ -71,11 +80,10 @@ class AssaultCapitalShip(enemy: Drone) extends Mission[DestroyerCommand] {
     if (minRequired > 1 && nAssigned == minRequired) 5
     else 0
 
-
   def locationPreference = Some(enemy.lastKnownPosition)
 
   def missionInstructions: DestroyerCommand =
-    if (nAssigned <= 1 || !assemble) Attack(enemy, notFound)
+    if (nAssigned <= 1 || !assemble) Attack(enemy, notFound, metResistance)
     else MoveTo(midpoint)
 
   private def allClose: Boolean = nAssigned == 1 || {
@@ -93,10 +101,26 @@ class AssaultCapitalShip(enemy: Drone) extends Mission[DestroyerCommand] {
     deactivate()
   }
 
+  def metResistance(strength: Int): Unit = {
+    if (strength > enemyStrength) {
+      println(s"Adjusting enemy strength ($enemyStrength -> $strength)")
+      println(s"New status: $nAssigned/$minRequired ($maxRequired)")
+      enemyStrength = strength
+      if (minRequired >= nAssigned * 2) {
+        println("Disbanding...")
+        disband()
+      }
+    }
+  }
+
   override def update(): Unit = {
     if (isDeactivated && enemy.isVisible) reactivate()
     if (assemble && allClose) assemble = false
     if (minRequired > 1 && nAssigned == 0) assemble = true
+    if (minRequired > nAssigned)
+      for (drone <- assigned)
+        if ((drone.position - enemy.lastKnownPosition).lengthSquared > 1000 * 1000)
+          drone.abortMission()
   }
 
   def hasExpired = enemy.isDead
@@ -108,7 +132,7 @@ class ProtectHarvesters(
 ) extends Mission[DestroyerCommand] {
   val minRequired: Int = 1
   val maxRequired: Int = 1
-  val priority: Int = 15
+  val priority: Int = 8
 
   var timeout = 1500
   def hasExpired: Boolean = timeout < 0 || harvesters.isEmpty
@@ -138,7 +162,7 @@ class ProtectHarvesters(
     } else {
       furthestHarvester match {
         case Some(harvester) =>
-          MoveTo(harvester.position + Vector2(harvester.orientation) * 125)
+          MoveTo(harvester.position + Vector2(harvester.orientation) * 150)
         case None =>
           MoveTo(Vector2.Null)
       }

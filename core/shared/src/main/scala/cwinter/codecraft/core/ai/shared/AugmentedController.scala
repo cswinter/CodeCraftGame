@@ -9,8 +9,9 @@ abstract class AugmentedController[TCommand, TContext <: SharedContext[TCommand]
   var searchToken: Option[SearchToken] = None
   context.droneCount.increment(getClass)
 
-  def enemies: Set[Drone] =
-    dronesInSight.filter(_.playerID != playerID)
+  def enemies: Set[Drone] = dronesInSight.filter(_.isEnemy)
+  def armedEnemies: Set[Drone] =
+    dronesInSight.filter(d => d.isEnemy && d.spec.missileBatteries > 0)
 
   def closestEnemy: Drone = enemies.minBy(x => (x.position - position).lengthSquared)
   def closestEnemyAndDist2: (Drone, Double) =

@@ -12,7 +12,7 @@ class Harvester(ctx: DestroyerContext) extends DestroyerController(ctx) {
     if (nextCrystal.isEmpty && availableStorage > 0)
       nextCrystal = context.harvestCoordinator.findClosestMineral(position)
 
-    if (enemies.nonEmpty && closestEnemy.spec.missileBatteries > 0) {
+    if (shouldRunAway) {
       moveInDirection(position - closestEnemy.position)
       context.battleCoordinator.requestBigDaddy()
     } else {
@@ -28,6 +28,12 @@ class Harvester(ctx: DestroyerContext) extends DestroyerController(ctx) {
       }
     }
   }
+
+  def shouldRunAway: Boolean =
+    enemies.nonEmpty && closestEnemy.spec.missileBatteries > 0 &&
+      (closestEnemy.spec.maximumSpeed > spec.maximumSpeed ||
+        (closestEnemy.position - position).lengthSquared <= 380 * 380)
+
 
   override def onArrivesAtMineral(m: MineralCrystal): Unit = {
     if (!m.harvested) {

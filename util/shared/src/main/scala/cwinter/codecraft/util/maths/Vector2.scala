@@ -47,7 +47,9 @@ final case class Vector2(_x: Double, _y: Double) {
   /** Returns the magnitude of the vector */
   @JSExport def length: Double = math.sqrt(x * x + y * y)
   /** Returns a new vector with the same direction and whose magnitude is equal to 1 */
-  @JSExport def normalized: Vector2 = this / length
+  @JSExport def normalized: Vector2 =
+    if (this == Vector2.Null) this
+    else this / length
   /** Returns the vector rotated by an angle of `angle` radians. */
   @JSExport def rotated(angle: Double): Vector2 = {
     val sina = math.sin(angle)

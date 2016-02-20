@@ -49,7 +49,7 @@ private[core] class Mothership extends BasicPlusController('Mothership) {
     if (hitpoints == 0) return false
     val strength = calculateStrength(defenders)
     val enemyStrength = calculateStrength(enemies)
-    strength < enemyStrength
+    strength < enemyStrength * 1.5f
   }
 
   def registerDefender(droneHandle: Drone): Unit = {

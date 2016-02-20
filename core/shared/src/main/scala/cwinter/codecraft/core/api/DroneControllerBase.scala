@@ -92,7 +92,8 @@ trait DroneControllerBase extends Drone {
    * @param directionVector The direction to move in.
    */
   def moveInDirection(directionVector: Vector2): Unit = {
-    drone ! MoveInDirection(directionVector.orientation)
+    if (directionVector == Vector2.Null) halt()
+    else drone ! MoveInDirection(directionVector.orientation)
   }
 
   /**

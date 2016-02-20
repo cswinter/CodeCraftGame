@@ -1,7 +1,8 @@
 package cwinter.codecraft.core.ai.destroyer
 
 import cwinter.codecraft.core.ai.shared.MissionExecutor
-import cwinter.codecraft.core.api.MineralCrystal
+import cwinter.codecraft.core.api.{Drone, MineralCrystal}
+import cwinter.codecraft.core.objects.drone.DroneConstants
 import cwinter.codecraft.util.maths.Vector2
 
 
@@ -25,12 +26,33 @@ with MissionExecutor[DestroyerCommand] {
   }
 
   def executeCommand(command: DestroyerCommand): Unit = command match {
-    case Attack(enemy, notFound) =>
+    case Attack(enemy, notFound, metResistance) =>
       if ((enemy.lastKnownPosition - position).lengthSquared < 100 * 100 && !enemy.isVisible) {
         notFound()
-      } else moveTo(enemy.lastKnownPosition)
+      } else {
+        if (canFinish(enemy)) moveTo(enemy.lastKnownPosition)
+        else approachCarefully(enemy.lastKnownPosition)
+      }
     case MoveTo(position) =>
-      moveTo(position)
+      approachCarefully(position)
+  }
+
+  def canFinish(enemy: Drone): Boolean = {
+    val minDist = DroneConstants.MissileLockOnRadius + 150
+    if (!enemy.isVisible || (position - enemy.lastKnownPosition).lengthSquared >= minDist * minDist)
+      return false
+    val enemyFirepower = armedEnemies.foldLeft(0)(_ + _.spec.missileBatteries)
+    val tmp = spec.missileBatteries * hitpoints > enemy.hitpoints * enemyFirepower
+    enemyFirepower == 0 || tmp
+  }
+
+  def approachCarefully(target: Vector2): Unit = {
+    val threats = armedEnemies
+    if (threats.isEmpty) moveWithoutCollision(target)
+    else {
+      val movementVector = moveAround(target, threats)
+      moveInDirection(movementVector)
+    }
   }
 
   def patrolMinerals(): Unit = {
@@ -59,6 +81,49 @@ with MissionExecutor[DestroyerCommand] {
     super.onDeath()
     context.battleCoordinator.offline(this)
     abortMission()
+  }
+
+  def moveAround(target: Vector2, threats: Iterable[Drone]): Vector2 = {
+    var threatVector = Vector2.Null
+    var threatWeight = 0.0
+    for (threat <- threats) {
+      val delta = position - threat.lastKnownPosition
+      val dangerZone = DroneConstants.MissileLockOnRadius + 50
+      val safeZone = DroneConstants.MissileLockOnRadius + 150
+      val distanceModifier =
+        if (delta.lengthSquared < dangerZone * dangerZone) 1
+        else if (delta.lengthSquared > safeZone * safeZone) 0
+        else (safeZone - delta.length) / (safeZone - dangerZone)
+      val strength = threat.spec.missileBatteries + threat.spec.shieldGenerators
+      val weight = strength * distanceModifier
+      threatWeight += weight
+      threatVector += weight * delta.normalized
+    }
+
+    val targetContribution = 2 * (target - position).normalized
+    if (threatVector == Vector2.Null) targetContribution
+    else {
+      val alliedStrength = dronesInSight.filter(!_.isEnemy).foldLeft(0) {
+          case (acc, d) => acc + d.spec.missileBatteries + d.spec.shieldGenerators
+        }
+      val adjustedEnemyWeight = math.max(0, threatWeight - alliedStrength * 0.8f)
+
+      targetContribution + threatVector.normalized * adjustedEnemyWeight
+    }
+  }
+
+  def moveWithoutCollision(target: Vector2): Unit = {
+    val obstacles = dronesInSight.filter{d =>
+      val dist2 = (d.position - position).lengthSquared
+      val minDist = d.spec.radius + spec.radius + 10
+      d.spec.missileBatteries > 0 && dist2 <= minDist * minDist
+    }
+    if (obstacles.isEmpty) moveTo(target)
+    else {
+      val targetVector = target - position
+      val avoidanceVector = position - obstacles.head.position
+      moveInDirection(targetVector.normalized + avoidanceVector.normalized)
+    }
   }
 }
 

@@ -14,6 +14,7 @@ class Mothership(ctx: DestroyerContext) extends DestroyerController(ctx) {
   var nextCrystal: Option[MineralCrystal] = None
   var assignedZone: Option[HarvestingZone] = None
   var currentConstruction: Option[DroneSpec] = None
+  var lastOneLarge = false
 
   def this() = this(new DestroyerContext)
 
@@ -31,6 +32,8 @@ class Mothership(ctx: DestroyerContext) extends DestroyerController(ctx) {
         if shouldBeginConstruction(spec.resourceCost) =>
           buildDrone(spec, controller())
           currentConstruction = Some(spec)
+          if (spec == battlecruiserSpec || spec == destroyerSpec2) lastOneLarge = true
+          else if (spec == destroyerSpec) lastOneLarge = false
         case _ =>
           harvest()
       }
@@ -68,11 +71,11 @@ class Mothership(ctx: DestroyerContext) extends DestroyerController(ctx) {
   private def nextConstructionSpec: Option[(DroneSpec, () => DroneController)] = {
     if (context.droneCount(classOf[Harvester]) < 2) {
       Some((harvesterSpec, () => new Harvester(context)))
-    } else if (context.droneCount(classOf[Scout]) < 2) {
+    } else if (context.droneCount(classOf[Scout]) < 2 && context.battleCoordinator.needScouting) {
       Some((scoutSpec, () => new Scout(context)))
-    } else if (context.droneCount(classOf[Destroyer]) < 3) {
+    } else if (context.droneCount(classOf[Destroyer]) < 4 || lastOneLarge) {
       Some((destroyerSpec, () => new Destroyer(context)))
-    } else if (context.droneCount(classOf[Destroyer]) < 5) {
+    } else if (context.droneCount(classOf[Destroyer]) < 6) {
       Some((destroyerSpec2, () => new Destroyer(context)))
     } else {
       Some((battlecruiserSpec, () => new Destroyer(context)))
