@@ -13,16 +13,18 @@ import cwinter.codecraft.graphics.worldstate.Simulator
 import cwinter.codecraft.util.maths.VertexXY
 import org.joda.time.DateTime
 
+import scala.util.Try
+
 
 private[graphics] object RenderFrame extends GLEventListener {
   val DebugMode = false
 
-  var gl: GL4 = null
   implicit var fbo: FramebufferObject = null
   implicit var renderStack: JVMRenderStack = null
   var camera = new Camera2D
   var textRenderer: TextRenderer = null
   var largeTextRenderer: TextRenderer = null
+  var isGL4Supported = false
 
   var cullFaceToggle = false
   val FrametimeSamples = 100
@@ -30,16 +32,10 @@ private[graphics] object RenderFrame extends GLEventListener {
   var textField: TextField = null
   var gameWorld: Simulator = null
   var error = false
-  var step = 0
 
 
   override def display(drawable: GLAutoDrawable): Unit = {
-    update()
-    render(drawable)
-  }
-
-  private def render(drawable: GLAutoDrawable): Unit = {
-    implicit val gl = getGL(drawable)
+    implicit val gl = drawable.getGL
     import gl._
 
     Material.resetDrawCalls()
@@ -49,7 +45,7 @@ private[graphics] object RenderFrame extends GLEventListener {
     cullFaceToggle = !cullFaceToggle
 
     // draw to texture
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo.fbo)
+    if (isGL4Supported) glBindFramebuffer(GL_FRAMEBUFFER, fbo.fbo)
     glViewport(0, 0, camera.screenWidth * 2, camera.screenHeight * 2)
 
     if (!error) glClearColor(0.0f, 0, 0.0f, 0.0f)
@@ -71,7 +67,7 @@ private[graphics] object RenderFrame extends GLEventListener {
       material.afterDraw()
     }
 
-    // draw to screen
+    // draw from texture to screen
     renderStack.postDraw(camera)
 
     renderText(drawable)
@@ -94,12 +90,12 @@ private[graphics] object RenderFrame extends GLEventListener {
   }
 
   private def renderText(drawable: GLAutoDrawable): Unit = {
-    val gl = getGL(drawable)
+    val gl = drawable.getGL
     import gl._
     val width = drawable.getSurfaceWidth
     val height = drawable.getSurfaceHeight
-    glUseProgram(0)
-    glBindVertexArray(0)
+    gl.getGL2.glBindVertexArray(0)
+    gl.getGL2.glUseProgram(0)
 
     textRenderer.beginRendering(width, height)
 
@@ -146,9 +142,6 @@ private[graphics] object RenderFrame extends GLEventListener {
        |Slow mode: P
        |""".stripMargin + gameWorld.additionalInfoText
 
-  private def update(): Unit = {
-    step += 1
-  }
 
   def dispose(arg0: GLAutoDrawable): Unit = {
     // stub
@@ -156,41 +149,63 @@ private[graphics] object RenderFrame extends GLEventListener {
 
 
   def init(drawable: GLAutoDrawable): Unit = {
-    implicit val gl = getGL(drawable)
-    import gl._
+    printGLInfo(drawable, drawable.getGL)
+    isGL4Supported = performVersionCheck(drawable.getGL)
 
-    println("Chosen GLCapabilities: " + drawable.getChosenGLCapabilities)
-    println("INIT GL IS: " + gl.getClass.getName)
-    println("GL_VENDOR: " + glGetString(GL.GL_VENDOR))
-    println("GL_RENDERER: " + glGetString(GL.GL_RENDERER))
-    println("GL_VERSION: " + glGetString(GL.GL_VERSION))
+    getEitherGL(drawable) match {
+      case Left(gl2) =>
+        ???
+      case Right(gl4) =>
+        // vsync to prevent screen tearing.
+        // seems to work with Ubuntu + i3, but might not be portable
+        gl4.setSwapInterval(1)
+        fbo = new FramebufferObject()(gl4)
+        renderStack = new JVMRenderStack()(gl4, fbo)
+    }
 
-    // vsync to prevent screen tearing.
-    // seems to work with Ubuntu + i3, but might not be portable
-    setSwapInterval(1)
-
-    fbo = new FramebufferObject
-    renderStack = new JVMRenderStack
     textRenderer = new TextRenderer(new Font("SansSerif", Font.BOLD, 14))
     largeTextRenderer = new TextRenderer(new Font("SansSerif", Font.BOLD, 90))
     camera.position = (gameWorld.initialCameraPos.x.toInt, gameWorld.initialCameraPos.y.toInt)
     gameWorld.run()
   }
 
+  def printGLInfo(drawable: GLAutoDrawable, gl: GL): Unit = {
+    import gl._
+    println("Chosen GLCapabilities: " + drawable.getChosenGLCapabilities)
+    println("INIT GL IS: " + gl.getClass.getName)
+    println("GL_VENDOR: " + glGetString(GL.GL_VENDOR))
+    println("GL_RENDERER: " + glGetString(GL.GL_RENDERER))
+    println("GL_VERSION: " + glGetString(GL.GL_VERSION))
+  }
+
+  def performVersionCheck(gl: GL): Boolean = {
+    val gl4Supported = Try { gl.getGL4 }.isSuccess
+    val gl2Supported = Try { gl.getGL2 }.isSuccess
+    if (!gl2Supported && !gl4Supported) {
+      println("Failed to obtain OpenGL graphics device :(\n" +
+        "CodeCraft requires OpenGL version 2 or higher, which your hardware does not seem to support.")
+    }
+    gl4Supported
+  }
+
   def reshape(drawable: GLAutoDrawable, x: Int, y: Int, width: Int, height: Int): Unit = {
     camera.screenDims = (width, height)
 
-    fbo.resize(width, height)(gl)
+    for (gl4 <- getGL4(drawable)) fbo.resize(width, height)(gl4)
 
     textRenderer = new TextRenderer(new Font("SansSerif", Font.BOLD, 14))
     largeTextRenderer = new TextRenderer(new Font("SansSerif", Font.BOLD, 90))
   }
 
-  def getGL(drawable: GLAutoDrawable): GL4 =
-    if (DebugMode) {
-      drawable.setGL(new DebugGL4(drawable.getGL.getGL4)).getGL4
-    } else {
-      drawable.getGL.getGL4
-    }
+  def getGL4(drawable: GLAutoDrawable): Option[GL4] =
+    if (isGL4Supported) Some(
+      if (DebugMode) new DebugGL4(drawable.getGL.getGL4)
+      else drawable.getGL.getGL4
+    ) else None
+
+  def getEitherGL(drawable: GLAutoDrawable): Either[GL2, GL4] = {
+    if (isGL4Supported) Right(drawable.getGL.getGL4)
+    else Left(drawable.getGL.getGL2)
+  }
 }
 

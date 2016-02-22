@@ -22,7 +22,7 @@ import scala.language.implicitConversions
  * Vertex Attribute Object: maps data from robowars.graphics.model.VBO to one or more attributes
  */
 private[graphics] class JVMMaterial[TPosition <: Vertex, TColor <: Vertex, TParams](
-  val gl: GL4,
+  gl: GL,
   vsPath: String,
   fsPath: String,
   attributeNamePos: String,
@@ -42,7 +42,8 @@ private[graphics] class JVMMaterial[TPosition <: Vertex, TColor <: Vertex, TPara
    * INITIALISATION *
    ******************/
 
-  import gl._
+  private[this] val gl2 = gl.getGL2
+  import gl2._
 
   // compile shaders and attach to program
   protected val programID = glCreateProgram()
@@ -87,7 +88,7 @@ private[graphics] class JVMMaterial[TPosition <: Vertex, TColor <: Vertex, TPara
     glUniformMatrix4fv(uniformModelview, 1, true, modelview.data, 0)
 
     // bind vbo and enable attributes
-    gl.glBindVertexArray(vbo.vao)
+    glBindVertexArray(vbo.vao)
     glBindBuffer(GL_ARRAY_BUFFER, vbo.id)
 
     glEnableVertexAttribArray(attributePos)
@@ -108,6 +109,9 @@ private[graphics] class JVMMaterial[TPosition <: Vertex, TColor <: Vertex, TPara
     checkProgramInfoLog(programID)
     checkShaderInfoLog(fragmentShaderID)
     checkShaderInfoLog(vertexShaderID)
+
+    glUseProgram(0)
+    glBindVertexArray(0)
   }
 
 
