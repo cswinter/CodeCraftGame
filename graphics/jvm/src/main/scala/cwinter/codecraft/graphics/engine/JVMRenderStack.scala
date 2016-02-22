@@ -20,8 +20,6 @@ private[graphics] class JVMRenderStack(implicit val gl: GL4, implicit val fbo: F
   val TranslucentAdditive: TranslucentAdditive = new TranslucentAdditive
   val TranslucentProportional: TranslucentProportional = new TranslucentProportional
   val TranslucentAdditivePIntensity: TranslucentAdditivePIntensity = new TranslucentAdditivePIntensity
-  // TODO: possible to write macro that automatically collects all materials/emits warning if not all are added?
-  /** NEED TO ADD ANY NEW MATERIALS HERE: **/
 
 
   // texture to screen rendering code

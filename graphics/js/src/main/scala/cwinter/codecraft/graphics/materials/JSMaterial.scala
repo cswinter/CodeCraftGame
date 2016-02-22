@@ -44,7 +44,6 @@ private[graphics] class JSMaterial[TPosition <: Vertex, TColor <: Vertex, TParam
   protected val vertexShaderID = compileShader(vsSource, GL.VERTEX_SHADER, programID)
   protected val fragmentShaderID = compileShader(fsSource, GL.FRAGMENT_SHADER, programID)
   gl.linkProgram(programID)
-  checkProgramInfoLog(programID)
 
   val uniformProjection = gl.getUniformLocation(programID, "projection")
   val uniformModelview = gl.getUniformLocation(programID, "modelview")
@@ -99,11 +98,6 @@ private[graphics] class JSMaterial[TPosition <: Vertex, TColor <: Vertex, TParam
     // disable attributes
     gl.disableVertexAttribArray(attributePos)
     attributeCol.foreach(gl.disableVertexAttribArray)
-
-    // check logs for errors
-    checkProgramInfoLog(programID)
-    checkShaderInfoLog(fragmentShaderID)
-    checkShaderInfoLog(vertexShaderID)
   }
 
 
@@ -159,51 +153,8 @@ private[graphics] class JSMaterial[TPosition <: Vertex, TColor <: Vertex, TParam
     if (!compileStatus.asInstanceOf[Boolean]) {
       throw new Exception(gl.getShaderInfoLog(shaderHandle))
     }
-    /*
-    // Check compile status.
-    val compiled = new Array[Int](1)
-    gl.getShaderiv(shaderHandle, GL.COMPILE_STATUS, compiled, 0)
-    if (compiled(0) == 0) {
-      println("Error compiling shader:")
-      checkShaderInfoLog(shaderHandle)
-    }*/ // TODO: error checking
 
     shaderHandle
-  }
-
-
-  /**
-   * Print out errors from the program info log, if any.
-   */
-  protected def checkProgramInfoLog(programID: WebGLProgram): Unit = {
-    /*
-    // obtain log message byte count
-    val logLength = new Array[Int](1)
-    glGetProgramiv(programID, GL.INFO_LOG_LENGTH, logLength, 0)
-
-    if (logLength(0) > 1) {
-      val log = new Array[Byte](logLength(0))
-      glGetProgramInfoLog(programID, logLength(0), null, 0, log, 0)
-      println(s"Program Error:\n${new String(log)}")
-    }
-    */ // TODO: implement
-  }
-
-
-  /**
-   * Print out errors from the shader info log, if any.
-   */
-  protected def checkShaderInfoLog(shaderID: WebGLShader): Unit = {
-    /*
-    val logLength = new Array[Int](1)
-    glGetShaderiv(shaderID, GL.INFO_LOG_LENGTH, logLength, 0)
-
-    if (logLength(0) > 1) {
-      val log = new Array[Byte](logLength(0))
-      glGetShaderInfoLog(shaderID, logLength(0), null, 0, log, 0)
-
-      println(new String(log))
-    }*/ //TODO: implement
   }
 }
 
