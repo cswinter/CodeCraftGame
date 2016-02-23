@@ -20,7 +20,7 @@ private[graphics] object RenderFrame extends GLEventListener {
   val DebugMode = false
 
   implicit var fbo: FramebufferObject = null
-  implicit var renderStack: JVMRenderStack = null
+  implicit var renderStack: RenderStack = null
   var camera = new Camera2D
   var textRenderer: TextRenderer = null
   var largeTextRenderer: TextRenderer = null
@@ -45,8 +45,12 @@ private[graphics] object RenderFrame extends GLEventListener {
     cullFaceToggle = !cullFaceToggle
 
     // draw to texture
-    if (isGL4Supported) glBindFramebuffer(GL_FRAMEBUFFER, fbo.fbo)
-    glViewport(0, 0, camera.screenWidth * 2, camera.screenHeight * 2)
+    if (isGL4Supported) {
+      glBindFramebuffer(GL_FRAMEBUFFER, fbo.fbo)
+      glViewport(0, 0, camera.screenWidth * 2, camera.screenHeight * 2)
+    } else {
+      glViewport(0, 0, camera.screenWidth, camera.screenHeight)
+    }
 
     if (!error) glClearColor(0.0f, 0, 0.0f, 0.0f)
     else glClearColor(0.1f, 0, 0.0f, 0.0f)
@@ -91,7 +95,6 @@ private[graphics] object RenderFrame extends GLEventListener {
 
   private def renderText(drawable: GLAutoDrawable): Unit = {
     val gl = drawable.getGL
-    import gl._
     val width = drawable.getSurfaceWidth
     val height = drawable.getSurfaceHeight
     gl.getGL2.glBindVertexArray(0)
@@ -154,7 +157,7 @@ private[graphics] object RenderFrame extends GLEventListener {
 
     getEitherGL(drawable) match {
       case Left(gl2) =>
-        ???
+        renderStack = new JVMGL2RenderStack()(gl2)
       case Right(gl4) =>
         // vsync to prevent screen tearing.
         // seems to work with Ubuntu + i3, but might not be portable
@@ -183,7 +186,7 @@ private[graphics] object RenderFrame extends GLEventListener {
     val gl2Supported = Try { gl.getGL2 }.isSuccess
     if (!gl2Supported && !gl4Supported) {
       println("Failed to obtain OpenGL graphics device :(\n" +
-        "CodeCraft requires OpenGL version 2 or higher, which your hardware does not seem to support.")
+        "CodeCraft requires OpenGL version 2.0 or higher, which your hardware does not seem to support.")
     }
     gl4Supported
   }

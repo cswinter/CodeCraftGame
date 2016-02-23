@@ -12,14 +12,14 @@ private[graphics] class JVMRenderStack(implicit val gl: GL4, implicit val fbo: F
   import gl._
 
   // materials
-  val SimpleMaterial: SimpleMaterial = new SimpleMaterial
-  val MaterialXYZRGB: MaterialXYZRGB = new MaterialXYZRGB
-  val BloomShader: BloomShader = new BloomShader
-  val GaussianGlow: GaussianGlow = new GaussianGlow
-  val GaussianGlowPIntensity: GaussianGlowPIntensity = new GaussianGlowPIntensity
-  val TranslucentAdditive: TranslucentAdditive = new TranslucentAdditive
-  val TranslucentProportional: TranslucentProportional = new TranslucentProportional
-  val TranslucentAdditivePIntensity: TranslucentAdditivePIntensity = new TranslucentAdditivePIntensity
+  val SimpleMaterial = new SimpleMaterial
+  val MaterialXYZRGB = new MaterialXYZRGB
+  val BloomShader = new BloomShader
+  val GaussianGlow = new GaussianGlow
+  val GaussianGlowPIntensity = new GaussianGlowPIntensity
+  val TranslucentAdditive = new TranslucentAdditive
+  val TranslucentProportional = new TranslucentProportional
+  val TranslucentAdditivePIntensity = new TranslucentAdditivePIntensity
 
 
   // texture to screen rendering code
@@ -37,7 +37,7 @@ private[graphics] class JVMRenderStack(implicit val gl: GL4, implicit val fbo: F
   )
 
 
-  def postDraw(camera: Camera2D): Unit = {
+  override def postDraw(camera: Camera2D): Unit = {
     // draw texture to screen
     glViewport(0, 0, camera.screenWidth, camera.screenHeight)
     glBindFramebuffer(GL_FRAMEBUFFER, 0)

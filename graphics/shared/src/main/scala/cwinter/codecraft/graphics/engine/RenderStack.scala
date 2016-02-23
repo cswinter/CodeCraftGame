@@ -18,5 +18,8 @@ private[graphics] trait RenderStack {
     TranslucentAdditive, TranslucentProportional, TranslucentAdditivePIntensity)
 
   val modelviewTranspose: Boolean = false
+
+
+  def postDraw(camera2D: Camera2D): Unit = ()
 }
 
