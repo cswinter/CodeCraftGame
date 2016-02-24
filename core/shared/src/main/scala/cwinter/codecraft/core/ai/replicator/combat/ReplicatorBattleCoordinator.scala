@@ -8,11 +8,21 @@ import cwinter.codecraft.core.api.Drone
 class ReplicatorBattleCoordinator extends BattleCoordinator[ReplicatorCommand] {
   private[this] var assisting = Map.empty[ReplicatorController, Assist]
   private[this] var guarding = Map.empty[ReplicatorController, Guard]
+  private[this] var enemyForces = Set.empty[Drone]
+  private[this] var _enemyStrength = 0.0
+  def enemyStrength = _enemyStrength
+  final val SoldierStrength = 2
   addMission(ScoutingMission)
 
 
   override def update(): Unit = {
     super.update()
+
+    enemyForces = enemyForces.filter(!_.isDead)
+    _enemyStrength = enemyForces.foldLeft(0.0)(
+      (acc, d) => acc + math.sqrt(d.spec.maxHitpoints * d.spec.missileBatteries)
+    ) / SoldierStrength
+
     assisting = assisting.filter(!_._2.hasExpired)
     guarding = guarding.filter(!_._2.hasExpired)
   }
@@ -43,6 +53,10 @@ class ReplicatorBattleCoordinator extends BattleCoordinator[ReplicatorCommand] {
       addMission(newMission)
     }
     super.foundCapitalShip(drone)
+  }
+
+  def foundArmedEnemy(drone: Drone): Unit = {
+    enemyForces += drone
   }
 }
 

@@ -57,7 +57,7 @@ with MissionExecutor[ReplicatorCommand] {
       if ((enemy.lastKnownPosition - position).lengthSquared > (maxDist - 150) * (maxDist - 150)) {
         moveTo(enemy.lastKnownPosition)
       } else halt()
-      if ((enemy.lastKnownPosition - position).lengthSquared < 50 * 50) origin.notFound()
+      if ((enemy.lastKnownPosition - position).lengthSquared < 100 * 100) origin.notFound()
     case Search(position, radius) =>
       if (!isMoving) {
         moveTo(position + radius * Vector2(2 * math.Pi * context.rng.nextDouble()))

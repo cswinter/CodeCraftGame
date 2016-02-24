@@ -5,6 +5,7 @@ import cwinter.codecraft.core.api.{DroneController, DroneSpec, MineralCrystal}
 
 
 class Replicator(ctx: ReplicatorContext) extends ReplicatorController(ctx) {
+  import context._
   val harvesterSpec = DroneSpec(storageModules = 1)
   val hunterSpec = DroneSpec(missileBatteries = 1)
   val destroyerSpec = DroneSpec(missileBatteries = 3, shieldGenerators = 1)
@@ -110,7 +111,8 @@ class Replicator(ctx: ReplicatorContext) extends ReplicatorController(ctx) {
     slaves.size < this.spec.constructors - 1
 
   private def shouldBuildReplicator =
-    spec.constructors > 1 && !context.isReplicatorInConstruction && (
+    spec.constructors > 1 && !context.isReplicatorInConstruction &&
+    context.battleCoordinator.enemyStrength <= context.droneCount(classOf[Replicator]) && (
     (context.droneCount(classOf[Replicator]) < 2 ||
       context.harvestCoordinator.freeZoneCount > context.droneCount(classOf[Replicator]) * 2) &&
       context.droneCount(classOf[Replicator]) < 7)
