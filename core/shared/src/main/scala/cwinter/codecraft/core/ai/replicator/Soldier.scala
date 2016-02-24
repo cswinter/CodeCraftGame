@@ -32,7 +32,7 @@ with MissionExecutor[ReplicatorCommand] {
       } else {
         val (closest, dist2) = closestEnemyAndDist2
         val armed = closest.spec.missileBatteries > 0
-        if (dist2 <= 330 * 330 || !onRoute || !enemyMuchStronger) {
+        if (dist2 <= 330 * 330 || (!onRoute && !enemyMuchStronger)) {
           if (!armed || dist2 > 200 * 200) moveInDirection(closest.position - position)
           else halt()
           if (armed) context.battleCoordinator.requestAssistance(this)
@@ -52,9 +52,11 @@ with MissionExecutor[ReplicatorCommand] {
           moveTo(0.9 * Rng.vector2(worldSize))
         }
       }
-    case Attack(enemy, origin) =>
+    case Attack(maxDist, enemy, origin) =>
       onRoute = (enemy.lastKnownPosition - position).lengthSquared > 800 * 800
-      moveTo(enemy.lastKnownPosition)
+      if ((enemy.lastKnownPosition - position).lengthSquared > (maxDist - 150) * (maxDist - 150)) {
+        moveTo(enemy.lastKnownPosition)
+      } else halt()
       if ((enemy.lastKnownPosition - position).lengthSquared < 50 * 50) origin.notFound()
     case Search(position, radius) =>
       if (!isMoving) {
