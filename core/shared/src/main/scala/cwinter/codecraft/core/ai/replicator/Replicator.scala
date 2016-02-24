@@ -145,6 +145,9 @@ class Replicator(ctx: ReplicatorContext) extends ReplicatorController(ctx) {
   def hasSpareSlave: Boolean =
     slaves.size > 1 || slaves.size == 1 && !isConstructing
 
+  def hasPlentySlaves: Boolean =
+    slaves.size > 1 && storedResources > 10
+
   def relieveSlave(): Option[Harvester] = {
     val s = slaves.headOption
     s.foreach(slaves -= _)
