@@ -21,7 +21,6 @@ import scala.util.{Failure, Success}
 @JSExportAll
 object TheGameMaster extends GameMasterLike {
   var canvas: html.Canvas = null
-  private[this] var intervalID: Option[Int] = None
   private var running: Future[Unit] = Future.successful(Unit)
   private[this] var runContext: Option[RunContext] = None
   private[codecraft] var outputFPS: Boolean = false
@@ -29,7 +28,7 @@ object TheGameMaster extends GameMasterLike {
 
   def run(simulator: DroneWorldSimulator): DroneWorldSimulator = {
     require(canvas != null, "Must first set TheGameMaster.canvas variable to the webgl canvas element.")
-    require(intervalID.isEmpty && runContext.isEmpty, "Can only run one CodeCraft game at a time.")
+    require(runContext.isEmpty, "Can only run one CodeCraft game at a time.")
 
     val renderer = new WebGLRenderer(canvas, simulator, simulator.map.initialDrones.head.position)
     val context = new RunContext(simulator, renderer, 16)
@@ -40,7 +39,9 @@ object TheGameMaster extends GameMasterLike {
 
 
   def run(context: RunContext): Unit = {
-    dom.requestAnimationFrame((d: Double) => run(context))
+    if (!context.stopped) {
+      dom.requestAnimationFrame((d: Double) => run(context))
+    }
 
     context.fps.computeCurrFPS()
     if (outputFPS && !context.simulator.isPaused) {
@@ -53,9 +54,8 @@ object TheGameMaster extends GameMasterLike {
   }
 
   def stop(): Unit = {
-    dom.clearInterval(intervalID.get)
-    intervalID = None
     runContext.foreach(_.stop())
+    runContext = None
     TheModelCache.clear()
     Debug.clearDrawAlways()
   }
