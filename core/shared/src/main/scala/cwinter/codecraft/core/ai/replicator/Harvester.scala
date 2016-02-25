@@ -26,7 +26,7 @@ class Harvester(
     if (nextCrystal.isEmpty && availableStorage > 0)
       nextCrystal = context.harvestCoordinator.findClosestMineral(position)
 
-    if (enemies.nonEmpty && closestEnemy.spec.missileBatteries > 0) {
+    if (shouldRunAway) {
       moveInDirection(position - closestEnemy.position)
     } else {
       if (availableStorage == 0 && !hasReturned) {
@@ -43,6 +43,11 @@ class Harvester(
       }
     }
   }
+
+  def shouldRunAway: Boolean =
+    enemies.nonEmpty && closestEnemy.spec.missileBatteries > 0 &&
+      (closestEnemy.spec.maximumSpeed > spec.maximumSpeed ||
+        (closestEnemy.position - position).lengthSquared <= 380 * 380)
 
   override def onArrivesAtMineral(m: MineralCrystal): Unit = {
     if (!m.harvested) {

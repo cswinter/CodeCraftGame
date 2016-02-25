@@ -73,6 +73,7 @@ private[codecraft] case class ColorRGB(r: Float, g: Float, b: Float) extends Ver
   }
 
   def +(that: ColorRGB): ColorRGB = ColorRGB(r + that.r, g + that.g, b + that.b)
+  def -(that: ColorRGB): ColorRGB = ColorRGB(r - that.r, g - that.g, b - that.b)
   def *(a: Float): ColorRGB = ColorRGB(a * r, a * g, a * b)
 }
 

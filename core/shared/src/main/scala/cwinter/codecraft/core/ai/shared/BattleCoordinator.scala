@@ -6,7 +6,7 @@ import cwinter.codecraft.core.api.{DroneControllerBase, Drone}
 trait BattleCoordinator[TCommand] {
   type Executor = DroneControllerBase with MissionExecutor[TCommand]
   private[this] var _enemyCapitalShips = Set.empty[Drone]
-  private[this] var _missions = List.empty[Mission[TCommand]]
+  protected var _missions = List.empty[Mission[TCommand]]
   private[this] var executors = Set.empty[Executor]
 
 

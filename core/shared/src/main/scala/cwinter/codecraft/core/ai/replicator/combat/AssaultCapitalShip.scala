@@ -31,7 +31,7 @@ class AssaultCapitalShip(enemy: Drone) extends Mission[ReplicatorCommand] {
       else {
         val sortedByDist =
           assigned.toSeq.sortBy(d => (enemy.lastKnownPosition - d.position).lengthSquared)
-        val straggler = sortedByDist(math.min(nAssigned - 1, minRequired - 1))
+        val straggler = sortedByDist(math.min(nAssigned - 1, minRequired))
         Some((enemy.lastKnownPosition - straggler.position).length)
       }
   }

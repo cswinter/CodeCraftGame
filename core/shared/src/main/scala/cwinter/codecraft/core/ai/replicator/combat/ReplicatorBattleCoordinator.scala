@@ -3,13 +3,17 @@ package cwinter.codecraft.core.ai.replicator.combat
 import cwinter.codecraft.core.ai.replicator.ReplicatorController
 import cwinter.codecraft.core.ai.shared.BattleCoordinator
 import cwinter.codecraft.core.api.Drone
+import cwinter.codecraft.graphics.engine.Debug
+import cwinter.codecraft.util.maths.{Vector2, ColorRGBA}
 
 
 class ReplicatorBattleCoordinator extends BattleCoordinator[ReplicatorCommand] {
   private[this] var assisting = Map.empty[ReplicatorController, Assist]
   private[this] var guarding = Map.empty[ReplicatorController, Guard]
   private[this] var enemyForces = Set.empty[Drone]
+  private[this] var targetRegistry = Map.empty[Drone, Set[Executor]]
   private[this] var _enemyStrength = 0.0
+  private[this] var _enemyClusters = Map.empty[Drone, EnemyCluster]
   def enemyStrength = _enemyStrength
   final val SoldierStrength = 2
   addMission(ScoutingMission)
@@ -18,13 +22,45 @@ class ReplicatorBattleCoordinator extends BattleCoordinator[ReplicatorCommand] {
   override def update(): Unit = {
     super.update()
 
-    enemyForces = enemyForces.filter(!_.isDead)
-    _enemyStrength = enemyForces.foldLeft(0.0)(
-      (acc, d) => acc + math.sqrt(d.spec.maxHitpoints * d.spec.missileBatteries)
-    ) / SoldierStrength
+    analyzeEnemyForces()
 
     assisting = assisting.filter(!_._2.hasExpired)
     guarding = guarding.filter(!_._2.hasExpired)
+  }
+
+  def analyzeEnemyForces(): Unit = {
+    purgeDeadEnemies()
+    _enemyStrength = computeNormalizedStrength(enemyForces)
+    determineEnemyClusters()
+    //for (c <- _enemyClusters.values.toSet[EnemyCluster]) c.show()
+  }
+
+  def purgeDeadEnemies(): Unit = enemyForces = enemyForces.filter(!_.isDead)
+
+  def computeNormalizedStrength(drones: Iterable[Drone]): Double =
+    drones.foldLeft(0.0)(
+      (acc, d) => acc + math.sqrt(d.spec.maxHitpoints * d.spec.missileBatteries)
+    ) / SoldierStrength
+
+  def determineEnemyClusters(): Unit = {
+    val maxDist2 = 400 * 400
+    var clusters = Map.empty[Drone, EnemyCluster]
+    var visited = Set.empty[Drone]
+    for (drone <- enemyForces) {
+      val closeby = visited.find(d => (d.lastKnownPosition - drone.lastKnownPosition).lengthSquared < maxDist2)
+      closeby match {
+        case None =>
+          val newCluster = new EnemyCluster
+          newCluster.add(drone)
+          clusters += drone -> newCluster
+        case Some(d) =>
+          val cluster = clusters(d)
+          cluster.add(drone)
+          clusters += drone -> cluster
+      }
+      visited += drone
+    }
+    _enemyClusters = clusters
   }
 
   def requestAssistance(drone: ReplicatorController): Unit = {
@@ -32,7 +68,7 @@ class ReplicatorBattleCoordinator extends BattleCoordinator[ReplicatorCommand] {
     else {
       val (priority, radius) =
         if (drone.spec.constructors > 0) (15, 950) else (5, 750)
-      val assistMission = new Assist(drone, priority, drone.strengthDelta - 1, radius)
+      val assistMission = new Assist(drone, priority, math.ceil(drone.normalizedEnemyCount / 2).toInt - 1, radius)
       assisting += drone -> assistMission
       addMission(assistMission)
     }
@@ -47,6 +83,17 @@ class ReplicatorBattleCoordinator extends BattleCoordinator[ReplicatorCommand] {
     }
   }
 
+  def isCovered(enemy: Drone): Boolean =
+    _enemyClusters.contains(enemy) && _enemyClusters(enemy).isCovered
+
+  def notTargeting(enemy: Drone, executor: Executor): Unit = {
+    targetRegistry = targetRegistry.updated(enemy, targetRegistry(enemy) - executor)
+  }
+
+  def targeting(enemy: Drone, executor: Executor): Unit = {
+    targetRegistry = targetRegistry.updated(enemy, targetRegistry(enemy) + executor)
+  }
+
   override def foundCapitalShip(drone: Drone): Unit = {
     if (!enemyCapitalShips.contains(drone)) {
       val newMission = new AssaultCapitalShip(drone)
@@ -56,7 +103,26 @@ class ReplicatorBattleCoordinator extends BattleCoordinator[ReplicatorCommand] {
   }
 
   def foundArmedEnemy(drone: Drone): Unit = {
-    enemyForces += drone
+    if (!enemyForces.contains(drone)) {
+      enemyForces += drone
+      targetRegistry += drone -> Set.empty[Executor]
+    }
+  }
+
+
+  class EnemyCluster {
+    private[this] var _drones = Set.empty[Drone]
+    def add(drone: Drone): Unit = _drones += drone
+    def show(): Unit = {
+      val midpoint = _drones.foldLeft(Vector2.Null)(_ + _.lastKnownPosition) / _drones.size
+      Debug.drawText(s"Size ${_drones.size} cluster", midpoint.x, midpoint.y, ColorRGBA(1, 0, 1, 1))
+    }
+
+    def isCovered: Boolean = {
+      val totalStrength = computeNormalizedStrength(_drones)
+      val totalCover = _drones.flatMap(targetRegistry).size
+      totalStrength <= totalCover
+    }
   }
 }
 

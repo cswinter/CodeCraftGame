@@ -13,18 +13,21 @@ abstract class AugmentedController[TCommand, TContext <: SharedContext[TCommand]
   def armedEnemies: Set[Drone] =
     dronesInSight.filter(d => d.isEnemy && d.spec.missileBatteries > 0)
 
+  def optimalTarget: Option[Drone] = {
+    val inRange = enemies.filter(isInMissileRange)
+    if (inRange.isEmpty) None
+    else Some(inRange.minBy(x => x.spec.missileBatteries.toFloat / x.hitpoints))
+  }
+
   def closestEnemy: Drone = enemies.minBy(x => (x.position - position).lengthSquared)
+
   def closestEnemyAndDist2: (Drone, Double) =
     enemies.map(x => (x, (x.position - position).lengthSquared)).minBy(_._2)
 
-  def handleWeapons(): Unit = {
-    if (weaponsCooldown <= 0 && enemies.nonEmpty) {
-      val enemy = closestEnemy
-      if (isInMissileRange(enemy)) {
-        fireMissilesAt(enemy)
-      }
-    }
-  }
+  def handleWeapons(): Unit =
+    if (weaponsCooldown <= 0)
+      for (target <- optimalTarget)
+        fireMissilesAt(target)
 
   def calculateStrength(drones: Iterable[Drone]): Int = {
     val (health, attack) = drones.foldLeft(0, 0){
@@ -33,30 +36,24 @@ abstract class AugmentedController[TCommand, TContext <: SharedContext[TCommand]
     health * attack
   }
 
+  def normalizedEnemyCount: Double = {
+    math.sqrt(calculateStrength(armedEnemies))
+  }
+
   def canWin: Boolean = {
     val (enemyStrength, alliedStrength) = calculateStrength
     enemyStrength <= alliedStrength
   }
 
-  def enemyMuchStronger: Boolean = {
+  def enemyStronger: Boolean = {
     val (enemyStrength, alliedStrength) = calculateStrength
-    alliedStrength * 3 < enemyStrength
+    alliedStrength <= enemyStrength
   }
 
   def calculateStrength: (Int, Int) = {
     val enemyStrength = calculateStrength(dronesInSight.filter(_.isEnemy))
     val alliedStrength = calculateStrength(dronesInSight.filterNot(_.isEnemy) + this)
     (enemyStrength, alliedStrength)
-  }
-
-  def strengthDelta: Int = {
-    (dronesInSight + this).foldLeft(0){
-      case (a, d) =>
-        if (d.spec.missileBatteries > 0) {
-          val sign = if (d.isEnemy) 1 else -1
-          a + sign * (d.spec.missileBatteries + d.spec.shieldGenerators)
-        } else a
-    }
   }
 
   def scout(): Unit = {
