@@ -121,14 +121,11 @@ class Replicator(ctx: ReplicatorContext) extends ReplicatorController(ctx) {
     slaves.isEmpty && isConstructing && !isHarvesting && storedResources == 0
 
   private def assessThreatLevel(): Unit = {
-    val enemyFirepower = enemies.foldLeft(0)(_ + _.spec.missileBatteries)
-    val strength = spec.missileBatteries * (spec.shieldGenerators + 1)
-    if (enemyFirepower >= strength) {
-      if (spec.moduleCount > 2) battleCoordinator.requestGuards(this, enemyFirepower - strength + 2)
-      if (enemyFirepower > 0) {
-        battleCoordinator.requestAssistance(this)
-        if (spec.shieldGenerators == 0) moveInDirection(position - closestEnemy.position)
-      }
+    val enemyStrength = normalizedEnemyCount
+    if (enemyStrength > 0) {
+      battleCoordinator.requestGuards(this, math.ceil(normalizedEnemyCount / 2).toInt)
+      battleCoordinator.requestAssistance(this)
+      if (spec.shieldGenerators == 0) moveInDirection(position - closestEnemy.position)
     }
   }
 

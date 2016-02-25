@@ -47,6 +47,9 @@ with MissionExecutor[ReplicatorCommand] {
         (1 - weight) * math.signum(distance) * approachVector
 
       moveInDirection(movementVector)
+    case Observe(enemy, notFound) =>
+      if ((enemy.lastKnownPosition - position).lengthSquared < 25 * 25) notFound()
+      else approachCarefully(enemy.lastKnownPosition)
   }
 
   override def scout(): Unit = {

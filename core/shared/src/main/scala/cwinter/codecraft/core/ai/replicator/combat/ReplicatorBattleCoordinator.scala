@@ -2,7 +2,7 @@ package cwinter.codecraft.core.ai.replicator.combat
 
 import cwinter.codecraft.core.ai.replicator.ReplicatorController
 import cwinter.codecraft.core.ai.shared.BattleCoordinator
-import cwinter.codecraft.core.api.Drone
+import cwinter.codecraft.core.api.{DroneSpec, Drone}
 import cwinter.codecraft.graphics.engine.Debug
 import cwinter.codecraft.util.maths.{Vector2, ColorRGBA}
 
@@ -106,9 +106,12 @@ class ReplicatorBattleCoordinator extends BattleCoordinator[ReplicatorCommand] {
     if (!enemyForces.contains(drone)) {
       enemyForces += drone
       targetRegistry += drone -> Set.empty[Executor]
+      if (drone.spec.maximumSpeed <= DroneSpec(missileBatteries = 1).maximumSpeed) {
+        val followMission = new KeepEyeOnEnemy(drone)
+        addMission(followMission)
+      }
     }
   }
-
 
   class EnemyCluster {
     private[this] var _drones = Set.empty[Drone]

@@ -5,8 +5,8 @@ import cwinter.codecraft.core.api.Drone
 
 
 class AssaultCapitalShip(enemy: Drone) extends Mission[ReplicatorCommand] {
-  val minRequired = (enemy.spec.missileBatteries + 1) * (enemy.spec.shieldGenerators + 1)
-  val maxRequired = minRequired * 2
+  var minRequired = computeMinRequired
+  def maxRequired = minRequired * 2
   val priority = 10
   var maxDist2: Option[Double] = None
 
@@ -19,7 +19,7 @@ class AssaultCapitalShip(enemy: Drone) extends Mission[ReplicatorCommand] {
     else Search(enemy.lastKnownPosition, searchRadius)
 
   def notFound(): Unit = {
-    searchRadius = 500
+    searchRadius = 750
   }
 
   override def update(): Unit = {
@@ -34,6 +34,12 @@ class AssaultCapitalShip(enemy: Drone) extends Mission[ReplicatorCommand] {
         val straggler = sortedByDist(math.min(nAssigned - 1, minRequired))
         Some((enemy.lastKnownPosition - straggler.position).length)
       }
+  }
+
+  def computeMinRequired: Int = {
+    val hitpoints = if (enemy.isVisible) enemy.hitpoints else enemy.spec.maxHitpoints
+    val strength = math.sqrt(enemy.spec.missileBatteries * hitpoints)
+    math.ceil(strength / 2).toInt
   }
 
   def hasExpired = enemy.isDead

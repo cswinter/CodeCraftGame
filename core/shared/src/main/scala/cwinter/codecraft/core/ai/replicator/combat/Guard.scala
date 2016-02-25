@@ -6,13 +6,13 @@ import cwinter.codecraft.core.ai.shared.Mission
 
 class Guard(
   val friend: ReplicatorController,
-  var maxRequired: Int
+  var minRequired: Int
 ) extends Mission[ReplicatorCommand] {
   val priority = 10
   private var timeout = 0
   resetTimeout()
 
-  def minRequired = maxRequired - 4
+  def maxRequired = (minRequired * 1.5f).toInt
 
   def locationPreference = Some(friend.position)
 
@@ -21,7 +21,7 @@ class Guard(
   override def update(): Unit = {
     timeout -= 1
     if (timeout == 0) {
-      maxRequired -= 1
+      minRequired -= 1
       reduceAssignedToMax()
       resetTimeout()
     }
@@ -29,9 +29,9 @@ class Guard(
 
   private def resetTimeout(): Unit = timeout = 600
 
-  def refresh(max: Int): Unit = {
-    if (max > maxRequired) maxRequired = max
-    else if (max + 1 >= maxRequired) resetTimeout()
+  def refresh(min: Int): Unit = {
+    if (min > minRequired) minRequired = min
+    else if (min + 1 >= minRequired) resetTimeout()
   }
 }
 

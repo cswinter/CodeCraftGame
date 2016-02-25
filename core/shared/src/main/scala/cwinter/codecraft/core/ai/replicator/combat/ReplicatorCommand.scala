@@ -11,4 +11,5 @@ case class Attack(maxDist: Double, enemy: Drone, feedback: AssaultCapitalShip) e
 case class Search(position: Vector2, radius: Double) extends ReplicatorCommand
 case class AttackMove(position: Vector2) extends ReplicatorCommand
 case class Circle(position: Vector2, radius: Double) extends ReplicatorCommand
+case class Observe(enemy: Drone, notFound: () => Unit) extends ReplicatorCommand
 
