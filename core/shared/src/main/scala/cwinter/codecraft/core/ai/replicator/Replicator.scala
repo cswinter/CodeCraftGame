@@ -5,7 +5,7 @@ import cwinter.codecraft.core.api.{DroneController, DroneSpec, MineralCrystal}
 
 
 class Replicator(ctx: ReplicatorContext) extends ReplicatorController(ctx) {
-  import context._
+  import context.{mothershipCoordinator, battleCoordinator, harvestCoordinator, droneCount, rng}
   val harvesterSpec = DroneSpec(storageModules = 1)
   val hunterSpec = DroneSpec(missileBatteries = 1)
   val destroyerSpec = DroneSpec(missileBatteries = 3, shieldGenerators = 1)
@@ -30,7 +30,7 @@ class Replicator(ctx: ReplicatorContext) extends ReplicatorController(ctx) {
     super.onSpawn()
     context.initialise(worldSize)
     context.isReplicatorInConstruction = false
-    context.mothershipCoordinator.online(this)
+    mothershipCoordinator.online(this)
   }
 
   override def onTick(): Unit = {
@@ -48,14 +48,14 @@ class Replicator(ctx: ReplicatorContext) extends ReplicatorController(ctx) {
       }
     } else if (!isHarvesting) {
       for (n <- nextCrystal) {
-        context.harvestCoordinator.abortHarvestingMission(n)
+        harvestCoordinator.abortHarvestingMission(n)
         nextCrystal = None
       }
     }
 
     if (!currentConstruction.contains(harvesterSpec) && needMoreSlaves)
-      context.mothershipCoordinator.requestHarvester(this)
-    if (isStuck) context.mothershipCoordinator.stuck(this)
+      mothershipCoordinator.requestHarvester(this)
+    if (isStuck) mothershipCoordinator.stuck(this)
 
     assessThreatLevel()
     handleWeapons()
@@ -64,7 +64,7 @@ class Replicator(ctx: ReplicatorContext) extends ReplicatorController(ctx) {
   def maybeRequestZone(): Unit = {
     if (assignedZone.exists(_.exhausted)) assignedZone = None
     if (assignedZone.isEmpty && spec.moduleCount != 2)
-      assignedZone = context.harvestCoordinator.requestHarvestingZone(position)
+      assignedZone = harvestCoordinator.requestHarvestingZone(position)
   }
 
   def shouldBeginConstruction(resourceCost: Int): Boolean = {
@@ -78,7 +78,7 @@ class Replicator(ctx: ReplicatorContext) extends ReplicatorController(ctx) {
   def harvest(): Unit = {
     if (nextCrystal.exists(_.harvested)) nextCrystal = None
     if (nextCrystal.isEmpty && availableStorage > 0)
-      nextCrystal = context.harvestCoordinator.findClosestMineral(position, assignedZone)
+      nextCrystal = harvestCoordinator.findClosestMineral(position, assignedZone)
     for (m <- nextCrystal if !isHarvesting) moveTo(m)
   }
 
@@ -101,8 +101,8 @@ class Replicator(ctx: ReplicatorContext) extends ReplicatorController(ctx) {
   }
 
   private def chooseNextReplicatorSpec(): DroneSpec =
-    context.rng.nextInt(10) match {
-      case 0 if context.droneCount(classOf[Soldier]) >= 5 => shieldedReplicatorSpec
+    rng.nextInt(10) match {
+      case 0 if droneCount(classOf[Soldier]) >= 5 => shieldedReplicatorSpec
       case 1 | 2 => minimalReplicatorSpec
       case _ => replicatorSpec
     }
@@ -112,10 +112,10 @@ class Replicator(ctx: ReplicatorContext) extends ReplicatorController(ctx) {
 
   private def shouldBuildReplicator =
     spec.constructors > 1 && !context.isReplicatorInConstruction &&
-    context.battleCoordinator.enemyStrength <= context.droneCount(classOf[Replicator]) && (
-    (context.droneCount(classOf[Replicator]) < 2 ||
-      context.harvestCoordinator.freeZoneCount > context.droneCount(classOf[Replicator]) * 2) &&
-      context.droneCount(classOf[Replicator]) < 7)
+    battleCoordinator.enemyStrength <= droneCount(classOf[Replicator]) && (
+    (droneCount(classOf[Replicator]) < 2 ||
+      harvestCoordinator.freeZoneCount > droneCount(classOf[Replicator]) * 2) &&
+      droneCount(classOf[Replicator]) < 7)
 
   private def isStuck: Boolean =
     slaves.isEmpty && isConstructing && !isHarvesting && storedResources == 0
@@ -124,9 +124,9 @@ class Replicator(ctx: ReplicatorContext) extends ReplicatorController(ctx) {
     val enemyFirepower = enemies.foldLeft(0)(_ + _.spec.missileBatteries)
     val strength = spec.missileBatteries * (spec.shieldGenerators + 1)
     if (enemyFirepower >= strength) {
-      if (spec.moduleCount > 2) context.battleCoordinator.requestGuards(this, enemyFirepower - strength + 2)
+      if (spec.moduleCount > 2) battleCoordinator.requestGuards(this, enemyFirepower - strength + 2)
       if (enemyFirepower > 0) {
-        context.battleCoordinator.requestAssistance(this)
+        battleCoordinator.requestAssistance(this)
         if (spec.shieldGenerators == 0) moveInDirection(position - closestEnemy.position)
       }
     }
@@ -135,8 +135,8 @@ class Replicator(ctx: ReplicatorContext) extends ReplicatorController(ctx) {
   override def onDeath(): Unit = {
     super.onDeath()
     for (m <- nextCrystal)
-      context.harvestCoordinator.abortHarvestingMission(m)
-    context.mothershipCoordinator.offline(this)
+      harvestCoordinator.abortHarvestingMission(m)
+    mothershipCoordinator.offline(this)
   }
 
   override def onConstructionCancelled(): Unit = {
