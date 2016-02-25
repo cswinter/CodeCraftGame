@@ -8,8 +8,9 @@ import cwinter.codecraft.util.maths.{Rng, Vector2}
 
 
 class Soldier(ctx: ReplicatorContext) extends ReplicatorController(ctx)
-with MissionExecutor[ReplicatorCommand] {
-  private[this] var _target = Option.empty[Drone]
+with MissionExecutor[ReplicatorCommand] with TargetAcquisition {
+  val normalizedStrength = 1.0
+
 
   override def onSpawn(): Unit = {
     super.onSpawn()
@@ -71,15 +72,6 @@ with MissionExecutor[ReplicatorCommand] {
       if (target.exists(context.battleCoordinator.isCovered))
         moveTo(target.get.lastKnownPosition)
       else huntCivilians()
-    }
-  }
-
-  def target = _target
-  def target_=(value: Option[Drone]): Unit = {
-    if (_target != value) {
-      for (t <- _target) context.battleCoordinator.notTargeting(t, this)
-      for (t <- value) context.battleCoordinator.targeting(t, this)
-      _target = value
     }
   }
 

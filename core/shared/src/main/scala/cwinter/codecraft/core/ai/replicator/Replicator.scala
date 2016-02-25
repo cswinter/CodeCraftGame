@@ -4,7 +4,7 @@ import cwinter.codecraft.core.ai.shared.HarvestingZone
 import cwinter.codecraft.core.api.{DroneController, DroneSpec, MineralCrystal}
 
 
-class Replicator(ctx: ReplicatorContext) extends ReplicatorController(ctx) {
+class Replicator(ctx: ReplicatorContext) extends ReplicatorController(ctx) with TargetAcquisition {
   import context.{mothershipCoordinator, battleCoordinator, harvestCoordinator, droneCount, rng}
   val harvesterSpec = DroneSpec(storageModules = 1)
   val hunterSpec = DroneSpec(missileBatteries = 1)
@@ -17,6 +17,8 @@ class Replicator(ctx: ReplicatorContext) extends ReplicatorController(ctx) {
   var nextCrystal: Option[MineralCrystal] = None
   var assignedZone: Option[HarvestingZone] = None
   var currentConstruction: Option[DroneSpec] = None
+
+  lazy val normalizedStrength = math.sqrt(spec.maxHitpoints * spec.missileBatteries) / 2
 
   def this() = this(new ReplicatorContext)
 
@@ -128,6 +130,14 @@ class Replicator(ctx: ReplicatorContext) extends ReplicatorController(ctx) {
       if (spec.shieldGenerators == 0) moveInDirection(position - closestEnemy.position)
     }
   }
+
+  override def handleWeapons(): Unit =
+    if (weaponsCooldown <= 0) {
+      val targetOption = optimalTarget
+      for (target <- targetOption)
+        fireMissilesAt(target)
+      target = targetOption.filter(_.spec.missileBatteries > 0)
+    }
 
   override def onDeath(): Unit = {
     super.onDeath()
