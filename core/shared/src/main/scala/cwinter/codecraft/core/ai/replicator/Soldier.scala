@@ -25,29 +25,20 @@ with MissionExecutor[ReplicatorCommand] with TargetAcquisition {
 
   def executeInstructions(mission: Mission[ReplicatorCommand]): Unit = mission.missionInstructions match {
     case Scout => scout()
-    case Attack(maxDist, enemy, origin) =>
+    case Attack(maxDist, enemy, notFound) =>
       if ((enemy.lastKnownPosition - position).lengthSquared > (maxDist - 250) * (maxDist - 250)) {
         approachCarefully(enemy.lastKnownPosition)
+      } else if (armedEnemies.nonEmpty) {
+        moveInDirection(position - closestEnemy.position)
       } else halt()
-      if ((enemy.lastKnownPosition - position).lengthSquared < 100 * 100) origin.notFound()
+      if ((enemy.lastKnownPosition - position).lengthSquared < 100 * 100) notFound()
     case Search(position, radius) =>
       if (!isMoving) {
         approachCarefully(position + radius * Vector2(2 * math.Pi * context.rng.nextDouble()))
       }
     case AttackMove(position) =>
       approachCarefully(position)
-    case Circle(center, radius) =>
-      val smoothnessFactor = 0.005f
-      val distance = (center - position).length - radius
-      val approachVector = (center - position).normalized
-      val orbitVector = Vector2(approachVector.y, -approachVector.x)
-      val weight = math.exp(-distance * smoothnessFactor * distance * smoothnessFactor)
-
-      val movementVector =
-        weight * orbitVector +
-        (1 - weight) * math.signum(distance) * approachVector
-
-      moveInDirection(movementVector)
+    case Circle(center, radius) => circle(center, radius)
     case Observe(enemy, notFound) =>
       if ((enemy.lastKnownPosition - position).lengthSquared < 25 * 25) notFound()
       else approachCarefully(enemy.lastKnownPosition)
@@ -64,14 +55,37 @@ with MissionExecutor[ReplicatorCommand] with TargetAcquisition {
     }
   }
 
+  def circle(center: Vector2, radius: Double): Unit = {
+    val targetDirection = circleDirection(center, radius)
+    moveInDirectionCarefully(targetDirection)
+  }
+
+  def circleDirection(center: Vector2, radius: Double): Vector2 = {
+    val smoothnessFactor = 0.005f
+    val distance = (center - position).length - radius
+    val approachVector = (center - position).normalized
+    val orbitVector = Vector2(approachVector.y, -approachVector.x)
+    val weight = math.exp(-distance * smoothnessFactor * distance * smoothnessFactor)
+
+    weight * orbitVector + (1 - weight) * math.signum(distance) * approachVector
+  }
+
   def handleEnemies(): Unit = {
     val enemies = this.enemies
     if (enemies.nonEmpty) {
       val armed = enemies.filter(_.spec.missileBatteries > 0)
       target = findClosest(armed)
-      if (target.exists(context.battleCoordinator.isCovered))
-        moveTo(target.get.lastKnownPosition)
-      else huntCivilians()
+      var isAttacking = false
+      for (
+        enemy <- target
+        if context.battleCoordinator.isCovered(enemy)
+      ) {
+        isAttacking = true
+        if (dronesInSight.count(!_.isEnemy) > 3 || (enemy.position - position).lengthSquared > 200 * 200)
+          moveInDirection(enemy.position - position)
+        else halt()
+      }
+      if (!isAttacking) huntCivilians()
     }
   }
 
@@ -85,17 +99,23 @@ with MissionExecutor[ReplicatorCommand] with TargetAcquisition {
   def approachCarefully(target: Vector2): Unit = {
     val threats = armedEnemies
     if (threats.isEmpty) moveTo(target)
-    else bypassThreats(target, threats)
+    else bypassThreats(target - position, threats)
   }
 
-  def bypassThreats(target: Vector2, threats: Iterable[Drone]): Unit = {
-    var targetDirection = (target - position).normalized
+  def moveInDirectionCarefully(direction: Vector2): Unit = {
+    val threats = armedEnemies
+    if (threats.isEmpty) moveInDirection(direction)
+    else bypassThreats(direction, threats)
+  }
 
-    val dangerZone = DroneConstants.MissileLockOnRadius
+  def bypassThreats(direction: Vector2, threats: Iterable[Drone]): Unit = {
+    var targetDirection = direction.normalized
+
+    val dangerZone = DroneConstants.MissileLockOnRadius + 50
     val safeZone = DroneConstants.MissileLockOnRadius + 150
     for (threat <- threats) {
       val delta = position - threat.lastKnownPosition
-      val weight = 1.5f * (
+      val weight = 2f * (
         if (delta.lengthSquared < dangerZone * dangerZone) 1
         else if (delta.lengthSquared > safeZone * safeZone) 0
         else (safeZone - delta.length) / (safeZone - dangerZone)

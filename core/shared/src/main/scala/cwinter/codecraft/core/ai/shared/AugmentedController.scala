@@ -16,7 +16,7 @@ abstract class AugmentedController[TCommand, TContext <: SharedContext[TCommand]
   def optimalTarget: Option[Drone] = {
     val inRange = enemies.filter(isInMissileRange)
     if (inRange.isEmpty) None
-    else Some(inRange.minBy(x => x.spec.missileBatteries.toFloat / x.hitpoints))
+    else Some(inRange.maxBy(x => x.spec.missileBatteries.toFloat / x.hitpoints))
   }
 
   def closestEnemy: Drone = enemies.minBy(x => (x.position - position).lengthSquared)
@@ -34,10 +34,6 @@ abstract class AugmentedController[TCommand, TContext <: SharedContext[TCommand]
       case ((h, a), d) => (h + d.hitpoints, a + d.spec.missileBatteries)
     }
     health * attack
-  }
-
-  def normalizedEnemyCount: Double = {
-    math.sqrt(calculateStrength(armedEnemies))
   }
 
   def canWin: Boolean = {

@@ -43,7 +43,7 @@ class Mothership(ctx: DestroyerContext) extends DestroyerController(ctx) {
         nextCrystal = None
       }
     }
-
+    assessThreatLevel()
     handleWeapons()
   }
 
@@ -80,6 +80,11 @@ class Mothership(ctx: DestroyerContext) extends DestroyerController(ctx) {
     } else {
       Some((battlecruiserSpec, () => new Destroyer(context)))
     }
+  }
+
+  private def assessThreatLevel(): Unit = {
+    val strength = calculateStrength(armedEnemies) - 40
+    if (strength > 0) context.battleCoordinator.requestGuards(math.ceil(math.sqrt(strength) / 6.6).toInt)
   }
 }
 

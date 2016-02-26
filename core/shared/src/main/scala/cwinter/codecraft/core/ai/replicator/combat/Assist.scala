@@ -14,7 +14,7 @@ class Assist(
   val radius2 = radius * radius
   var timeout = 10
 
-  val maxRequired = Int.MaxValue
+  val maxRequired = 3 * minRequired
   val locationPreference = None
 
   def missionInstructions = AttackMove(

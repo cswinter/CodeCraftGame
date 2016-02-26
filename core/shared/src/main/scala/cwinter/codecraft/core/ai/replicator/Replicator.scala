@@ -114,7 +114,7 @@ class Replicator(ctx: ReplicatorContext) extends ReplicatorController(ctx) with 
 
   private def shouldBuildReplicator =
     spec.constructors > 1 && !context.isReplicatorInConstruction &&
-    battleCoordinator.enemyStrength <= droneCount(classOf[Replicator]) && (
+    !battleCoordinator.needMoreSoldiers && (
     (droneCount(classOf[Replicator]) < 2 ||
       harvestCoordinator.freeZoneCount > droneCount(classOf[Replicator]) * 2) &&
       droneCount(classOf[Replicator]) < 7)
@@ -125,7 +125,7 @@ class Replicator(ctx: ReplicatorContext) extends ReplicatorController(ctx) with 
   private def assessThreatLevel(): Unit = {
     val enemyStrength = normalizedEnemyCount
     if (enemyStrength > 0) {
-      battleCoordinator.requestGuards(this, math.ceil(normalizedEnemyCount / 2).toInt)
+      battleCoordinator.requestGuards(this, math.ceil(enemyStrength).toInt)
       battleCoordinator.requestAssistance(this)
       if (spec.shieldGenerators == 0) moveInDirection(position - closestEnemy.position)
     }
@@ -144,6 +144,7 @@ class Replicator(ctx: ReplicatorContext) extends ReplicatorController(ctx) with 
     for (m <- nextCrystal)
       harvestCoordinator.abortHarvestingMission(m)
     mothershipCoordinator.offline(this)
+    target = None
   }
 
   override def onConstructionCancelled(): Unit = {

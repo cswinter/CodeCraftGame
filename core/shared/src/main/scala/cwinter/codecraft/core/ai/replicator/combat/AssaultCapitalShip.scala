@@ -1,10 +1,12 @@
 package cwinter.codecraft.core.ai.replicator.combat
 
+import cwinter.codecraft.core.ai.replicator.Util
 import cwinter.codecraft.core.ai.shared.Mission
 import cwinter.codecraft.core.api.Drone
 
 
-class AssaultCapitalShip(enemy: Drone) extends Mission[ReplicatorCommand] {
+class AssaultCapitalShip(enemy: Drone, context: ReplicatorBattleCoordinator)
+extends Mission[ReplicatorCommand] {
   var minRequired = computeMinRequired
   def maxRequired = minRequired * 2
   val priority = 10
@@ -15,12 +17,10 @@ class AssaultCapitalShip(enemy: Drone) extends Mission[ReplicatorCommand] {
   private var searchRadius = 0.0
 
   def missionInstructions: ReplicatorCommand =
-    if (enemy.isVisible || searchRadius == 0) Attack(maxDist2.getOrElse(0), enemy, this)
+    if (enemy.isVisible || searchRadius == 0) Attack(maxDist2.getOrElse(0), enemy, notFound)
     else Search(enemy.lastKnownPosition, searchRadius)
 
-  def notFound(): Unit = {
-    searchRadius = 750
-  }
+  def notFound(): Unit = searchRadius = 750
 
   override def update(): Unit = {
     if (!enemy.isVisible && nAssigned > 0 && searchRadius > 0) searchRadius += 1
@@ -36,11 +36,10 @@ class AssaultCapitalShip(enemy: Drone) extends Mission[ReplicatorCommand] {
       }
   }
 
-  def computeMinRequired: Int = {
-    val hitpoints = if (enemy.isVisible) enemy.hitpoints else enemy.spec.maxHitpoints
-    val strength = math.sqrt(enemy.spec.missileBatteries * hitpoints)
-    math.ceil(strength / 2).toInt
-  }
+  def computeMinRequired: Int = math.ceil(
+    if (context.clusters.contains(enemy)) context.clusters(enemy).strength
+    else Util.approximateStrength(enemy)
+  ).toInt
 
   def hasExpired = enemy.isDead
 }

@@ -5,7 +5,7 @@ import cwinter.codecraft.core.ai.shared.{HarvestCoordinatorWithZones, SharedCont
 
 
 class ReplicatorContext extends SharedContext[ReplicatorCommand] {
-  val battleCoordinator = new ReplicatorBattleCoordinator
+  val battleCoordinator = new ReplicatorBattleCoordinator(this)
   val mothershipCoordinator = new MothershipCoordinator
   val harvestCoordinator = new HarvestCoordinatorWithZones
   var isReplicatorInConstruction: Boolean = false

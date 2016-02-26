@@ -16,17 +16,21 @@ class DestroyerContext extends SharedContext[DestroyerCommand] {
   def initialise(worldSize: Rectangle, mothership: Mothership): Unit = {
     initialise(worldSize)
     _mothership = mothership
+    battleCoordinator.addMission(new ProtectMothership(mothership))
   }
 }
 
 class DestroyerBattleCoordinator(context: DestroyerContext) extends BattleCoordinator[DestroyerCommand] {
   private var harvesters = Set.empty[Harvester]
   private var protectHarvesters = Option.empty[ProtectHarvesters]
+  private var protectMothership = Option.empty[ProtectMothership]
+  private var assaultMissions = Set.empty[AssaultCapitalShip]
 
 
   override def foundCapitalShip(drone: Drone): Unit = {
     if (!enemyCapitalShips.contains(drone)) {
       val newMission = new AssaultCapitalShip(drone)
+      assaultMissions += newMission
       addMission(newMission)
     }
     super.foundCapitalShip(drone)
@@ -43,6 +47,16 @@ class DestroyerBattleCoordinator(context: DestroyerContext) extends BattleCoordi
     }
   }
 
+  def requestGuards(amount: Int): Unit = {
+    protectMothership match {
+      case Some(protect) => protect.refresh(amount)
+      case None =>
+        val newMission = new ProtectMothership(context.mothership, amount)
+        addMission(newMission)
+        protectMothership = Some(newMission)
+    }
+  }
+
   def harvesterOnline(harvester: Harvester): Unit = {
     harvesters += harvester
   }
@@ -51,7 +65,7 @@ class DestroyerBattleCoordinator(context: DestroyerContext) extends BattleCoordi
     harvesters -= harvester
   }
 
-  def needScouting = enemyCapitalShips.isEmpty
+  def needScouting = enemyCapitalShips.isEmpty || assaultMissions.forall(_.isDeactivated)
 }
 
 
@@ -66,11 +80,12 @@ case class MoveTo(
   position: Vector2
 ) extends DestroyerCommand
 
+case class MoveClose(position: Vector2, dist: Double) extends DestroyerCommand
+
 class AssaultCapitalShip(enemy: Drone) extends Mission[DestroyerCommand] {
   private var enemyStrength = enemy.spec.maxHitpoints * enemy.spec.missileBatteries
-  def minRequired =
-    math.max(1, math.ceil(math.sqrt(enemyStrength /  (22 * 2.0))).toInt)
-  def maxRequired = (minRequired * 1.5).toInt
+  var minRequired = calcMinRequired
+  def maxRequired = math.min((minRequired * 1.5).toInt, minRequired + 1)
   val basePriority = 10 - enemy.spec.missileBatteries + enemy.spec.constructors
   private var assemble = minRequired > 1
 
@@ -103,13 +118,9 @@ class AssaultCapitalShip(enemy: Drone) extends Mission[DestroyerCommand] {
 
   def metResistance(strength: Int): Unit = {
     if (strength > enemyStrength) {
-      println(s"Adjusting enemy strength ($enemyStrength -> $strength)")
-      println(s"New status: $nAssigned/$minRequired ($maxRequired)")
       enemyStrength = strength
-      if (minRequired >= nAssigned * 2) {
-        println("Disbanding...")
-        disband()
-      }
+      if (minRequired >= nAssigned * 2) disband()
+      minRequired = calcMinRequired
     }
   }
 
@@ -123,6 +134,8 @@ class AssaultCapitalShip(enemy: Drone) extends Mission[DestroyerCommand] {
           drone.abortMission()
   }
 
+  def calcMinRequired: Int = math.ceil(math.sqrt(enemyStrength /  (23 * 2.0))).toInt
+
   def hasExpired = enemy.isDead
 }
 
@@ -132,7 +145,7 @@ class ProtectHarvesters(
 ) extends Mission[DestroyerCommand] {
   val minRequired: Int = 1
   val maxRequired: Int = 1
-  val priority: Int = 8
+  val priority: Int = 5
 
   var timeout = 1500
   def hasExpired: Boolean = timeout < 0 || harvesters.isEmpty
@@ -167,6 +180,44 @@ class ProtectHarvesters(
           MoveTo(Vector2.Null)
       }
     }
+  }
+
+  override def candidateFilter(drone: Drone): Boolean =
+    (drone.position - locationPreference.getOrElse(Vector2.Null)).lengthSquared <= 1500 * 1500
+}
+
+
+class ProtectMothership(
+  mothership: Mothership,
+  val required: Int = 0
+) extends Mission[DestroyerCommand] {
+  val minRequired: Int = 0
+  var maxRequired: Int = if (required == 0) Int.MaxValue else required
+  val hasExpired = mothership.isDead
+  val priority: Int = if (required == 0) 2 else 15
+
+  var timeout = 3000
+  override def update(): Unit = {
+    timeout -= 1
+    if (timeout == 0) {
+      maxRequired -= 1
+      reduceAssignedToMax()
+      timeout = 3000
+    }
+  }
+  def refresh(amount: Int) = {
+    if (amount >= maxRequired) {
+      maxRequired = amount
+      timeout = 3000
+    }
+  }
+
+  def locationPreference: Option[Vector2] = Some(mothership.position)
+
+  def missionInstructions: DestroyerCommand = {
+    val enemies = mothership.armedEnemies
+    if (enemies.nonEmpty) MoveTo(mothership.closestEnemy.lastKnownPosition)
+    else MoveClose(mothership.position, 350)
   }
 
   override def candidateFilter(drone: Drone): Boolean =

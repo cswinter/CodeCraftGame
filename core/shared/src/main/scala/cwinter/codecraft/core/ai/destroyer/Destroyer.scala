@@ -33,8 +33,16 @@ with MissionExecutor[DestroyerCommand] {
         if (canFinish(enemy)) moveTo(enemy.lastKnownPosition)
         else approachCarefully(enemy.lastKnownPosition)
       }
+      if (armedEnemies.nonEmpty) metResistance(calculateStrength(armedEnemies))
     case MoveTo(position) =>
       approachCarefully(position)
+    case MoveClose(targetPos, targetDist) =>
+      val dist2 = (targetPos - position).lengthSquared
+      if (dist2 > (targetDist + 25) * (targetDist + 25))
+        moveInDirection(targetPos - position)
+      else if (dist2 < (targetDist - 25) * (targetDist - 25))
+        moveInDirection(position - targetPos)
+      else halt()
   }
 
   def canFinish(enemy: Drone): Boolean = {
@@ -48,10 +56,10 @@ with MissionExecutor[DestroyerCommand] {
 
   def approachCarefully(target: Vector2): Unit = {
     val threats = armedEnemies
-    if (threats.isEmpty) moveWithoutCollision(target)
+    if (threats.isEmpty) moveWithoutCollision(target - position)
     else {
       val movementVector = moveAround(target, threats)
-      moveInDirection(movementVector)
+      moveWithoutCollision(movementVector)
     }
   }
 
@@ -112,17 +120,19 @@ with MissionExecutor[DestroyerCommand] {
     }
   }
 
-  def moveWithoutCollision(target: Vector2): Unit = {
+  def moveWithoutCollision(targetDirection: Vector2): Unit = {
+    val abstand = 30.0
     val obstacles = dronesInSight.filter{d =>
       val dist2 = (d.position - position).lengthSquared
-      val minDist = d.spec.radius + spec.radius + 10
+      val minDist = d.spec.radius + spec.radius + abstand
       d.spec.missileBatteries > 0 && dist2 <= minDist * minDist
     }
-    if (obstacles.isEmpty) moveTo(target)
+    if (obstacles.isEmpty) moveInDirection(targetDirection)
     else {
-      val targetVector = target - position
-      val avoidanceVector = position - obstacles.head.position
-      moveInDirection(targetVector.normalized + avoidanceVector.normalized)
+      val obstacle = obstacles.head
+      val avoidanceVector = position - obstacle.position
+      val weight = (avoidanceVector.length - obstacle.spec.radius - spec.radius) / abstand
+      moveInDirection(weight * targetDirection.normalized + (1 - weight) * avoidanceVector.normalized)
     }
   }
 }

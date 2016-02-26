@@ -3,14 +3,15 @@ package cwinter.codecraft.core.ai.replicator
 
 class MothershipCoordinator {
   private var orphanedHarvesters = List.empty[Harvester]
-  private var motherships = Set.empty[Replicator]
+  private var _motherships = Set.empty[Replicator]
+  def motherships = _motherships
 
   def online(mothership: Replicator): Unit = {
-    motherships += mothership
+    _motherships += mothership
   }
 
   def offline(mothership: Replicator): Unit = {
-    motherships -= mothership
+    _motherships -= mothership
   }
 
   def registerOrphan(harvester: Harvester): Unit = {
@@ -19,7 +20,7 @@ class MothershipCoordinator {
 
   def stuck(replicator: Replicator): Unit = {
     for {
-      m <- motherships.find(_.hasSpareSlave)
+      m <- _motherships.find(_.hasSpareSlave)
       s <- m.relieveSlave()
     } s.assignNewMaster(replicator)
   }
@@ -31,7 +32,7 @@ class MothershipCoordinator {
       orphanedHarvesters = orphanedHarvesters.tail
     } else {
       for {
-        m <- motherships.find(_.hasPlentySlaves)
+        m <- _motherships.find(_.hasPlentySlaves)
         s <- m.relieveSlave()
       } s.assignNewMaster(replicator)
     }

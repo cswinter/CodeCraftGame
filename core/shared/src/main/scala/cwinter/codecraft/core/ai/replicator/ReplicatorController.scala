@@ -12,4 +12,9 @@ extends AugmentedController[ReplicatorCommand, ReplicatorContext](_context) {
     if (drone.isEnemy && drone.spec.missileBatteries > 0)
       context.battleCoordinator.foundArmedEnemy(drone)
   }
+
+
+  def normalizedEnemyCount: Double =
+    Util.approximateStrength(armedEnemies)
 }
+
