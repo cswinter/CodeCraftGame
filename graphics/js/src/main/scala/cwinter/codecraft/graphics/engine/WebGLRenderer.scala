@@ -169,10 +169,8 @@ private[codecraft] class WebGLRenderer(
       else worldToBrowserCoords(x, y, width, height)
 
     // FIXME: need to know bounds
-    if (position.x < 0 || position.y < 0 || position.x > width || position.y > height) {
-      println(s"Discarded (${position.x}, ${position.y}):  $textModel")
+    if (position.x < 0 || position.y < 0 || position.x > width || position.y > height)
       return
-    }
 
     val textElem = document.createElement("div").asInstanceOf[HTMLDivElement]
     textElem.className = if (largeFont) "large-floating-text" else "floating-text"
