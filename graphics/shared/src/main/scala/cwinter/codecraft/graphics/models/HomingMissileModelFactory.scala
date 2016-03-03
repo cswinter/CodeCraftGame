@@ -27,7 +27,7 @@ private[graphics] object HomingMissileModelFactory {
         rs.TranslucentAdditive,
         midpoints,
         colors,
-        2,
+        3,
         zPos = 3
       ).noCaching.getModel
     }

@@ -24,7 +24,7 @@ private[graphics] class MineralModelBuilder(mineral: MineralDescriptor)(implicit
       colorMidpoint = ColorRGB(0.03f, 0.6f, 0.03f),
       colorOutside = ColorRGB(0.0f, 0.1f, 0.0f),
       radius = radius,
-      zPos = -1
+      zPos = -5
     ).getModel
   }
 }

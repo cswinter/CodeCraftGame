@@ -52,7 +52,7 @@ private[graphics] object RenderFrame extends GLEventListener {
       glViewport(0, 0, camera.screenWidth, camera.screenHeight)
     }
 
-    if (!error) glClearColor(0.0f, 0, 0.0f, 0.0f)
+    if (!error) glClearColor(0.02f, 0.02f, 0.02f, 0.0f)
     else glClearColor(0.1f, 0, 0.0f, 0.0f)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 

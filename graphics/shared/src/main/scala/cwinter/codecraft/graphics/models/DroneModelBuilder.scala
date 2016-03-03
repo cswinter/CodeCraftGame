@@ -173,7 +173,7 @@ private[graphics] trait DroneColors {
 private[graphics] object DefaultDroneColors extends DroneColors {
   final val Black = ColorRGB(0, 0, 0)
   final val White = ColorRGB(1, 1, 1)
-  final val ColorBody = ColorRGB(0.05f, 0.05f, 0.05f)
+  final val ColorBody = Black
   final val ColorHull = ColorRGB(0.95f, 0.95f, 0.95f)
   final val ColorHullDamaged = ColorRGB(0.6f, 0.6f, 0.6f)
   final val ColorHullBroken = ColorRGB(0.2f, 0.2f, 0.2f)

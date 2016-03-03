@@ -85,7 +85,7 @@ private[codecraft] class WebGLRenderer(
 
     gl.viewport(0, 0, camera.screenWidth, camera.screenHeight)
 
-    gl.clearColor(0, 0, 0, 1)
+    gl.clearColor(0.02, 0.02, 0.02, 1)
     gl.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT)
 
     val worldObjects = gameWorld.worldState
