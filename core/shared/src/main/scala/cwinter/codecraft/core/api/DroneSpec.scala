@@ -34,6 +34,8 @@ case class DroneSpec(
   require(engines >= 0)
   require(shieldGenerators >= 0)
 
+  def this() = this(0)
+
   /**
    * Total number of modules.
    */
@@ -47,8 +49,6 @@ case class DroneSpec(
    * E.g. a drone with two modules will be rectangular shaped and therefore has 4 sides.
    */
   val sides = ModulePosition.size(moduleCount)
-
-
 
   /**
    * Returns the amount of hitpoints that a drone with this spec will have when it is at full health.
@@ -88,6 +88,11 @@ case class DroneSpec(
     radiusBody + 0.5f * Geometry.circumradius(4, sides)
   }
 
+  def withStorageModules(storageModules: Int) = copy(storageModules = storageModules)
+  def withMissileBatteries(missileBatteries: Int) = copy(missileBatteries = missileBatteries)
+  def withConstructors(constructors: Int) = copy(constructors = constructors)
+  def withEngines(engines: Int) = copy(engines = engines)
+  def withShieldGenerators(shieldGenerators: Int) = copy(shieldGenerators = shieldGenerators)
 
   private[core] def constructDynamics(owner: DroneImpl, initialPos: Vector2, time: Double): DroneDynamics =
     if (owner.context.isLocallyComputed) new ComputedDroneDynamics(owner, maximumSpeed, weight, radius, initialPos, time)
