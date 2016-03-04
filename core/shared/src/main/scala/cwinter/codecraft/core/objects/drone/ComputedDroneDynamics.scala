@@ -2,6 +2,7 @@ package cwinter.codecraft.core.objects.drone
 
 import cwinter.codecraft.core.objects.{ConstantVelocityDynamics, MissileDynamics}
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
+import cwinter.codecraft.core.GameConstants.{HarvestingRange}
 
 
 private[core] class ComputedDroneDynamics(
@@ -89,7 +90,7 @@ private[core] class ComputedDroneDynamics(
       // TODO: create a rigorous method to get within radius of some position, unify with moveToDrone
     case MoveToMineralCrystal(mc)
     if (mc.position - this.pos).lengthSquared <=
-      (DroneConstants.HarvestingRange - 4) * (DroneConstants.HarvestingRange - 4) =>
+      (HarvestingRange - 4) * (HarvestingRange - 4) =>
       Some(ArrivedAtMineral(mc))
     case MoveToDrone(other) =>
       val r = other.radius + drone.radius + 18
@@ -108,13 +109,8 @@ private[core] class ComputedDroneDynamics(
       val targetOrientation = dist.orientation
       adjustOrientation(targetOrientation)
       if (targetOrientation == orientation) {
-        val speed = maxSpeed / 30 // TODO: improve this
-        if ((dist dot dist) > speed * speed) {
-          maxSpeed * dist.normalized
-        } else {
-          val distance = dist.length
-          distance * 30 * dist.normalized
-        }
+        if ((dist dot dist) > maxSpeed * maxSpeed) maxSpeed * dist.normalized
+        else dist
       } else {
         Vector2.Null
       }
@@ -145,7 +141,7 @@ private[core] class ComputedDroneDynamics(
             moveToPosition(position)
           case MoveToMineralCrystal(mc) =>
             val targetDirection = (mc.position - pos).normalized
-            val targetPos = mc.position - (DroneConstants.HarvestingRange - 5) * targetDirection
+            val targetPos = mc.position - (HarvestingRange - 5) * targetDirection
             moveToPosition(targetPos)
           case MoveToDrone(other) =>
             val targetDirection = (other.position - pos).normalized

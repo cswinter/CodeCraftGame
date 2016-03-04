@@ -1,8 +1,8 @@
 package cwinter.codecraft.core.ai.destroyer
 
+import cwinter.codecraft.core.api.GameConstants.MissileLockOnRange
 import cwinter.codecraft.core.ai.shared.MissionExecutor
 import cwinter.codecraft.core.api.{Drone, MineralCrystal}
-import cwinter.codecraft.core.objects.drone.DroneConstants
 import cwinter.codecraft.util.maths.Vector2
 
 
@@ -46,7 +46,7 @@ with MissionExecutor[DestroyerCommand] {
   }
 
   def canFinish(enemy: Drone): Boolean = {
-    val minDist = DroneConstants.MissileLockOnRadius + 150
+    val minDist = MissileLockOnRange + 150
     if (!enemy.isVisible || (position - enemy.lastKnownPosition).lengthSquared >= minDist * minDist)
       return false
     val enemyFirepower = armedEnemies.foldLeft(0)(_ + _.spec.missileBatteries)
@@ -96,8 +96,8 @@ with MissionExecutor[DestroyerCommand] {
     var threatWeight = 0.0
     for (threat <- threats) {
       val delta = position - threat.lastKnownPosition
-      val dangerZone = DroneConstants.MissileLockOnRadius + 50
-      val safeZone = DroneConstants.MissileLockOnRadius + 150
+      val dangerZone = MissileLockOnRange + 50
+      val safeZone = MissileLockOnRange + 150
       val distanceModifier =
         if (delta.lengthSquared < dangerZone * dangerZone) 1
         else if (delta.lengthSquared > safeZone * safeZone) 0

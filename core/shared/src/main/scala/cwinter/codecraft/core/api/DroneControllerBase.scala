@@ -5,6 +5,7 @@ import cwinter.codecraft.graphics.engine.Debug
 import cwinter.codecraft.util.maths._
 
 import scala.scalajs.js.annotation.JSExportAll
+import cwinter.codecraft.core.GameConstants.MissileLockOnRange
 
 
 // The description part of this Scaladoc is identical to that in DroneController and JDroneController.
@@ -257,8 +258,7 @@ trait DroneControllerBase extends Drone {
    * @param otherDrone The drone you want to shoot at.
    */
   def isInMissileRange(otherDrone: Drone): Boolean =
-    (otherDrone.position - drone.position).lengthSquared <=
-      DroneConstants.MissileLockOnRadius * DroneConstants.MissileLockOnRadius
+    (otherDrone.position - drone.position).lengthSquared <= MissileLockOnRange * MissileLockOnRange
 
   /**
     * Returns true if `mineralCrystal` is within harvesting range, otherwise false.

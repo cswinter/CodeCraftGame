@@ -1,5 +1,6 @@
 package cwinter.codecraft.core.objects.drone
 
+import cwinter.codecraft.core.GameConstants.DroneConstructionTime
 import cwinter.codecraft.core._
 import cwinter.codecraft.core.api.DroneSpec
 import cwinter.codecraft.graphics.worldstate.{ConstructionBeamDescriptor, DroneModuleDescriptor, ManipulatorDescriptor}
@@ -40,7 +41,7 @@ private[core] class DroneManipulatorModule(positions: Seq[Int], owner: DroneImpl
           if (constructorEnergy(i) == 0 && remainingResources > 0) {
             remainingResources -= 1
             resourceDepletions ::= absoluteModulePositions(i)
-            constructorEnergy(i) = DroneSpec.ConstructionPeriod
+            constructorEnergy(i) = DroneConstructionTime
             shouldUpdateBeamDescriptor = true
           }
           if (constructorEnergy(i) > 0 && progress + furtherProgress < drone.spec.buildTime) {

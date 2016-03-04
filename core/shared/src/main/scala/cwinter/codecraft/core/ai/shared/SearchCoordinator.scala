@@ -1,6 +1,6 @@
 package cwinter.codecraft.core.ai.shared
 
-import cwinter.codecraft.core.api.DroneSpec
+import cwinter.codecraft.core.api.GameConstants.DroneVisionRange
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 
 import scala.collection.mutable
@@ -12,10 +12,10 @@ class SearchCoordinator(worldSize: Rectangle) {
   private var cooldown = 300
 
   private def genSearchTokens: Set[SearchToken] = {
-    val width = math.ceil(worldSize.width / DroneSpec.SightRadius).toInt
-    val height = math.ceil(worldSize.height / DroneSpec.SightRadius).toInt
-    val xOffset = (worldSize.width / DroneSpec.SightRadius / 2).toInt
-    val yOffset = (worldSize.height / DroneSpec.SightRadius / 2).toInt
+    val width = math.ceil(worldSize.width / DroneVisionRange).toInt
+    val height = math.ceil(worldSize.height / DroneVisionRange).toInt
+    val xOffset = (worldSize.width / DroneVisionRange / 2).toInt
+    val yOffset = (worldSize.height / DroneVisionRange / 2).toInt
     val tokens = Seq.tabulate(width, height){
       (x, y) => SearchToken(x - xOffset, y - yOffset)
     }

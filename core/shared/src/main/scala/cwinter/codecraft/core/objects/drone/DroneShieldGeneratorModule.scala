@@ -3,16 +3,15 @@ package cwinter.codecraft.core.objects.drone
 import cwinter.codecraft.core.SimulatorEvent
 import cwinter.codecraft.graphics.worldstate.{ShieldGeneratorDescriptor, DroneModuleDescriptor}
 import cwinter.codecraft.util.maths.Vector2
+import cwinter.codecraft.core.GameConstants.{ShieldMaximumHitpoints, ShieldRegenerationInterval}
 
 private[core] class DroneShieldGeneratorModule(positions: Seq[Int], owner: DroneImpl)
   extends DroneModule(positions, owner) {
 
-  final val ShieldRegenPeriod = 100
-
   val nShieldGenerators: Int = positions.size
-  val maxHitpoints: Int = nShieldGenerators * 7
+  val maxHitpoints: Int = nShieldGenerators * ShieldMaximumHitpoints
 
-  private[this] var regenCooldown: Int = ShieldRegenPeriod
+  private[this] var regenCooldown: Int = ShieldRegenerationInterval
   private[this] var _currHitpoints: Int = maxHitpoints
   def currHitpoints: Int = _currHitpoints
 
@@ -22,7 +21,7 @@ private[core] class DroneShieldGeneratorModule(positions: Seq[Int], owner: Drone
       if (regenCooldown == 0) {
         if (_currHitpoints != maxHitpoints) owner.mustUpdateModel()
         _currHitpoints = math.min(maxHitpoints, _currHitpoints + nShieldGenerators)
-        regenCooldown = ShieldRegenPeriod
+        regenCooldown = ShieldRegenerationInterval
       }
     }
 

@@ -56,7 +56,7 @@ private[core] abstract class BasicPlusController(val name: Symbol) extends Drone
   override def onArrivesAtPosition(): Unit = ()
   override def onDroneEntersVision(drone: Drone): Unit = {
     if (drone.isEnemy)
-    if (drone.isEnemy && drone.spec.size > 6) {
+    if (drone.isEnemy && drone.spec.sides > 6) {
       mothership.foundCapitalShip(drone)
     }
   }

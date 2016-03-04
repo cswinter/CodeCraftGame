@@ -7,6 +7,7 @@ import cwinter.codecraft.core.objects._
 import cwinter.codecraft.core.replay._
 import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.util.maths.{Rectangle, Float0To1, Vector2}
+import GameConstants.HarvestingRange
 
 
 private[core] class DroneImpl(
@@ -27,7 +28,7 @@ private[core] class DroneImpl(
   private[this] val eventQueue = collection.mutable.Queue[DroneEvent](Spawned)
 
   // TODO: move all this state into submodules?
-  private[this] var hullState = List.fill[Byte](spec.size - 1)(2)
+  private[this] var hullState = List.fill[Byte](spec.sides - 1)(2)
   private[this] var _hasDied: Boolean = false
   private[this] var _oldPosition = Vector2.Null
   private[this] var _oldOrientation = 0.0
@@ -261,7 +262,7 @@ private[core] class DroneImpl(
   def isHarvesting: Boolean = storage.exists(_.isHarvesting)
   def isMoving: Boolean = dynamics.isMoving
   def storageCapacity = spec.storageModules
-  def size = spec.size
+  def size = spec.sides
   def radius = spec.radius
   def player = context.player
 
@@ -274,8 +275,7 @@ private[core] class DroneImpl(
   }.getOrElse(0)
 
   def isInHarvestingRange(mineral: MineralCrystalImpl): Boolean =
-    (mineral.position - position).lengthSquared <=
-      DroneConstants.HarvestingRange * DroneConstants.HarvestingRange
+    (mineral.position - position).lengthSquared <= HarvestingRange * HarvestingRange
 
   def wrapperFor(player: Player): EnemyDrone = {
     require(player != this.player)
@@ -321,7 +321,7 @@ private[core] class DroneImpl(
         moduleDescriptors,
         hullState,
         shieldGenerators.map(_.hitpointPercentage),
-        spec.size,
+        spec.sides,
         player.color,
         constructionProgress.map(p => Float0To1(p / spec.buildTime.toFloat))
       )

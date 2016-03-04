@@ -3,7 +3,7 @@ package cwinter.codecraft.core.ai.replicator
 import cwinter.codecraft.core.ai.replicator.combat._
 import cwinter.codecraft.core.ai.shared.{MissionExecutor, Mission}
 import cwinter.codecraft.core.api.Drone
-import cwinter.codecraft.core.objects.drone.DroneConstants
+import cwinter.codecraft.core.api.GameConstants.MissileLockOnRange
 import cwinter.codecraft.util.maths.{Rng, Vector2}
 
 
@@ -111,8 +111,8 @@ with MissionExecutor[ReplicatorCommand] with TargetAcquisition {
   def bypassThreats(direction: Vector2, threats: Iterable[Drone]): Unit = {
     var targetDirection = direction.normalized
 
-    val dangerZone = DroneConstants.MissileLockOnRadius + 50
-    val safeZone = DroneConstants.MissileLockOnRadius + 150
+    val dangerZone = MissileLockOnRange + 50
+    val safeZone = MissileLockOnRange + 150
     for (threat <- threats) {
       val delta = position - threat.lastKnownPosition
       val weight = 2f * (

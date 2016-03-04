@@ -97,7 +97,7 @@ private[codecraft] class PhysicsEngine[T <: DynamicObject[T]](val worldBoundarie
   def update(): Unit = {
 
     discreteTime += 1
-    nextTime = discreteTime / 30.0
+    nextTime = discreteTime
 
     objects.foreach(obj => {
       updateNextCollision(obj, grid.reducedNearbyObjects(obj.cellX, obj.cellY), erase = false)

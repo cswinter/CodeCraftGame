@@ -66,7 +66,7 @@ class DroneWorldSimulator(
   private val visionTracker = new VisionTracker[WorldObject](
     map.size.xMin.toInt, map.size.xMax.toInt,
     map.size.yMin.toInt, map.size.yMax.toInt,
-    DroneSpec.SightRadius
+    GameConstants.DroneVisionRange
   )
 
   private val physicsEngine = new PhysicsEngine[ConstantVelocityDynamics](
@@ -238,7 +238,7 @@ class DroneWorldSimulator(
       ) Debug.draw(
           ModelDescriptor(
             PositionDescriptor(d.position.x.toFloat, d.position.y.toFloat, 0),
-            DrawCircleOutline(DroneConstants.MissileLockOnRadius, ColorRGB(1, 0, 0))
+            DrawCircleOutline(GameConstants.MissileLockOnRange, ColorRGB(1, 0, 0))
           )
         )
     }
@@ -247,7 +247,7 @@ class DroneWorldSimulator(
         Debug.draw(
           ModelDescriptor(
             PositionDescriptor(d.position.x.toFloat, d.position.y.toFloat, 0),
-            DrawCircleOutline(DroneSpec.SightRadius, ColorRGB(0, 1, 0))
+            DrawCircleOutline(GameConstants.DroneVisionRange, ColorRGB(0, 1, 0))
           )
         )
       }

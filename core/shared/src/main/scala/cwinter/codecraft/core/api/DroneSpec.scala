@@ -3,6 +3,7 @@ package cwinter.codecraft.core.api
 import cwinter.codecraft.core.objects.drone._
 import cwinter.codecraft.util.maths.{Geometry, Vector2}
 import cwinter.codecraft.util.modules.ModulePosition
+import cwinter.codecraft.core.GameConstants.{ModuleResourceCost, DroneConstructionTime}
 
 import scala.scalajs.js.annotation.JSExportAll
 
@@ -43,41 +44,39 @@ case class DroneSpec(
 
   /**
    * The number of sides that the drone will have.
-   * E.g. a drone with two modules will be a rectangle and therefore has 4 sides.
+   * E.g. a drone with two modules will be rectangular shaped and therefore has 4 sides.
    */
-  val size = ModulePosition.size(moduleCount)
+  val sides = ModulePosition.size(moduleCount)
 
 
-
-  import DroneSpec._
 
   /**
    * Returns the amount of hitpoints that a drone with this spec will have when it is at full health.
    */
-  def maxHitpoints: Int = 2 * (size - 1) + shieldGenerators * 7
+  def maxHitpoints: Int = 2 * (sides - 1) + shieldGenerators * 7
 
   /**
    * Returns the amount of resources it will cost to build a drone with this spec.
    */
-  def resourceCost: Int = ModulePosition.moduleCount(size) * ResourceCost
+  def resourceCost: Int = moduleCount * ModuleResourceCost
 
   /**
    * Returns the number of timesteps it will take to build a drone of this size.
    * This time will be reduced if the constructing drone has more than one constructor module,
    * e.g. with two constructor modules it will take half as long.
    */
-  def buildTime: Int = ConstructionPeriod * resourceCost
+  def buildTime: Int = DroneConstructionTime * resourceCost
 
   /**
    * Returns the weight of a drone with this spec.
    * Weight increases with size and module count and a higher weight leads to a slower movement speed.
    */
-  def weight = size + moduleCount
+  def weight = sides + moduleCount
 
   /**
    * Returns the speed of a drone with this spec, measured in units distance per second (30 timesteps).
    */
-  def maximumSpeed: Double = 1000 * (1 + engines)  / weight
+  def maximumSpeed: Double = 30 * (1 + engines) / weight
 
 
   /**
@@ -85,8 +84,8 @@ case class DroneSpec(
    * The `radius` is used to compute collisions with projectiles or other drones.
    */
   val radius: Double = {
-    val radiusBody = 0.5f * SideLength / math.sin(math.Pi / size).toFloat
-    radiusBody + 0.5f * Geometry.circumradius(4, size)
+    val radiusBody = 0.5f * 40 / math.sin(math.Pi / sides).toFloat
+    radiusBody + 0.5f * Geometry.circumradius(4, sides)
   }
 
 
@@ -128,9 +127,5 @@ case class DroneSpec(
 
 object DroneSpec {
   // constants for drone construction
-  final val ConstructionPeriod = 100
-  final val ResourceCost = 5
-  final val SideLength = 40
-  final val SightRadius = 500
 }
 

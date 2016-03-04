@@ -5,14 +5,13 @@ import cwinter.codecraft.core.objects.MineralCrystalImpl
 import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.util.maths.Vector2
 import cwinter.codecraft.util.modules.ModulePosition
+import GameConstants.{HarvestingInterval, HarvestingRange}
 
 import scala.collection.mutable
 
 // TODO: rework mineral slots system to find simpler and less error prone solution
 private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, startingResources: Int = 0)
   extends DroneModule(positions, owner) {
-
-  import DroneStorageModule._
 
 
   private[this] var storedEnergyGlobes =
@@ -67,7 +66,7 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
   private def performHarvest(mineral: MineralCrystalImpl): Option[SimulatorEvent] = {
     subtractFromResources(-1)
     mineral.decreaseSize()
-    harvestCountdown = HarvestingDuration
+    harvestCountdown = HarvestingInterval
 
     if (mineral.size == 0) Some(MineralCrystalHarvested(mineral))
     else None
@@ -128,7 +127,7 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
     } else if (!owner.isInHarvestingRange(mineralCrystal)) {
       val dist = (owner.position - mineralCrystal.position).length
       owner.warn(s"Too far away from mineral crystal to harvest. " +
-        s"Required: ${DroneConstants.HarvestingRange} Actual: $dist.")
+        s"Required: $HarvestingRange Actual: $dist.")
     } else if (mineralCrystal.harvested) {
       owner.warn("Trying to harvest mineral crystal that has already been harvested.")
     } else if (harvesting.contains(mineralCrystal)) {
@@ -136,7 +135,7 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
     } else if (mineralCrystal.claimedBy.exists(_ != this)) {
       owner.warn("Trying to harvest a mineral crystal that is already being harvested by another drone.")
     } else {
-      harvestCountdown = HarvestingDuration
+      harvestCountdown = HarvestingInterval
       mineralCrystal.claimedBy = Some(this)
       harvesting = Some(mineralCrystal)
       updateBeamDescriptor()
@@ -208,11 +207,6 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
 
 
   override def cancelMovement: Boolean = resourceDepositee.nonEmpty
-}
-
-// TODO: aggregate all constants
-private[core] object DroneStorageModule {
-  final val HarvestingDuration = 60
 }
 
 
