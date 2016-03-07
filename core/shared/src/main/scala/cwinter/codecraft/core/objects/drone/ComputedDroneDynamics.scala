@@ -128,15 +128,7 @@ private[core] class ComputedDroneDynamics(
         Vector2.Null
       } else {
         _movementCommand match {
-          case MoveInDirection(direction) =>
-            val targetOrientation = direction
-            adjustOrientation(targetOrientation)
-
-            if (targetOrientation == orientation) {
-              maxSpeed * Vector2(orientation)
-            } else {
-              Vector2.Null
-            }
+          case MoveInDirection(direction) => moveInDirection(direction)
           case MoveToPosition(position) =>
             moveToPosition(position)
           case MoveToMineralCrystal(mc) =>
@@ -151,6 +143,14 @@ private[core] class ComputedDroneDynamics(
             Vector2.Null
         }
       }
+  }
+
+  def moveInDirection(direction: Double): Vector2 = {
+    val targetOrientation = direction
+    adjustOrientation(targetOrientation)
+
+    if (targetOrientation == orientation) maxSpeed * Vector2(orientation)
+    else Vector2.Null
   }
 
   override def handleWallCollision(areaBounds: Rectangle): Unit = {

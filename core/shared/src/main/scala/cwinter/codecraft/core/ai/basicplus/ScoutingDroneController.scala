@@ -35,7 +35,7 @@ private[core] class ScoutingDroneController(val mothership: Mothership) extends 
   }
 
   override def onArrivesAtDrone(drone: Drone): Unit = {
-    giveMineralsTo(drone)
+    giveResourcesTo(drone)
     hasReturned = true
   }
 

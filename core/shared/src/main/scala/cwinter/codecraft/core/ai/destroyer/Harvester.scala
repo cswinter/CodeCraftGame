@@ -42,7 +42,7 @@ class Harvester(ctx: DestroyerContext) extends DestroyerController(ctx) {
   }
 
   override def onArrivesAtDrone(drone: Drone): Unit = {
-    giveMineralsTo(drone)
+    giveResourcesTo(drone)
     hasReturned = true
   }
 

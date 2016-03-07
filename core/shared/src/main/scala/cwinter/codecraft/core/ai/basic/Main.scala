@@ -14,20 +14,20 @@ private[core] class Mothership extends DroneController {
 
   // abstract methods for event handling
   override def onSpawn(): Unit = {
-    buildDrone(new DroneSpec(storageModules = 1), new ScoutingDroneController(this))
+    buildDrone(new ScoutingDroneController(this), new DroneSpec(storageModules = 1))
   }
 
   override def onTick(): Unit = {
     if (!isConstructing) {
       if (collectors < 2) {
-        buildDrone(if (Rng.bernoulli(0.9f)) collectorDroneSpec else fastCollectorDroneSpec, new ScoutingDroneController(this))
+        buildDrone(new ScoutingDroneController(this), if (Rng.bernoulli(0.9f)) collectorDroneSpec else fastCollectorDroneSpec)
         collectors += 1
       } else {
-        buildDrone(attackDroneSpec, new AttackDroneController())
+        buildDrone(new AttackDroneController(), attackDroneSpec)
       }
     }
 
-    if (weaponsCooldown <= 0 && enemies.nonEmpty) {
+    if (missileCooldown <= 0 && enemies.nonEmpty) {
       val enemy = enemies.minBy(x => (x.position - position).lengthSquared)
       if (isInMissileRange(enemy)) {
         fireMissilesAt(enemy)
@@ -78,7 +78,7 @@ private[core] class ScoutingDroneController(val mothership: Mothership) extends 
   }
 
   override def onArrivesAtDrone(drone: Drone): Unit = {
-    giveMineralsTo(drone)
+    giveResourcesTo(drone)
     hasReturned = true
   }
 
@@ -92,7 +92,7 @@ private[core] class AttackDroneController extends DroneController {
   override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = ()
 
   override def onTick(): Unit = {
-    if (weaponsCooldown == 0 && enemies.nonEmpty) {
+    if (missileCooldown == 0 && enemies.nonEmpty) {
       val enemy = enemies.minBy(x => (x.position - position).lengthSquared)
       if (isInMissileRange(enemy)) {
         fireMissilesAt(enemy)

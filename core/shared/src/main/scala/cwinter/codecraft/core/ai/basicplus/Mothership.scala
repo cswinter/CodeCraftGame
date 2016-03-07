@@ -23,7 +23,7 @@ private[core] class Mothership extends BasicPlusController('Mothership) {
 
   // abstract methods for event handling
   override def onSpawn(): Unit = {
-    buildDrone(scoutSpec, new ScoutingDroneController(this))
+    buildDrone(new ScoutingDroneController(this), scoutSpec)
     searchTokens = genSearchTokens
   }
 
@@ -34,11 +34,11 @@ private[core] class Mothership extends BasicPlusController('Mothership) {
       if (DroneCount('Harvester) < 1 ||
         (DroneCount('Hunter) > 0 && DroneCount('Harvester) < 3) ||
         (DroneCount('Destroyer) > 0 && DroneCount('Hunter) > 0 && DroneCount('Harvester) < 3)) {
-        buildDrone(collectorSpec, new ScoutingDroneController(this))
+        buildDrone(new ScoutingDroneController(this), collectorSpec)
       } else if (2 * DroneCount('Hunter) / math.max(DroneCount('Destroyer), 1) < 1) {
-        buildDrone(hunterSpec, new Hunter(this))
+        buildDrone(new Hunter(this), hunterSpec)
       } else {
-        buildDrone(destroyerSpec, new Destroyer(this))
+        buildDrone(new Destroyer(this), destroyerSpec)
       }
     }
 

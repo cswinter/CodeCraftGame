@@ -82,7 +82,11 @@ private[codecraft] trait GameMasterLike {
    * @param mothership1 The controller for the initial mothership of player 1.
    * @param mothership2 The controller for the initial mothership of player 2.
    */
-  def startGame(mothership1: DroneControllerBase, mothership2: DroneControllerBase): DroneWorldSimulator = {
+  @deprecated("This method has been renamed to `runGame` and will be removed in a future version.", "0.2.4.3")
+  def startGame(mothership1: DroneControllerBase, mothership2: DroneControllerBase): DroneWorldSimulator =
+    runGame(mothership1, mothership2)
+
+  def runGame(mothership1: DroneControllerBase, mothership2: DroneControllerBase): DroneWorldSimulator = {
     val controllers = Seq(mothership1, mothership2)
     val simulator = new DroneWorldSimulator(defaultMap(), controllers, devEvents)
     run(simulator)
@@ -95,7 +99,7 @@ private[codecraft] trait GameMasterLike {
   def level1Map(): WorldMap = {
     val worldSize = Rectangle(-2000, 2000, -1000, 1000)
     val spawns = constructSpawns(Vector2(1000, 200), Vector2(-1000, -200))
-    WorldMap(worldSize, 100, spawns).withDefaultWinConditions
+    WorldMap(worldSize, Seq.fill(8)((2, 40)), spawns).withDefaultWinConditions
   }
 
   def level1AI(): DroneControllerBase = new ai.basic.Mothership
@@ -143,7 +147,7 @@ private[codecraft] trait GameMasterLike {
    * @param mothership The controller for your mothership.
    */
   def runLevel2(mothership: DroneControllerBase): DroneWorldSimulator = {
-    startGame(mothership, new Mothership)
+    runGame(mothership, new Mothership)
   }
 
   /**
@@ -152,21 +156,21 @@ private[codecraft] trait GameMasterLike {
    * @param mothership The controller for your mothership.
    */
   def runLevel3(mothership: DroneControllerBase): DroneWorldSimulator = {
-    startGame(mothership, new ai.basicplus.Mothership)
+    runGame(mothership, new ai.basicplus.Mothership)
   }
 
   /**
    * Runs a game with the level 1 AI versus the level 2 AI.
    */
   def runL1vL2(): DroneWorldSimulator = {
-    startGame(new ai.basic.Mothership, new Mothership)
+    runGame(new ai.basic.Mothership, new Mothership)
   }
 
   /**
    * Runs a game with the level 3 AI versus the level 3 AI.
    */
   def runL3vL3(): DroneWorldSimulator = {
-    startGame(new ai.basicplus.Mothership, new ai.basicplus.Mothership)
+    runGame(new ai.basicplus.Mothership, new ai.basicplus.Mothership)
   }
 
   /**

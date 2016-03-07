@@ -25,7 +25,7 @@ abstract class AugmentedController[TCommand, TContext <: SharedContext[TCommand]
     enemies.map(x => (x, (x.position - position).lengthSquared)).minBy(_._2)
 
   def handleWeapons(): Unit =
-    if (weaponsCooldown <= 0)
+    if (missileCooldown <= 0)
       for (target <- optimalTarget)
         fireMissilesAt(target)
 

@@ -25,7 +25,7 @@ private[core] class EnemyDrone(
     }
   }
 
-  override def weaponsCooldown: Int = {
+  override def missileCooldown: Int = {
     if (isVisible) {
       drone.weaponsCooldown
     } else {

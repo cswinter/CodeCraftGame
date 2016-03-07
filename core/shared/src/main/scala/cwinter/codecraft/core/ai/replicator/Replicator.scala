@@ -42,7 +42,7 @@ class Replicator(ctx: ReplicatorContext) extends ReplicatorController(ctx) with 
       nextConstructionSpec match {
         case Some((spec, controller))
         if shouldBeginConstruction(spec.resourceCost) =>
-          buildDrone(spec, controller())
+          buildDrone(controller(), spec)
           currentConstruction = Some(spec)
           if (spec == nextReplicatorSpec) nextReplicatorSpec = chooseNextReplicatorSpec()
         case _ =>
@@ -132,7 +132,7 @@ class Replicator(ctx: ReplicatorContext) extends ReplicatorController(ctx) with 
   }
 
   override def handleWeapons(): Unit =
-    if (weaponsCooldown <= 0) {
+    if (missileCooldown <= 0) {
       val targetOption = optimalTarget
       for (target <- targetOption)
         fireMissilesAt(target)

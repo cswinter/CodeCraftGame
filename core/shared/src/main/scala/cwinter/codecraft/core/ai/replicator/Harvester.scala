@@ -56,7 +56,7 @@ class Harvester(
   }
 
   override def onArrivesAtDrone(drone: Drone): Unit = {
-    giveMineralsTo(drone)
+    giveResourcesTo(drone)
     hasReturned = true
   }
 

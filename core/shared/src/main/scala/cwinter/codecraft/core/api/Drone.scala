@@ -21,7 +21,10 @@ trait Drone {
   /**
    * Returns the drone's homing missile cooldown.
    */
-  def weaponsCooldown: Int
+  def missileCooldown: Int
+
+  @deprecated("Use missileCooldown instead.", "0.2.4.3")
+  def weaponsCooldown: Int = missileCooldown
 
   /**
    * Returns whether this drone is within the sight radius of any of your drones.

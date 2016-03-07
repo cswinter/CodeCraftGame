@@ -30,7 +30,7 @@ class Mothership(ctx: DestroyerContext) extends DestroyerController(ctx) {
       nextConstructionSpec match {
         case Some((spec, controller))
         if shouldBeginConstruction(spec.resourceCost) =>
-          buildDrone(spec, controller())
+          buildDrone(controller(), spec)
           currentConstruction = Some(spec)
           if (spec == battlecruiserSpec || spec == destroyerSpec2) lastOneLarge = true
           else if (spec == destroyerSpec) lastOneLarge = false

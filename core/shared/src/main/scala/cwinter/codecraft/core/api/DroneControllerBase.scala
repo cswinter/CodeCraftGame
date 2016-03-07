@@ -89,8 +89,6 @@ trait DroneControllerBase extends Drone {
   // drone commands
   /**
    * Order the drone to keep moving in the direction of `directionVector`.
-   *
-   * @param directionVector The direction to move in.
    */
   def moveInDirection(directionVector: Vector2): Unit = {
     if (directionVector == Vector2.Null) halt()
@@ -99,8 +97,6 @@ trait DroneControllerBase extends Drone {
 
   /**
    * Order the drone to keep moving in the direction of `direction`.
-   *
-   * @param direction The direction to be moved in in radians.
    */
   def moveInDirection(direction: Double): Unit = {
     drone ! MoveInDirection(direction)
@@ -132,20 +128,32 @@ trait DroneControllerBase extends Drone {
   }
 
   /**
+    * Order the drone to move to coordinates (`x`, `y`).
+    */
+  def moveTo(x: Double, y: Double): Unit = {
+    moveTo(Vector2(x, y))
+  }
+
+  /**
    * Order the drone to move to `position`.
    *
    * @param position The position to be moved towards.
    */
   def moveTo(position: Vector2): Unit = {
-    drone ! MoveToPosition(position)
+    val clippedPosition = clipToRectangle(position, worldSize)
+    drone ! MoveToPosition(clippedPosition)
   }
 
-  /**
-   * Order the drone to move to coordinates (`x`, `y`).
-   */
-  def moveTo(x: Double, y: Double): Unit = {
-    moveTo(Vector2(x, y))
+  private def clipToRectangle(vector: Vector2, rectangle: Rectangle): Vector2 = {
+    val xClipped = clip(vector.x, worldSize.xMin, worldSize.xMax)
+    val yClipped = clip(vector.y, worldSize.yMin, worldSize.yMax)
+    Vector2(xClipped, yClipped)
   }
+
+  private def clip(value: Double, min: Double, max: Double): Double =
+    if (value <= min) min
+    else if (value >= max) max
+    else value
 
   /**
     * Order the drone to stop moving.
@@ -165,17 +173,22 @@ trait DroneControllerBase extends Drone {
   }
 
   /**
-   * Order the drone to give all its minerals to `otherDrone`.
+   * Order the drone to give all its resources to `otherDrone`.
    *
-   * @param otherDrone The drone which will receive the minerals.
+   * @param otherDrone The drone which will receive the resources.
    */
-  def giveMineralsTo(otherDrone: Drone): Unit = {
+  def giveResourcesTo(otherDrone: Drone): Unit = {
     // TODO: isDead checks are all in this class, since they may cause replay errors if the command is recorded. Restructure would be good to make things less cluttered.
     if (otherDrone.isDead) {
       drone.warn("Trying to give minerals to a drone that does not exist anymore!")
     } else {
       drone ! DepositMinerals(otherDrone.drone)
     }
+  }
+
+  @deprecated("Use giveResourcesTo instead.", "0.2.4.3")
+  def giveMineralsTo(otherDrone: Drone): Unit = {
+    giveResourcesTo(otherDrone)
   }
 
   /**
@@ -185,7 +198,11 @@ trait DroneControllerBase extends Drone {
    * @param spec The specification for the number of copies for each module equipped by the new drone.
    * @param controller The drone controller that will govern the behaviour of the new drone.
    */
-  def buildDrone(spec: DroneSpec, controller: DroneControllerBase): Unit = {
+  @deprecated("Swap the positions of the `spec` and `controller` arguments.", "0.2.4.3")
+  def buildDrone(spec: DroneSpec, controller: DroneControllerBase): Unit =
+    buildDrone(controller, spec)
+
+  def buildDrone(controller: DroneControllerBase, spec: DroneSpec): Unit = {
     def cap(value: Double, min: Double, max: Double): Double =
       math.min(math.max(value, min), max)
     val pos = drone.position - 110 * Rng.vector2()
@@ -216,7 +233,7 @@ trait DroneControllerBase extends Drone {
     shieldGenerators: Int = 0
   ): Unit = {
     val spec = new DroneSpec(storageModules, missileBatteries, constructors, engines, shieldGenerators)
-    buildDrone(spec, controller)
+    buildDrone(controller, spec)
   }
 
   /**
@@ -235,7 +252,7 @@ trait DroneControllerBase extends Drone {
   // drone properties
   override def position: Vector2 = drone.position
 
-  override def weaponsCooldown: Int = drone.weaponsCooldown
+  override def missileCooldown: Int = drone.weaponsCooldown
 
   override def isVisible: Boolean = true
 

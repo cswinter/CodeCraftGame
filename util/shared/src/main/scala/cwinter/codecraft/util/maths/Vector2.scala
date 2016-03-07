@@ -16,11 +16,16 @@ import scala.scalajs.js.annotation.JSExport
  * res0: Vector2 = Vector2(-9, 1)
  * }}}
  *
+ * If you are using Java, you can use the methods `plus`, `times` and `minus` in place of the symbolic operators.
+ *
  * @param _x The x coordinate.
  * @param _y The y coordinate.
  */
 @JSExport
 final case class Vector2(_x: Double, _y: Double) {
+
+  def this(angle: Double) = this(math.cos(angle), math.sin(angle))
+
   import Vector2._
   assert(isValid)
 
@@ -108,7 +113,7 @@ object Vector2 {
   }
 
   def apply(angle: Double): Vector2 =
-    Vector2(math.cos(angle).toFloat, math.sin(angle).toFloat)
+    Vector2(math.cos(angle), math.sin(angle))
 
   private[codecraft] def apply(string: String): Vector2 = {
     string match {

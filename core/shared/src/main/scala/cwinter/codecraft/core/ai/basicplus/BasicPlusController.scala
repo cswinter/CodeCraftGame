@@ -15,7 +15,7 @@ private[core] abstract class BasicPlusController(val name: Symbol) extends Drone
   def closestEnemy: Drone = enemies.minBy(x => (x.position - position).lengthSquared)
 
   def handleWeapons(): Unit = {
-    if (weaponsCooldown <= 0 && enemies.nonEmpty) {
+    if (missileCooldown <= 0 && enemies.nonEmpty) {
       val enemy = closestEnemy
       if (isInMissileRange(enemy)) {
         fireMissilesAt(enemy)
