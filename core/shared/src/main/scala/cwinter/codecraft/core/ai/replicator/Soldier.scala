@@ -9,8 +9,7 @@ import cwinter.codecraft.util.maths.{Rng, Vector2}
 
 private[codecraft] class Soldier(ctx: ReplicatorContext) extends ReplicatorController(ctx)
 with MissionExecutor[ReplicatorCommand] with TargetAcquisition {
-  val normalizedStrength = 1.0
-
+  val normalizedStrength = if (ctx.confident) 1.3 else 1.0
 
   override def onSpawn(): Unit = {
     super.onSpawn()
@@ -22,6 +21,7 @@ with MissionExecutor[ReplicatorCommand] with TargetAcquisition {
     mission.foreach(executeInstructions)
     handleEnemies()
   }
+
 
   def executeInstructions(mission: Mission[ReplicatorCommand]): Unit = mission.missionInstructions match {
     case Scout => scout()
@@ -75,22 +75,22 @@ with MissionExecutor[ReplicatorCommand] with TargetAcquisition {
     if (enemies.nonEmpty) {
       val armed = enemies.filter(_.spec.missileBatteries > 0)
       target = findClosest(armed)
-      var isAttacking = false
       for (
         enemy <- target
-        if context.battleCoordinator.isCovered(enemy)
+        if isCommited || context.battleCoordinator.shouldAttack(enemy)
       ) {
-        isAttacking = true
         if (dronesInSight.count(!_.isEnemy) > 3 || (enemy.position - position).lengthSquared > 200 * 200)
           moveInDirection(enemy.position - position)
         else halt()
+        return
       }
-      if (!isAttacking) huntCivilians()
+      huntCivilians()
     }
   }
 
   def huntCivilians(): Unit = {
     val civilians = enemies.filter (_.spec.missileBatteries == 0)
+    if (civilians.nonEmpty && shouldHunt) approachCarefully (civilians.head.lastKnownPosition)
     if (civilians.nonEmpty && shouldHunt) approachCarefully (civilians.head.lastKnownPosition)
   }
 

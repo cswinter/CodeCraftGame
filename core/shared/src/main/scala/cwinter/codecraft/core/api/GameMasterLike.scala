@@ -131,7 +131,8 @@ private[codecraft] trait GameMasterLike {
   /**
     * Returns a drone controller for the Replicator AI.
     */
-  def replicatorAI(): DroneControllerBase = new ai.replicator.Replicator
+  def replicatorAI(greedy: Boolean = false, confident: Boolean = false, aggressive: Boolean = false): DroneControllerBase =
+    new ai.replicator.Replicator(greedy, confident, aggressive)
 
   /**
     * Returns a drone controller for the Destroyer AI.

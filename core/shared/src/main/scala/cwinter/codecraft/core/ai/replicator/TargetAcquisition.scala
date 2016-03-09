@@ -9,6 +9,7 @@ private[codecraft] trait TargetAcquisition {
   val normalizedStrength: Double
 
   private[this] var _target = Option.empty[Drone]
+  private[this] var _attack = Option.empty[Drone]
 
   def target = _target
   def target_=(value: Option[Drone]): Unit = {
@@ -18,4 +19,7 @@ private[codecraft] trait TargetAcquisition {
       _target = value
     }
   }
+
+  def isCommited = _attack.exists(!_.isDead)
+  def attack(enemy: Drone): Unit = _attack = Some(enemy)
 }

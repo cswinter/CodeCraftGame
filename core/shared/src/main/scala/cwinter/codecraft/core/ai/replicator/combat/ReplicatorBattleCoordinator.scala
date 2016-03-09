@@ -17,7 +17,7 @@ private[codecraft] class ReplicatorBattleCoordinator(context: ReplicatorContext)
   private[this] var _enemyClusters = Map.empty[Drone, EnemyCluster]
   def enemyStrength = _enemyStrength
   def clusters = _enemyClusters
-  final val SoldierStrength = 2
+
   addMission(ScoutingMission)
 
 
@@ -35,6 +35,7 @@ private[codecraft] class ReplicatorBattleCoordinator(context: ReplicatorContext)
     _enemyStrength = Util.approximateStrength(enemyForces)
     if (enemyStrength > peakEnemyStrength) peakEnemyStrength = enemyStrength
     determineEnemyClusters()
+    _enemyClusters.values.toSet[EnemyCluster].foreach(_.maybeForceAttack())
     //for (c <- _enemyClusters.values.toSet[EnemyCluster]) c.show()
   }
 
@@ -81,8 +82,8 @@ private[codecraft] class ReplicatorBattleCoordinator(context: ReplicatorContext)
     }
   }
 
-  def isCovered(enemy: Drone): Boolean =
-    _enemyClusters.contains(enemy) && _enemyClusters(enemy).isCovered
+  def shouldAttack(enemy: Drone): Boolean =
+    _enemyClusters.contains(enemy) && _enemyClusters(enemy).shouldAttack
 
   def notTargeting(enemy: Drone, executor: TargetAcquisition): Unit = {
     targetRegistry = targetRegistry.updated(enemy, targetRegistry(enemy) - executor)
@@ -104,7 +105,7 @@ private[codecraft] class ReplicatorBattleCoordinator(context: ReplicatorContext)
     if (!enemyForces.contains(drone)) {
       enemyForces += drone
       targetRegistry += drone -> Set.empty[TargetAcquisition]
-      if (drone.spec.maximumSpeed <= DroneSpec(missileBatteries = 1).maximumSpeed) {
+      if (drone.spec.maximumSpeed < DroneSpec(missileBatteries = 1).maximumSpeed) {
         val followMission = new KeepEyeOnEnemy(drone)
         addMission(followMission)
         val terminate = new EliminateEnemy(drone, context)
@@ -114,8 +115,11 @@ private[codecraft] class ReplicatorBattleCoordinator(context: ReplicatorContext)
   }
 
   def needMoreSoldiers: Boolean =
-    peakEnemyStrength > context.droneCount(classOf[Soldier]) ||
-    guarding.valuesIterator.exists(x => x.nAssigned < x.minRequired)
+    if (context.greedy)
+      enemyStrength > context.droneCount(classOf[Soldier]) * 1.5f
+    else
+      peakEnemyStrength > context.droneCount(classOf[Soldier]) ||
+        guarding.valuesIterator.exists(x => x.nAssigned < x.minRequired)
 
   class EnemyCluster {
     private[this] var _drones = Set.empty[Drone]
@@ -124,15 +128,21 @@ private[codecraft] class ReplicatorBattleCoordinator(context: ReplicatorContext)
       val midpoint = _drones.foldLeft(Vector2.Null)(_ + _.lastKnownPosition) / _drones.size
       val totalCover = _drones.flatMap(targetRegistry).foldLeft(0.0)(_ + _.normalizedStrength)
       Debug.drawText(
-        f"${_drones.size}: $totalCover%.1f/$strength%.1f}",
+        f"${_drones.size}: $totalCover%.1f/$strength%.1f} shouldAttack=$shouldAttack",
       midpoint.x, midpoint.y, ColorRGBA(1, 1, 0, 1))
     }
 
     def strength: Double = Util.approximateStrength(_drones)
 
-    def isCovered: Boolean = {
+    def shouldAttack: Boolean = {
       val totalCover = _drones.flatMap(targetRegistry).foldLeft(0.0)(_ + _.normalizedStrength)
       strength <= totalCover
+    }
+
+    def maybeForceAttack(): Unit = {
+      val covering = _drones.flatMap(targetRegistry)
+      val totalCover = covering.foldLeft(0.0)(_ + _.normalizedStrength)
+      if (totalCover > 8) covering.foreach(_.attack(_drones.head))
     }
   }
 }

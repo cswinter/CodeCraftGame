@@ -20,7 +20,8 @@ private[codecraft] class Replicator(ctx: ReplicatorContext) extends ReplicatorCo
 
   lazy val normalizedStrength = math.sqrt(spec.maxHitpoints * spec.missileBatteries) / 2
 
-  def this() = this(new ReplicatorContext)
+  def this(greedy: Boolean = false, confident: Boolean = false, aggressive: Boolean = false) =
+    this(new ReplicatorContext(greedy, confident, aggressive))
 
   context.isReplicatorInConstruction = true
 
@@ -112,12 +113,16 @@ private[codecraft] class Replicator(ctx: ReplicatorContext) extends ReplicatorCo
   private def needMoreSlaves: Boolean =
     slaves.size < this.spec.constructors - 1
 
-  private def shouldBuildReplicator =
-    spec.constructors > 1 && !context.isReplicatorInConstruction &&
-    !battleCoordinator.needMoreSoldiers && (
-    (droneCount(classOf[Replicator]) < 2 ||
-      harvestCoordinator.freeZoneCount > droneCount(classOf[Replicator]) * 2) &&
-      droneCount(classOf[Replicator]) < 7)
+  private def shouldBuildReplicator = !(
+    spec.constructors <= 1 ||
+    (context.isReplicatorInConstruction && !context.greedy) ||
+    context.aggressive ||
+    battleCoordinator.needMoreSoldiers ||
+    (
+      droneCount(classOf[Replicator]) >= 2 &&
+      harvestCoordinator.freeZoneCount <= droneCount(classOf[Replicator]) * 2
+    )
+  )
 
   private def isStuck: Boolean =
     slaves.isEmpty && isConstructing && !isHarvesting && storedResources == 0
