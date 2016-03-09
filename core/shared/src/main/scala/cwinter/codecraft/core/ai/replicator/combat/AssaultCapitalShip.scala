@@ -5,7 +5,7 @@ import cwinter.codecraft.core.ai.shared.Mission
 import cwinter.codecraft.core.api.Drone
 
 
-class AssaultCapitalShip(enemy: Drone, context: ReplicatorBattleCoordinator)
+private[codecraft] class AssaultCapitalShip(enemy: Drone, context: ReplicatorBattleCoordinator)
 extends Mission[ReplicatorCommand] {
   var minRequired = computeMinRequired
   def maxRequired = minRequired * 2

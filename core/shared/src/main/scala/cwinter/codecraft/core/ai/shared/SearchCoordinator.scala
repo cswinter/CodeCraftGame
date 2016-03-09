@@ -6,7 +6,7 @@ import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 import scala.collection.mutable
 
 
-class SearchCoordinator(worldSize: Rectangle) {
+private[codecraft] class SearchCoordinator(worldSize: Rectangle) {
   private var searchTokens: Set[SearchToken] = genSearchTokens
   private val dangerousSearchTokens = mutable.Queue.empty[SearchToken]
   private var cooldown = 300

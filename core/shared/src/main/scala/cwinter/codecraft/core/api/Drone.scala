@@ -74,6 +74,9 @@ trait Drone {
 
   private[core] def drone: DroneImpl
 
+  /**
+    * Returns a string that encodes various properties of the drone.
+    */
   def displayString: String = {
     if (spec == null) {
       return "[Uninitialised drone controller]"

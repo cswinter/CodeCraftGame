@@ -1,6 +1,6 @@
 package cwinter.codecraft.core.ai.shared
 
-class DroneCounter {
+private[codecraft] class DroneCounter {
   private[this] var counts = Map.empty[Class[_], Int]
 
   def apply[T](clazz: Class[T]): Int = counts.getOrElse(clazz, 0)

@@ -4,7 +4,7 @@ import cwinter.codecraft.core.ai.shared.Mission
 import cwinter.codecraft.core.api.Drone
 
 
-class KeepEyeOnEnemy(enemy: Drone) extends Mission[ReplicatorCommand] {
+private[codecraft] class KeepEyeOnEnemy(enemy: Drone) extends Mission[ReplicatorCommand] {
   val minRequired = 1
   val maxRequired = 1
   val priority = 2

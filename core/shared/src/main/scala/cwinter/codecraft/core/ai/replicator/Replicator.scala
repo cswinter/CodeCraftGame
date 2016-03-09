@@ -4,7 +4,7 @@ import cwinter.codecraft.core.ai.shared.HarvestingZone
 import cwinter.codecraft.core.api.{DroneController, DroneSpec, MineralCrystal}
 
 
-class Replicator(ctx: ReplicatorContext) extends ReplicatorController(ctx) with TargetAcquisition {
+private[codecraft] class Replicator(ctx: ReplicatorContext) extends ReplicatorController(ctx) with TargetAcquisition {
   import context.{mothershipCoordinator, battleCoordinator, harvestCoordinator, droneCount, rng}
   val harvesterSpec = DroneSpec(storageModules = 1)
   val hunterSpec = DroneSpec(missileBatteries = 1)

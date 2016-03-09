@@ -6,7 +6,7 @@ import cwinter.codecraft.util.maths.Rectangle
 import scala.util.Random
 
 
-trait SharedContext[TCommand] extends MetaController {
+private[codecraft] trait SharedContext[TCommand] extends MetaController {
   val rng = new Random()
   val droneCount = new DroneCounter
 

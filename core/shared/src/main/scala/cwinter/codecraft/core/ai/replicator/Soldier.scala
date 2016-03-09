@@ -7,7 +7,7 @@ import cwinter.codecraft.core.api.GameConstants.MissileLockOnRange
 import cwinter.codecraft.util.maths.{Rng, Vector2}
 
 
-class Soldier(ctx: ReplicatorContext) extends ReplicatorController(ctx)
+private[codecraft] class Soldier(ctx: ReplicatorContext) extends ReplicatorController(ctx)
 with MissionExecutor[ReplicatorCommand] with TargetAcquisition {
   val normalizedStrength = 1.0
 

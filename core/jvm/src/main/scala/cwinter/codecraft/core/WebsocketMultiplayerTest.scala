@@ -5,7 +5,7 @@ import cwinter.codecraft.core.api.TheGameMaster
 import scala.async.Async.{async, await}
 import scala.concurrent.ExecutionContext.Implicits.global
 
-object WebsocketMultiplayerTest {
+private[core] object WebsocketMultiplayerTest {
   def main(args: Array[String]): Unit = {
     new Thread {
       override def run(): Unit = {

@@ -8,7 +8,7 @@ import cwinter.codecraft.core.replay.{NullReplayRecorder, ReplayRecorder}
 import scala.util.Random
 
 
-case class DroneContext(
+private[core] case class DroneContext(
   player: Player,
   worldConfig: WorldConfig,
   commandRecorder: Option[CommandRecorder],

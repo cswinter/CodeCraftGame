@@ -1,9 +1,8 @@
 package cwinter.codecraft.core.replay
 
-import cwinter.codecraft.core.{SimulationContext, MineralSpawn, WorldMap, Spawn}
 import cwinter.codecraft.core.api.Player
-import cwinter.codecraft.core.objects.MineralCrystalImpl
-import cwinter.codecraft.core.objects.drone.{DroneCommand, DroneImpl}
+import cwinter.codecraft.core.objects.drone.DroneCommand
+import cwinter.codecraft.core.{MineralSpawn, SimulationContext, Spawn, WorldMap}
 import upickle.default._
 
 import scala.collection.mutable.ListBuffer

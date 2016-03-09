@@ -1,5 +1,4 @@
-package cwinter.codecraft.core
-
+package cwinter.codecraft.core.api
 
 object GameConstants {
   /**
@@ -43,7 +42,8 @@ object GameConstants {
   final val HarvestingRange = 70
 
   /**
-    * The number of timesteps * number of constructor modules / resource cost it takes to build a drone.
+    * The number of timesteps it takes to build a drone is `DroneConstructionTime` *
+    *  (number of modules of the drone being built) / (number constructor modules of the building drone).
     */
   final val DroneConstructionTime = 100
 

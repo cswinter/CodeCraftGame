@@ -5,7 +5,7 @@ import cwinter.codecraft.core.api.Drone
 import cwinter.codecraft.util.maths.{Vector2, Rectangle}
 
 
-class DestroyerContext extends SharedContext[DestroyerCommand] {
+private[codecraft] class DestroyerContext extends SharedContext[DestroyerCommand] {
   val harvestCoordinator = new BasicHarvestCoordinator
   override val battleCoordinator = new DestroyerBattleCoordinator(this)
 
@@ -20,7 +20,7 @@ class DestroyerContext extends SharedContext[DestroyerCommand] {
   }
 }
 
-class DestroyerBattleCoordinator(context: DestroyerContext) extends BattleCoordinator[DestroyerCommand] {
+private[codecraft] class DestroyerBattleCoordinator(context: DestroyerContext) extends BattleCoordinator[DestroyerCommand] {
   private var harvesters = Set.empty[Harvester]
   private var protectHarvesters = Option.empty[ProtectHarvesters]
   private var protectMothership = Option.empty[ProtectMothership]
@@ -69,20 +69,20 @@ class DestroyerBattleCoordinator(context: DestroyerContext) extends BattleCoordi
 }
 
 
-sealed trait DestroyerCommand
+private[codecraft] sealed trait DestroyerCommand
 
-case class Attack(
+private[codecraft] case class Attack(
   enemy: Drone,
   notFound: () => Unit,
   metResistance: Int => Unit
 ) extends DestroyerCommand
-case class MoveTo(
+private[codecraft] case class MoveTo(
   position: Vector2
 ) extends DestroyerCommand
 
-case class MoveClose(position: Vector2, dist: Double) extends DestroyerCommand
+private[codecraft] case class MoveClose(position: Vector2, dist: Double) extends DestroyerCommand
 
-class AssaultCapitalShip(enemy: Drone) extends Mission[DestroyerCommand] {
+private[codecraft] class AssaultCapitalShip(enemy: Drone) extends Mission[DestroyerCommand] {
   private var enemyStrength = enemy.spec.maxHitpoints * enemy.spec.missileBatteries
   var minRequired = calcMinRequired
   def maxRequired = math.min((minRequired * 1.5).toInt, minRequired + 1)
@@ -139,7 +139,7 @@ class AssaultCapitalShip(enemy: Drone) extends Mission[DestroyerCommand] {
   def hasExpired = enemy.isDead
 }
 
-class ProtectHarvesters(
+private[codecraft] class ProtectHarvesters(
   mothership: Mothership,
   harvesters: => Set[Harvester]
 ) extends Mission[DestroyerCommand] {
@@ -187,7 +187,7 @@ class ProtectHarvesters(
 }
 
 
-class ProtectMothership(
+private[codecraft] class ProtectMothership(
   mothership: Mothership,
   val required: Int = 0
 ) extends Mission[DestroyerCommand] {

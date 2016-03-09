@@ -1,6 +1,7 @@
 package cwinter.codecraft.core.objects.drone
 
 import cwinter.codecraft.core._
+import cwinter.codecraft.core.api.GameConstants
 import cwinter.codecraft.core.objects.MineralCrystalImpl
 import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.util.maths.Vector2

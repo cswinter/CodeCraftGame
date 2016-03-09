@@ -5,7 +5,7 @@ import cwinter.codecraft.core.ai.shared.Mission
 import cwinter.codecraft.core.api.Drone
 
 
-class EliminateEnemy(
+private[codecraft] class EliminateEnemy(
   val enemy: Drone,
   val context: ReplicatorContext
 ) extends Mission[ReplicatorCommand] {

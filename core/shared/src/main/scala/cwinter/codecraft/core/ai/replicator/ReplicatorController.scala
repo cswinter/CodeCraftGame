@@ -5,7 +5,7 @@ import cwinter.codecraft.core.ai.shared.AugmentedController
 import cwinter.codecraft.core.api.Drone
 
 
-class ReplicatorController(_context: ReplicatorContext)
+private[codecraft] class ReplicatorController(_context: ReplicatorContext)
 extends AugmentedController[ReplicatorCommand, ReplicatorContext](_context) {
   override def onDroneEntersVision(drone: Drone): Unit = {
     super.onDroneEntersVision(drone)

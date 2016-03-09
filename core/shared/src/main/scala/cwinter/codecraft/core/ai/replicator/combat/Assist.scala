@@ -5,7 +5,7 @@ import cwinter.codecraft.core.ai.shared.Mission
 import cwinter.codecraft.core.api.Drone
 
 
-class Assist(
+private[codecraft] class Assist(
   val friend: ReplicatorController,
   val priority: Int,
   val minRequired: Int,

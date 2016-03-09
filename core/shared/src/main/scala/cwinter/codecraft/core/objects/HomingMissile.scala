@@ -1,7 +1,7 @@
 package cwinter.codecraft.core.objects
 
 import cwinter.codecraft.core._
-import cwinter.codecraft.core.api.Player
+import cwinter.codecraft.core.api.{GameConstants, Player}
 import cwinter.codecraft.core.objects.drone.DroneImpl
 import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.util.maths.Vector2

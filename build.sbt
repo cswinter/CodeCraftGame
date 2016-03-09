@@ -90,13 +90,8 @@ val core = (crossProject in file("core")).
         val oldStrategy = (assemblyMergeStrategy in assembly).value
         oldStrategy(x)
     },
-    libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.3.13",
     resolvers += "Spray" at "http://repo.spray.io",
-    libraryDependencies += "com.wandoulabs.akka" %% "spray-websocket" % "0.1.4",
-    libraryDependencies ++= Seq(
-      "javax.websocket" % "javax.websocket-client-api" % "1.1",
-      "org.glassfish.tyrus" % "tyrus-container-grizzly-client" % "1.12"
-    )
+    libraryDependencies ++= coreJVMDependencies
   ).jsSettings(
     libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.8.2"
   ).dependsOn(graphics, physics, collisions, util)
@@ -114,8 +109,12 @@ lazy val scalajsTest = (project in file("scalajs-test")).
   ).dependsOn(coreJS, demosJS)
 
 
+val skippedPackages = List(
+  "cwinter.codecraft.core.replay",
+  "scala.scalajs.js.annotation",
+  "cwinter.codecraft.core.multiplayer"
+)
 val projects: Seq[ProjectReference] = Seq(coreJVM, graphicsJVM, utilJVM, physicsJVM, collisionsJVM)
-val skippedPackages = Seq("cwinter.codecraft.core.ai")
 lazy val docs = (project in file("docs"))
   .settings(Commons.settings: _*)
   .settings(
@@ -127,8 +126,13 @@ lazy val docs = (project in file("docs"))
     libraryDependencies += "org.scala-lang" % "scala-reflect" % "2.11.7"
   )
   .settings(
-    unmanagedSourceDirectories in Compile <<= (projects map (unmanagedSourceDirectories in _ in Compile)).join.apply{(s) => s.flatten}
-    //scalacOptions in (Compile, doc) += s"-skip-packages ${skippedPackages.mkString(" ")}"
+    libraryDependencies +=  "org.scala-lang.modules" % "scala-async_2.11" % "0.9.5",
+    libraryDependencies += "com.lihaoyi" %%% "upickle" % "0.3.6",
+    libraryDependencies ++= coreJVMDependencies,
+    unmanagedSourceDirectories in Compile <<=
+      (projects map (unmanagedSourceDirectories in _ in Compile)).join.apply{(s) => s.flatten},
+    // this might not work under Windows (which uses ; as separator)
+    scalacOptions in (Compile, doc) ++= List(s"-skip-packages", skippedPackages.mkString(":"))
   )
 
 

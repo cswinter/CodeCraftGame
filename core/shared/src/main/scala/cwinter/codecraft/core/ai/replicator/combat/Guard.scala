@@ -4,7 +4,7 @@ import cwinter.codecraft.core.ai.replicator.ReplicatorController
 import cwinter.codecraft.core.ai.shared.Mission
 
 
-class Guard(
+private[codecraft] class Guard(
   val friend: ReplicatorController,
   var minRequired: Int
 ) extends Mission[ReplicatorCommand] {

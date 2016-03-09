@@ -3,7 +3,7 @@ package cwinter.codecraft.core.ai.shared
 import cwinter.codecraft.core.api.{Drone, DroneController, MineralCrystal}
 
 
-abstract class AugmentedController[TCommand, TContext <: SharedContext[TCommand]](
+private[codecraft] abstract class AugmentedController[TCommand, TContext <: SharedContext[TCommand]](
   val context: TContext
 ) extends DroneController {
   var searchToken: Option[SearchToken] = None

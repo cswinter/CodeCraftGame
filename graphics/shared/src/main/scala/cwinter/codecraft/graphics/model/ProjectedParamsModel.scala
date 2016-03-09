@@ -1,7 +1,7 @@
 package cwinter.codecraft.graphics.model
 
 
-case class ProjectedParamsModel[T, U](
+private[graphics] case class ProjectedParamsModel[T, U](
   model: Model[U],
   projection: T => U
 ) extends DecoratorModel[T, U] {

@@ -1,7 +1,7 @@
 package cwinter.codecraft.core.objects.drone
 
 import cwinter.codecraft.core._
-import cwinter.codecraft.core.api.{Player, DroneControllerBase, DroneSpec, MineralCrystal}
+import cwinter.codecraft.core.api._
 import cwinter.codecraft.core.errors.Errors
 import cwinter.codecraft.core.objects._
 import cwinter.codecraft.core.replay._
@@ -390,7 +390,7 @@ private[core] sealed trait SerializableDroneCommand
 private[core] sealed trait DroneCommand {
   def toSerializable: SerializableDroneCommand
 }
-object DroneCommand {
+private[core] object DroneCommand {
   def apply(
     serialized: SerializableDroneCommand
   )(implicit context: SimulationContext): DroneCommand = {
@@ -454,22 +454,22 @@ private[core] case class MoveToDrone(drone: DroneImpl) extends MovementCommand {
 
 import upickle.default._
 
-case class SerializableSpawn(spec: DroneSpec, position: Vector2, playerID: Int, resources: Int, name: Option[String]) {
+private[core] case class SerializableSpawn(spec: DroneSpec, position: Vector2, playerID: Int, resources: Int, name: Option[String]) {
   def deserialize: Spawn =
     Spawn(spec, position, Player.fromID(playerID), resources, name)
 }
-object SerializableSpawn {
+private[core] object SerializableSpawn {
   def apply(spawn: Spawn): SerializableSpawn =
     SerializableSpawn(spawn.droneSpec, spawn.position, spawn.player.id, spawn.resources, spawn.name)
 }
 
-sealed trait MultiplayerMessage
+private[core] sealed trait MultiplayerMessage
 
-@key("Cmds") case class CommandsMessage(
+@key("Cmds") private[core] case class CommandsMessage(
   commands: Seq[(Int, SerializableDroneCommand)]
 ) extends MultiplayerMessage
-@key("State") case class WorldStateMessage(worldState: Iterable[DroneStateMessage]) extends MultiplayerMessage
-@key("Start") case class InitialSync(
+@key("State") private[core] case class WorldStateMessage(worldState: Iterable[DroneStateMessage]) extends MultiplayerMessage
+@key("Start") private[core] case class InitialSync(
   worldSize: Rectangle,
   minerals: Seq[MineralSpawn],
   initialDrones: Seq[SerializableSpawn],
@@ -486,11 +486,11 @@ sealed trait MultiplayerMessage
   def localPlayers: Set[Player] = localPlayerIDs.map(Player.fromID)
   def remotePlayers: Set[Player] = remotePlayerIDs.map(Player.fromID)
 }
-@key("Register") case object Register extends MultiplayerMessage
+@key("Register") private[core] case object Register extends MultiplayerMessage
 
 
 
-object MultiplayerMessage {
+private[core] object MultiplayerMessage {
   def parse(json: String): MultiplayerMessage =
     read[MultiplayerMessage](json)
 
@@ -517,7 +517,7 @@ object MultiplayerMessage {
   def register: String = write(Register)
 }
 
-object DroneOrdering extends Ordering[DroneImpl] {
+private[core] object DroneOrdering extends Ordering[DroneImpl] {
   override def compare(d1: DroneImpl, d2: DroneImpl): Int =
     if (d1.priority == d2.priority) d1.id - d2.id
     else d1.id - d2.id

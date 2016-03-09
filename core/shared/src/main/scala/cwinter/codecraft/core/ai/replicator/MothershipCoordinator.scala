@@ -1,7 +1,7 @@
 package cwinter.codecraft.core.ai.replicator
 
 
-class MothershipCoordinator {
+private[codecraft] class MothershipCoordinator {
   private var orphanedHarvesters = List.empty[Harvester]
   private var _motherships = Set.empty[Replicator]
   def motherships = _motherships

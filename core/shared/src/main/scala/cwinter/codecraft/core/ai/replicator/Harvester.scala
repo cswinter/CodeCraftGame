@@ -3,7 +3,7 @@ package cwinter.codecraft.core.ai.replicator
 import cwinter.codecraft.core.api.{Drone, MineralCrystal}
 
 
-class Harvester(
+private[codecraft] class Harvester(
   mothership: Replicator,
   ctx: ReplicatorContext
 ) extends ReplicatorController(ctx) {

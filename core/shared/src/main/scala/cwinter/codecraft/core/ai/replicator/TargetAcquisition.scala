@@ -3,7 +3,7 @@ package cwinter.codecraft.core.ai.replicator
 import cwinter.codecraft.core.api.Drone
 
 
-trait TargetAcquisition {
+private[codecraft] trait TargetAcquisition {
   self: ReplicatorController =>
 
   val normalizedStrength: Double

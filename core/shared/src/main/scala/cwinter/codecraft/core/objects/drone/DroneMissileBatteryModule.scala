@@ -1,9 +1,10 @@
 package cwinter.codecraft.core.objects.drone
 
+import cwinter.codecraft.core.api.GameConstants
 import cwinter.codecraft.core.{SimulatorEvent, SpawnHomingMissile}
 import cwinter.codecraft.graphics.worldstate.{MissileBatteryDescriptor, DroneModuleDescriptor}
 import cwinter.codecraft.util.maths.Vector2
-import cwinter.codecraft.core.GameConstants.{MissileCooldown, MissileLockOnRange}
+import GameConstants.{MissileCooldown, MissileLockOnRange}
 
 private[core] class DroneMissileBatteryModule(positions: Seq[Int], owner: DroneImpl)
   extends DroneModule(positions, owner) {

@@ -50,7 +50,7 @@ object Server {
 }
 
 
-class MultiplayerServer(displayGame: Boolean = false) extends Actor with ActorLogging {
+private[codecraft] class MultiplayerServer(displayGame: Boolean = false) extends Actor with ActorLogging {
   val map = TheGameMaster.defaultMap()
   val clientPlayers = Set[Player](BluePlayer)
   val serverPlayers = Set[Player](OrangePlayer)
@@ -81,7 +81,7 @@ class MultiplayerServer(displayGame: Boolean = false) extends Actor with ActorLo
   }
 }
 
-class TwoPlayerMultiplayerServer extends Actor with ActorLogging {
+private[codecraft] class TwoPlayerMultiplayerServer extends Actor with ActorLogging {
   import Server.{Stop, GetStatus, Status}
   val map = TheGameMaster.defaultMap()
 
@@ -197,7 +197,7 @@ class TwoPlayerMultiplayerServer extends Actor with ActorLogging {
 }
 
 
-object MultiplayerServer {
+private[codecraft] object MultiplayerServer {
   def props(displayGame: Boolean = false) = Props(classOf[MultiplayerServer], displayGame)
 }
 

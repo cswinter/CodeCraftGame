@@ -4,7 +4,7 @@ import cwinter.codecraft.core.api.MineralCrystal
 import cwinter.codecraft.util.maths.Vector2
 
 
-class HarvestCoordinatorWithZones extends BasicHarvestCoordinator {
+private[codecraft] class HarvestCoordinatorWithZones extends BasicHarvestCoordinator {
   import HarvestCoordinatorWithZones.ZoneWidth
   private var zones = Map.empty[(Int, Int), HarvestingZone]
   private var assignedZones = Set.empty[(Int, Int)]
@@ -52,11 +52,11 @@ class HarvestCoordinatorWithZones extends BasicHarvestCoordinator {
     ((pos.x / ZoneWidth).toInt, (pos.y / ZoneWidth).toInt)
 }
 
-object HarvestCoordinatorWithZones {
+private[codecraft] object HarvestCoordinatorWithZones {
   final val ZoneWidth = 750
 }
 
-class HarvestingZone(
+private[codecraft] class HarvestingZone(
   val x: Int,
   val y: Int
 ) {

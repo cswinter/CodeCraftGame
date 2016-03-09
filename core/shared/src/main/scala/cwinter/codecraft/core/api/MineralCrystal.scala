@@ -7,14 +7,14 @@ import scala.scalajs.js.annotation.JSExportAll
 
 
 /**
- * A mineral crystal. Can be harvested and processed to generate resources.
- */
+  * A mineral crystal.
+  * Can be harvested by drones with storage modules to obtain resources.
+  */
 @JSExportAll
 class MineralCrystal(
   private[core] val mineralCrystal: MineralCrystalImpl,
   private[core] val holder: Player
 ) {
-  // TODO: implement isVisible and use to restrict access
   def position: Vector2 = mineralCrystal.position
   def size: Int = mineralCrystal.size
   def harvested: Boolean = mineralCrystal.harvested

@@ -3,7 +3,7 @@ package cwinter.codecraft.core.ai.replicator
 import cwinter.codecraft.core.api.Drone
 
 
-object Util {
+private[codecraft] object Util {
   final val SoldierStrength = 2
 
 

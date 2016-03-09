@@ -2,7 +2,7 @@ import sbt._
 import Keys._
 
 object Commons {
-  val appVersion = "0.2.4.3"
+  val appVersion = "0.2.4.4"
 
   val settings: Seq[Def.Setting[_]] = Seq(
     organization := "org.cwinter",
@@ -17,3 +17,4 @@ object Commons {
     autoAPIMappings := true
   )
 }
+

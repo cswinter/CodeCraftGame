@@ -116,7 +116,7 @@ private[codecraft] case class EnergyGlobeDescriptor(
     intersects(xPos, yPos, rectangle, 20) // FIXME
 }
 
-object PlainEnergyGlobeDescriptor extends EnergyGlobeDescriptor(1)
+private[codecraft] object PlainEnergyGlobeDescriptor extends EnergyGlobeDescriptor(1)
 
 private[codecraft] case class MineralDescriptor(size: Int) extends WorldObjectDescriptor {
   private[graphics] val signature = MineralSignature(size)

@@ -4,7 +4,7 @@ import cwinter.codecraft.core.ai.shared.HarvestingZone
 import cwinter.codecraft.core.api.{DroneController, DroneSpec, MineralCrystal}
 
 
-class Mothership(ctx: DestroyerContext) extends DestroyerController(ctx) {
+private[codecraft] class Mothership(ctx: DestroyerContext) extends DestroyerController(ctx) {
   val harvesterSpec = DroneSpec(storageModules = 1)
   val scoutSpec = DroneSpec(engines = 1)
   val destroyerSpec = DroneSpec(shieldGenerators = 2, missileBatteries = 2)

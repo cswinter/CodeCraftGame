@@ -54,6 +54,9 @@ private[codecraft] trait GameMasterLike {
   }
 
 
+  /**
+    * Runs the `simulator`.
+    */
   def run(simulator: DroneWorldSimulator): DroneWorldSimulator
 
   def createSimulator(
@@ -70,6 +73,9 @@ private[codecraft] trait GameMasterLike {
     new DroneWorldSimulator(map, controllers, devEvents)
   }
 
+  /**
+    * Creates a new drone world simulator from a replay string.
+    */
   def createReplaySimulator(replayText: String): DroneWorldSimulator = {
     val replayer = new Replayer(replayText.lines)
     new DroneWorldSimulator(replayer.map, replayer.controllers, devEvents, Some(replayer))
@@ -86,6 +92,11 @@ private[codecraft] trait GameMasterLike {
   def startGame(mothership1: DroneControllerBase, mothership2: DroneControllerBase): DroneWorldSimulator =
     runGame(mothership1, mothership2)
 
+  /**
+    * Runs a game with default settings.
+    * @param mothership1 The drone controller for player 1.
+    * @param mothership2 The drone controller for player 2.
+    */
   def runGame(mothership1: DroneControllerBase, mothership2: DroneControllerBase): DroneWorldSimulator = {
     val controllers = Seq(mothership1, mothership2)
     val simulator = new DroneWorldSimulator(defaultMap(), controllers, devEvents)
@@ -102,10 +113,29 @@ private[codecraft] trait GameMasterLike {
     WorldMap(worldSize, Seq.fill(8)((2, 40)), spawns).withDefaultWinConditions
   }
 
+  /**
+    * Returns a drone controller for the level 1 AI.
+    */
   def level1AI(): DroneControllerBase = new ai.basic.Mothership
+
+  /**
+    * Returns a drone controller for the level 2 AI.
+    */
   def level2AI(): DroneControllerBase = new basicplus.Mothership
+
+  /**
+    * Returns a drone controller for the level 3 AI.
+    */
   def bonusLevelAI(): DroneControllerBase = new ai.cheese.Mothership
+
+  /**
+    * Returns a drone controller for the Replicator AI.
+    */
   def replicatorAI(): DroneControllerBase = new ai.replicator.Replicator
+
+  /**
+    * Returns a drone controller for the Destroyer AI.
+    */
   def destroyerAI(): DroneControllerBase = new ai.destroyer.Mothership
 
   /**

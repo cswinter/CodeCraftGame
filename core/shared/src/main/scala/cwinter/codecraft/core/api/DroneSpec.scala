@@ -3,7 +3,7 @@ package cwinter.codecraft.core.api
 import cwinter.codecraft.core.objects.drone._
 import cwinter.codecraft.util.maths.{Geometry, Vector2}
 import cwinter.codecraft.util.modules.ModulePosition
-import cwinter.codecraft.core.GameConstants.{ModuleResourceCost, DroneConstructionTime}
+import GameConstants.{ModuleResourceCost, DroneConstructionTime}
 
 import scala.scalajs.js.annotation.JSExportAll
 
@@ -88,10 +88,29 @@ case class DroneSpec(
     radiusBody + 0.5f * Geometry.circumradius(4, sides)
   }
 
+  /**
+    * Returns a copy of this object with `storageModules` set to the specified value.
+    */
   def withStorageModules(storageModules: Int) = copy(storageModules = storageModules)
+
+  /**
+    * Returns a copy of this object with `missileBatteries` set to the specified value.
+    */
   def withMissileBatteries(missileBatteries: Int) = copy(missileBatteries = missileBatteries)
+
+  /**
+    * Returns a copy of this object with `constructors` set to the specified value.
+    */
   def withConstructors(constructors: Int) = copy(constructors = constructors)
+
+  /**
+    * Returns a copy of this object with `engines` set to the specified value.
+    */
   def withEngines(engines: Int) = copy(engines = engines)
+
+  /**
+    * Returns a copy of this object with `shieldGenerators` set to the specified value.
+    */
   def withShieldGenerators(shieldGenerators: Int) = copy(shieldGenerators = shieldGenerators)
 
   private[core] def constructDynamics(owner: DroneImpl, initialPos: Vector2, time: Double): DroneDynamics =

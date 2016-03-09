@@ -4,7 +4,7 @@ import cwinter.codecraft.core.api.{Drone, DroneControllerBase}
 import cwinter.codecraft.util.maths.Vector2
 
 
-trait Mission[TCommand] {
+private[codecraft] trait Mission[TCommand] {
   type Executor = DroneControllerBase with MissionExecutor[TCommand]
   private[this] var _assigned = Set.empty[Executor]
   def assigned: Set[Executor] = _assigned
@@ -72,7 +72,7 @@ trait Mission[TCommand] {
   def nAssigned: Int = _assigned.size
 }
 
-trait MissionExecutor[TCommand] {
+private[codecraft] trait MissionExecutor[TCommand] {
   self: DroneControllerBase =>
 
   private[this] var _mission: Option[Mission[TCommand]] = None

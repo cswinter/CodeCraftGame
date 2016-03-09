@@ -4,7 +4,7 @@ import cwinter.codecraft.core.api.MineralCrystal
 import cwinter.codecraft.util.maths.Vector2
 
 
-class BasicHarvestCoordinator {
+private[codecraft] class BasicHarvestCoordinator {
   private var _minerals = Set.empty[MineralCrystal]
   def minerals = _minerals
   private var claimedMinerals = Set.empty[MineralCrystal]

@@ -1,7 +1,7 @@
 package cwinter.codecraft.core
 
 import cwinter.codecraft.collisions.VisionTracker
-import cwinter.codecraft.core.api.{BluePlayer, DroneControllerBase, DroneSpec, Player}
+import cwinter.codecraft.core.api._
 import cwinter.codecraft.core.errors.Errors
 import cwinter.codecraft.core.multiplayer.RemoteClient
 import cwinter.codecraft.core.objects._
@@ -73,7 +73,7 @@ class DroneWorldSimulator(
     map.size, MaxDroneRadius
   )
 
-  val contextForPlayer: Map[Player, DroneContext] = {
+  private val contextForPlayer: Map[Player, DroneContext] = {
     for (player <- players)
       yield player -> DroneContext(
         player,
@@ -93,8 +93,8 @@ class DroneWorldSimulator(
 
   replayRecorder.recordInitialWorldState(map)
 
-  val minerals = map.instantiateMinerals()
-  implicit val mineralRegistry = minerals.map(m => (m.id, m)).toMap
+  private val minerals = map.instantiateMinerals()
+  implicit private val mineralRegistry = minerals.map(m => (m.id, m)).toMap
   minerals.foreach(spawnMineral)
   for {
     (Spawn(spec, position, player, resources, name), controller) <- map.initialDrones zip controllers
@@ -125,7 +125,7 @@ class DroneWorldSimulator(
     resources: Int
   ): DroneImpl = new DroneImpl(spec, controller, contextForPlayer(player), position, 0, resources)
 
-  def shouldRecordCommands(player: Player): Boolean =
+  private def shouldRecordCommands(player: Player): Boolean =
     multiplayerConfig.isMultiplayerGame && multiplayerConfig.isLocalPlayer(player)
 
   private def spawnDrone(drone: DroneImpl): Unit = {
@@ -179,7 +179,7 @@ class DroneWorldSimulator(
     }
   }
 
-  override def asyncUpdate(): Future[Unit] = {
+  override protected def asyncUpdate(): Future[Unit] = {
     if (multiplayerConfig.isMultiplayerGame) {
       multiplayerUpdate()
     } else {
@@ -188,7 +188,7 @@ class DroneWorldSimulator(
     }
   }
 
-  def multiplayerUpdate(): Future[Unit] = async {
+  private def multiplayerUpdate(): Future[Unit] = async {
     prepareDroneCommands()
     await { syncDroneCommands() }
     updateWorldState()
@@ -196,13 +196,13 @@ class DroneWorldSimulator(
     completeUpdate()
   }
 
-  def singleplayerUpdate(): Unit = {
+  private def singleplayerUpdate(): Unit = {
     prepareDroneCommands()
     updateWorldState()
     completeUpdate()
   }
 
-  def prepareDroneCommands(): Unit = {
+  private def prepareDroneCommands(): Unit = {
     replayRecorder.newTimestep(timestep)
     showSightAndMissileRadii()
     checkWinConditions()
@@ -214,13 +214,13 @@ class DroneWorldSimulator(
     processDroneEvents()
   }
 
-  def updateWorldState(): Unit = {
+  private def updateWorldState(): Unit = {
     val events = executeGameMechanics()
     physicsEngine.update()
     processSimulatorEvents(events ++ debugEvents)
   }
 
-  def completeUpdate(): Unit = {
+  private def completeUpdate(): Unit = {
     val deathEvents =
       for (drone <- drones; d <- drone.deathEvents)
         yield d
@@ -262,7 +262,7 @@ class DroneWorldSimulator(
     ) showVictoryMessage(player)
   }
 
-  def showVictoryMessage(winner: Player): Unit = {
+  private def showVictoryMessage(winner: Player): Unit = {
     Debug.drawText(s"${winner.name} has won!", 0, 0, ColorRGBA(winner.color, 0.6f), true, true)
   }
 

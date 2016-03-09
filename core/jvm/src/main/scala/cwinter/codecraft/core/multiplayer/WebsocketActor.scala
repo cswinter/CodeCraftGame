@@ -9,7 +9,7 @@ import spray.http.HttpRequest
 import scala.language.postfixOps
 
 
-trait WebsocketWorker {
+private[core] trait WebsocketWorker {
   private[this] var websocketActor: Option[ActorRef] = None
 
   def receive(message: String): Unit
@@ -53,7 +53,7 @@ private[core] class WebsocketActor(
 
 }
 
-object WebsocketActor {
+private[core] object WebsocketActor {
   def props(serverConnection: ActorRef, worker: WebsocketWorker) =
     Props(classOf[WebsocketActor], serverConnection, worker)
 

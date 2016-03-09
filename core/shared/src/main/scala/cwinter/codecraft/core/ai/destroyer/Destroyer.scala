@@ -6,7 +6,7 @@ import cwinter.codecraft.core.api.{Drone, MineralCrystal}
 import cwinter.codecraft.util.maths.Vector2
 
 
-class Destroyer(ctx: DestroyerContext) extends DestroyerController(ctx)
+private[codecraft] class Destroyer(ctx: DestroyerContext) extends DestroyerController(ctx)
 with MissionExecutor[DestroyerCommand] {
   var hasReturned = false
   var nextCrystal: Option[MineralCrystal] = None

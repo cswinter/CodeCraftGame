@@ -5,7 +5,7 @@ import cwinter.codecraft.core.multiplayer.{LocalServerConnection, LocalClientCon
 import cwinter.codecraft.core.replay.DummyDroneController
 
 
-object IntraRuntimeMultiplayerTest {
+private[codecraft] object IntraRuntimeMultiplayerTest {
   def main(args: Array[String]): Unit = {
     val clientPlayers = Set[Player](BluePlayer)
     val serverPlayers = Set[Player](OrangePlayer)

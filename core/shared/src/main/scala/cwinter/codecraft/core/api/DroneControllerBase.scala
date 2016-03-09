@@ -5,7 +5,7 @@ import cwinter.codecraft.graphics.engine.Debug
 import cwinter.codecraft.util.maths._
 
 import scala.scalajs.js.annotation.JSExportAll
-import cwinter.codecraft.core.GameConstants.MissileLockOnRange
+import GameConstants.MissileLockOnRange
 
 
 // The description part of this Scaladoc is identical to that in DroneController and JDroneController.
@@ -202,6 +202,13 @@ trait DroneControllerBase extends Drone {
   def buildDrone(spec: DroneSpec, controller: DroneControllerBase): Unit =
     buildDrone(controller, spec)
 
+  /**
+    * Order the drone to start the construction of a new drone.
+    * While construction is in progress, the drone cannot move.
+    *
+    * @param controller The drone controller that will govern the behaviour of the new drone.
+    * @param spec The specification for the number of copies for each module equipped by the new drone.
+    */
   def buildDrone(controller: DroneControllerBase, spec: DroneSpec): Unit = {
     def cap(value: Double, min: Double, max: Double): Double =
       math.min(math.max(value, min), max)

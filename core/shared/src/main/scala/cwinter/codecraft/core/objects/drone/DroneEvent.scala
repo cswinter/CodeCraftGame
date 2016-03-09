@@ -38,7 +38,7 @@ private[core] case class DroneEntersSightRadius(drone: DroneImpl) extends DroneE
     SerializableDroneEntersSightRadius(drone.id)
 }
 
-object DroneEvent {
+private[core] object DroneEvent {
   def apply(serialized: SerializableDroneEvent)(
     implicit context: SimulationContext
   ): DroneEvent = serialized match {

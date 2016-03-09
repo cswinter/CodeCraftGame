@@ -1,8 +1,9 @@
 package cwinter.codecraft.core.objects.drone
 
+import cwinter.codecraft.core.api.GameConstants
 import cwinter.codecraft.core.objects.{ConstantVelocityDynamics, MissileDynamics}
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
-import cwinter.codecraft.core.GameConstants.{HarvestingRange}
+import GameConstants.{HarvestingRange}
 
 
 private[core] class ComputedDroneDynamics(
@@ -196,15 +197,15 @@ private[core] class ComputedDroneDynamics(
 
 
 import upickle.default.key
-sealed trait DroneStateMessage
+private[core] sealed trait DroneStateMessage
 
-@key("Hit") case class MissileHit(
+@key("Hit") private[core] case class MissileHit(
   droneID: Int,
   location: Vector2,
   missileID: Int
 ) extends DroneStateMessage
 
-@key("State") case class DroneDynamicsState(
+@key("State") private[core] case class DroneDynamicsState(
   position: Vector2,
   orientation: Double,
   arrivalEvent: Option[SerializableDroneEvent],

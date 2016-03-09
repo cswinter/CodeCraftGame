@@ -133,6 +133,9 @@ object WorldMap {
   }
 }
 
+/**
+  * Describes the initial position and size of a mineral crystal.
+  */
 case class MineralSpawn(
   size: Int,
   position: Vector2

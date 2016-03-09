@@ -19,11 +19,17 @@ object TheGameMaster extends GameMasterLike {
     simulator
   }
 
+  /**
+    * Runs the replay stored in the specified file.
+    */
   def runReplayFromFile(filepath: String): DroneWorldSimulator = {
     val simulator = createReplaySimulator(scala.io.Source.fromFile(filepath).mkString)
     run(simulator)
   }
 
+  /**
+    * Runs the last recorded replay.
+    */
   def runLastReplay(): DroneWorldSimulator = {
     val dir = new File(System.getProperty("user.home") + "/.codecraft/replays")
     val latest = dir.listFiles().maxBy(_.lastModified())

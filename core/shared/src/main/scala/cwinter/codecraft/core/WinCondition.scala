@@ -1,8 +1,7 @@
 package cwinter.codecraft.core
 
 
-sealed trait WinCondition
+private[codecraft] sealed trait WinCondition
 
-
-case object DestroyEnemyMotherships extends WinCondition
+private[codecraft] case object DestroyEnemyMotherships extends WinCondition
 
