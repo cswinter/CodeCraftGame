@@ -38,7 +38,7 @@ object TheGameMaster extends GameMasterLike {
   }
 
 
-  def run(context: RunContext): Unit = {
+  private def run(context: RunContext): Unit = {
     if (!context.stopped) {
       dom.requestAnimationFrame((d: Double) => run(context))
     }
@@ -62,6 +62,9 @@ object TheGameMaster extends GameMasterLike {
 
   override def connectToWebsocket(connectionString: String): WebsocketClient =
     new JSWebsocketClient(connectionString)
+
+
+  def currentFPS: Option[Int] = runContext.map(_.fps.fps)
 }
 
 class RunContext(
