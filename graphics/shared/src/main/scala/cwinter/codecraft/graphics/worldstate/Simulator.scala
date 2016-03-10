@@ -12,7 +12,7 @@ private[codecraft] trait Simulator {
   @volatile private[this] var running = false
   private[this] var paused = false
   private[this] var tFrameCompleted = System.nanoTime()
-  private[this] var targetFPS = 30
+  private[this] var targetFPS = 60
   @volatile private[this] var t = -1
   private[this] def frameMillis = 1000.0 / targetFPS
   private[this] var stopped = false
@@ -32,11 +32,11 @@ private[codecraft] trait Simulator {
 
         val nanos = System.nanoTime()
         val dt = nanos - tFrameCompleted
-        tFrameCompleted = nanos
         val sleepMillis = frameMillis - dt / 1000000
         if (sleepMillis > 0) {
           Thread.sleep(sleepMillis.toInt)
         }
+        tFrameCompleted = System.nanoTime()
       }
     }
   }

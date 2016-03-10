@@ -173,7 +173,7 @@ private[codecraft] trait GameMasterLike {
     * A small [[WorldMap]].
     */
   val smallMap: WorldMap = {
-    val spawns = constructSpawns(Vector2(1750, 500), Vector2(-1750, -500))
+    val spawns = constructSpawns(Vector2(1650, 500), Vector2(-1650, -500))
     WorldMap(SmallWorldSize, SmallResourceDistribution, spawns).withDefaultWinConditions
   }
 

@@ -93,7 +93,7 @@ class RunContext(
 
 class FPSMeter(context: RunContext) {
   val startTime = js.Date.now()
-  var last30FrameStarted = js.Date.now()
+  var last60FrameStarted = js.Date.now()
   var lastFrameStarted = js.Date.now()
   var fps = 0
 
@@ -126,9 +126,9 @@ class FPSMeter(context: RunContext) {
   }
 
   def updateSmoothedFPS(): Unit = {
-    if (context.simulator.timestep % 30 == 0) {
-      fps = math.round(30 * 1000 / (js.Date.now() - last30FrameStarted)).toInt
-      last30FrameStarted = js.Date.now()
+    if (context.simulator.timestep % 60 == 0) {
+      fps = math.round(60 * 1000 / (js.Date.now() - last60FrameStarted)).toInt
+      last60FrameStarted = js.Date.now()
     }
   }
 }
