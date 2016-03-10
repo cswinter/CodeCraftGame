@@ -1,6 +1,6 @@
 package cwinter.codecraft.core.ai.basic
 
-import cwinter.codecraft.core.api.{DroneController, Drone, DroneSpec, MineralCrystal}
+import cwinter.codecraft.core.api.{Drone, DroneController, DroneSpec, MineralCrystal}
 import cwinter.codecraft.util.maths.{Rng, Vector2}
 
 
@@ -45,44 +45,28 @@ private[core] class Mothership extends DroneController {
 }
 
 private[core] class ScoutingDroneController(val mothership: Mothership) extends DroneController {
-  var hasReturned = false
-  var nextCrystal: Option[MineralCrystal] = None
-
-
-  // abstract methods for event handling
-  override def onSpawn(): Unit = {
-    moveInDirection(Vector2(Rng.double(0, 100)))
-  }
-
-  override def onDeath(): Unit = mothership.collectors -= 1
+  private var nextMineral = Option.empty[MineralCrystal]
 
   override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = {
-    if (nextCrystal.isEmpty && mineralCrystal.size <= availableStorage) {
+    if (nextMineral.isEmpty && availableStorage > 0) {
+      nextMineral = Some(mineralCrystal)
       moveTo(mineralCrystal)
-      nextCrystal = Some(mineralCrystal)
     }
   }
 
   override def onTick(): Unit = {
-    if (availableStorage == 0 && !hasReturned) {
-      moveTo(mothership)
-    } else if ((hasReturned && availableStorage > 0) || Rng.bernoulli(0.005) && nextCrystal == None) {
-      hasReturned = false
-      moveInDirection(Vector2(Rng.double(0, 100)))
+    if (nextMineral.exists(_.harvested)) nextMineral = None
+    if (!isMoving && !isHarvesting) {
+      if (availableStorage == 0) { moveTo(mothership); nextMineral = None }
+      else moveTo(position + Rng.vector2(500))
     }
   }
 
-  override def onArrivesAtMineral(mineral: MineralCrystal): Unit = {
-    harvest(mineral)
-    nextCrystal = None
-  }
+  override def onArrivesAtMineral(mineral: MineralCrystal): Unit = harvest(mineral)
 
-  override def onArrivesAtDrone(drone: Drone): Unit = {
-    giveResourcesTo(drone)
-    hasReturned = true
-  }
+  override def onArrivesAtDrone(drone: Drone): Unit = giveResourcesTo(drone)
 
-  override def onDroneEntersVision(drone: Drone): Unit = ()
+  override def onDeath(): Unit = mothership.collectors -= 1
 }
 
 private[core] class AttackDroneController extends DroneController {

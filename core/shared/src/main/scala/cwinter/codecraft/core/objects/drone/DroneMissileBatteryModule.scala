@@ -16,7 +16,7 @@ private[core] class DroneMissileBatteryModule(positions: Seq[Int], owner: DroneI
 
 
   override def update(availableResources: Int): (Seq[SimulatorEvent], Seq[Vector2], Seq[Vector2]) = {
-    _cooldown = _cooldown - 1
+    if (_cooldown > 0) _cooldown = _cooldown - 1
 
     val result = nextEffect
     nextEffect = NoEffects
