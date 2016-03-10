@@ -51,7 +51,7 @@ object Server {
 
 
 private[codecraft] class MultiplayerServer(displayGame: Boolean = false) extends Actor with ActorLogging {
-  val map = TheGameMaster.defaultMap()
+  val map = TheGameMaster.defaultMap
   val clientPlayers = Set[Player](BluePlayer)
   val serverPlayers = Set[Player](OrangePlayer)
 
@@ -83,7 +83,7 @@ private[codecraft] class MultiplayerServer(displayGame: Boolean = false) extends
 
 private[codecraft] class TwoPlayerMultiplayerServer extends Actor with ActorLogging {
   import Server.{Stop, GetStatus, Status}
-  val map = TheGameMaster.defaultMap()
+  val map = TheGameMaster.defaultMap
 
   private[this] var clients = Set.empty[RemoteClient]
   private[this] var freeSlots = Seq(MultiplayerSlot(OrangePlayer), MultiplayerSlot(BluePlayer))

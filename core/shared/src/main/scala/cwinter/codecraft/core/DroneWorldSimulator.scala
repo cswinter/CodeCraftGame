@@ -93,7 +93,7 @@ class DroneWorldSimulator(
 
   replayRecorder.recordInitialWorldState(map)
 
-  private val minerals = map.instantiateMinerals()
+  private[codecraft] val minerals = map.instantiateMinerals()
   implicit private val mineralRegistry = minerals.map(m => (m.id, m)).toMap
   minerals.foreach(spawnMineral)
   for {

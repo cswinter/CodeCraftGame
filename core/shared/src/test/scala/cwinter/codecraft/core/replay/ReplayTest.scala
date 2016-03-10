@@ -12,7 +12,7 @@ class ReplayTest extends FlatSpec {
   "A replayer" should "work" in {
     val recorder = new StringReplayRecorder
     val simulator = new DroneWorldSimulator(
-      TheGameMaster.defaultMap(),
+      TheGameMaster.defaultMap,
       Seq(TheGameMaster.replicatorAI(), TheGameMaster.destroyerAI()),
       t => Seq.empty,
       forceReplayRecorder = Some(recorder)

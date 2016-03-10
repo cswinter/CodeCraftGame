@@ -19,15 +19,22 @@ private[codecraft] trait GameMasterLike {
   final val DefaultWorldSize = Rectangle(-3000, 3000, -2000, 2000)
 
   /**
+    * Smaller than default dimensions for the size of the game world.
+    */
+  final val SmallWorldSize = Rectangle(-2000, 2000, -1500, 1500)
+
+  /**
+    * Larger than default dimensions for the size of the game world.
+    */
+  final val LargeWorldSize = Rectangle(-4500, 4500, -3000, 3000)
+
+  /**
    * Identifies the current version of the JavaScript API.
    * This value is changed whenever a backwards incompatible change is made to the JavaScript API.
    */
   final val JavascriptAPIVersion = "0.1"
 
-  /**
-   * Default resource distribution.
-   */
-  final val DefaultResourceDistribution = Seq(
+  private final val DefaultResourceDistribution = Seq(
       (10, 4), (10, 4),
       (10, 6), (10, 6),
       (10, 8), (10, 8),
@@ -35,6 +42,14 @@ private[codecraft] trait GameMasterLike {
       (7, 20), (7, 20),
       (5, 30), (5, 30)
     )
+
+  private final val SmallResourceDistribution =
+    for (group <- DefaultResourceDistribution.grouped(2).toSeq)
+      yield group.head
+
+  private final val LargeResourceDistribution =
+    for ((n, size) <- DefaultResourceDistribution)
+      yield (n, (size * 1.5).toInt)
 
   /**
    * Default number of modules for the initial mothership.
@@ -59,6 +74,9 @@ private[codecraft] trait GameMasterLike {
     */
   def run(simulator: DroneWorldSimulator): DroneWorldSimulator
 
+  /**
+    * Creates a new [[DroneWorldSimulator]] for a singleplayer game with the specified settings.
+    */
   def createSimulator(
     mothership1: DroneControllerBase,
     mothership2: DroneControllerBase,
@@ -69,6 +87,18 @@ private[codecraft] trait GameMasterLike {
   ): DroneWorldSimulator = {
     val spawns = constructSpawns(spawn1, spawn2)
     val map = WorldMap(worldSize, resourceClusters, spawns).withDefaultWinConditions
+    val controllers = Seq(mothership1, mothership2)
+    new DroneWorldSimulator(map, controllers, devEvents)
+  }
+
+  /**
+    * Creates a new [[DroneWorldSimulator]] for a singleplayer game with the specified settings.
+    */
+  def createSimulator(
+    mothership1: DroneControllerBase,
+    mothership2: DroneControllerBase,
+    map: WorldMap
+  ): DroneWorldSimulator = {
     val controllers = Seq(mothership1, mothership2)
     new DroneWorldSimulator(map, controllers, devEvents)
   }
@@ -99,19 +129,11 @@ private[codecraft] trait GameMasterLike {
     */
   def runGame(mothership1: DroneControllerBase, mothership2: DroneControllerBase): DroneWorldSimulator = {
     val controllers = Seq(mothership1, mothership2)
-    val simulator = new DroneWorldSimulator(defaultMap(), controllers, devEvents)
+    val simulator = new DroneWorldSimulator(defaultMap, controllers, devEvents)
     run(simulator)
     simulator
   }
 
-  /**
-   * Returns a [[WorldMap]] for the first level.
-   */
-  def level1Map(): WorldMap = {
-    val worldSize = Rectangle(-2000, 2000, -1000, 1000)
-    val spawns = constructSpawns(Vector2(1000, 200), Vector2(-1000, -200))
-    WorldMap(worldSize, Seq.fill(8)((2, 40)), spawns).withDefaultWinConditions
-  }
 
   /**
     * Returns a drone controller for the level 1 AI.
@@ -140,24 +162,47 @@ private[codecraft] trait GameMasterLike {
   def destroyerAI(): DroneControllerBase = new ai.destroyer.Mothership
 
   /**
-   * Returns a [[WorldMap]] for the second level.
-   */
-  def level2Map(): WorldMap = defaultMap()
-
-  /**
-   * Returns a [[WorldMap]] for the bonus level.
-   */
-  def bonusLevelMap(): WorldMap = defaultMap()
-
-  /**
-   * Returns the default [[WorldMap]].
-   */
-  def defaultMap(): WorldMap = {
-    val worldSize = DefaultWorldSize
-    val resourceClusters = DefaultResourceDistribution
+    * The default [[WorldMap]].
+    */
+  val defaultMap: WorldMap = {
     val spawns = constructSpawns(Vector2(2500, 500), Vector2(-2500, -500))
-    WorldMap(worldSize, resourceClusters, spawns).withDefaultWinConditions
+    WorldMap(DefaultWorldSize, DefaultResourceDistribution, spawns).withDefaultWinConditions
   }
+
+  /**
+    * A small [[WorldMap]].
+    */
+  val smallMap: WorldMap = {
+    val spawns = constructSpawns(Vector2(1750, 500), Vector2(-1750, -500))
+    WorldMap(SmallWorldSize, SmallResourceDistribution, spawns).withDefaultWinConditions
+  }
+
+  /**
+    * A large [[WorldMap]].
+    */
+  val largeMap: WorldMap = {
+    val spawns = constructSpawns(Vector2(3800, 1000), Vector2(-3800, -1000))
+    WorldMap(LargeWorldSize, LargeResourceDistribution, spawns).withDefaultWinConditions
+  }
+
+  /**
+    * The [[WorldMap]] for the first level.
+    */
+  val level1Map: WorldMap = {
+    val worldSize = Rectangle(-2000, 2000, -1000, 1000)
+    val spawns = constructSpawns(Vector2(1000, 200), Vector2(-1000, -200))
+    WorldMap(worldSize, Seq.fill(8)((2, 40)), spawns).withDefaultWinConditions
+  }
+
+  /**
+   * The [[WorldMap]] for the second level.
+   */
+  val level2Map: WorldMap = defaultMap
+
+  /**
+   * The [[WorldMap]] for the bonus level.
+   */
+  val bonusLevelMap: WorldMap = defaultMap
 
   /**
    * Runs the first level.
@@ -165,7 +210,7 @@ private[codecraft] trait GameMasterLike {
    * @param mothership1 The controller for your mothership.
    */
   def runLevel1(mothership1: DroneControllerBase): DroneWorldSimulator = {
-    val map = level1Map()
+    val map = level1Map
     val controllers = Seq(mothership1, level1AI())
     val simulator = new DroneWorldSimulator(map, controllers, devEvents)
     run(simulator)

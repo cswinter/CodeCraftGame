@@ -44,7 +44,7 @@ object Main {
 
   def run(m1: DroneControllerBase, m2: DroneControllerBase): Unit = {
     val simulator = new DroneWorldSimulator(
-      TheGameMaster.defaultMap(),
+      TheGameMaster.defaultMap,
       Seq(m1, m2),
       t => Seq.empty
     )

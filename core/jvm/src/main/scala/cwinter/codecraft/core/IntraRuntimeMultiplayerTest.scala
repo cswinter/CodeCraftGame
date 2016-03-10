@@ -9,7 +9,7 @@ private[codecraft] object IntraRuntimeMultiplayerTest {
   def main(args: Array[String]): Unit = {
     val clientPlayers = Set[Player](BluePlayer)
     val serverPlayers = Set[Player](OrangePlayer)
-    val map = TheGameMaster.defaultMap()
+    val map = TheGameMaster.defaultMap
     val connection = new LocalConnection(Set(0))
     val clientConnection0 = new LocalClientConnection(0, connection, clientPlayers)
     val serverConnection = new LocalServerConnection(0, connection)
