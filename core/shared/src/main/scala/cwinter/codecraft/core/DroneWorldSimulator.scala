@@ -62,6 +62,10 @@ class DroneWorldSimulator(
   private var deadDrones = List.empty[DroneImpl]
   private var newlySpawnedDrones = List.empty[DroneImpl]
   private val rng = new Random(Rng.seed)
+  private var _winner = Option.empty[Player]
+
+  /** Returns the winning player. */
+  def winner = _winner
 
   private val visionTracker = new VisionTracker[WorldObject](
     map.size.xMin.toInt, map.size.xMax.toInt,
@@ -255,11 +259,14 @@ class DroneWorldSimulator(
   }
 
   private def checkWinConditions(): Unit = {
-    for (
-      wc <- map.winCondition;
-      player <- players
-      if playerHasWon(wc, player)
-    ) showVictoryMessage(player)
+    if (_winner.isEmpty) {
+      for (
+        wc <- map.winCondition;
+        player <- players
+        if playerHasWon(wc, player)
+      ) _winner = Some(player)
+    }
+    for (player <- _winner) showVictoryMessage(player)
   }
 
   private def showVictoryMessage(winner: Player): Unit = {
