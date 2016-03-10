@@ -7,7 +7,7 @@ import cwinter.codecraft.core.api.DroneSpec
 import cwinter.codecraft.graphics.worldstate.{ConstructionBeamDescriptor, DroneModuleDescriptor, ManipulatorDescriptor}
 import cwinter.codecraft.util.maths.Vector2
 
-private[core] class DroneManipulatorModule(positions: Seq[Int], owner: DroneImpl)
+private[core] class DroneConstructorModule(positions: Seq[Int], owner: DroneImpl)
   extends DroneModule(positions, owner) {
 
   private[this] var newDrone: Option[ConstructDrone] = None
