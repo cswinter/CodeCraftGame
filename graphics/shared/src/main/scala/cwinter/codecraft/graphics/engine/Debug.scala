@@ -44,6 +44,6 @@ object Debug {
   }
 
   private[cwinter] def clearDrawAlways(): Unit = {
-    objects = List.empty[ModelDescriptor]
+    staticObjects = List.empty[ModelDescriptor]
   }
 }
