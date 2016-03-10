@@ -22,14 +22,13 @@ import scala.scalajs.js.annotation.JSExport
 import scala.util.Random
 
 
-/**
- * Aggregates all datastructures required to run a game and implements the game loop.
- *
- * @param map Describes the initial state of the game world.
- * @param controllers The controllers for the initial drones.
- * @param eventGenerator Allows for triggering custom events.
- * @param replayer If set to `Some(r)`, the Simulator will replay the events recorded by `r`.
- */
+/** Aggregates all datastructures required to run a game and implements the game loop.
+  *
+  * @param map Describes the initial state of the game world.
+  * @param controllers The controllers for the initial drones.
+  * @param eventGenerator Allows for triggering custom events.
+  * @param replayer If set to `Some(r)`, the Simulator will replay the events recorded by `r`.
+  */
 class DroneWorldSimulator(
   val map: WorldMap,
   controllers: Seq[DroneControllerBase],

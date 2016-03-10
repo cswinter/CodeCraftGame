@@ -69,19 +69,16 @@ final case class Vector2(_x: Double, _y: Double) {
   /** Returns the scalar product of the vector with `rhs` */
   @JSExport def times(rhs: Double): Vector2 = this * rhs
 
-  /**
-   * Returns the angle in radians of the vector and the x-axis.
-   * This value is always between 0 and 2 * Pi.
-   */
+  /** Returns the angle in radians of the vector and the x-axis.
+    * This value is always between 0 and 2 * Pi.
+    */
   @JSExport def orientation = {
     assert(x != 0 || y != 0, s"x=$x, y=$y")
     val atan = math.atan2(y, x)
     if (atan > 0) atan else atan + 2 * math.Pi
   }
 
-  /**
-   * Returns true if none of the components of the vectors are +-infinity or NaN, otherwise false.
-   */
+  /** Returns true if none of the components of the vectors are +-infinity or NaN, otherwise false. */
   @JSExport def isValid: Boolean = {
     !x.isNaN && !y.isNaN && !x.isInfinity && !y.isInfinity
   }
@@ -91,9 +88,7 @@ final case class Vector2(_x: Double, _y: Double) {
   private[codecraft] def !~(rhs: Vector2): Boolean =
     math.abs(x - rhs.x) >= epsilon || math.abs(y - rhs.y) >= epsilon
 
-  /**
-   * Returns the additive inverse of the vector.
-   */
+  /** Returns the additive inverse of the vector. */
   @JSExport def unary_- = Vector2(-x, -y)
 }
 

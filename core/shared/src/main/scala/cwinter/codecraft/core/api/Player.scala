@@ -2,13 +2,9 @@ package cwinter.codecraft.core.api
 
 import cwinter.codecraft.util.maths.ColorRGB
 
-/**
- * Base trait for all objects representing a player.
- */
+/** Base trait for all objects representing a player. */
 trait Player {
-  /**
-   * The unique identifier for the player.
-   */
+  /** The unique identifier for the player. */
   def id: Int
   private[codecraft] def char: Char
   private[codecraft] def color: ColorRGB
@@ -23,45 +19,33 @@ private[codecraft] object Player {
   }
 }
 
-/**
- * The blue player.
- */
+/** The blue player. */
 object BluePlayer extends Player {
   private[codecraft] val color: ColorRGB = ColorRGB(0, 0, 1)
   private[codecraft] val char = 'B'
   private[codecraft] val name = "Blue Player"
 
-  /**
-   * Returns `0`.
-   */
+  /** Returns `0`. */
   val id = 0
 }
 
-/**
- * The red player.
- */
+/** The red player. */
 object RedPlayer extends Player {
   private[codecraft] val color: ColorRGB = ColorRGB(1, 0, 0)
   private[codecraft] val char = 'R'
   private[codecraft] val name = "Red Player"
 
-  /**
-   * Returns `1`.
-   */
+  /** Returns `1`. */
   val id = 1
 }
 
-/**
- * The orange player.
- */
+/** The orange player. */
 object OrangePlayer extends Player {
   private[codecraft] val color: ColorRGB = ColorRGB(1, 0.25f, 0)
   private[codecraft] val char = 'O'
   private[codecraft] val name = "Orange Player"
 
-  /**
-   * Returns `2`.
-   */
+  /** Returns `2`. */
   val id = 2
 }
 

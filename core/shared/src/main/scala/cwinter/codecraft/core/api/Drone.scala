@@ -8,75 +8,53 @@ import scala.scalajs.js.annotation.JSExportAll
 
 @JSExportAll
 trait Drone {
-  /**
-   * Returns the drone's position.
-   */
+  /** Returns the drone's position. */
   def position: Vector2
 
-  /**
-   * Returns an object that specifies how many copies of each module the drone has.
-   */
+  /** Returns an object that specifies how many copies of each module the drone has. */
   def spec: DroneSpec
 
-  /**
-   * Returns the drone's homing missile cooldown.
-   */
+  /** Returns the drone's homing missile cooldown. */
   def missileCooldown: Int
 
   @deprecated("Use missileCooldown instead.", "0.2.4.3")
   def weaponsCooldown: Int = missileCooldown
 
-  /**
-   * Returns whether this drone is within the sight radius of any of your drones.
-   *
-   * This property always returns true for your own drones.
-   * If the drone is an enemy and [[isVisible]] is `false`, you will
-   * be unable to query properties such as [[position]].
-   */
+  /** Returns whether this drone is within the sight radius of any of your drones.
+    *
+    * This property always returns true for your own drones.
+    * If the drone is an enemy and [[isVisible]] is `false`, you will
+    * be unable to query properties such as [[position]].
+    */
   def isVisible: Boolean
 
-  /**
-   * Returns the identifier of the player that owns this drone.
-   */
+  /** Returns the identifier of the player that owns this drone. */
   def playerID: Int
 
-  /**
-   * Returns the current number of hitpoints.
-   */
+  /** Returns the current number of hitpoints. */
   def hitpoints: Int
 
-  /**
-   * Returns true if this drone is an enemy, false if it is one of your own drones.
-   */
+  /** Returns true if this drone is an enemy, false if it is one of your own drones. */
   def isEnemy: Boolean
 
-  /**
-   * Returns the total amount of resources available to this drone.
-   * This includes any mineral crystals that are small enough to be processed by this drone.
-   */
-  @deprecated("The `storedResources` method now returns the same result and should be used instead.", "0.2.4.0")
+  /** Returns the total amount of resources available to this drone.
+    * This includes any mineral crystals that are small enough to be processed by this drone.
+    */
+  @deprecated("Use `storedResources` instead.", "0.2.4.0")
   def totalAvailableResources: Int
 
-  /**
-    * Returns the amount of resources store by this drone.
-    */
+  /** Returns the amount of resources store by this drone. */
   def storedResources: Int
 
-  /**
-   * Returns true if this drone is dead, false otherwise.
-   */
+  /** Returns true if this drone is dead, false otherwise. */
   def isDead: Boolean = hitpoints <= 0
 
-  /**
-    * The position of this drone at the last time it was seen by any of your drones.
-    */
+  /** The position of this drone at the last time it was seen by any of your drones. */
   def lastKnownPosition: Vector2 = position
 
   private[core] def drone: DroneImpl
 
-  /**
-    * Returns a string that encodes various properties of the drone.
-    */
+  /** Returns a string that encodes various properties of the drone. */
   def displayString: String = {
     if (spec == null) {
       return "[Uninitialised drone controller]"

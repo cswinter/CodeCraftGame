@@ -6,8 +6,7 @@ import cwinter.codecraft.util.maths.Vector2
 import scala.scalajs.js.annotation.JSExportAll
 
 
-/**
-  * A mineral crystal.
+/** A mineral crystal.
   * Can be harvested by drones with storage modules to obtain resources.
   */
 @JSExportAll
