@@ -39,18 +39,22 @@ object TheGameMaster extends GameMasterLike {
 
 
   private def run(context: RunContext): Unit = {
-    if (!context.stopped) {
-      dom.requestAnimationFrame((d: Double) => run(context))
-    }
+    import context._
+    if (stopped) return
+    dom.requestAnimationFrame((d: Double) => run(context))
 
-    context.fps.computeCurrFPS()
-    if (outputFPS && !context.simulator.isPaused) {
-      context.fps.drawFPS()
-      if (context.simulator.timestep % 100 == 0) context.fps.printFPS()
-    }
+    if (!fps.shouldSkipFrame(simulator.framerateTarget)) {
+      fps.startedFrame(simulator.framerateTarget)
 
-    context.renderer.render()
-    if (!context.simulator.isPaused) context.simulator.performAsyncUpdate()
+      fps.updateSmoothedFPS()
+      if (outputFPS && !simulator.isPaused) {
+        fps.drawFPS()
+        if (simulator.timestep % 100 == 0) fps.printFPS()
+      }
+
+      renderer.render()
+      if (!simulator.isPaused) simulator.performAsyncUpdate()
+    }
   }
 
   def stop(): Unit = {
@@ -89,7 +93,8 @@ class RunContext(
 
 class FPSMeter(context: RunContext) {
   val startTime = js.Date.now()
-  var lastTime = js.Date.now()
+  var last30FrameStarted = js.Date.now()
+  var lastFrameStarted = js.Date.now()
   var fps = 0
 
 
@@ -106,10 +111,24 @@ class FPSMeter(context: RunContext) {
       s"FPS: $fps"
   }
 
-  def computeCurrFPS(): Unit = {
+  def shouldSkipFrame(targetFPS: Int): Boolean = {
+    val interval = 1000.0 / targetFPS
+    val now = js.Date.now()
+    val delta = now - lastFrameStarted
+    delta < interval
+  }
+
+  def startedFrame(targetFPS: Int): Unit = {
+    val interval = 1000.0 / targetFPS
+    val now = js.Date.now()
+    val delta = now - lastFrameStarted
+    lastFrameStarted = js.Date.now() - delta % interval
+  }
+
+  def updateSmoothedFPS(): Unit = {
     if (context.simulator.timestep % 30 == 0) {
-      fps = math.round(30 * 1000 / (js.Date.now() - lastTime)).toInt
-      lastTime = js.Date.now()
+      fps = math.round(30 * 1000 / (js.Date.now() - last30FrameStarted)).toInt
+      last30FrameStarted = js.Date.now()
     }
   }
 }
