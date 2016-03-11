@@ -1,5 +1,7 @@
 package cwinter.codecraft.util.maths
 
+import scala.scalajs.js.annotation.JSExportAll
+
 /**
  * Defines an axis aligned rectangle positioned in 2D space.
  * @param xMin The x coordinate for the left side of the rectangle.
@@ -7,31 +9,24 @@ package cwinter.codecraft.util.maths
  * @param yMin The y coordinate of the bottom side of the rectangle.
  * @param yMax The y coordinate of the top side of the rectangle.
  */
+@JSExportAll
 final case class Rectangle(xMin: Double, xMax: Double, yMin: Double, yMax: Double) {
   assert(xMin < xMax)
   assert(yMin < yMax)
 
 
-  /**
-   * Returns true if `point` is inside the rectangle.
-   */
+  /** Returns true if `point` is inside the rectangle. */
   def contains(point: Vector2): Boolean =
     point.x >= xMin && point.x <= xMax && point.y >= yMin && point.y <= yMax
 
 
-  /**
-   * Returns the width.
-   */
+  /** Returns the width. */
   def width: Double = xMax - xMin
 
-  /**
-   * Returns the height.
-   */
+  /** Returns the height. */
   def height: Double = yMax - yMin
 
-  /**
-   * Returns true if this rectangle and `that` overlap.
-   */
+  /** Returns true if this rectangle and `that` overlap. */
   def intersects(that: Rectangle): Boolean = !(
       this.xMin > that.xMax ||
       this.xMax < that.xMin ||
