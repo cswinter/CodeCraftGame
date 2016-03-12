@@ -11,7 +11,7 @@ private[core] trait WorldObject {
   def position: Vector2
 
   def update(): Seq[SimulatorEvent]
-  private[core] def descriptor: Seq[ModelDescriptor]
+  private[core] def descriptor: Seq[ModelDescriptor[_]]
   private[core] val id: Int
   private[core] def isDead: Boolean
 }

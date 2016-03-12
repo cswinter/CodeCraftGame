@@ -3,91 +3,57 @@ package cwinter.codecraft.graphics.models
 import cwinter.codecraft.graphics.engine.RenderStack
 import cwinter.codecraft.graphics.primitives.PolygonRing
 import cwinter.codecraft.util.maths.matrices._
-import cwinter.codecraft.graphics.model.{Model, ClosedModel}
+import cwinter.codecraft.graphics.model.{EmptyModel, Model, ClosedModel}
 import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.util.maths.VertexXY
 
 
 private[graphics] object TheWorldObjectModelFactory {
-  def generateModel(modelDescriptor: ModelDescriptor, timestep: Int)
-      (implicit renderStack: RenderStack): ClosedModel[_] = {
+  def generateModel[T](modelDescriptor: ModelDescriptor[T], timestep: Int)
+      (implicit renderStack: RenderStack): ClosedModel[T] = {
 
     val modelview = obtainModelview(modelDescriptor.position)
+    val model = getModel(modelDescriptor.objectDescriptor, timestep)
+    val parameters = modelDescriptor.objectParameters
 
-    modelDescriptor.objectDescriptor match {
-      case mineral: MineralDescriptor =>
-        if (modelDescriptor.objectDescriptor.cachedModel.isEmpty) {
-          modelDescriptor.objectDescriptor.cachedModel = new MineralModelBuilder(mineral).getModel
-        }
-        new ClosedModel[Unit](
-          Unit,
-          modelDescriptor.objectDescriptor.cachedModel.get.asInstanceOf[Model[Unit]],
-          modelview
-        )
-      case drone: DroneDescriptor =>
-        if (modelDescriptor.objectDescriptor.cachedModel.isEmpty) {
-          modelDescriptor.objectDescriptor.cachedModel = new DroneModelBuilder(drone, timestep).getModel
-        }
-        val model =
-          modelDescriptor.objectDescriptor.cachedModel.get.asInstanceOf[Model[DroneDescriptor]]
-        //println(model.prettyTreeView)
-        new ClosedModel(
-          drone,
-          model,
-          modelview
-        )
-      case h: HarvestingBeamsDescriptor =>
-        if (modelDescriptor.objectDescriptor.cachedModel.isEmpty) {
-          modelDescriptor.objectDescriptor.cachedModel = HarvestingBeamModelBuilder(h).getModel
-        }
-        new ClosedModel[Unit](
-          Unit,
-          modelDescriptor.objectDescriptor.cachedModel.get.asInstanceOf[Model[Unit]],
-          modelview
-        )
-      case c: ConstructionBeamDescriptor =>
-        if (modelDescriptor.objectDescriptor.cachedModel.isEmpty) {
-          modelDescriptor.objectDescriptor.cachedModel = ConstructionBeamsModelBuilder(c).getModel
-        }
-        new ClosedModel[Unit](
-          Unit,
-          modelDescriptor.objectDescriptor.cachedModel.get.asInstanceOf[Model[Unit]],
-          modelview
-        )
-      case lightFlash: LightFlashDescriptor => new ClosedModel(
-        lightFlash,
-        new LightFlashModelBuilder().getModel,
-        modelview)
-      case HomingMissileDescriptor(positions, maxPos, player) => new ClosedModel[Unit](
-        Unit,
-        HomingMissileModelFactory.build(positions, maxPos, player),
-        modelview)
-      case energyGlobe: EnergyGlobeDescriptor => new ClosedModel[Unit](
-        Unit,
-        new EnergyGlobeModelBuilder(energyGlobe).getModel,
-        modelview
-      )
-      case TestingObject(t) => new ClosedModel[Unit](
-        Unit,
-        new TestModelBuilder(t).getModel,
-        modelview)
-      case circle: DrawCircle => new ClosedModel[Unit](
-        Unit,
-        CircleModelBuilder(circle.radius, circle.identifier).getModel,
-        modelview)
-      case DrawCircleOutline(radius, color) => new ClosedModel[Unit](
-        Unit,
-        new PolygonRing(
-          renderStack.MaterialXYZRGB, 40, Seq.fill(40)(color), Seq.fill(40)(color),
-          radius - 2, radius, VertexXY(0, 0), 0, 0
-        ).noCaching.getModel,
-        modelview)
-      case rectangle: DrawRectangle => new ClosedModel[Unit](
-        Unit,
-        RectangleModelBuilder(rectangle.bounds).getModel,
-        modelview)
+    new ClosedModel[T](
+      parameters,
+      model,
+      modelview
+    )
+  }
+
+  def getModel[T](descriptor: WorldObjectDescriptor[T], timestep: Int)(implicit rs: RenderStack): Model[T] = {
+    descriptor.cachedModel match {
+      case Some(model) => model
+      case None =>
+        val model = createModel(descriptor, timestep)
+        // FIXME: special case required because homing missile models are not cached. need to rework caching to fix this properly.
+        if (!descriptor.isInstanceOf[HomingMissileDescriptor]) descriptor.cachedModel = model
+        model
     }
   }
+
+  def createModel[T](descriptor: WorldObjectDescriptor[T], timestep: Int)(implicit rs: RenderStack): Model[T] = {
+    descriptor match {
+      case mineral: MineralDescriptor => new MineralModelBuilder(mineral).getModel
+      case drone: DroneDescriptor => new DroneModelBuilder(drone, timestep).getModel
+      case h: HarvestingBeamsDescriptor => HarvestingBeamModelBuilder(h).getModel
+      case c: ConstructionBeamDescriptor => ConstructionBeamsModelBuilder(c).getModel
+      case lightFlash: LightFlashDescriptor => new LightFlashModelBuilder().getModel
+      case HomingMissileDescriptor(positions, maxPos, player) =>
+        HomingMissileModelFactory.build(positions, maxPos, player)
+      case energyGlobe: EnergyGlobeDescriptor => new EnergyGlobeModelBuilder(energyGlobe).getModel
+      case TestingObject(t) => new TestModelBuilder(t).getModel
+      case circle: DrawCircle => CircleModelBuilder(circle.radius, circle.identifier)
+      case rectangle: DrawRectangle => RectangleModelBuilder(rectangle.bounds).getModel
+      case DrawCircleOutline(radius, color) =>
+        new PolygonRing(
+          rs.MaterialXYZRGB, 40, Seq.fill(40)(color), Seq.fill(40)(color),
+          radius - 2, radius, VertexXY(0, 0), 0, 0
+        ).noCaching.getModel
+    }
+  }.asInstanceOf[Model[T]]
 
   def obtainModelview(pos: PositionDescriptor)(implicit renderStack: RenderStack): Matrix4x4 = {
     if (pos.cachedModelviewMatrix.isEmpty) {

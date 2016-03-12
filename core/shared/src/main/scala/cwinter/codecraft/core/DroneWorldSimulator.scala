@@ -464,7 +464,7 @@ class DroneWorldSimulator(
     drone.player != player && !drone.isDead && drone.spec.constructors > 0
 
 
-  private[codecraft] override def computeWorldState: Iterable[ModelDescriptor] = {
+  private[codecraft] override def computeWorldState: Iterable[ModelDescriptor[_]] = {
     visibleObjects.flatMap(_.descriptor)
   }
 

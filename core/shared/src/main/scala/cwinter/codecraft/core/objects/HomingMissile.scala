@@ -49,7 +49,7 @@ private[core] class HomingMissile(
   }
 
   override def position: Vector2 = dynamics.pos
-  override private[core] def descriptor: Seq[ModelDescriptor] = Seq(
+  override private[core] def descriptor: Seq[ModelDescriptor[_]] = Seq(
     ModelDescriptor(
       NullPositionDescriptor,
       HomingMissileDescriptor(

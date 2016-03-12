@@ -8,7 +8,7 @@ private[codecraft] object AsciiVisualizer {
   final val ratio = 75
   final val margin = ratio * 2
 
-  def show(worldState: Iterable[ModelDescriptor], bounds: Rectangle): String = {
+  def show(worldState: Iterable[ModelDescriptor[_]], bounds: Rectangle): String = {
     def gridpoint(pos: Vector2): (Int, Int) = (
       ((pos.x - bounds.xMin + margin) / ratio).toInt,
       ((pos.y - bounds.yMin + margin) / ratio).toInt

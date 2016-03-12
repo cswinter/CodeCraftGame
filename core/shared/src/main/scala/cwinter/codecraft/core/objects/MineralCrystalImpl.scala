@@ -30,13 +30,13 @@ private[core] class MineralCrystalImpl(
 
   @inline final private[this] def updateDescriptor(): Unit = _descriptor = Seq(createDescriptor)
 
-  private def createDescriptor: ModelDescriptor =
+  private def createDescriptor: ModelDescriptor[Unit] =
     ModelDescriptor(
       PositionDescriptor(position.x.toFloat, position.y.toFloat, orientation),
       MineralDescriptor(size)
     )
 
-  override private[core] def descriptor: Seq[ModelDescriptor] = _descriptor
+  override private[core] def descriptor: Seq[ModelDescriptor[Unit]] = _descriptor
 
   override private[core] def isDead = false
 

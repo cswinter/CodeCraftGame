@@ -14,7 +14,7 @@ private[core] class EnergyGlobeObject(
   var fade = FadeTime
   val id = -1
 
-  override private[core] def descriptor: Seq[ModelDescriptor] = Seq(
+  override private[core] def descriptor: Seq[ModelDescriptor[_]] = Seq(
     ModelDescriptor(
       PositionDescriptor(position.x.toFloat, position.y.toFloat, 0),
       if (tta > 0) PlainEnergyGlobeDescriptor

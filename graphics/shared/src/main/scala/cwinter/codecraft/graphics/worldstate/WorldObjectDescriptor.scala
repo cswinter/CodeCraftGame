@@ -2,20 +2,23 @@ package cwinter.codecraft.graphics.worldstate
 
 import cwinter.codecraft.graphics.model.Model
 import cwinter.codecraft.graphics.models.MineralSignature
-import cwinter.codecraft.util.{PrecomputedHashcode, maths}
 import cwinter.codecraft.util.maths.matrices.Matrix4x4
-import cwinter.codecraft.util.maths.{Vector2, ColorRGB, Float0To1, Rectangle}
-
-import scala.runtime
-import scala.runtime.ScalaRunTime
+import cwinter.codecraft.util.maths.{ColorRGB, Float0To1, Rectangle, Vector2}
+import cwinter.codecraft.util.{PrecomputedHashcode, maths}
 
 
-private[codecraft] case class ModelDescriptor(
+private[codecraft] case class ModelDescriptor[T](
   position: PositionDescriptor,
-  objectDescriptor: WorldObjectDescriptor
+  objectDescriptor: WorldObjectDescriptor[T],
+  objectParameters: T
 ) {
   @inline final def intersects(rectangle: Rectangle): Boolean =
     objectDescriptor.intersects(position.x, position.y, rectangle)
+}
+
+object ModelDescriptor {
+  def apply(position: PositionDescriptor, objectDescriptor: WorldObjectDescriptor[Unit]): ModelDescriptor[Unit] =
+    ModelDescriptor(position, objectDescriptor, Unit)
 }
 
 private[codecraft] case class PositionDescriptor(
@@ -35,7 +38,7 @@ private[codecraft] case class PositionDescriptor(
 
 private[codecraft] object NullPositionDescriptor extends PositionDescriptor(0, 0, 0)
 
-private[codecraft] sealed trait WorldObjectDescriptor extends PrecomputedHashcode {
+private[codecraft] sealed trait WorldObjectDescriptor[T] extends PrecomputedHashcode {
   self: Product =>
 
   def intersects(xPos: Float, yPos: Float, rectangle: Rectangle): Boolean = true
@@ -49,9 +52,9 @@ private[codecraft] sealed trait WorldObjectDescriptor extends PrecomputedHashcod
   }
 
 
-  private[this] var _cachedModel: Option[Model[_]] = None
-  private[graphics] def cachedModel_=(value: Model[_]): Unit = _cachedModel = Some(value)
-  private[graphics] def cachedModel: Option[Model[_]] = _cachedModel
+  private[this] var _cachedModel: Option[Model[T]] = None
+  private[graphics] def cachedModel_=(value: Model[T]): Unit = _cachedModel = Some(value)
+  private[graphics] def cachedModel: Option[Model[T]] = _cachedModel
 }
 
 
@@ -67,7 +70,7 @@ private[codecraft] case class DroneDescriptor(
 
   sightRadius: Option[Int] = None,
   inSight: Option[Iterable[(Float, Float)]] = None
-) extends WorldObjectDescriptor {
+) extends WorldObjectDescriptor[DroneDescriptor] {
   assert(hullState.size == size - 1)
 
   override def intersects(xPos: Float, yPos: Float, rectangle: Rectangle) =
@@ -97,18 +100,18 @@ private[codecraft] case class HarvestingBeamsDescriptor(
   droneSize: Int,
   moduleIndices: Seq[Int],
   relativeMineralPosition: Vector2
-) extends WorldObjectDescriptor
+) extends WorldObjectDescriptor[Unit]
 
 private[codecraft] case class ConstructionBeamDescriptor(
   droneSize: Int,
   modules: Seq[(Int, Boolean)],
   relativeConstructionPosition: Vector2,
   playerColor: ColorRGB
-) extends WorldObjectDescriptor
+) extends WorldObjectDescriptor[Unit]
 
 private[codecraft] case class EnergyGlobeDescriptor(
   fade: Float
-) extends WorldObjectDescriptor {
+) extends WorldObjectDescriptor[Unit] {
   assert(fade >= 0)
   assert(fade <= 1)
 
@@ -118,7 +121,7 @@ private[codecraft] case class EnergyGlobeDescriptor(
 
 private[codecraft] object PlainEnergyGlobeDescriptor extends EnergyGlobeDescriptor(1)
 
-private[codecraft] case class MineralDescriptor(size: Int) extends WorldObjectDescriptor {
+private[codecraft] case class MineralDescriptor(size: Int) extends WorldObjectDescriptor[Unit] {
   private[graphics] val signature = MineralSignature(size)
 
   override def intersects(xPos: Float, yPos: Float, rectangle: Rectangle): Boolean =
@@ -126,30 +129,30 @@ private[codecraft] case class MineralDescriptor(size: Int) extends WorldObjectDe
 }
 
 
-private[codecraft] case class LightFlashDescriptor(stage: Float) extends WorldObjectDescriptor
+private[codecraft] case class LightFlashDescriptor(stage: Float) extends WorldObjectDescriptor[LightFlashDescriptor]
 
 
 private[codecraft] case class HomingMissileDescriptor(
   positions: Seq[(Float, Float)],
   maxPos: Int,
   playerColor: ColorRGB
-) extends WorldObjectDescriptor
+) extends WorldObjectDescriptor[Unit]
 
-private[codecraft] case class TestingObject(time: Int) extends WorldObjectDescriptor
+private[codecraft] case class TestingObject(time: Int) extends WorldObjectDescriptor[TestingObject]
 
 private[codecraft] case class DrawCircle(
   radius: Float,
   identifier: Int
-) extends WorldObjectDescriptor
+) extends WorldObjectDescriptor[Unit]
 
 
 private[codecraft] case class DrawCircleOutline(
   radius: Float,
   color: ColorRGB = ColorRGB(1, 1, 1)
-) extends WorldObjectDescriptor
+) extends WorldObjectDescriptor[Unit]
 
 
 private[codecraft] case class DrawRectangle(
   bounds: maths.Rectangle
-) extends WorldObjectDescriptor
+) extends WorldObjectDescriptor[Unit]
 

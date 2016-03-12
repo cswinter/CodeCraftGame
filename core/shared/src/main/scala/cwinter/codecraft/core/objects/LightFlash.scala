@@ -11,9 +11,10 @@ private[core] class LightFlash(val position: Vector2) extends WorldObject {
   private val positionDescriptor =
     PositionDescriptor(position.x.toFloat, position.y.toFloat)
 
-  override private[core] def descriptor: Seq[ModelDescriptor] = Seq(
+  override private[core] def descriptor: Seq[ModelDescriptor[_]] = Seq(
     ModelDescriptor(
       positionDescriptor,
+      LightFlashDescriptor(stage),
       LightFlashDescriptor(stage)
     )
   )

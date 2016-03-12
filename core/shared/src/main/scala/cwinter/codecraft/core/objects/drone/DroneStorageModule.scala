@@ -192,7 +192,7 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
         relativeMineralPos = (m.position - owner.position).rotated(-owner.dynamics.orientation)
       } yield HarvestingBeamsDescriptor(owner.size, positions, relativeMineralPos)
 
-  def energyGlobeAnimations: Seq[ModelDescriptor] = {
+  def energyGlobeAnimations: Seq[ModelDescriptor[_]] = {
     for {
       eg <- storedEnergyGlobes
       if eg.isInstanceOf[MovingEnergyGlobe]
