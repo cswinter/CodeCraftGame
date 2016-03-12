@@ -14,6 +14,7 @@ import cwinter.codecraft.util.maths.{ColorRGBA, ColorRGB, Rng, Vector2}
 import cwinter.codecraft.util.modules.ModulePosition
 
 import scala.async.Async.{async, await}
+import scala.collection.mutable.ListBuffer
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -466,7 +467,11 @@ class DroneWorldSimulator(
 
 
   private[codecraft] override def computeWorldState: Iterable[ModelDescriptor[_]] = {
-    visibleObjects.flatMap(_.descriptor)
+    val result = ListBuffer.empty[ModelDescriptor[_]]
+    for {
+      obj <- visibleObjects
+    } result.appendAll(obj.descriptor)
+    result.toList
   }
 
   private implicit def droneRegistry: Map[Int, DroneImpl] = _drones
