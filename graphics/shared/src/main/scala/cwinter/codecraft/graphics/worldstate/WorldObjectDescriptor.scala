@@ -1,7 +1,6 @@
 package cwinter.codecraft.graphics.worldstate
 
 import cwinter.codecraft.graphics.model.Model
-import cwinter.codecraft.graphics.models.MineralSignature
 import cwinter.codecraft.util.maths.matrices.Matrix4x4
 import cwinter.codecraft.util.maths.{ColorRGB, Float0To1, Rectangle, Vector2}
 import cwinter.codecraft.util.{PrecomputedHashcode, maths}
@@ -59,23 +58,24 @@ private[codecraft] sealed trait WorldObjectDescriptor[T] extends PrecomputedHash
 
 
 private[codecraft] case class DroneDescriptor(
-  positions: Seq[(Float, Float, Float)],
+  sides: Int,
   modules: Seq[DroneModuleDescriptor],
+  hasShields: Boolean,
   hullState: Seq[Byte],
-  shieldState: Option[Float],
-  size: Int,
-
-  playerColor: ColorRGB,
-  constructionState: Option[Float0To1] = None,
-
-  sightRadius: Option[Int] = None,
-  inSight: Option[Iterable[(Float, Float)]] = None
-) extends WorldObjectDescriptor[DroneDescriptor] {
-  assert(hullState.size == size - 1)
+  isBuilding: Boolean,
+  animationTime: Int,
+  playerColor: ColorRGB
+) extends WorldObjectDescriptor[DroneModelParameters] {
+  assert(hullState.size == sides - 1)
 
   override def intersects(xPos: Float, yPos: Float, rectangle: Rectangle) =
-    constructionState.nonEmpty || intersects(xPos, yPos, rectangle, 200) // FIXME
+    intersects(xPos, yPos, rectangle, 200) // FIXME
 }
+
+private[codecraft] case class DroneModelParameters(
+  shieldState: Option[Float],
+  constructionState: Option[Float0To1] = None
+)
 
 
 private[codecraft] sealed trait DroneModuleDescriptor
@@ -122,8 +122,6 @@ private[codecraft] case class EnergyGlobeDescriptor(
 private[codecraft] object PlainEnergyGlobeDescriptor extends EnergyGlobeDescriptor(1)
 
 private[codecraft] case class MineralDescriptor(size: Int) extends WorldObjectDescriptor[Unit] {
-  private[graphics] val signature = MineralSignature(size)
-
   override def intersects(xPos: Float, yPos: Float, rectangle: Rectangle): Boolean =
     intersects(xPos, yPos, rectangle, 0) // FIXME
 }

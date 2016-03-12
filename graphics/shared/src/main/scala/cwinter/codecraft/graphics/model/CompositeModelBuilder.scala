@@ -9,8 +9,6 @@ import scala.collection.mutable.ListBuffer
 
 private[graphics] trait CompositeModelBuilder[TStatic <: AnyRef, TDynamic]
 extends ModelBuilder[TStatic, TDynamic] {
-  def signature: TStatic
-
   protected def buildSubcomponents: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, TDynamic]])
 
   def subcomponents: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, TDynamic]]) =

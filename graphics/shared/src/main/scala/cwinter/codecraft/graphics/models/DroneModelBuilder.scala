@@ -5,23 +5,22 @@ import cwinter.codecraft.graphics.materials.Intensity
 import cwinter.codecraft.graphics.model._
 import cwinter.codecraft.graphics.primitives.{Polygon, PolygonRing}
 import cwinter.codecraft.graphics.worldstate._
+import cwinter.codecraft.util.maths.Geometry.circumradius
 import cwinter.codecraft.util.maths._
+import cwinter.codecraft.util.modules.ModulePosition
+
+import scala.math._
 
 
 private[graphics] class DroneModelBuilder(
-  drone: DroneDescriptor,
-  timestep: Int
-)(implicit val rs: RenderStack) extends CompositeModelBuilder[DroneSignature, DroneDescriptor] {
+  val drone: DroneDescriptor,
+  val timestep: Int
+)(implicit val rs: RenderStack) extends CompositeModelBuilder[DroneDescriptor, DroneModelParameters] {
 
-  val signature: DroneSignature = DroneSignature(drone, timestep)
+  def signature = drone
 
-  import Geometry.circumradius
-  import cwinter.codecraft.util.modules.ModulePosition
-
-  import scala.math._
-
-  override protected def buildSubcomponents: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, DroneDescriptor]]) = {
-    import signature._
+  override protected def buildSubcomponents: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, DroneModelParameters]]) = {
+    import drone._
     val colorPalette =
       if (signature.isBuilding) MutedDroneColors
       else DefaultDroneColors
@@ -30,7 +29,6 @@ private[graphics] class DroneModelBuilder(
       else signature.playerColor
     import colorPalette._
 
-    val sides = drone.size
     val sideLength = 40
     val radiusBody = 0.5f * sideLength / sin(Pi / sides).toFloat
     val radiusHull = radiusBody + circumradius(4, sides)
@@ -44,7 +42,7 @@ private[graphics] class DroneModelBuilder(
         radius = radiusBody
       )
 
-    val hullColors = drone.hullState.map {
+    val hullColors = hullState.map {
       case 2 => ColorHull
       case 1 => ColorHullDamaged
       case 0 => ColorHullBroken
@@ -79,23 +77,9 @@ private[graphics] class DroneModelBuilder(
       }
 
 
-    val sightRadius = {
-      for (r <- drone.sightRadius)
-        yield PolygonRing(
-          material = rs.MaterialXYZRGB,
-          n = 50,
-          colorInside = White,
-          colorOutside = White,
-          innerRadius = r,
-          outerRadius = r + 1,
-          zPos = 2
-        )
-    }.toSeq
+    val staticModels = body +: hull +: modulesModel
 
-
-    val staticModels = body +: hull +: (modulesModel ++ sightRadius)
-
-    var dynamicModels = Seq.empty[ModelBuilder[_, DroneDescriptor]]
+    var dynamicModels = Seq.empty[ModelBuilder[_, DroneModelParameters]]
     if (hasShields) {
       dynamicModels :+=
         PolygonRing(
@@ -105,7 +89,7 @@ private[graphics] class DroneModelBuilder(
           colorOutside = ColorRGBA(White, 0.7f),
           outerRadius = radiusHull + 2,
           innerRadius = Geometry.inradius(radiusHull, sides) * 0.85f
-        ).wireParameters[DroneDescriptor](d => Intensity(d.shieldState.get))
+        ).wireParameters[DroneModelParameters](d => Intensity(d.shieldState.get))
     }
 
     // TODO: make this work again
@@ -123,39 +107,13 @@ private[graphics] class DroneModelBuilder(
   }
 
 
-  override protected def decorate(model: Model[DroneDescriptor]): Model[DroneDescriptor] =
+  override protected def decorate(model: Model[DroneModelParameters]): Model[DroneModelParameters] =
     if (signature.isBuilding)
       model
         .translated(VertexXYZ(0, 0, -3), rs.modelviewTranspose)
         .withDynamicVertexCount
-        .wireParameters[DroneDescriptor](d => (d.constructionState.get, d))
+        .wireParameters[DroneModelParameters](d => (d.constructionState.get, d))
     else model
-}
-
-
-private[graphics] case class DroneSignature(
-  size: Int,
-  modules: Seq[DroneModuleDescriptor],
-  hasShields: Boolean,
-  hullState: Seq[Byte],
-  isBuilding: Boolean,
-  animationTime: Int,
-  playerColor: ColorRGB
-)
-
-private[graphics] object DroneSignature {
-  def apply(droneObject: DroneDescriptor, timestep: Int): DroneSignature = {
-    val hasAnimatedComponents = droneObject.modules.exists(m => m.isInstanceOf[EnginesDescriptor])
-    val isBuilding = droneObject.constructionState.isDefined
-    DroneSignature(
-      droneObject.size,
-      droneObject.modules,
-      droneObject.modules.exists(_.isInstanceOf[ShieldGeneratorDescriptor]),
-      droneObject.hullState,
-      isBuilding,
-      if (hasAnimatedComponents && !isBuilding) timestep % 100 else 0,
-      droneObject.playerColor)
-  }
 }
 
 

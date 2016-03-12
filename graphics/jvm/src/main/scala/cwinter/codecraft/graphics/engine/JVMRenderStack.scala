@@ -4,11 +4,13 @@ import javax.media.opengl.GL._
 import javax.media.opengl.GL4
 
 import cwinter.codecraft.graphics.materials._
+import cwinter.codecraft.util.PrecomputedHashcode
 import cwinter.codecraft.util.maths.matrices.IdentityMatrix4x4
 import cwinter.codecraft.util.maths.VertexXY
 
 
-private[graphics] class JVMRenderStack(implicit val gl: GL4, implicit val fbo: FramebufferObject) extends RenderStack {
+private[graphics] case class JVMRenderStack(implicit gl: GL4, fbo: FramebufferObject)
+    extends RenderStack {
   import gl._
 
   // materials

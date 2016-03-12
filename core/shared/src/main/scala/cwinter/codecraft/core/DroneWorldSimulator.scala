@@ -86,6 +86,7 @@ class DroneWorldSimulator(
         new IDGenerator(player.id),
         rng,
         !multiplayerConfig.isInstanceOf[MultiplayerClientConfig],
+        this,
         replayRecorder
       )
   }.toMap

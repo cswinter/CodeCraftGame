@@ -33,7 +33,7 @@ private[graphics] class MockLaserMissile(
     while (oldPositions.length > lifetime - age + 2) oldPositions.dequeue()
   }
 
-  override def state(): ModelDescriptor =
+  override def state(): ModelDescriptor[Unit] =
     ModelDescriptor(
       NullPositionDescriptor,
       HomingMissileDescriptor(oldPositions.clone().toSeq, math.min(positions, age), player)

@@ -30,21 +30,14 @@ private[codecraft] object BlogpostDemo {
       val orientation = math.Pi.toFloat / 2
       xPos += 2.3f * r
 
-      ModelDescriptor(
-        PositionDescriptor(
-          x = position.x,
-          y = position.y,
-          orientation = orientation
-        ),
-        DroneDescriptor(
-          positions = Seq(),
-          modules = Seq(),
-          hullState = Seq.fill[Byte](size - 1)(2),
-          Some(1),
-          size = size,
-          playerColor = ColorRGB(0, 0, 1)
-        )
-      )
+      new MockDrone(
+        position.x,
+        position.y,
+        orientation,
+        size = size,
+        modules = Seq(),
+        undamaged = true
+      ).state()
     }
   }
 
@@ -76,49 +69,39 @@ private[codecraft] object BlogpostDemo {
         orientation = 0,
         size = 3,
         modules = Seq[DroneModuleDescriptor](module),
-        sightRadius = None,
         undamaged = true,
         dontMove = true
       )
   }
 
-  val largeDrone = ModelDescriptor(
-    PositionDescriptor(170, 300, 0),
-    DroneDescriptor(
-      positions = Seq(),
-      modules = Seq(
-        MissileBatteryDescriptor(0),
-        EnginesDescriptor(1),
-        StorageModuleDescriptor(2, EnergyStorage((0 to 6).toSet)),
-        ShieldGeneratorDescriptor(3),
-        MissileBatteryDescriptor(4),
-        MissileBatteryDescriptor(5),
-        MissileBatteryDescriptor(6)
-      ),
-      hullState = Seq.fill[Byte](5)(2),
-      Some(1),
-      6,
-      ColorRGB(0, 0, 1)
-    )
-  )
+  val largeDrone = new MockDrone(
+    170, 300, 0,
+    size = 6,
+    modules = Seq(
+      MissileBatteryDescriptor(0),
+      EnginesDescriptor(1),
+      StorageModuleDescriptor(2, EnergyStorage((0 to 6).toSet)),
+      ShieldGeneratorDescriptor(3),
+      MissileBatteryDescriptor(4),
+      MissileBatteryDescriptor(5),
+      MissileBatteryDescriptor(6)
+    ),
+    true
+  ).state()
 
-  val profilePic = ModelDescriptor(
-    PositionDescriptor(-400, 0, 1),
-    DroneDescriptor(
-      positions = Seq(),
-      modules = Seq(
-        EnginesDescriptor(0),
-        MissileBatteryDescriptor(3),
-        ShieldGeneratorDescriptor(2),
-        StorageModuleDescriptor(1, EnergyStorage())
-      ),
-      hullState = Seq.fill[Byte](4)(2),
-      Some(1),
-      5, ColorRGB(0, 0, 1)
-    )
-  )
+  val profilePic = new MockDrone(
+    -400, 0, 1,
+    size = 5,
+    modules = Seq(
+      EnginesDescriptor(0),
+      MissileBatteryDescriptor(3),
+      ShieldGeneratorDescriptor(2),
+      StorageModuleDescriptor(1, EnergyStorage())
+    ),
+    true
+  ).state()
 
-  def generateObjects(t: Int): Seq[ModelDescriptor] = {
+  def generateObjects(t: Int): Seq[ModelDescriptor[_]] = {
     hulls ++ minerals :+ largeDrone :+ profilePic
   }
 

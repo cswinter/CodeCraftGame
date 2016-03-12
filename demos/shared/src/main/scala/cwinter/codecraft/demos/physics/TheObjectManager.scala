@@ -29,7 +29,7 @@ object TheObjectManager extends Simulator {
   worldObjects.foreach(x => physicsEngine.addObject(x.objectDynamics.unwrap))
 
 
-  override def computeWorldState: Iterable[ModelDescriptor] =
+  override def computeWorldState: Iterable[ModelDescriptor[_]] =
     worldObjects.map(_.state)
 
 

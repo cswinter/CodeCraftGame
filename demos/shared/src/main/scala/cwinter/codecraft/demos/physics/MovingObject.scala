@@ -11,7 +11,7 @@ class MovingObject[TDynamics](
 ) {
   val id = UID()
 
-  def state: ModelDescriptor =
+  def state: ModelDescriptor[Unit] =
     ModelDescriptor(
       PositionDescriptor(objectDynamics.pos.x.toFloat, objectDynamics.pos.y.toFloat),
       DrawCircle(radius.toFloat, id)

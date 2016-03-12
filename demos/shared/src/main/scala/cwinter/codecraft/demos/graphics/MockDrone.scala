@@ -1,7 +1,7 @@
 package cwinter.codecraft.demos.graphics
 
 import cwinter.codecraft.graphics.worldstate._
-import cwinter.codecraft.util.maths.ColorRGB
+import cwinter.codecraft.util.maths.{Float0To1, ColorRGB}
 
 import scala.collection.mutable
 import scala.util.Random
@@ -13,7 +13,6 @@ private[graphics] class MockDrone(
   var orientation: Float,
   val size: Int,
   var modules: Seq[DroneModuleDescriptor],
-  val sightRadius: Option[Int],
   val undamaged: Boolean = false,
   val dontMove: Boolean = false
 ) extends MockObject {
@@ -86,19 +85,20 @@ private[graphics] class MockDrone(
     if (oldPositions.length > nPos) oldPositions.dequeue()
   }
 
-  override def state(): ModelDescriptor = ModelDescriptor(
+  override def state(): ModelDescriptor[_] = ModelDescriptor(
     PositionDescriptor(xPos, yPos, orientation),
     DroneDescriptor(
-      oldPositions.clone(),
-      modules,
-      hullState,
-      if (modules.contains(ShieldGeneratorDescriptor)) Some(1) else None,
       size,
-
-      ColorRGB(0, 0, 1),
-
-      sightRadius = sightRadius,
-      inSight = sightRadius.map(_ => inSight.map(obj => (obj.xPos, obj.yPos)))
+      modules,
+      modules.contains(ShieldGeneratorDescriptor),
+      hullState,
+      isBuilding = false,
+      0,
+      ColorRGB(0, 0, 1)
+    ),
+    DroneModelParameters(
+      if (modules.contains(ShieldGeneratorDescriptor)) Some(Float0To1(1)) else None,
+      None
     )
   )
 

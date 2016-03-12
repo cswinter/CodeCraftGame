@@ -5,7 +5,7 @@ import javax.media.opengl.GL2
 import cwinter.codecraft.graphics.materials._
 
 
-private[graphics] class JVMGL2RenderStack(implicit val gl: GL2) extends RenderStack {
+private[graphics] case class JVMGL2RenderStack(implicit gl: GL2) extends RenderStack {
 
   // materials
   val MaterialXYZRGB = new MaterialXYZRGB110

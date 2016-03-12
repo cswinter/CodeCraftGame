@@ -10,7 +10,7 @@ import scala.concurrent.Future
 
 private[graphics] class GraphicsSimulator(
   customObjects: Seq[MockObject],
-  customChangingObjects: Int => Seq[ModelDescriptor],
+  customChangingObjects: Int => Seq[ModelDescriptor[_]],
   spawnedObjects: Int => Seq[MockObject],
   val sightRadius: Option[Int] = None,
   nRandomDrones: Int = 0,
@@ -43,7 +43,7 @@ private[graphics] class GraphicsSimulator(
       orientation = 2 * math.Pi.toFloat * rnd()
       size = i % 5 + 3
       modules = randomModules(size)
-    } yield new MockDrone(xPos, yPos, orientation, size, modules, sightRadius)
+    } yield new MockDrone(xPos, yPos, orientation, size, modules)
 
 
   private def spawn(obj: MockObject): Unit = {
@@ -54,8 +54,8 @@ private[graphics] class GraphicsSimulator(
   val objects = collection.mutable.Set(minerals ++ drones ++ customObjects:_*)
   objects.foreach(vision.insert(_))
 
-  override def computeWorldState: Iterable[ModelDescriptor] = {
-    objects.map(_.state()) + ModelDescriptor(NullPositionDescriptor, TestingObject(time)) ++ customChangingObjects(time)
+  override def computeWorldState: Iterable[ModelDescriptor[_]] = {
+    objects.map(_.state()) + ModelDescriptor(NullPositionDescriptor, TestingObject(time), TestingObject(time)) ++ customChangingObjects(time)
   }
 
   override def update(): Unit = {

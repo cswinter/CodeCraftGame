@@ -9,7 +9,7 @@ private[graphics] trait MockObject {
   val identifier = MockObject.genID()
 
   def update(): Unit
-  def state(): ModelDescriptor
+  def state(): ModelDescriptor[_]
   def dead: Boolean
 
   def xPos: Float

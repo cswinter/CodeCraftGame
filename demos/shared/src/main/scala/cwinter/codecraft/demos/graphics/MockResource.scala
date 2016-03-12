@@ -12,7 +12,7 @@ private[graphics] class MockResource(
 
   override def update(): Unit = ()
 
-  override def state(): ModelDescriptor =
+  override def state(): ModelDescriptor[_] =
     ModelDescriptor(
       PositionDescriptor(xPos, yPos, orientation),
       MineralDescriptor(size)

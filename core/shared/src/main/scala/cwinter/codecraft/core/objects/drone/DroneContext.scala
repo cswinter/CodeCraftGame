@@ -1,7 +1,7 @@
 package cwinter.codecraft.core.objects.drone
 
 import cwinter.codecraft.core.api.Player
-import cwinter.codecraft.core.{WorldConfig, CommandRecorder}
+import cwinter.codecraft.core.{DroneWorldSimulator, WorldConfig, CommandRecorder}
 import cwinter.codecraft.core.objects.IDGenerator
 import cwinter.codecraft.core.replay.{NullReplayRecorder, ReplayRecorder}
 
@@ -15,6 +15,7 @@ private[core] case class DroneContext(
   idGenerator: IDGenerator,
   rng: Random,
   isLocallyComputed: Boolean,
+  simulator: DroneWorldSimulator,
   replayRecorder: ReplayRecorder = NullReplayRecorder
 )
 

@@ -8,8 +8,9 @@ private[graphics] class MockLightFlash(val xPos: Float, val yPos: Float) extends
 
   def update(): Unit = stage += 1.0f / 24
 
-  def state(): ModelDescriptor = ModelDescriptor(
+  def state(): ModelDescriptor[_] = ModelDescriptor(
     PositionDescriptor(xPos, yPos, 0),
+    LightFlashDescriptor(stage),
     LightFlashDescriptor(stage)
   )
 

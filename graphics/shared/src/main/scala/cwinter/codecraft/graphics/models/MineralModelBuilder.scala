@@ -4,18 +4,14 @@ import cwinter.codecraft.graphics.engine.RenderStack
 import cwinter.codecraft.graphics.model.{Model, ModelBuilder}
 import cwinter.codecraft.graphics.primitives.Polygon
 import cwinter.codecraft.graphics.worldstate.MineralDescriptor
-import cwinter.codecraft.util.PrecomputedHashcode
 import cwinter.codecraft.util.maths.ColorRGB
 
 
-private[graphics] case class MineralSignature(size: Int) extends PrecomputedHashcode
-
 private[graphics] class MineralModelBuilder(mineral: MineralDescriptor)(implicit val rs: RenderStack)
-  extends ModelBuilder[MineralSignature, Unit] {
-  val signature = mineral.signature
+  extends ModelBuilder[MineralDescriptor, Unit] {
 
   override protected def buildModel: Model[Unit] = {
-    val size = mineral.size
+    val size = signature.size
     val radius = math.sqrt(size).toFloat * 6
 
     Polygon(
@@ -27,4 +23,6 @@ private[graphics] class MineralModelBuilder(mineral: MineralDescriptor)(implicit
       zPos = -5
     ).getModel
   }
+
+  def signature = mineral
 }

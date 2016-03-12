@@ -1,10 +1,12 @@
 package cwinter.codecraft.graphics.engine
 
 import cwinter.codecraft.graphics.materials.{Intensity, Material}
+import cwinter.codecraft.util.PrecomputedHashcode
 import cwinter.codecraft.util.maths._
 
 
-private[graphics] trait RenderStack {
+private[graphics] trait RenderStack extends PrecomputedHashcode {
+  self: Product =>
   val MaterialXYZRGB: Material[VertexXYZ, ColorRGB, Unit]
   val BloomShader: Material[VertexXYZ, ColorRGB, Unit]
   val GaussianGlow: Material[VertexXYZ, ColorRGBA, Unit]

@@ -310,7 +310,7 @@ private[core] class DroneImpl(
       ModelDescriptor(
         positionDescr,
         cachedDescriptor.getOrElse(recreateDescriptor()),
-        cachedDescriptor.getOrElse(recreateDescriptor())
+        modelParameters
       )
     ) ++ storage.toSeq.flatMap(_.energyGlobeAnimations) ++ harvestBeams.toSeq ++ constructionBeams.toSeq
   }
@@ -318,17 +318,22 @@ private[core] class DroneImpl(
   private def recreateDescriptor(): DroneDescriptor = {
     val newDescriptor =
       DroneDescriptor(
-        Seq(), //oldPositions :+ (position.x.toFloat, position.y.toFloat, dynamics.orientation.toFloat),
-        moduleDescriptors,
-        hullState,
-        shieldGenerators.map(_.hitpointPercentage),
         spec.sides,
-        player.color,
-        constructionProgress.map(p => Float0To1(p / spec.buildTime.toFloat))
+        moduleDescriptors,
+        shieldGenerators.nonEmpty,
+        hullState,
+        constructionProgress.nonEmpty,
+        if (spec.engines > 0) context.simulator.timestep % 100 else 0,
+        player.color
       )
     cachedDescriptor = Some(newDescriptor)
     newDescriptor
   }
+
+  private def modelParameters = DroneModelParameters(
+    shieldGenerators.map(_.hitpointPercentage),
+    constructionProgress.map(p => Float0To1(p / spec.buildTime.toFloat))
+  )
 
   private def moduleDescriptors: Seq[DroneModuleDescriptor] = {
     for {

@@ -1,11 +1,11 @@
 package cwinter.codecraft.graphics.models
 
 import cwinter.codecraft.graphics.engine.RenderStack
+import cwinter.codecraft.graphics.model.{ClosedModel, Model}
 import cwinter.codecraft.graphics.primitives.PolygonRing
-import cwinter.codecraft.util.maths.matrices._
-import cwinter.codecraft.graphics.model.{EmptyModel, Model, ClosedModel}
 import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.util.maths.VertexXY
+import cwinter.codecraft.util.maths.matrices._
 
 
 private[graphics] object TheWorldObjectModelFactory {
@@ -28,8 +28,9 @@ private[graphics] object TheWorldObjectModelFactory {
       case Some(model) => model
       case None =>
         val model = createModel(descriptor, timestep)
-        // FIXME: special case required because homing missile models are not cached. need to rework caching to fix this properly.
-        if (!descriptor.isInstanceOf[HomingMissileDescriptor]) descriptor.cachedModel = model
+        // FIXME: special case required for models that are not cached. need to rework caching to fix this properly.
+        if (!descriptor.isInstanceOf[HomingMissileDescriptor] && !descriptor.isInstanceOf[DrawCircleOutline])
+          descriptor.cachedModel = model
         model
     }
   }
