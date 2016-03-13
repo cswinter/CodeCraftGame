@@ -1,6 +1,6 @@
 package cwinter.codecraft.core.objects.drone
 
-import cwinter.codecraft.collisions.ActiveVisionTracking
+import cwinter.codecraft.collisions.{VisionTracking, ActiveVisionTracking}
 import cwinter.codecraft.core._
 import cwinter.codecraft.core.api.GameConstants.HarvestingRange
 import cwinter.codecraft.core.api._
@@ -26,7 +26,8 @@ private[core] class DroneImpl(
   val id = context.idGenerator.getAndIncrement()
   val priority = context.rng.nextInt()
 
-  var objectsInSight: Set[WorldObject] = Set.empty[WorldObject]
+  private[this] var _mineralsInSight = Set.empty[MineralCrystal]
+  private[this] var _dronesInSight = Set.empty[Drone]
 
   private[this] val eventQueue = collection.mutable.Queue[DroneEvent](Spawned)
 
@@ -202,6 +203,21 @@ private[core] class DroneImpl(
     dynamics.asInstanceOf[RemoteDroneDynamics].update(state)
   }
 
+  override def objectEnteredVision(obj: VisionTracking): Unit = obj match {
+    case mineral: MineralCrystalImpl =>
+      _mineralsInSight += mineral.getHandle(player)
+      eventQueue.enqueue(MineralEntersSightRadius(mineral))
+    case drone: DroneImpl =>
+      _dronesInSight += drone.wrapperFor(player)
+      eventQueue.enqueue(DroneEntersSightRadius(drone))
+  }
+
+  override def objectLeftVision(obj: VisionTracking): Unit = obj match {
+    case mineral: MineralCrystalImpl =>
+      _mineralsInSight -= mineral.getHandle(player)
+    case drone: DroneImpl =>
+      _dronesInSight -= drone.wrapperFor(player)
+  }
 
   //+------------------------------+
   //+ Command implementations      +
@@ -258,9 +274,7 @@ private[core] class DroneImpl(
   override def position: Vector2 = dynamics.pos
   def weaponsCooldown: Int = weapons.map(_.cooldown).getOrElse(1)
   def hitpoints: Int = hullState.map(_.toInt).sum + shieldGenerators.map(_.currHitpoints).getOrElse(0)
-  def dronesInSight: Set[DroneImpl] =
-    if (isDead) Set.empty
-    else objectsInSight.filter(_.isInstanceOf[DroneImpl]).map { case d: DroneImpl => d }
+  def dronesInSight: Set[Drone] = if (isDead) Set.empty else _dronesInSight
   def isConstructing: Boolean = manipulator.exists(_.isConstructing)
   def isHarvesting: Boolean = storage.exists(_.isHarvesting)
   def isMoving: Boolean = dynamics.isMoving
@@ -280,11 +294,12 @@ private[core] class DroneImpl(
   def isInHarvestingRange(mineral: MineralCrystalImpl): Boolean =
     (mineral.position - position).lengthSquared <= HarvestingRange * HarvestingRange
 
-  def wrapperFor(player: Player): EnemyDrone = {
-    require(player != this.player)
-    if (!handles.contains(player))
-      handles += player -> new EnemyDrone(this, player)
-    handles(player)
+  def wrapperFor(player: Player): Drone = {
+    if (player == this.player) controller
+    else {
+      if (!handles.contains(player)) handles += player -> new EnemyDrone(this, player)
+      handles(player)
+    }
   }
 
   private[drone] def mustUpdateModel(): Unit = {

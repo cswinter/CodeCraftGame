@@ -65,10 +65,7 @@ private[core] class EnemyDrone(
 
   def isVisible: Boolean = {
     drone.player == holder ||
-    drone.objectsInSight.exists {
-      case drone: DroneImpl => drone.player == holder
-      case _ => false
-    }
+    drone.dronesInSight.exists(_.drone.player == holder)
   }
 
   override def spec: DroneSpec = drone.spec

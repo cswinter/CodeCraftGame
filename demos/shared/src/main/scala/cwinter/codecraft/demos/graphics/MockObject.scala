@@ -5,7 +5,7 @@ import cwinter.codecraft.graphics.worldstate.{ModelDescriptor, WorldObjectDescri
 import cwinter.codecraft.util.maths.Vector2
 
 
-private[graphics] trait MockObject extends ActiveVisionTracking {
+private[graphics] trait MockObject {
   val identifier = MockObject.genID()
 
   def update(): Unit

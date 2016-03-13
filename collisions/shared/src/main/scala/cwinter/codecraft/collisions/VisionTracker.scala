@@ -20,13 +20,15 @@ trait VisionTracking {
 
 trait ActiveVisionTracking extends VisionTracking {
   private[this] var _inSight = Set.empty[VisionTracking]
-  private[this] var events = Seq.empty[Event]
+
+  def objectEnteredVision(obj: VisionTracking): Unit
+  def objectLeftVision(obj: VisionTracking): Unit
 
 
   private[collisions] def entersSight(other: VisionTracking): Unit = {
     if (other != this) {
       _inSight += other
-      events :+= EnteredSightRadius(other)
+      objectEnteredVision(other)
     }
   }
 
@@ -36,19 +38,13 @@ trait ActiveVisionTracking extends VisionTracking {
     for (
       newObj <- value -- _inSight
       if newObj != this
-    ) events :+= EnteredSightRadius(newObj)
+    ) objectEnteredVision(newObj)
     for (oldObj <- _inSight -- value)
-      events :+= LeftSightRadius(oldObj)
+      objectLeftVision(oldObj)
 
     _inSight = value
   }
   private[collisions] def inSight: Set[VisionTracking] = _inSight
-
-  private[collisions] def collectEvents(): Seq[Event] = {
-    val tmp = events
-    events = Seq.empty[Event]
-    tmp
-  }
 }
 
 trait PassiveVisionTracking extends VisionTracking {
@@ -56,10 +52,6 @@ trait PassiveVisionTracking extends VisionTracking {
   private[collisions] def notInSight(other: VisionTracking): Unit = ()
 }
 
-sealed trait Event
-
-case class EnteredSightRadius[T](obj: T) extends Event
-case class LeftSightRadius[T](obj: T) extends Event
 
 private[codecraft] final class VisionTracker[T <: VisionTracking](
   val xMin: Int,
@@ -163,10 +155,6 @@ private[codecraft] final class VisionTracker[T <: VisionTracking](
   }
 
   def getVisible[S <: T with ActiveVisionTracking](obj: S): Set[VisionTracking] = obj.inSight
-
-  def collectEvents(): Iterable[(T, Seq[Event])] =
-    for (obj <- trackedObjects)
-      yield (obj, obj.collectEvents())
 
   private def contains(elem1: T, elem2: T): Boolean = {
     val diff = elem1.position - elem2.position

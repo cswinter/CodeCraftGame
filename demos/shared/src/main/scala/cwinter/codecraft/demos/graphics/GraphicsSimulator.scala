@@ -18,8 +18,6 @@ private[graphics] class GraphicsSimulator(
   spawnProjectiles: Boolean = false
 ) extends Simulator {
   var time = 0
-  val vision = new VisionTracker[MockObject with VisionTracking](-10000, 10000, -10000, 10000, sightRadius.getOrElse(250))
-
 
   import Generators._
 
@@ -48,11 +46,9 @@ private[graphics] class GraphicsSimulator(
 
   private def spawn(obj: MockObject): Unit = {
     objects.add(obj)
-    vision.insertActive(obj)
   }
 
   val objects = collection.mutable.Set(minerals ++ drones ++ customObjects:_*)
-  objects.foreach(vision.insertActive(_))
 
   override def computeWorldState: Iterable[ModelDescriptor[_]] = {
     objects.map(_.state()) + ModelDescriptor(NullPositionDescriptor, TestingObject(time), TestingObject(time)) ++ customChangingObjects(time)
@@ -62,16 +58,12 @@ private[graphics] class GraphicsSimulator(
     time += 1
 
     objects.foreach(_.update())
-    vision.updateAll()
 
     val missileExplosions = for {
       obj <- objects
       if obj.isInstanceOf[MockLaserMissile] && obj.dead
       missile = obj.asInstanceOf[MockLaserMissile]
-    } yield {
-        vision.removeActive(missile)
-        new MockLightFlash(missile.xPos, missile.yPos)
-      }
+    } yield new MockLightFlash(missile.xPos, missile.yPos)
 
     objects ++= missileExplosions
 

@@ -334,10 +334,7 @@ trait DroneControllerBase extends Drone {
   @deprecated("The refinery module has been removed.", "0.2.4.0")
   def availableRefineries: Int = 0
 
-  private[core] def dronesInSightScala: Set[Drone] = drone.dronesInSight.map( d =>
-      if (d.player == drone.player) d.controller
-      else d.wrapperFor(drone.player)
-    )
+  private[core] def dronesInSightScala: Set[Drone] = drone.dronesInSight
 
   /**
    * Returns the confines of the game world.

@@ -1,6 +1,6 @@
 package cwinter.codecraft.core
 
-import cwinter.codecraft.collisions.{VisionTracking, LeftSightRadius, EnteredSightRadius, VisionTracker}
+import cwinter.codecraft.collisions.{VisionTracker, VisionTracking}
 import cwinter.codecraft.core.api._
 import cwinter.codecraft.core.errors.Errors
 import cwinter.codecraft.core.multiplayer.RemoteClient
@@ -10,7 +10,7 @@ import cwinter.codecraft.core.replay._
 import cwinter.codecraft.graphics.engine.Debug
 import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.physics.PhysicsEngine
-import cwinter.codecraft.util.maths.{ColorRGBA, ColorRGB, Rng, Vector2}
+import cwinter.codecraft.util.maths.{ColorRGB, ColorRGBA, Rng, Vector2}
 import cwinter.codecraft.util.modules.ModulePosition
 
 import scala.async.Async.{async, await}
@@ -230,7 +230,7 @@ class DroneWorldSimulator(
       for (drone <- drones; d <- drone.deathEvents)
         yield d
     processSimulatorEvents(deathEvents)
-    processVisionTrackerEvents()
+    visionTracker.updateAll()
     Errors.updateMessages()
   }
 
@@ -340,22 +340,6 @@ class DroneWorldSimulator(
     case RemoveEnergyGlobeAnimation(energyGlobeObject) =>
       visibleObjects.remove(energyGlobeObject)
       dynamicObjects.remove(energyGlobeObject)
-  }
-
-  private def processVisionTrackerEvents(): Unit = {
-    visionTracker.updateAll()
-    for (drone <- drones) drone.objectsInSight = visionTracker.getVisible(drone).asInstanceOf[Set[WorldObject]]
-    for {
-      (drone: DroneImpl, events) <- visionTracker.collectEvents()
-      event <- events
-    } event match {
-      case EnteredSightRadius(mineral: MineralCrystalImpl) =>
-        drone.enqueueEvent(MineralEntersSightRadius(mineral))
-      case LeftSightRadius(obj) => // don't care (for now)
-      case EnteredSightRadius(other: DroneImpl) =>
-        drone.enqueueEvent(DroneEntersSightRadius(other))
-      case e => throw new Exception(s"AHHHH, AN UFO!!! RUN FOR YOUR LIFE!!! $e")
-    }
   }
 
   private def syncDroneCommands(): Future[Unit] = async {
