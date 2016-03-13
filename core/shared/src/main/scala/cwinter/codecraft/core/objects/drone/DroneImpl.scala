@@ -1,13 +1,14 @@
 package cwinter.codecraft.core.objects.drone
 
+import cwinter.codecraft.collisions.ActiveVisionTracking
 import cwinter.codecraft.core._
+import cwinter.codecraft.core.api.GameConstants.HarvestingRange
 import cwinter.codecraft.core.api._
 import cwinter.codecraft.core.errors.Errors
 import cwinter.codecraft.core.objects._
 import cwinter.codecraft.core.replay._
 import cwinter.codecraft.graphics.worldstate._
-import cwinter.codecraft.util.maths.{Rectangle, Float0To1, Vector2}
-import GameConstants.HarvestingRange
+import cwinter.codecraft.util.maths.{Float0To1, Rectangle, Vector2}
 
 
 private[core] class DroneImpl(
@@ -17,8 +18,10 @@ private[core] class DroneImpl(
   initialPos: Vector2,
   time: Double,
   startingResources: Int = 0
-) extends WorldObject {
+) extends WorldObject with ActiveVisionTracking {
   require(context.worldConfig != null)
+
+  def maxSpeed = spec.maximumSpeed
 
   val id = context.idGenerator.getAndIncrement()
   val priority = context.rng.nextInt()

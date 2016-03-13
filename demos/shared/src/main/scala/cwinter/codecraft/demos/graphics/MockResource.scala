@@ -1,6 +1,7 @@
 package cwinter.codecraft.demos.graphics
 
 import cwinter.codecraft.graphics.worldstate.{PositionDescriptor, ModelDescriptor, MineralDescriptor, WorldObjectDescriptor}
+import cwinter.codecraft.util.maths.Vector2
 
 
 private[graphics] class MockResource(
@@ -19,4 +20,7 @@ private[graphics] class MockResource(
     )
 
   def dead = false
+
+  def hasVision = false
+  def maxSpeed = 0
 }

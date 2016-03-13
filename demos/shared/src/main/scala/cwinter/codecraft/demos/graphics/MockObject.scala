@@ -1,11 +1,11 @@
 package cwinter.codecraft.demos.graphics
 
-import cwinter.codecraft.collisions.Positionable
+import cwinter.codecraft.collisions.{ActiveVisionTracking, VisionTracking, Positionable}
 import cwinter.codecraft.graphics.worldstate.{ModelDescriptor, WorldObjectDescriptor}
 import cwinter.codecraft.util.maths.Vector2
 
 
-private[graphics] trait MockObject {
+private[graphics] trait MockObject extends ActiveVisionTracking {
   val identifier = MockObject.genID()
 
   def update(): Unit
@@ -14,6 +14,7 @@ private[graphics] trait MockObject {
 
   def xPos: Float
   def yPos: Float
+  def position = Vector2(xPos, yPos)
 }
 
 private[graphics] object MockObject {

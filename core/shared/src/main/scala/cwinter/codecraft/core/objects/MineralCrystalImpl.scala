@@ -1,5 +1,6 @@
 package cwinter.codecraft.core.objects
 
+import cwinter.codecraft.collisions.PassiveVisionTracking
 import cwinter.codecraft.core.SimulatorEvent
 import cwinter.codecraft.core.api.{MineralCrystal, Player}
 import cwinter.codecraft.core.objects.drone.DroneStorageModule
@@ -12,7 +13,9 @@ private[core] class MineralCrystalImpl(
   val id: Int,
   private[this] var _position: Vector2,
   private[this] var _harvested: Boolean = false
-) extends WorldObject {
+) extends WorldObject with PassiveVisionTracking {
+  def maxSpeed = 0
+
   private[this] val orientation = (2 * math.Pi * Rng.double()).toFloat
   private[this] var _descriptor = Seq(createDescriptor)
   private var handles = Map.empty[Player, MineralCrystal]

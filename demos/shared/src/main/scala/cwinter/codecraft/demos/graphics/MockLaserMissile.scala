@@ -1,7 +1,8 @@
 package cwinter.codecraft.demos.graphics
 
+import cwinter.codecraft.collisions.VisionTracking
 import cwinter.codecraft.graphics.worldstate.{HomingMissileDescriptor, ModelDescriptor, NullPositionDescriptor}
-import cwinter.codecraft.util.maths.{ColorRGB, Rng}
+import cwinter.codecraft.util.maths.{Vector2, ColorRGB, Rng}
 
 import scala.collection.mutable
 import scala.util.Random
@@ -48,4 +49,7 @@ private[graphics] class MockLaserMissile(
   def rnd() = Random.nextDouble().toFloat
 
   def dead = age > lifetime
+
+  def hasVision = false
+  def maxSpeed = speed
 }

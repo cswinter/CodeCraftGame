@@ -1,6 +1,6 @@
 package cwinter.codecraft.core
 
-import cwinter.codecraft.collisions.VisionTracker
+import cwinter.codecraft.collisions.{VisionTracking, LeftSightRadius, EnteredSightRadius, VisionTracker}
 import cwinter.codecraft.core.api._
 import cwinter.codecraft.core.errors.Errors
 import cwinter.codecraft.core.multiplayer.RemoteClient
@@ -67,7 +67,7 @@ class DroneWorldSimulator(
   /** Returns the winning player. */
   def winner = _winner
 
-  private val visionTracker = new VisionTracker[WorldObject](
+  private val visionTracker = new VisionTracker[WorldObject with VisionTracking](
     map.size.xMin.toInt, map.size.xMax.toInt,
     map.size.yMin.toInt, map.size.yMax.toInt,
     GameConstants.DroneVisionRange
@@ -119,7 +119,7 @@ class DroneWorldSimulator(
 
   private def spawnMineral(mineralCrystal: MineralCrystalImpl): Unit = {
     visibleObjects.add(mineralCrystal)
-    visionTracker.insert(mineralCrystal)
+    visionTracker.insertPassive(mineralCrystal)
   }
 
   private def createDrone(
@@ -137,7 +137,7 @@ class DroneWorldSimulator(
     visibleObjects.add(drone)
     dronesSorted.add(drone)
     _drones += drone.id -> drone
-    visionTracker.insert(drone, generateEvents=true)
+    visionTracker.insertActive(drone)
     if (drone.dynamics.isInstanceOf[ComputedDroneDynamics]) {
       physicsEngine.addObject(drone.dynamics.asInstanceOf[ComputedDroneDynamics])
     }
@@ -149,7 +149,7 @@ class DroneWorldSimulator(
     visibleObjects.remove(drone)
     dronesSorted.remove(drone)
     _drones -= drone.id
-    visionTracker.remove(drone)
+    visionTracker.removeActive(drone)
     if (drone.dynamics.isInstanceOf[ComputedDroneDynamics]) {
       physicsEngine.remove(drone.dynamics.asInstanceOf[ComputedDroneDynamics])
     }
@@ -309,7 +309,7 @@ class DroneWorldSimulator(
   private def processEvent(event: SimulatorEvent): Unit = event match {
     case MineralCrystalHarvested(mineralCrystal) =>
       visibleObjects.remove(mineralCrystal)
-      visionTracker.remove(mineralCrystal)
+      visionTracker.removePassive(mineralCrystal)
     case DroneConstructionStarted(drone) =>
       visibleObjects.add(drone)
     case DroneConstructionCancelled(drone) =>
@@ -344,15 +344,15 @@ class DroneWorldSimulator(
 
   private def processVisionTrackerEvents(): Unit = {
     visionTracker.updateAll()
-    for (drone <- drones) drone.objectsInSight = visionTracker.getVisible(drone)
+    for (drone <- drones) drone.objectsInSight = visionTracker.getVisible(drone).asInstanceOf[Set[WorldObject]]
     for {
       (drone: DroneImpl, events) <- visionTracker.collectEvents()
       event <- events
     } event match {
-      case visionTracker.EnteredSightRadius(mineral: MineralCrystalImpl) =>
+      case EnteredSightRadius(mineral: MineralCrystalImpl) =>
         drone.enqueueEvent(MineralEntersSightRadius(mineral))
-      case visionTracker.LeftSightRadius(obj) => // don't care (for now)
-      case visionTracker.EnteredSightRadius(other: DroneImpl) =>
+      case LeftSightRadius(obj) => // don't care (for now)
+      case EnteredSightRadius(other: DroneImpl) =>
         drone.enqueueEvent(DroneEntersSightRadius(other))
       case e => throw new Exception(s"AHHHH, AN UFO!!! RUN FOR YOUR LIFE!!! $e")
     }

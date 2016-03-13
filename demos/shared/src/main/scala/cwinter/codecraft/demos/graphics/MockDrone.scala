@@ -22,8 +22,6 @@ private[graphics] class MockDrone(
     if (rnd() < 0.8 || undamaged) Seq.fill(size - 1)(2.toByte)
     else Seq.fill(size - 1)(Random.nextInt(3).toByte)
 
-  var inSight = Set.empty[MockObject]
-
 
   val speed = 2f
   val turnSpeed = 0.01f
@@ -112,4 +110,7 @@ private[graphics] class MockDrone(
 
 
   def dead = false
+
+  def hasVision = true
+  def maxSpeed = speed
 }

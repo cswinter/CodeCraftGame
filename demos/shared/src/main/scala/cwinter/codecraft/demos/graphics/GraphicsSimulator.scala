@@ -1,6 +1,6 @@
 package cwinter.codecraft.demos.graphics
 
-import cwinter.codecraft.collisions.VisionTracker
+import cwinter.codecraft.collisions.{VisionTracking, VisionTracker}
 import cwinter.codecraft.graphics.engine.GraphicsEngine
 import cwinter.codecraft.graphics.worldstate.{ModelDescriptor, NullPositionDescriptor, Simulator, TestingObject}
 
@@ -18,7 +18,7 @@ private[graphics] class GraphicsSimulator(
   spawnProjectiles: Boolean = false
 ) extends Simulator {
   var time = 0
-  val vision = new VisionTracker[MockObject](-10000, 10000, -10000, 10000, sightRadius.getOrElse(250))
+  val vision = new VisionTracker[MockObject with VisionTracking](-10000, 10000, -10000, 10000, sightRadius.getOrElse(250))
 
 
   import Generators._
@@ -48,11 +48,11 @@ private[graphics] class GraphicsSimulator(
 
   private def spawn(obj: MockObject): Unit = {
     objects.add(obj)
-    vision.insert(obj)
+    vision.insertActive(obj)
   }
 
   val objects = collection.mutable.Set(minerals ++ drones ++ customObjects:_*)
-  objects.foreach(vision.insert(_))
+  objects.foreach(vision.insertActive(_))
 
   override def computeWorldState: Iterable[ModelDescriptor[_]] = {
     objects.map(_.state()) + ModelDescriptor(NullPositionDescriptor, TestingObject(time), TestingObject(time)) ++ customChangingObjects(time)
@@ -63,17 +63,13 @@ private[graphics] class GraphicsSimulator(
 
     objects.foreach(_.update())
     vision.updateAll()
-    for (r <- objects) { r match {
-      case drone: MockDrone => drone.inSight = vision.getVisible(r)
-      case _ =>
-    } }
 
     val missileExplosions = for {
       obj <- objects
       if obj.isInstanceOf[MockLaserMissile] && obj.dead
       missile = obj.asInstanceOf[MockLaserMissile]
     } yield {
-        vision.remove(missile)
+        vision.removeActive(missile)
         new MockLightFlash(missile.xPos, missile.yPos)
       }
 
