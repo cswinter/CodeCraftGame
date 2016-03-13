@@ -219,6 +219,15 @@ private[core] class DroneImpl(
       _dronesInSight -= drone.wrapperFor(player)
   }
 
+  override def objectRemoved(obj: VisionTracking): Unit = {
+    val wasVisible =
+      obj match {
+        case mineral: MineralCrystalImpl => _mineralsInSight.contains(mineral.getHandle(player))
+        case drone: DroneImpl => _dronesInSight.contains(drone.wrapperFor(player))
+      }
+    if (wasVisible) objectLeftVision(obj)
+  }
+
   //+------------------------------+
   //+ Command implementations      +
   //+------------------------------+

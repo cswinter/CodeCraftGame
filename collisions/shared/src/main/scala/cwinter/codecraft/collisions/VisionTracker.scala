@@ -5,51 +5,84 @@ import cwinter.codecraft.util.maths.Vector2
 import scala.collection.mutable
 
 
-trait VisionTracking {
+private[codecraft] trait VisionTracking {
   def position: Vector2
   def maxSpeed: Double
 
-  private[collisions] def entersSight(obj: VisionTracking)
-  private[collisions] def notInSight(obj: VisionTracking)
+  private[collisions] var removed: Boolean = false
   private[collisions] var cell = (0, 0)
+
+  private[collisions] def objectRemoved(obj: VisionTracking)
+  private[collisions] def objectIsNearby(obj: VisionTracking)
   private[collisions] def x = cell._1
   private[collisions] def y = cell._2
   private[collisions] def x_=(value: Int): Unit = cell = cell.copy(_1 = value)
   private[collisions] def y_=(value: Int): Unit = cell = cell.copy(_2 = value)
 }
 
-trait ActiveVisionTracking extends VisionTracking {
-  private[this] var _inSight = Set.empty[VisionTracking]
+object VisionTracking {
+  implicit object VisionTrackingIsPositionable extends Positionable[VisionTracking] {
+    @inline
+    override def position(e: VisionTracking): Vector2 = e.position
+  }
+}
+
+private[collisions] case class NearbyObject(
+  obj: VisionTracking,
+  var isVisible: Boolean,
+  var timeNextCheck: Int
+)
+
+private[collisions] object NearbyObject {
+  implicit object NextCheckOrdering extends Ordering[NearbyObject] {
+    override def compare(x: NearbyObject, y: NearbyObject): Int = y.timeNextCheck - x.timeNextCheck
+  }
+}
+
+private[codecraft] trait ActiveVisionTracking extends VisionTracking {
+  private[collisions] var nearbyObjects = Set.empty[VisionTracking]
+  private val collisionQueue = new mutable.PriorityQueue[NearbyObject]()
 
   def objectEnteredVision(obj: VisionTracking): Unit
   def objectLeftVision(obj: VisionTracking): Unit
+  def objectRemoved(obj: VisionTracking): Unit
 
 
-  private[collisions] def entersSight(other: VisionTracking): Unit = {
-    if (other != this) {
-      _inSight += other
-      objectEnteredVision(other)
+  private[collisions] def objectIsNearby(obj: VisionTracking): Unit = {
+    require(obj != this)
+    if (!nearbyObjects.contains(obj)) {
+      collisionQueue.enqueue(NearbyObject(obj, isVisible = false, 0))
+      nearbyObjects += obj
     }
   }
 
-  private[collisions] def notInSight(obj: VisionTracking): Unit = inSight -= obj
+  private[collisions] def recomputeVisible(time: Int, radius: Double): Unit = {
+    while (collisionQueue.nonEmpty && collisionQueue.head.timeNextCheck <= time) {
+      val no@NearbyObject(obj, wasVisible, _) = collisionQueue.dequeue()
+      if (!obj.removed) {
+        val displacement = obj.position - position
+        val distance = displacement.length
+        val isVisible = distance <= radius
+        if (wasVisible && !isVisible) objectLeftVision(obj)
+        else if (!wasVisible && isVisible) objectEnteredVision(obj)
 
-  private[collisions] def inSight_=(value: Set[VisionTracking]): Unit = {
-    for (
-      newObj <- value -- _inSight
-      if newObj != this
-    ) objectEnteredVision(newObj)
-    for (oldObj <- _inSight -- value)
-      objectLeftVision(oldObj)
-
-    _inSight = value
+        if (math.abs(obj.x - x) < 2 && math.abs(obj.y - y) < 2) {
+          val combinedSpeed = maxSpeed + obj.maxSpeed
+          val visionDistance = math.abs(distance - radius)
+          val timeNextCheck = time + (visionDistance / combinedSpeed).toInt + 1
+          no.isVisible = isVisible
+          no.timeNextCheck = timeNextCheck
+          collisionQueue.enqueue(no)
+        } else nearbyObjects -= obj
+      }
+    }
   }
-  private[collisions] def inSight: Set[VisionTracking] = _inSight
 }
 
-trait PassiveVisionTracking extends VisionTracking {
-  private[collisions] def entersSight(other: VisionTracking): Unit = ()
-  private[collisions] def notInSight(other: VisionTracking): Unit = ()
+
+private[codecraft] trait PassiveVisionTracking extends VisionTracking {
+  private[collisions] def objectIsNearby(other: VisionTracking): Unit = ()
+  private[collisions] def objectRemoved(other: VisionTracking): Unit = ()
 }
 
 
@@ -69,13 +102,14 @@ private[codecraft] final class VisionTracker[T <: VisionTracking](
   val height = (yMax - yMin) / radius
   val radius2 = radius * radius
 
-  private[this] val trackedObjects = mutable.Set.empty[T with ActiveVisionTracking]
-  private[this] val allObjects = mutable.Set.empty[T]
-  private[this] val grid = new SquareGrid[T](xMin, xMax, yMin, yMax, radius)(VisionTrackingIsPositionable)
+  private val trackingObjects = mutable.Set.empty[T with ActiveVisionTracking]
+  private val allObjects = mutable.Set.empty[T]
+  private val grid = new SquareGrid[T](xMin, xMax, yMin, yMax, radius)
+  private var time = 0
 
 
   def insertActive[S <: T with ActiveVisionTracking](obj: S): Unit = {
-    trackedObjects += obj
+    trackingObjects += obj
     insert(obj)
   }
 
@@ -86,85 +120,67 @@ private[codecraft] final class VisionTracker[T <: VisionTracking](
     val cell@(x, y) = grid.computeCell(obj)
     obj.cell = cell
 
-    for (other <- grid.nearbyObjects(x, y)) {
-      if (contains(obj, other)) {
-        obj.entersSight(other)
-        other.entersSight(obj)
-      }
-    }
+    updateNearby(obj, grid.nearbyObjects(x, y))
 
     grid.insert(obj, x, y)
+    obj.removed = false
   }
 
   def removePassive[S <: T with PassiveVisionTracking](obj: S): Unit = {
-    for (e <- grid.nearbyObjects(obj.x, obj.y)) e.notInSight(obj)
     remove(obj)
+    for (nearby <- grid.nearbyObjects(obj.x, obj.y)) nearby.objectRemoved(obj)
   }
 
   def removeActive[S <: T with ActiveVisionTracking](obj: S): Unit = {
-    for (e <- obj.inSight) e.notInSight(obj)
-    trackedObjects -= obj
+    trackingObjects -= obj
     remove(obj)
+    for (nearby <- obj.nearbyObjects) nearby.objectRemoved(obj)
   }
 
   private[this] def remove(obj: T): Unit = {
-    val (x, y) = obj.cell
-    grid.remove(obj, x, y)
     allObjects -= obj
+    grid.remove(obj, obj.x, obj.y)
+    obj.removed = true
   }
-
 
   def updateAll() = {
     checkForCellTransfers()
-    recomputeInSight()
+    checkForCollisions()
   }
 
   def checkForCellTransfers(): Unit = {
-    for (obj <- allObjects) {
-      val (newX, newY) = grid.computeCell(obj)(VisionTrackingIsPositionable)
+    for (obj <- trackingObjects) {
+      val (newX, newY) = grid.computeCell(obj)
       val dx = newX - obj.x
       val dy = newY - obj.y
       if (dx < -1 || dx > 1 || dy < -1 || dy > 1) {
+        assert(false)
         grid.remove(obj, obj.cell)
         grid.insert(obj, newX, newY)
         obj.cell = (newX, newY)
       } else {
         if (obj.x != newX) {
-          grid.xTransfer(obj, obj.cell, dx)
+          updateNearby(obj, grid.xTransfer(obj, obj.cell, dx))
           obj.x = newX
         }
         if (obj.y != newY) {
-          grid.yTransfer(obj, obj.cell, dy)
+          updateNearby(obj, grid.yTransfer(obj, obj.cell, dy))
           obj.y = newY
         }
       }
     }
   }
 
-  def recomputeInSight(): Unit = {
-    for (elem <- trackedObjects) {
-      val (x, y) = elem.cell
+  private def checkForCollisions(): Unit = {
+    trackingObjects.foreach(_.recomputeVisible(time, radius))
+    time += 1
+  }
 
-      elem.inSight = {
-        for {
-          other <- grid.nearbyObjects(x, y)
-          if elem != other && contains(elem, other)
-        } yield other
-      }.toSet
+  private def updateNearby(obj: T, nearby: Iterator[T]): Unit = {
+    for (obj2 <- nearby) {
+      obj.objectIsNearby(obj2)
+      obj2.objectIsNearby(obj)
     }
   }
-
-  def getVisible[S <: T with ActiveVisionTracking](obj: S): Set[VisionTracking] = obj.inSight
-
-  private def contains(elem1: T, elem2: T): Boolean = {
-    val diff = elem1.position - elem2.position
-    (diff dot diff) <= radius2
-  }
-
-  implicit private object VisionTrackingIsPositionable extends Positionable[VisionTracking] {
-    @inline
-    override def position(e: VisionTracking): Vector2 = e.position
-  }
-
 }
 
