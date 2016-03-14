@@ -158,7 +158,7 @@ class DroneWorldSimulator(
     drone.enqueueEvent(Destroyed)
 
     for {
-      i <- 0 until ModulePosition.moduleCount(drone.size)
+      i <- 0 until ModulePosition.moduleCount(drone.sides)
       pos = drone.position + Rng.double(0, drone.radius) * Rng.vector2()
     } spawnLightflash(pos)
   }

@@ -24,7 +24,7 @@ private[core] abstract class DroneModule(
   protected def absoluteModulePositions: Seq[Vector2] = {
     val rotation = owner.dynamics.orientation
     for (p <- positions)
-      yield owner.position + Vector2(ModulePosition(owner.size, p)).rotated(rotation)
+      yield owner.position + Vector2(ModulePosition(owner.sides, p)).rotated(rotation)
   }
 
   def partitionIndices(partitions: Seq[Int]): List[Seq[Int]] = {
@@ -42,7 +42,7 @@ private[core] abstract class DroneModule(
 
     for {
       poss <- partitionIndices(partitioning)
-      offset = Vector2(ModulePosition.center(owner.size, poss)).rotated(rotation)
+      offset = Vector2(ModulePosition.center(owner.sides, poss)).rotated(rotation)
     } yield owner.position + offset
   }
 

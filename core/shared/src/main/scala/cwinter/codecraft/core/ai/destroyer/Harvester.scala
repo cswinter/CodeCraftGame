@@ -31,7 +31,7 @@ private[codecraft] class Harvester(ctx: DestroyerContext) extends DestroyerContr
 
   def shouldRunAway: Boolean =
     enemies.nonEmpty && closestEnemy.spec.missileBatteries > 0 &&
-      (closestEnemy.spec.maximumSpeed > spec.maximumSpeed ||
+      (closestEnemy.spec.maxSpeed > spec.maxSpeed ||
         (closestEnemy.position - position).lengthSquared <= 380 * 380)
 
 

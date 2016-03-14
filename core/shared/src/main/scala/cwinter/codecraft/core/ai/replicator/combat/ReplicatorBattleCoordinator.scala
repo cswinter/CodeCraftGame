@@ -105,7 +105,7 @@ private[codecraft] class ReplicatorBattleCoordinator(context: ReplicatorContext)
     if (!enemyForces.contains(drone)) {
       enemyForces += drone
       targetRegistry += drone -> Set.empty[TargetAcquisition]
-      if (drone.spec.maximumSpeed < DroneSpec(missileBatteries = 1).maximumSpeed) {
+      if (drone.spec.maxSpeed < DroneSpec(missileBatteries = 1).maxSpeed) {
         val followMission = new KeepEyeOnEnemy(drone)
         addMission(followMission)
         val terminate = new EliminateEnemy(drone, context)

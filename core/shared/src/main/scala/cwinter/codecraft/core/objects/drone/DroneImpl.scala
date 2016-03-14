@@ -21,7 +21,7 @@ private[core] class DroneImpl(
 ) extends WorldObject with ActiveVisionTracking {
   require(context.worldConfig != null)
 
-  def maxSpeed = spec.maximumSpeed
+  def maxSpeed = spec.maxSpeed
 
   val id = context.idGenerator.getAndIncrement()
   val priority = context.rng.nextInt()
@@ -281,14 +281,14 @@ private[core] class DroneImpl(
   //| Drone properties             +
   //+------------------------------+
   override def position: Vector2 = dynamics.pos
-  def weaponsCooldown: Int = weapons.map(_.cooldown).getOrElse(1)
+  def missileCooldown: Int = weapons.map(_.cooldown).getOrElse(1)
   def hitpoints: Int = hullState.map(_.toInt).sum + shieldGenerators.map(_.currHitpoints).getOrElse(0)
   def dronesInSight: Set[Drone] = if (isDead) Set.empty else _dronesInSight
   def isConstructing: Boolean = manipulator.exists(_.isConstructing)
   def isHarvesting: Boolean = storage.exists(_.isHarvesting)
   def isMoving: Boolean = dynamics.isMoving
   def storageCapacity = spec.storageModules
-  def size = spec.sides
+  def sides = spec.sides
   def radius = spec.radius
   def player = context.player
 

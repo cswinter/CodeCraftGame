@@ -65,7 +65,7 @@ case class DroneSpec(
   def weight = sides + moduleCount
 
   /** Returns the speed of a drone with this spec, measured in units distance per timestep. */
-  def maximumSpeed: Double = 30 * (1 + engines) / weight
+  def maxSpeed: Double = 30 * (1 + engines) / weight
 
 
   /** Returns the `radius` for a drone with this spec.
@@ -92,7 +92,7 @@ case class DroneSpec(
   def withShieldGenerators(shieldGenerators: Int) = copy(shieldGenerators = shieldGenerators)
 
   private[core] def constructDynamics(owner: DroneImpl, initialPos: Vector2, time: Double): DroneDynamics =
-    if (owner.context.isLocallyComputed) new ComputedDroneDynamics(owner, maximumSpeed, weight, radius, initialPos, time)
+    if (owner.context.isLocallyComputed) new ComputedDroneDynamics(owner, maxSpeed, weight, radius, initialPos, time)
     else new RemoteDroneDynamics(initialPos)
 
   private[core] def constructStorage(owner: DroneImpl, startingResources: Int = 0): Option[DroneStorageModule] =
@@ -124,10 +124,5 @@ case class DroneSpec(
       val startIndex = storageModules + missileBatteries + constructors + engines
       Some(new DroneShieldGeneratorModule(startIndex until startIndex + shieldGenerators, owner))
     } else None
-}
-
-
-object DroneSpec {
-  // constants for drone construction
 }
 

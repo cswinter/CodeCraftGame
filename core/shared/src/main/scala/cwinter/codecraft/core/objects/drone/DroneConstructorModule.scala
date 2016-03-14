@@ -93,7 +93,7 @@ private[core] class DroneConstructorModule(positions: Seq[Int], owner: DroneImpl
         d <- droneInConstruction
         relativeConstructionPos = (d.position - owner.position).rotated(-owner.dynamics.orientation)
         modules = positions zip constructorEnergy.map(_ > 0)
-      } yield ConstructionBeamDescriptor(owner.size, modules, relativeConstructionPos, owner.player.color)
+      } yield ConstructionBeamDescriptor(owner.sides, modules, relativeConstructionPos, owner.player.color)
 
   def droneInConstruction: Option[DroneImpl] = droneConstruction.map(_._1)
   override def cancelMovement: Boolean = isConstructing

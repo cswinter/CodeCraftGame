@@ -1,11 +1,10 @@
 package cwinter.codecraft.core.api
 
+import cwinter.codecraft.core.api.GameConstants.MissileLockOnRange
 import cwinter.codecraft.core.objects.drone._
-import cwinter.codecraft.graphics.engine.Debug
 import cwinter.codecraft.util.maths._
 
 import scala.scalajs.js.annotation.JSExportAll
-import GameConstants.MissileLockOnRange
 
 
 // The description part of this Scaladoc is identical to that in DroneController and JDroneController.
@@ -25,88 +24,51 @@ trait DroneControllerBase extends Drone {
   private[this] var _drone: DroneImpl = null
 
 
-  // abstract methods for event handling
-  /**
-   * Called once when the drone is spawned. Called before any other `onEvent` method is called.
-   */
+  /** Called once when the drone is spawned. Called before any other `onEvent` method is called. */
   def onSpawn(): Unit = ()
 
-  /**
-   * Called if the drone is destroyed.
-   */
+  /** Called if the drone is destroyed. */
   def onDeath(): Unit = ()
 
-  /**
-   * Called once every tick, after all other `onEvent` methods have been called.
-   */
+  /** Called once every tick, after all other `onEvent` methods have been called. */
   def onTick(): Unit = ()
 
-  /**
-   * Called when a mineral crystal enters the sight radius of this drone.
-   *
-   * @param mineralCrystal The [[cwinter.codecraft.core.api.MineralCrystal]] that is now in sight.
-   */
+  /** Called when a mineral crystal enters the sight radius of this drone. */
   def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = ()
 
-  /**
-   * Called when another drone enters the sight radius of this drone.
-   *
-   * @param drone The [[cwinter.codecraft.core.api.Drone]] that is now in sight.
-   */
+  /** Called when another drone enters the sight radius of this drone. */
   def onDroneEntersVision(drone: Drone): Unit = ()
 
-  /**
-   * Called when this drone arrives a position after invoking the one of the `moveTo` methods.
-   */
+  /** Called when this drone arrives a position after invoking the one of the `moveTo` methods. */
   def onArrivesAtPosition(): Unit = ()
 
-  /**
-   * Called when this drone arrives at a mineral crystal after invoking the moveTo(mineral: MineralCrystalHandle) command.
-   *
-   * @param mineralCrystal The [[MineralCrystal]] that the drone arrived at.
-   */
+  /** Called when this drone arrives at a mineral crystal after invoking the moveTo(mineral: MineralCrystalHandle) command. */
   def onArrivesAtMineral(mineralCrystal: MineralCrystal): Unit = ()
 
-  /**
-   * Called when this drone arrives at another drone after invoking the moveTo(drone: DroneHandle) command.
-   *
-   * @param drone The [[cwinter.codecraft.core.api.Drone]] at which this drone has arrived.
-   */
+  /** Called when this drone arrives at another drone after invoking the moveTo(drone: DroneHandle) command. */
   def onArrivesAtDrone(drone: Drone): Unit = ()
 
-  /**
-    * Called if the drone constructing this drone is destroyed before construction completes.
+  /** Called if the drone constructing this drone is destroyed before construction completes.
     * In such a case, this is the only event function to be called.
     */
   def onConstructionCancelled(): Unit = ()
 
-  /**
-    * When you start the game, this method will be called once on your initial drone controller
+  /** When you start the game, this method will be called once on your initial drone controller
     * to give you an opportunity to provide a [[cwinter.codecraft.core.api.MetaController]].
     */
   def metaController: Option[MetaController] = None
 
-  // drone commands
-  /**
-   * Order the drone to keep moving in the direction of `directionVector`.
-   */
+
+  /** Order the drone to keep moving in the direction of `directionVector`. */
   def moveInDirection(directionVector: Vector2): Unit = {
     if (directionVector == Vector2.Null) halt()
     else drone ! MoveInDirection(directionVector.orientation)
   }
 
-  /**
-   * Order the drone to keep moving in the direction of `direction`.
-   */
-  def moveInDirection(direction: Double): Unit = {
-    drone ! MoveInDirection(direction)
-  }
+  /** Order the drone to keep moving in the direction of `direction`. */
+  def moveInDirection(direction: Double): Unit = drone ! MoveInDirection(direction)
 
-  /**
-   * Order the drone to move towards `otherDrone`, until it is within 10 units distance of colliding.
-   *
-   * @param otherDrone The drone to be moved towards.
-   */
+  /** Order the drone to move towards `otherDrone`, until it is within 10 units distance of colliding. */
   def moveTo(otherDrone: Drone): Unit = {
     // TODO: most validation is in DroneImpl, maybe make consistent?
     if (otherDrone.isEnemy && !otherDrone.isVisible) {
@@ -118,27 +80,14 @@ trait DroneControllerBase extends Drone {
     }
   }
 
-  /**
-   * Order the drone to move towards `mineralCrystal`.
-   *
-   * @param mineralCrystal The [[MineralCrystal]] to be moved towards.
-   */
-  def moveTo(mineralCrystal: MineralCrystal): Unit = {
+  /** Order the drone to move towards `mineralCrystal`. */
+  def moveTo(mineralCrystal: MineralCrystal): Unit =
     drone ! MoveToMineralCrystal(mineralCrystal.mineralCrystal)
-  }
 
-  /**
-    * Order the drone to move to coordinates (`x`, `y`).
-    */
-  def moveTo(x: Double, y: Double): Unit = {
-    moveTo(Vector2(x, y))
-  }
+  /** Order the drone to move to coordinates (`x`, `y`). */
+  def moveTo(x: Double, y: Double): Unit = moveTo(Vector2(x, y))
 
-  /**
-   * Order the drone to move to `position`.
-   *
-   * @param position The position to be moved towards.
-   */
+  /** Order the drone to move to `position`. */
   def moveTo(position: Vector2): Unit = {
     val clippedPosition = clipToRectangle(position, worldSize)
     drone ! MoveToPosition(clippedPosition)
@@ -155,28 +104,21 @@ trait DroneControllerBase extends Drone {
     else if (value >= max) max
     else value
 
-  /**
-    * Order the drone to stop moving.
-    */
+  /** Order the drone to stop moving. */
   def halt(): Unit = {
     drone ! HoldPosition
   }
 
-  /**
-   * Order the drone to harvest `mineralCrystal`.
-   * Must already be at the position of the `mineralCrystal`.
-   *
-   * @param mineralCrystal The mineral crystal to be harvested.
-   */
-  def harvest(mineralCrystal: MineralCrystal): Unit = {
+  /** Order the drone to harvest `mineralCrystal`.
+    * Must already be close to the position of the `mineralCrystal`.
+    */
+  def harvest(mineralCrystal: MineralCrystal): Unit =
     drone ! HarvestMineral(mineralCrystal.mineralCrystal)
-  }
 
-  /**
-   * Order the drone to give all its resources to `otherDrone`.
-   *
-   * @param otherDrone The drone which will receive the resources.
-   */
+  /** Order the drone to give all its resources to `otherDrone`.
+    *
+    * @param otherDrone The drone which will receive the resources.
+    */
   def giveResourcesTo(otherDrone: Drone): Unit = {
     // TODO: isDead checks are all in this class, since they may cause replay errors if the command is recorded. Restructure would be good to make things less cluttered.
     if (otherDrone.isDead) {
@@ -185,22 +127,6 @@ trait DroneControllerBase extends Drone {
       drone ! DepositMinerals(otherDrone.drone)
     }
   }
-
-  @deprecated("Use giveResourcesTo instead.", "0.2.4.3")
-  def giveMineralsTo(otherDrone: Drone): Unit = {
-    giveResourcesTo(otherDrone)
-  }
-
-  /**
-   * Order the drone to start the construction of a new drone.
-   * While construction is in progress, the drone cannot move.
-   *
-   * @param spec The specification for the number of copies for each module equipped by the new drone.
-   * @param controller The drone controller that will govern the behaviour of the new drone.
-   */
-  @deprecated("Swap the positions of the `spec` and `controller` arguments.", "0.2.4.3")
-  def buildDrone(spec: DroneSpec, controller: DroneControllerBase): Unit =
-    buildDrone(controller, spec)
 
   /**
     * Order the drone to start the construction of a new drone.
@@ -220,17 +146,16 @@ trait DroneControllerBase extends Drone {
     drone ! ConstructDrone(spec, controller, drone.position - 110 * Rng.vector2())
   }
 
-  /**
-   * Order the drone to start the construction of a new drone.
-   * While construction is in progress, the drone cannot move.
-   *
-   * @param controller The drone controller that will govern the behaviour of the new drone.
-   * @param storageModules The new drone's number of storage modules.
-   * @param missileBatteries The new drone's number of missile batteries.
-   * @param constructors The new drone's number of constructors.
-   * @param engines The new drone's number of engines.
-   * @param shieldGenerators The new drone's number of shield generators.
-   */
+  /** Order the drone to start the construction of a new drone.
+    * While construction is in progress, the drone cannot move.
+    *
+    * @param controller The drone controller that will govern the behaviour of the new drone.
+    * @param storageModules The new drone's number of storage modules.
+    * @param missileBatteries The new drone's number of missile batteries.
+    * @param constructors The new drone's number of constructors.
+    * @param engines The new drone's number of engines.
+    * @param shieldGenerators The new drone's number of shield generators.
+    */
   def buildDrone(
     controller: DroneControllerBase,
     storageModules: Int = 0,
@@ -243,11 +168,7 @@ trait DroneControllerBase extends Drone {
     buildDrone(controller, spec)
   }
 
-  /**
-   * Fires all homing missiles at `target`.
-   *
-   * @param target The drone to be shot at.
-   */
+  /** Fires all homing missiles at `target`. */
   def fireMissilesAt(target: Drone): Unit = {
     if (target.isDead) {
       drone.warn("Trying to fireMissilesAt a drone that does not exist anymore!")
@@ -256,95 +177,30 @@ trait DroneControllerBase extends Drone {
     }
   }
 
-  // drone properties
-  override def position: Vector2 = drone.position
-
-  override def missileCooldown: Int = drone.weaponsCooldown
-
+  /** Always returns true */
   override def isVisible: Boolean = true
 
-  override def spec: DroneSpec = if (drone == null) null else drone.spec
-
-  override def playerID: Int = drone.player.id
-
-  override def hitpoints: Int = drone.hitpoints
-
-  /**
-   * Always returns false.
-   */
+  /** Always returns false. */
   override def isEnemy: Boolean = false
+
+  override def lastKnownPosition: Vector2 = position
+
+  override def lastKnownOrientation: Double = orientation
 
   @inline final override private[core] def drone: DroneImpl = _drone
 
-  /**
-   * Returns true if `otherDrone` is within range of this drones homing missiles, otherwise false.
-   *
-   * @param otherDrone The drone you want to shoot at.
-   */
+  /** Returns true if `otherDrone` is within range of this drones homing missiles, otherwise false. */
   def isInMissileRange(otherDrone: Drone): Boolean =
     (otherDrone.position - drone.position).lengthSquared <= MissileLockOnRange * MissileLockOnRange
 
-  /**
-    * Returns true if `mineralCrystal` is within harvesting range, otherwise false.
-    */
+  /** Returns true if `mineralCrystal` is within harvesting range, otherwise false. */
   def isInHarvestingRange(mineralCrystal: MineralCrystal): Boolean =
     drone.isInHarvestingRange(mineralCrystal.mineralCrystal)
 
-  /**
-   * Returns true if this drone is currently constructing another drone.
-   */
-  def isConstructing: Boolean = drone.isConstructing
-
-  /**
-    * Returns true if this drone is currently harvesting a mineral.
-    */
-  def isHarvesting: Boolean = drone.isHarvesting
-
-  /**
-    * Returns true of this drone has a movement command active or queued up, false otherwise.
-    */
-  def isMoving: Boolean = drone.isMoving
-
-  /**
-   * Returns the number of free storage modules.
-   */
-  def availableStorage: Int = drone.availableStorage
-
-  /**
-   * Returns the total amount of resources available to this drone.
-   * If the drone has refineries, this includes unprocessed mineral crystals.
-   */
-  @deprecated("The `storedResources` method now returns the same result and should be used instead.", "0.2.4.0")
-  def totalAvailableResources: Int = storedResources
-
-  /**
-    * Returns the total amount of resources stored by this drone.
-    */
-  def storedResources: Int = drone.storedResources
-
-  /**
-    * Draws the specified text at the position of the drone on this timestep.
-    */
-  def showText(text: String): Unit =
-    Debug.drawText(text, position.x, position.y, ColorRGBA(ColorRGB(1, 1, 1) - drone.player.color, 1))
-
-  /**
-    * Returns 0.
-     */
-  @deprecated("The refinery module has been removed.", "0.2.4.0")
-  def availableRefineries: Int = 0
-
   private[core] def dronesInSightScala: Set[Drone] = drone.dronesInSight
 
-  /**
-   * Returns the confines of the game world.
-   */
+  /** Returns the confines of the game world. */
   def worldSize: Rectangle = drone.context.worldConfig.size
-
-  /**
-   * Returns the drones orientation in radians.
-   */
-  def orientation: Double = drone.dynamics.orientation
 
   private[core] def willProcessEvents(): Unit = {}
 
@@ -352,6 +208,24 @@ trait DroneControllerBase extends Drone {
     require(_drone == null, "DroneController must only be initialised once.")
     _drone = drone
   }
-}
 
+  @deprecated("Use giveResourcesTo instead.", "0.2.4.3")
+  def giveMineralsTo(otherDrone: Drone): Unit = {
+    giveResourcesTo(otherDrone)
+  }
+
+  /** Order the drone to start the construction of a new drone.
+    * While construction is in progress, the drone cannot move.
+    *
+    * @param spec The specification for the number of copies for each module equipped by the new drone.
+    * @param controller The drone controller that will govern the behaviour of the new drone.
+    */
+  @deprecated("Swap the positions of the `spec` and `controller` arguments.", "0.2.4.3")
+  def buildDrone(spec: DroneSpec, controller: DroneControllerBase): Unit =
+    buildDrone(controller, spec)
+
+  /** Returns 0. */
+  @deprecated("The refinery module has been removed.", "0.2.4.0")
+  def availableRefineries: Int = 0
+}
 

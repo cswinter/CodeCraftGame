@@ -46,7 +46,7 @@ private[codecraft] class Harvester(
 
   def shouldRunAway: Boolean =
     enemies.nonEmpty && closestEnemy.spec.missileBatteries > 0 &&
-      (closestEnemy.spec.maximumSpeed > spec.maximumSpeed ||
+      (closestEnemy.spec.maxSpeed > spec.maxSpeed ||
         (closestEnemy.position - position).lengthSquared <= 380 * 380)
 
   override def onArrivesAtMineral(m: MineralCrystal): Unit = {
