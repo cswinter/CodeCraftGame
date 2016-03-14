@@ -65,7 +65,8 @@ private[codecraft] class DestroyerBattleCoordinator(context: DestroyerContext) e
     harvesters -= harvester
   }
 
-  def needScouting = enemyCapitalShips.isEmpty || assaultMissions.forall(_.isDeactivated)
+  def needScouting =
+    enemyCapitalShips.isEmpty || assaultMissions.forall(m => m.isDeactivated || m.hasExpired)
 }
 
 
@@ -106,7 +107,7 @@ private[codecraft] class AssaultCapitalShip(enemy: Drone) extends Mission[Destro
       pair <- assigned.sliding(2)
       e1 = pair.head
       e2 = pair.tail.head
-    } yield (e1.position - e2.position).lengthSquared <= 150 * 150
+    } yield (e1.position - e2.position).lengthSquared <= 130 * 130 * nAssigned
   }.forall(close => close)
 
   private def midpoint: Vector2 =
