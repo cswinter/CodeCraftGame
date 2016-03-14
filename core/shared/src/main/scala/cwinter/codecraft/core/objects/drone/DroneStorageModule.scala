@@ -110,7 +110,7 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
 
   def depositEnergyGlobe(position: Vector2): Unit = {
     val targetPosition = calculateEnergyGlobePosition(storedResources)
-    val newEnergyGlobe = new MovingEnergyGlobe(targetPosition, position, 20)
+    val newEnergyGlobe = new MovingEnergyGlobe(targetPosition, position, 40)
     storedEnergyGlobes.push(newEnergyGlobe)
   }
 

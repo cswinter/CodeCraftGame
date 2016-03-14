@@ -12,7 +12,7 @@ private[graphics] class MineralModelBuilder(mineral: MineralDescriptor)(implicit
 
   override protected def buildModel: Model[Unit] = {
     val size = signature.size
-    val radius = math.sqrt(size).toFloat * 6
+    val radius = math.sqrt(size).toFloat * 3
 
     Polygon(
       rs.BloomShader,
