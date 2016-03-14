@@ -17,12 +17,13 @@ object Debug {
     staticObjects ::= worldObject
   }
 
-  def drawText(
+  private[codecraft] def drawText(
     text: String, xPos: Double, yPos: Double, color: ColorRGBA,
-    absolutePosition: Boolean = false, largeFont: Boolean = false
-  ): Unit = {
-    _textModels ::= TextModel(text, xPos.toFloat, yPos.toFloat, color, absolutePosition, largeFont, absolutePosition)
-  }
+    absolutePosition: Boolean, largeFont: Boolean
+  ): Unit = _textModels ::= TextModel(text, xPos.toFloat, yPos.toFloat, color, absolutePosition, largeFont)
+
+  def drawText(text: String, xPos: Double, yPos: Double, color: ColorRGBA): Unit =
+    drawText(text, xPos, yPos, color, absolutePosition=false, largeFont=false)
 
 
   private[this] var _cameraOverride: Option[() => Vector2] = None

@@ -122,15 +122,14 @@ private[graphics] object RenderFrame extends GLEventListener {
   }
 
   def renderTextModel(renderer: TextRenderer, textModel: TextModel, width: Int, height: Int): Unit = {
-    val TextModel(text, xPos, yPos, color, absolutePos, _, centered) = textModel
+    val TextModel(text, xPos, yPos, color, absolutePos, _) = textModel
     renderer.setColor(color.r, color.g, color.b, color.a)
     val bounds = renderer.getBounds(text)
     val worldPos = VertexXY(xPos, yPos)
-    var position =
-      if (absolutePos) VertexXY(xPos - bounds.getWidth.toFloat / 2, yPos + 8)
+    val position =
+      if (absolutePos) VertexXY(xPos - bounds.getWidth.toFloat / 2, yPos + 8) + VertexXY(width / 2, height / 2)
       else (1 / camera.zoomFactor) * (worldPos - VertexXY(camera.x, camera.y)) +
         VertexXY(width / 2 - bounds.getWidth.toFloat / 2, height / 2 + bounds.getHeight.toFloat / 2)
-    if (centered) position += VertexXY(width / 2, + height / 2)
     renderer.draw(text, position.x.toInt, position.y.toInt)
   }
 

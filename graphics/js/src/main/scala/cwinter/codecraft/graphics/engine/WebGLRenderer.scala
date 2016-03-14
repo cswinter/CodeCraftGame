@@ -122,7 +122,7 @@ private[codecraft] class WebGLRenderer(
     if (textDiv == null) {
       println("Could not find div #text-container. Without this, text cannot be rendered.")
     } else {
-      textDiv.innerHTML = ""
+      textDiv.innerHTML = """<div id="large-text-dim-test"></div><div id="small-text-dim-test"></div>"""
       for (text <- Debug.textModels) {
         renderText(textDiv, text, width, height)
       }
@@ -143,24 +143,10 @@ private[codecraft] class WebGLRenderer(
 
     // dispose one-time VBOs
     PrimitiveModelBuilder.disposeAll(gl)
-
-    // TODO: port to js?
-    // update fps
-    /*val now = new DateTime().getMillis
-    frameTimes.enqueue(now)
-    val tThen = frameTimes.dequeue()
-    val fps = FrametimeSamples * 1000 / (now - tThen)
-    textField.setText(
-      f"FPS: $fps   " +
-        f"Draw calls: ${Material.drawCalls}   " +
-        f"Cached models: ${TheModelCache.CachedModelCount}   " +
-        f"Allocated VBOs: ${VBO.count}   " +
-        f"Last cached model: ${TheModelCache.lastCachedModel}"
-    )*/
   }
 
   private def renderText(container: HTMLDivElement, textModel: TextModel, width: Int, height: Int): Unit = {
-    val TextModel(text, x, y, ColorRGBA(r, g, b, a), absolutePos, largeFont, centered) = textModel
+    val TextModel(text, x, y, ColorRGBA(r, g, b, a), absolutePos, largeFont) = textModel
     def int(f: Float) = Math.round(255 * f)
 
 
@@ -168,16 +154,24 @@ private[codecraft] class WebGLRenderer(
       if (absolutePos) screenToBrowserCoords(x, y, width, height)
       else worldToBrowserCoords(x, y, width, height)
 
-    // FIXME: need to know bounds
-    if (position.x < 0 || position.y < 0 || position.x > width || position.y > height)
-      return
+    val testDivID = if (largeFont) "large-text-dim-test" else "small-text-dim-test"
+    val testDiv = document.getElementById(testDivID).asInstanceOf[HTMLDivElement]
+    testDiv.innerHTML = textModel.text
+    val textWidth = testDiv.clientWidth + 1
+    val textHeight = testDiv.clientHeight + 1
+    println(s"$textWidth, $textHeight")
+
+    if (position.x - textWidth / 2 < 0 ||
+      position.y - textHeight < 0 ||
+      position.x > width + textWidth / 2 ||
+      position.y > height + textHeight / 2) return
 
     val textElem = document.createElement("div").asInstanceOf[HTMLDivElement]
     textElem.className = if (largeFont) "large-floating-text" else "floating-text"
     textElem.style.color = s"rgba(${int(r)}, ${int(g)}, ${int(b)}, $a)"
     textElem.innerHTML = text
-    textElem.style.left = s"${position.x.toInt}px"
-    textElem.style.top = s"${position.y.toInt}px"
+    textElem.style.left = s"${position.x.toInt - textWidth / 2}px"
+    textElem.style.top = s"${position.y.toInt - textHeight / 2}px"
     container.appendChild(textElem)
   }
 
@@ -191,28 +185,6 @@ private[codecraft] class WebGLRenderer(
   private def screenToBrowserCoords(x: Float, y: Float, width: Int, height: Int): VertexXY = {
     require(-1 <= x); require(x <= 1); require(-1 <= y); require(y <= 1)
     VertexXY(x * width / 2f, -y * height / 2f) + VertexXY(width / 2f, height / 2f)
-  }
-
-  private def renderText(context: CanvasRenderingContext2D, textModel: TextModel): Unit = {
-    val TextModel(text, x, y, ColorRGBA(r, g, b, a), absolutePos, largeFont, centered) = textModel
-    val width = context.canvas.width
-    val height = context.canvas.height
-
-    def int(f: Float) = Math.round(255 * f)
-
-    context.fillStyle = s"rgba(${int(r)}, ${int(g)}, ${int(b)}, $a)"
-    context.font =  if (largeFont) "90px serif bold" else "16px serif bold"
-    val textMetric = context.measureText(text)
-    val worldPos = VertexXY(x, -y)
-    var position =
-      if (absolutePos) VertexXY(x - textMetric.width.toFloat / 2, y + 8)
-      else {
-        (1 / camera.zoomFactor) * (worldPos - VertexXY(camera.x, -camera.y)) +
-          VertexXY(width / 2 - textMetric.width.toFloat / 2, height / 2 + 8)
-      }
-    if (centered) position += VertexXY(width / 2, + height / 2)
-
-    context.fillText(text, position.x, position.y)
   }
 
   private def initGL(): GL = {
