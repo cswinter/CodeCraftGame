@@ -293,11 +293,11 @@ private[core] class DroneImpl(
   def player = context.player
 
   def availableStorage: Int = {
-    for (s <- storage) yield s.availableStorage
+    for (s <- storage) yield s.predictedAvailableStorage
   }.getOrElse(0)
 
   def storedResources: Int = {
-    for (s <- storage) yield s.storedResources
+    for (s <- storage) yield s.predictedStoredResources
   }.getOrElse(0)
 
   def isInHarvestingRange(mineral: MineralCrystalImpl): Boolean =

@@ -153,14 +153,18 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
     updateBeamDescriptor()
   }
 
-  def depositResources(other: Option[DroneStorageModule]): Unit = {
-    resourceDepositee = other
-  }
+  def depositResources(other: Option[DroneStorageModule]) = resourceDepositee = other
 
   def storedResources: Int = storedEnergyGlobes.size
 
-  def availableStorage: Int =
-    positions.size * 7 - storedResources
+  def predictedStoredResources: Int = resourceDepositee match {
+    case None => storedResources
+    case Some(x) => math.max(0, storedResources - x.availableStorage)
+  }
+
+  def availableStorage: Int = positions.size * 7 - storedResources
+
+  def predictedAvailableStorage: Int = positions.size * 7 - predictedStoredResources
 
   def isHarvesting: Boolean = harvesting.nonEmpty
 
