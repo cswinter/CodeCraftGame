@@ -9,7 +9,7 @@ import cwinter.codecraft.util.maths.{Rng, Vector2}
 
 private[codecraft] class Soldier(ctx: ReplicatorContext) extends ReplicatorController(ctx)
 with MissionExecutor[ReplicatorCommand] with TargetAcquisition {
-  val normalizedStrength = if (ctx.confident) 1.3 else 1.0
+  val normalizedStrength = if (ctx.confident) 1.4 else 1.0
 
   override def onSpawn(): Unit = {
     super.onSpawn()

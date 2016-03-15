@@ -20,7 +20,7 @@ private[codecraft] trait VisionTracking {
   private[collisions] def y_=(value: Int): Unit = cell = cell.copy(_2 = value)
 }
 
-object VisionTracking {
+private object VisionTracking {
   implicit object VisionTrackingIsPositionable extends Positionable[VisionTracking] {
     @inline
     override def position(e: VisionTracking): Vector2 = e.position

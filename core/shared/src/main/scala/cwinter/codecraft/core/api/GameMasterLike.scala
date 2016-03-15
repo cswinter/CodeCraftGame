@@ -176,16 +176,34 @@ private[codecraft] trait GameMasterLike {
   /** Runs the second level.
     * @param mothership The controller for your mothership.
     */
-  def runLevel2(mothership: DroneControllerBase): DroneWorldSimulator = {
-    runGame(mothership, new Mothership)
-  }
+  def runLevel2(mothership: DroneControllerBase) = runGame(mothership, new Mothership)
 
   /** Runs the third level.
     * @param mothership The controller for your mothership.
     */
-  def runLevel3(mothership: DroneControllerBase): DroneWorldSimulator = {
-    runGame(mothership, new ai.basicplus.Mothership)
-  }
+  def runLevel3(mothership: DroneControllerBase) = runGame(mothership, new ai.basicplus.Mothership)
+
+  /** Runs the fourth level.
+    * @param mothership The controller for your mothership.
+    */
+  def runLevel4(mothership: DroneControllerBase) =
+    runGame(mothership, replicatorAI(aggressive = true, confident = true))
+
+  /** Runs the fifth level.
+    * @param mothership The controller for your mothership.
+    */
+  def runLevel5(mothership: DroneControllerBase) = runGame(mothership, destroyerAI())
+
+  /** Runs the sixth level.
+    * @param mothership The controller for your mothership.
+    */
+  def runLevel6(mothership: DroneControllerBase) =
+    runGame(mothership, replicatorAI(aggressive = true, confident = true))
+
+  /** Runs the seventh level.
+    * @param mothership The controller for your mothership.
+    */
+  def runLevel7(mothership: DroneControllerBase) = runGame(mothership, replicatorAI())
 
   /** Runs a game with the level 1 AI versus the level 2 AI. */
   def runL1vL2(): DroneWorldSimulator = {

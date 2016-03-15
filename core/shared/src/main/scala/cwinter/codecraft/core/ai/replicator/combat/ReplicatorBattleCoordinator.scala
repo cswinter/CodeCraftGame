@@ -7,7 +7,8 @@ import cwinter.codecraft.graphics.engine.Debug
 import cwinter.codecraft.util.maths.{Vector2, ColorRGBA}
 
 
-private[codecraft] class ReplicatorBattleCoordinator(context: ReplicatorContext) extends BattleCoordinator[ReplicatorCommand] {
+private[codecraft] class ReplicatorBattleCoordinator(val context: ReplicatorContext)
+    extends BattleCoordinator[ReplicatorCommand] {
   private[this] var assisting = Map.empty[ReplicatorController, Assist]
   private[this] var guarding = Map.empty[ReplicatorController, Guard]
   private[this] var enemyForces = Set.empty[Drone]

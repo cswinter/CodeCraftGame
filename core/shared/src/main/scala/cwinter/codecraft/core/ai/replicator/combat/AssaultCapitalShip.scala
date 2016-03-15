@@ -27,7 +27,7 @@ extends Mission[ReplicatorCommand] {
     else if (enemy.isVisible) searchRadius = 0
 
     maxDist2 =
-      if (nAssigned == 0) None
+      if (nAssigned == 0 || context.context.confident) None
       else {
         val sortedByDist =
           assigned.toSeq.sortBy(d => (enemy.lastKnownPosition - d.position).lengthSquared)
