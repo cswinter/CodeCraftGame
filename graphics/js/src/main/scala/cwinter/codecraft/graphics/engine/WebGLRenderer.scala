@@ -9,6 +9,8 @@ import org.scalajs.dom
 import org.scalajs.dom.raw.{WebGLRenderingContext => GL, HTMLDivElement, CanvasRenderingContext2D, HTMLCanvasElement}
 import org.scalajs.dom.{document, html}
 
+import scala.scalajs.js
+
 
 private[codecraft] class WebGLRenderer(
   canvas: html.Canvas,
@@ -22,14 +24,19 @@ private[codecraft] class WebGLRenderer(
   camera.screenDims = (canvas.width, canvas.height)
 
   private[this] val keyEventHandler = new KeyEventHandler(gameWorld, camera)
-  canvas.onkeypress = onkeypressHandler _
-  canvas.onmousewheel = onmousewheelHandler _
-  canvas.onmousedown = onmousedownHandler _
-  canvas.onmouseup = onmouseupHandler _
-  canvas.onmousemove = onmousemoveHandler _
+  canvas.onkeypress = onKeyPress _
+  canvas.onmousedown = onMouseDown _
+  if (document.createElement("div").hasAttribute("onwheel"))
+    canvas.addEventListener("onwheel", onMouseWheel _, useCapture = false)
+  else if (js.eval("document.onmousewheel !== undefined").asInstanceOf[Boolean]) {
+    canvas.onmousewheel = onMouseWheel _
+  } else canvas.addEventListener("DOMMouseScroll", onScroll _, useCapture = false)
+
+  canvas.onmouseup = onMouseUp _
+  canvas.onmousemove = onMouseMove _
 
 
-  def onkeypressHandler(e: dom.KeyboardEvent) = {
+  def onKeyPress(e: dom.KeyboardEvent) = {
     val key = e.keyCode match {
       case 37 => LeftArrow
       case 39 => RightArrow
@@ -42,22 +49,27 @@ private[codecraft] class WebGLRenderer(
     keyEventHandler.keypress(key)
   }
 
-  def onmousewheelHandler(e: dom.WheelEvent): Unit = {
+  def onMouseWheel(e: dom.WheelEvent): Unit = {
     camera.zoom += 0.001f * e.deltaY.toFloat
   }
 
+  def onScroll(e: dom.UIEvent): Unit = {
+    println("Detail: " + e.detail)
+    camera.zoom += 0.02f * e.detail
+  }
+
   private[this] var mouseIsDown = false
-  def onmousedownHandler(e: dom.MouseEvent): Unit = {
+  def onMouseDown(e: dom.MouseEvent): Unit = {
     mouseIsDown = true
   }
 
-  def onmouseupHandler(e: dom.MouseEvent): Unit = {
+  def onMouseUp(e: dom.MouseEvent): Unit = {
     mouseIsDown = false
   }
 
   private[this] var xLast = 0.0
   private[this] var yLast = 0.0
-  def onmousemoveHandler(e: dom.MouseEvent): Unit = {
+  def onMouseMove(e: dom.MouseEvent): Unit = {
     val dx = xLast - e.clientX
     val dy = yLast - e.clientY
     xLast = e.clientX
