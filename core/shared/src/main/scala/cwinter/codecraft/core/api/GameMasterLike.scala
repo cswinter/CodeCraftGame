@@ -3,6 +3,7 @@ package cwinter.codecraft.core.api
 import cwinter.codecraft.core._
 import cwinter.codecraft.core.ai.basicplus
 import cwinter.codecraft.core.ai.cheese.Mothership
+import cwinter.codecraft.core.ai.replicator.Replicator
 import cwinter.codecraft.core.multiplayer.{WebsocketServerConnection, WebsocketClient}
 import cwinter.codecraft.core.replay.{DummyDroneController, Replayer}
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
@@ -25,7 +26,7 @@ private[codecraft] trait GameMasterLike {
   /** Identifies the current version of the JavaScript API.
     * This value is incremented whenever a backwards incompatible change is made to the JavaScript API.
     */
-  final val JavascriptAPIVersion = "0.1"
+  final val JavascriptAPIVersion = "0.2"
 
   private final val DefaultResourceDistribution = Seq(
       (10, 4), (10, 4),
@@ -124,6 +125,18 @@ private[codecraft] trait GameMasterLike {
   /** Returns a drone controller for the level 3 AI. */
   def bonusLevelAI(): DroneControllerBase = new ai.cheese.Mothership
 
+  /** Returns a drone controller for the level 4 AI */
+  def level4AI(): DroneControllerBase = replicatorAI(aggressive = true, confident = true)
+
+  /** Returns a drone controller for the level 4 AI */
+  def level5AI(): DroneControllerBase = destroyerAI()
+
+  /** Returns a drone controller for the level 4 AI */
+  def level6AI(): DroneControllerBase = replicatorAI(greedy = true, confident = true)
+
+  /** Returns a drone controller for the level 4 AI */
+  def level7AI(): DroneControllerBase = replicatorAI()
+
   /** Returns a drone controller for the Replicator AI. */
   def replicatorAI(greedy: Boolean = false, confident: Boolean = false, aggressive: Boolean = false): DroneControllerBase =
     new ai.replicator.Replicator(greedy, confident, aggressive)
@@ -176,34 +189,32 @@ private[codecraft] trait GameMasterLike {
   /** Runs the second level.
     * @param mothership The controller for your mothership.
     */
-  def runLevel2(mothership: DroneControllerBase) = runGame(mothership, new Mothership)
+  def runLevel2(mothership: DroneControllerBase) = runGame(mothership, level2AI())
 
   /** Runs the third level.
     * @param mothership The controller for your mothership.
     */
-  def runLevel3(mothership: DroneControllerBase) = runGame(mothership, new ai.basicplus.Mothership)
+  def runLevel3(mothership: DroneControllerBase) = runGame(mothership, bonusLevelAI())
 
   /** Runs the fourth level.
     * @param mothership The controller for your mothership.
     */
-  def runLevel4(mothership: DroneControllerBase) =
-    runGame(mothership, replicatorAI(aggressive = true, confident = true))
+  def runLevel4(mothership: DroneControllerBase) = runGame(mothership, level4AI())
 
   /** Runs the fifth level.
     * @param mothership The controller for your mothership.
     */
-  def runLevel5(mothership: DroneControllerBase) = runGame(mothership, destroyerAI())
+  def runLevel5(mothership: DroneControllerBase) = runGame(mothership, level5AI())
 
   /** Runs the sixth level.
     * @param mothership The controller for your mothership.
     */
-  def runLevel6(mothership: DroneControllerBase) =
-    runGame(mothership, replicatorAI(aggressive = true, confident = true))
+  def runLevel6(mothership: DroneControllerBase) = runGame(mothership, level6AI())
 
   /** Runs the seventh level.
     * @param mothership The controller for your mothership.
     */
-  def runLevel7(mothership: DroneControllerBase) = runGame(mothership, replicatorAI())
+  def runLevel7(mothership: DroneControllerBase) = runGame(mothership, level7AI())
 
   /** Runs a game with the level 1 AI versus the level 2 AI. */
   def runL1vL2(): DroneWorldSimulator = {
