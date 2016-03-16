@@ -54,7 +54,7 @@ private[codecraft] trait Mission[TCommand] {
   }
 
   def reduceAssignedToMax(): Unit = {
-    while (maxRequired < nAssigned) {
+    while (maxRequired < nAssigned && nAssigned > 0) {
       _assigned.head.abortMission()
     }
   }

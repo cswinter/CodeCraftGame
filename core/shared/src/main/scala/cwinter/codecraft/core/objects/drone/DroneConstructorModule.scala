@@ -6,6 +6,7 @@ import cwinter.codecraft.core._
 import cwinter.codecraft.core.api.DroneSpec
 import cwinter.codecraft.graphics.worldstate.{ConstructionBeamDescriptor, DroneModuleDescriptor, ManipulatorDescriptor}
 import cwinter.codecraft.util.maths.Vector2
+import cwinter.codecraft.util.modules.ModulePosition
 
 private[core] class DroneConstructorModule(positions: Seq[Int], owner: DroneImpl)
   extends DroneModule(positions, owner) {
@@ -41,7 +42,7 @@ private[core] class DroneConstructorModule(positions: Seq[Int], owner: DroneImpl
         for (i <- constructorEnergy.indices) {
           if (constructorEnergy(i) == 0 && remainingResources > 0) {
             remainingResources -= 1
-            resourceDepletions ::= absoluteModulePositions(i)
+            resourceDepletions ::= Vector2(ModulePosition(owner.sides, positions(i)))
             constructorEnergy(i) = DroneConstructionTime
             shouldUpdateBeamDescriptor = true
           }

@@ -105,7 +105,7 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
   }
 
   def convertGlobeReferenceFrame(other: DroneImpl, pos: Vector2): Vector2 = {
-    (pos - other.position).rotated(-other.dynamics.orientation)
+    ((pos.rotated(owner.dynamics.orientation) + owner.position) - other.position).rotated(-other.dynamics.orientation)
   }
 
   def depositEnergyGlobe(position: Vector2): Unit = {
@@ -120,7 +120,7 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
       case StaticEnergyGlobe => calculateEnergyGlobePosition(storedResources)
       case meg: MovingEnergyGlobe => meg.position
     }
-  }.rotated(owner.dynamics.orientation) + owner.position
+  }
 
   def harvestMineral(mineralCrystal: MineralCrystalImpl): Unit = {
     if (availableStorage == 0) {

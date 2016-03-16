@@ -122,7 +122,7 @@ private[core] class DroneImpl(
         s <- storage
         rd <- resourceDepletions
         pos = s.withdrawEnergyGlobe()
-      } simulatorEvents ::= SpawnEnergyGlobeAnimation(new EnergyGlobeObject(pos, 30, rd))
+      } simulatorEvents ::= SpawnEnergyGlobeAnimation(new EnergyGlobeObject(this, pos, 30, rd))
       for (s <- storage; rs <- resourceSpawns) s.depositEnergyGlobe(rs)
     }
     dynamics.update()
