@@ -17,5 +17,7 @@ private[core] case class DroneContext(
   isLocallyComputed: Boolean,
   simulator: DroneWorldSimulator,
   replayRecorder: ReplayRecorder = NullReplayRecorder
-)
+) {
+  def settings = simulator.settings
+}
 

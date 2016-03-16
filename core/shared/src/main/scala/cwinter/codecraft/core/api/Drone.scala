@@ -66,7 +66,8 @@ trait Drone {
 
   /** Draws the specified text at the position of the drone on this timestep. */
   def showText(text: String): Unit =
-    Debug.drawText(text, position.x, position.y, ColorRGBA(ColorRGB(1, 1, 1) - drone.player.color, 1))
+    if (drone.context.settings.allowMessages)
+      Debug.drawText(text, position.x, position.y, ColorRGBA(ColorRGB(1, 1, 1) - drone.player.color, 1))
 
   /** Returns an object that specifies how many copies of each module the drone has. */
   @inline

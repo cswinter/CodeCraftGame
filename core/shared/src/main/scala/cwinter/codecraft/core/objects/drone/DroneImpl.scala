@@ -370,21 +370,21 @@ private[core] class DroneImpl(
   }
 
   def error(message: String): Unit = {
-    if (messageCooldown <= 0) {
+    if (messageCooldown <= 0 && context.settings.allowMessages) {
       messageCooldown = MessageCooldown
       Errors.addMessage(message, position, errors.Error)
     }
   }
 
   def warn(message: String): Unit = {
-    if (messageCooldown <= 0) {
+    if (messageCooldown <= 0 && context.settings.allowMessages) {
       messageCooldown = MessageCooldown
       Errors.warn(message, position)
     }
   }
 
   def inform(message: String): Unit = {
-    if (messageCooldown <= 0) {
+    if (messageCooldown <= 0 && context.settings.allowMessages) {
       messageCooldown = MessageCooldown
       Errors.inform(message, position)
     }

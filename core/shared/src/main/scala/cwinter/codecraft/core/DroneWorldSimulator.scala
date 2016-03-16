@@ -36,12 +36,11 @@ class DroneWorldSimulator(
   eventGenerator: Int => Seq[SimulatorEvent],
   replayer: Option[Replayer] = None,
   multiplayerConfig: MultiplayerConfig = SingleplayerConfig,
-  forceReplayRecorder: Option[ReplayRecorder] = None
+  forceReplayRecorder: Option[ReplayRecorder] = None,
+  val settings: Settings = new Settings
 ) extends Simulator {
   private final val MaxDroneRadius = 60
 
-  private var showSightRadius = false
-  private var showMissileRadius = false
 
   private val replayRecorder: ReplayRecorder =
     if (forceReplayRecorder.nonEmpty) forceReplayRecorder.get
@@ -236,7 +235,7 @@ class DroneWorldSimulator(
 
 
   private def showSightAndMissileRadii(): Unit = {
-    if (showMissileRadius) {
+    if (settings.showMissileRadius) {
       for (
         d <- drones
         if d.spec.missileBatteries > 0
@@ -247,7 +246,7 @@ class DroneWorldSimulator(
           )
         )
     }
-    if (showSightRadius) {
+    if (settings.showSightRadius) {
       for (d <- drones) {
         Debug.draw(
           ModelDescriptor(
@@ -466,22 +465,20 @@ class DroneWorldSimulator(
 
   def replayString: Option[String] = replayRecorder.replayString
 
-
   override def initialCameraPos: Vector2 = map.initialDrones.head.position
-
 
   private[codecraft] override def handleKeypress(keyChar: Char): Unit = {
     keyChar match {
-      case '1' => showSightRadius = !showSightRadius
-      case '2' => showMissileRadius = !showMissileRadius
+      case '1' => settings.showSightRadius = !settings.showSightRadius
+      case '2' => settings.showMissileRadius = !settings.showMissileRadius
       case _ =>
     }
   }
 
 
   private[codecraft] override def additionalInfoText: String =
-    s"""${if (showSightRadius) "Hide" else "Show"} sight radius: 1
-       |${if (showMissileRadius) "Hide" else "Show"} missile range: 2
+    s"""${if (settings.showSightRadius) "Hide" else "Show"} sight radius: 1
+       |${if (settings.showMissileRadius) "Hide" else "Show"} missile range: 2
        |${replayRecorder.replayFilepath match{ case Some(path) => "Replay path: " + path case _ => ""}}
      """.stripMargin
 }
