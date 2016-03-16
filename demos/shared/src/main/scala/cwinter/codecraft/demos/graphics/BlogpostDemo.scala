@@ -41,18 +41,17 @@ private[codecraft] object BlogpostDemo {
     }
   }
 
-  def minerals = {
-    Seq(
-      ModelDescriptor(PositionDescriptor(100, -500, 0), MineralDescriptor(1)),
-      ModelDescriptor(PositionDescriptor(130, -520, 0), MineralDescriptor(1)),
-      ModelDescriptor(PositionDescriptor(80, -525, 0), MineralDescriptor(1)),
-      ModelDescriptor(PositionDescriptor(140, -490, 0), MineralDescriptor(1)),
-      ModelDescriptor(PositionDescriptor(95, -550, 0), MineralDescriptor(1)),
-      ModelDescriptor(PositionDescriptor(105, -530, 0), MineralDescriptor(2)),
-      ModelDescriptor(PositionDescriptor(150, -550, 0), MineralDescriptor(2)),
-      ModelDescriptor(PositionDescriptor(180, -500, 0), MineralDescriptor(4))
-    )
-  }
+  def minerals =
+    for ((size, x, y, orientation) <- Seq(
+      (1, 100, -500, 0),
+      (1, 130, -520, 0),
+      (1, 80, -525, 0),
+      (1, 140, -490, 0),
+      (1, 95, -550, 0),
+      (2, 105, -530, 0),
+      (2, 150, -550, 0),
+      (4, 180, -500, 0)
+    )) yield ModelDescriptor(NullPositionDescriptor, MineralDescriptor(size, x, y, orientation))
 
   def modules = Seq[DroneModuleDescriptor](
     StorageModuleDescriptor(0, EmptyStorage),

@@ -51,8 +51,14 @@ private[graphics] class JSMaterial[TPosition <: Vertex, TColor <: Vertex, TParam
   val attributePos = gl.getAttribLocation(programID, attributeNamePos)
   val attributeCol = attributeNameCol.map(gl.getAttribLocation(programID, _))
 
-  implicit def arrayFloatToFloat32Array(seq: Array[Float]): Float32Array =
-    new Float32Array(js.Array[Float](seq: _*))
+  private var lastModelview: Matrix4x4 = null
+
+
+  implicit def arrayFloatToFloat32Array(seq: Array[Float]): Float32Array = {
+    import js.JSConverters._
+    new Float32Array(seq.toJSArray)
+  }
+
   implicit def VBOToJSVBO(vbo: VBO): JSVBO = {
     assert(vbo.isInstanceOf[JSVBO], s"Expected vbo of type JSVBO. Actual: ${vbo.getClass.getName}")
     vbo.asInstanceOf[JSVBO]
@@ -63,12 +69,13 @@ private[graphics] class JSMaterial[TPosition <: Vertex, TColor <: Vertex, TParam
    ###################*/
 
   def beforeDraw(projection: Matrix4x4): Unit = {
+    lastModelview = null
     gl.useProgram(programID)
 
     gl.uniformMatrix4fv(
       uniformProjection,
       transpose=false,
-      new Float32Array(js.Array[Float](projection.data: _*)))
+      projection.data)
 
     enableCaps.foreach(gl.enable)
   }
@@ -77,7 +84,11 @@ private[graphics] class JSMaterial[TPosition <: Vertex, TColor <: Vertex, TParam
     Material._drawCalls += 1
 
     // upload modelview
-    gl.uniformMatrix4fv(uniformModelview, transpose=false, modelview.data)
+    if (lastModelview ne modelview) {
+      gl.uniformMatrix4fv(uniformModelview, transpose = false, modelview.data)
+      lastModelview = modelview
+      Material._modelviewUploads += 1
+    }
 
     // bind vbo and enable attributes
     gl.bindBuffer(GL.ARRAY_BUFFER, vbo.id)

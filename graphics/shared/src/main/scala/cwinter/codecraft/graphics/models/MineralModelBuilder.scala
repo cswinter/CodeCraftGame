@@ -4,10 +4,12 @@ import cwinter.codecraft.graphics.engine.RenderStack
 import cwinter.codecraft.graphics.model.{Model, ModelBuilder}
 import cwinter.codecraft.graphics.primitives.Polygon
 import cwinter.codecraft.graphics.worldstate.MineralDescriptor
-import cwinter.codecraft.util.maths.ColorRGB
+import cwinter.codecraft.util.maths.{VertexXY, ColorRGB}
 
 
-private[graphics] class MineralModelBuilder(mineral: MineralDescriptor)(implicit val rs: RenderStack)
+private[graphics] class MineralModelBuilder(
+  mineral: MineralDescriptor
+)(implicit val rs: RenderStack)
   extends ModelBuilder[MineralDescriptor, Unit] {
 
   override protected def buildModel: Model[Unit] = {
@@ -20,7 +22,9 @@ private[graphics] class MineralModelBuilder(mineral: MineralDescriptor)(implicit
       colorMidpoint = ColorRGB(0.03f, 0.6f, 0.03f),
       colorOutside = ColorRGB(0.0f, 0.1f, 0.0f),
       radius = radius,
-      zPos = -5
+      zPos = -5,
+      position = VertexXY(mineral.xPos, mineral.yPos),
+      orientation = mineral.orientation
     ).getModel
   }
 

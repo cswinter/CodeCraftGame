@@ -39,6 +39,7 @@ private[graphics] object RenderFrame extends GLEventListener {
     import gl._
 
     Material.resetDrawCalls()
+    Material.resetModelviewUploads()
 
     if (cullFaceToggle) glEnable(GL_CULL_FACE)
     else glDisable(GL_CULL_FACE)
@@ -87,6 +88,7 @@ private[graphics] object RenderFrame extends GLEventListener {
     textField.setText(
       f"FPS: $fps   " +
       f"Draw calls: ${Material.drawCalls}   " +
+      f"Modelview uploads: ${Material.modelviewUploads}   " +
       f"Cached models: ${TheModelCache.CachedModelCount}   " +
       f"Allocated VBOs: ${VBO.count}   " +
       f"Last cached model: ${TheModelCache.lastCachedModel}"

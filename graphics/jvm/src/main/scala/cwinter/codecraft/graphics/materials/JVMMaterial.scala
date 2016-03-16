@@ -58,6 +58,8 @@ private[graphics] class JVMMaterial[TPosition <: Vertex, TColor <: Vertex, TPara
   val attributePos = glGetAttribLocation(programID, attributeNamePos)
   val attributeCol = attributeNameCol.map(glGetAttribLocation(programID, _))
 
+  private var lastModelview: Matrix4x4 = null
+
   implicit def VBOToJSVBO(vbo: VBO): JVMVBO = {
     assert(vbo.isInstanceOf[JVMVBO], s"Expected vbo of type JVMVBO. Actual: ${vbo.getClass.getName}")
     vbo.asInstanceOf[JVMVBO]
@@ -69,12 +71,13 @@ private[graphics] class JVMMaterial[TPosition <: Vertex, TColor <: Vertex, TPara
    ********************/
 
   def beforeDraw(projection: Matrix4x4): Unit = {
+    lastModelview = null
     glUseProgram(programID)
 
     glUniformMatrix4fv(
       uniformProjection,
-      1 /* only setting 1 matrix */,
-      true /* transpose? */,
+      1 /* only setting 1 matrix */ ,
+      true /* transpose? */ ,
       projection.data,
       0 /* offset */)
 
@@ -85,7 +88,11 @@ private[graphics] class JVMMaterial[TPosition <: Vertex, TColor <: Vertex, TPara
     Material._drawCalls += 1
 
     // upload modelview
-    glUniformMatrix4fv(uniformModelview, 1, true, modelview.data, 0)
+    if (modelview ne lastModelview) {
+      glUniformMatrix4fv(uniformModelview, 1, true, modelview.data, 0)
+      lastModelview = modelview
+      Material._modelviewUploads += 1
+    }
 
     // bind vbo and enable attributes
     glBindVertexArray(vbo.vao)

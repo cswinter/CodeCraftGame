@@ -121,7 +121,8 @@ private[codecraft] case class EnergyGlobeDescriptor(
 
 private[codecraft] object PlainEnergyGlobeDescriptor extends EnergyGlobeDescriptor(1)
 
-private[codecraft] case class MineralDescriptor(size: Int) extends WorldObjectDescriptor[Unit] {
+private[codecraft] case class MineralDescriptor(size: Int, xPos: Float, yPos: Float, orientation: Float)
+    extends WorldObjectDescriptor[Unit] {
   override def intersects(xPos: Float, yPos: Float, rectangle: Rectangle): Boolean =
     intersects(xPos, yPos, rectangle, 0) // FIXME
 }

@@ -61,8 +61,11 @@ private[graphics] trait Material[TPosition <: Vertex, TColor <: Vertex, TParams]
 
 private[graphics] object Material {
   private[materials] var _drawCalls = 0
+  private[materials] var _modelviewUploads = 0
 
   def resetDrawCalls(): Unit = _drawCalls = 0
+  def resetModelviewUploads(): Unit = _modelviewUploads = 0
   def drawCalls = _drawCalls
+  def modelviewUploads = _modelviewUploads
 }
 

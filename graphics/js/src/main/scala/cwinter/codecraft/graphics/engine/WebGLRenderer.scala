@@ -54,7 +54,6 @@ private[codecraft] class WebGLRenderer(
   }
 
   def onScroll(e: dom.UIEvent): Unit = {
-    println("Detail: " + e.detail)
     camera.zoom += 0.02f * e.detail
   }
 
@@ -83,6 +82,7 @@ private[codecraft] class WebGLRenderer(
 
   def render(): Unit = {
     Material.resetDrawCalls()
+    Material.resetModelviewUploads()
 
     for (Vector2(x, y) <- Debug.cameraOverride)
       camera.position = (x.toFloat, y.toFloat)
@@ -171,7 +171,6 @@ private[codecraft] class WebGLRenderer(
     testDiv.innerHTML = textModel.text
     val textWidth = testDiv.clientWidth + 1
     val textHeight = testDiv.clientHeight + 1
-    println(s"$textWidth, $textHeight")
 
     if (position.x - textWidth / 2 < 0 ||
       position.y - textHeight < 0 ||
