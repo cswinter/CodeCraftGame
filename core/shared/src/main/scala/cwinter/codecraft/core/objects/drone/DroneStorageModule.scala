@@ -109,9 +109,14 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
   }
 
   def depositEnergyGlobe(position: Vector2): Unit = {
-    val targetPosition = calculateEnergyGlobePosition(storedResources)
-    val newEnergyGlobe = new MovingEnergyGlobe(targetPosition, position, 40)
-    storedEnergyGlobes.push(newEnergyGlobe)
+    if (owner.context.settings.allowEnergyGlobeAnimation) {
+      val targetPosition = calculateEnergyGlobePosition(storedResources)
+      val newEnergyGlobe = new MovingEnergyGlobe(targetPosition, position, 40)
+      storedEnergyGlobes.push(newEnergyGlobe)
+    } else {
+      owner.mustUpdateModel()
+      storedEnergyGlobes.push(StaticEnergyGlobe)
+    }
   }
 
   def withdrawEnergyGlobe(): Vector2 = {

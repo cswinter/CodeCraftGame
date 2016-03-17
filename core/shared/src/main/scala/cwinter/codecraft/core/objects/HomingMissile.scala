@@ -22,41 +22,64 @@ private[core] class HomingMissile(
   var fading: Boolean = false
 
   def update(): Seq[SimulatorEvent] = {
-    if (fading) {
-      previousPositions.dequeue()
-      if (previousPositions.isEmpty) {
-        Seq(HomingMissileFaded(this))
-      } else {
-        Seq.empty[SimulatorEvent]
-      }
-    } else {
-      dynamics.update()
-
-      lifetime -= 1
-
-      previousPositions.enqueue(position)
-      if (previousPositions.length > positions) previousPositions.dequeue()
-      while (previousPositions.length > lifetime + 1) previousPositions.dequeue()
-
-      if (dynamics.removed) {
-        fading = true
-        Seq(MissileExplodes(this))
-      } else if (lifetime == 0) {
-        dynamics.remove()
-        Seq(HomingMissileFaded(this))
-      } else Seq.empty[SimulatorEvent]
-    }
+    if (fading) fade()
+    else updatePosition()
   }
+
+  private def fade() = {
+    previousPositions.dequeue()
+    if (previousPositions.isEmpty) Seq(HomingMissileFaded(this))
+    else Seq.empty[SimulatorEvent]
+  }
+
+  private def updatePosition() = {
+    dynamics.update()
+    lifetime -= 1
+
+    if (isAnimated) recordPosition()
+
+    checkForRemoval
+  }
+
+  private def recordPosition() = {
+    previousPositions.enqueue(position)
+    if (previousPositions.length > positions) previousPositions.dequeue()
+    while (previousPositions.length > lifetime + 1) previousPositions.dequeue()
+  }
+
+  private def checkForRemoval = {
+    if (dynamics.removed) {
+      fading = true
+      Seq(MissileExplodes(this))
+    } else if (lifetime == 0) {
+      dynamics.remove()
+      Seq(HomingMissileFaded(this))
+    } else Seq.empty[SimulatorEvent]
+  }
+
+  def isAnimated = target.context.settings.allowMissileAnimation
 
   override def position: Vector2 = dynamics.pos
   override private[core] def descriptor: Seq[ModelDescriptor[_]] = Seq(
     ModelDescriptor(
       NullPositionDescriptor,
-      HomingMissileDescriptor(
-        previousPositions.map{case Vector2(x, y) => (x.toFloat, y.toFloat)},
-        math.min(MissileLifetime - lifetime, positions), player.color)
+      modelDescriptor
     )
   )
+
+  private def modelDescriptor =
+    if (isAnimated) fancyModelDescriptor
+    else basicModelDescriptor
+
+  private def fancyModelDescriptor =
+    HomingMissileDescriptor(
+      previousPositions.map{case Vector2(x, y) => (x.toFloat, y.toFloat)},
+      math.min(MissileLifetime - lifetime, positions),
+      player.color
+    )
+
+  private def basicModelDescriptor =
+    BasicHomingMissileDescriptor(position.x.toFloat, position.y.toFloat, player.color)
 
   override private[core] def isDead = lifetime <= 0
 }

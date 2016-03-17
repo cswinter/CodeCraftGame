@@ -8,7 +8,7 @@ private[core] class DroneEnginesModule(positions: Seq[Int], owner: DroneImpl)
   extends DroneModule(positions, owner) {
 
   override def update(availableResources: Int): (Seq[SimulatorEvent], Seq[Vector2], Seq[Vector2]) = {
-    owner.mustUpdateModel()
+    if (owner.context.settings.allowModuleAnimation) owner.mustUpdateModel()
     NoEffects
   }
 

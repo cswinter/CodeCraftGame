@@ -137,6 +137,12 @@ private[codecraft] case class HomingMissileDescriptor(
   playerColor: ColorRGB
 ) extends WorldObjectDescriptor[Unit]
 
+private[codecraft] case class BasicHomingMissileDescriptor(
+  x: Float,
+  y: Float,
+  playerColor: ColorRGB
+) extends WorldObjectDescriptor[Unit]
+
 private[codecraft] case class TestingObject(time: Int) extends WorldObjectDescriptor[TestingObject]
 
 private[codecraft] case class DrawCircle(

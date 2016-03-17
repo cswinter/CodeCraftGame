@@ -29,7 +29,8 @@ private[graphics] object TheWorldObjectModelFactory {
       case None =>
         val model = createModel(descriptor, timestep)
         // FIXME: special case required for models that are not cached. need to rework caching to fix this properly.
-        if (!descriptor.isInstanceOf[HomingMissileDescriptor] && !descriptor.isInstanceOf[DrawCircleOutline])
+        if (!descriptor.isInstanceOf[HomingMissileDescriptor] && !descriptor.isInstanceOf[DrawCircleOutline] &&
+            !descriptor.isInstanceOf[BasicHomingMissileDescriptor])
           descriptor.cachedModel = model
         model
     }
@@ -44,6 +45,8 @@ private[graphics] object TheWorldObjectModelFactory {
       case lightFlash: LightFlashDescriptor => new LightFlashModelBuilder().getModel
       case HomingMissileDescriptor(positions, maxPos, player) =>
         HomingMissileModelFactory.build(positions, maxPos, player)
+      case BasicHomingMissileDescriptor(xPos, yPos, player) =>
+        BasicHomingMissileModelFactory.build(xPos, yPos, player)
       case energyGlobe: EnergyGlobeDescriptor => new EnergyGlobeModelBuilder(energyGlobe).getModel
       case TestingObject(t) => new TestModelBuilder(t).getModel
       case circle: DrawCircle => CircleModelBuilder(circle.radius, circle.identifier)

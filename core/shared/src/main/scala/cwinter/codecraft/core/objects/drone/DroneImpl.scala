@@ -122,6 +122,7 @@ private[core] class DroneImpl(
         s <- storage
         rd <- resourceDepletions
         pos = s.withdrawEnergyGlobe()
+        if context.settings.allowEnergyGlobeAnimation
       } simulatorEvents ::= SpawnEnergyGlobeAnimation(new EnergyGlobeObject(this, pos, 30, rd))
       for (s <- storage; rs <- resourceSpawns) s.depositEnergyGlobe(rs)
     }
@@ -350,7 +351,8 @@ private[core] class DroneImpl(
         shieldGenerators.nonEmpty,
         hullState,
         constructionProgress.nonEmpty,
-        if (spec.engines > 0) context.simulator.timestep % 100 else 0,
+        if (spec.engines > 0 && context.settings.allowModuleAnimation) context.simulator.timestep % 100
+        else 0,
         player.color
       )
     cachedDescriptor = Some(newDescriptor)
