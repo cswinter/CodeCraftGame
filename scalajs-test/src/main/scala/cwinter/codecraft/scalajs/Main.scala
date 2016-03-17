@@ -21,8 +21,7 @@ object Main {
     def intervalID: Int = canvas.getAttribute("interval-id").toInt
     def reset(): Unit = {
       dom.clearInterval(intervalID)
-      TheModelCache.clear()
-      Debug.clearDrawAlways()
+      Debug.clearAllGraphicsState()
     }
     TheGameMaster.canvas = canvas
     TheGameMaster.outputFPS = true

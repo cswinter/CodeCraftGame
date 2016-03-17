@@ -60,8 +60,7 @@ object TheGameMaster extends GameMasterLike {
   def stop(): Unit = {
     runContext.foreach(_.stop())
     runContext = None
-    TheModelCache.clear()
-    Debug.clearDrawAlways()
+    Debug.clearAllGraphicsState()
   }
 
   override def connectToWebsocket(connectionString: String): WebsocketClient =

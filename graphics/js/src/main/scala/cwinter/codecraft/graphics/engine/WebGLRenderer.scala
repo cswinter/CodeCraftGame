@@ -134,7 +134,7 @@ private[codecraft] class WebGLRenderer(
     val textTestDiv = document.getElementById("text-test-container").asInstanceOf[HTMLDivElement]
     if (textDiv == null || textTestDiv == null) {
       println("Could not find div#text-container and div#text-test-container. Without this, text cannot be rendered.")
-    } else {
+    } else if (Debug.textModels.nonEmpty || textDiv.innerHTML != "") {
       textTestDiv.innerHTML = """<div id="large-text-dim-test"></div><div id="small-text-dim-test"></div>"""
       textDiv.innerHTML = ""
       for (text <- Debug.textModels) {

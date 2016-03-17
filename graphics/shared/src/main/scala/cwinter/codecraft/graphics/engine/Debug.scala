@@ -1,5 +1,6 @@
 package cwinter.codecraft.graphics.engine
 
+import cwinter.codecraft.graphics.model.{TheModelCache, TheCompositeModelBuilderCache}
 import cwinter.codecraft.graphics.worldstate.{ModelDescriptor, WorldObjectDescriptor}
 import cwinter.codecraft.util.maths.{Vector2, ColorRGBA}
 
@@ -47,4 +48,11 @@ object Debug {
   private[cwinter] def clearDrawAlways(): Unit = {
     staticObjects = List.empty[ModelDescriptor[_]]
   }
+
+  private[cwinter] def clearAllGraphicsState(): Unit = {
+    clearDrawAlways()
+    TheModelCache.clear()
+    TheCompositeModelBuilderCache.clear()
+  }
 }
+
