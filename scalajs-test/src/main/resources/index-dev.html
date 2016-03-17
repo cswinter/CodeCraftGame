@@ -27,15 +27,15 @@
         .floating-text {
             z-index: 1;
             position: absolute;
-            width: 300px;
-            height: 80px;
+            width: auto;
+            height: auto;
             overflow: hidden;
         }
         .large-floating-text {
             z-index: 1;
             position: absolute;
-            width: 900px;
-            height: 200px;
+            width: auto;
+            height: auto;
             overflow: hidden;
             font-size: 90px;
         }
@@ -44,7 +44,6 @@
             visibility: hidden;
             height: auto;
             width: auto;
-            white-space: nowrap;
             font-size: 90px;
         }
         #small-text-dim-test {
@@ -52,7 +51,6 @@
             visibility: hidden;
             height: auto;
             width: auto;
-            white-space: nowrap;
         }
     </style>
 </head>
@@ -68,6 +66,7 @@
             <td id="tdcontent">
                 <canvas id="webgl-canvas" tabindex="1"></canvas>
                 <div id="text-container" tabindex="-1"></div>
+                <div id="text-test-container" tabindex="-1"></div>
             </td>
         </tr>
     </table>

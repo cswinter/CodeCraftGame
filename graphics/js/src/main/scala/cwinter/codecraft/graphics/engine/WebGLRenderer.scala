@@ -131,10 +131,12 @@ private[codecraft] class WebGLRenderer(
     }
 
     val textDiv = document.getElementById("text-container").asInstanceOf[HTMLDivElement]
-    if (textDiv == null) {
-      println("Could not find div #text-container. Without this, text cannot be rendered.")
+    val textTestDiv = document.getElementById("text-test-container").asInstanceOf[HTMLDivElement]
+    if (textDiv == null || textTestDiv == null) {
+      println("Could not find div#text-container and div#text-test-container. Without this, text cannot be rendered.")
     } else {
-      textDiv.innerHTML = """<div id="large-text-dim-test"></div><div id="small-text-dim-test"></div>"""
+      textTestDiv.innerHTML = """<div id="large-text-dim-test"></div><div id="small-text-dim-test"></div>"""
+      textDiv.innerHTML = ""
       for (text <- Debug.textModels) {
         renderText(textDiv, text, width, height)
       }
@@ -151,6 +153,7 @@ private[codecraft] class WebGLRenderer(
           height
         )
       }
+      textTestDiv.innerHTML = ""
     }
 
     // dispose one-time VBOs
@@ -158,7 +161,7 @@ private[codecraft] class WebGLRenderer(
   }
 
   private def renderText(container: HTMLDivElement, textModel: TextModel, width: Int, height: Int): Unit = {
-    val TextModel(text, x, y, ColorRGBA(r, g, b, a), absolutePos, largeFont) = textModel
+    val TextModel(text, x, y, ColorRGBA(r, g, b, a), absolutePos, centered, largeFont) = textModel
     def int(f: Float) = Math.round(255 * f)
 
 
@@ -172,17 +175,17 @@ private[codecraft] class WebGLRenderer(
     val textWidth = testDiv.clientWidth + 1
     val textHeight = testDiv.clientHeight + 1
 
-    if (position.x - textWidth / 2 < 0 ||
+    if (!absolutePos && (position.x - textWidth / 2 < 0 ||
       position.y - textHeight < 0 ||
       position.x > width + textWidth / 2 ||
-      position.y > height + textHeight / 2) return
+      position.y > height + textHeight / 2)) return
 
     val textElem = document.createElement("div").asInstanceOf[HTMLDivElement]
     textElem.className = if (largeFont) "large-floating-text" else "floating-text"
     textElem.style.color = s"rgba(${int(r)}, ${int(g)}, ${int(b)}, $a)"
     textElem.innerHTML = text
-    textElem.style.left = s"${position.x.toInt - textWidth / 2}px"
-    textElem.style.top = s"${position.y.toInt - textHeight / 2}px"
+    textElem.style.left = s"${position.x.toInt - (if (centered) textWidth / 2 else 0)}px"
+    textElem.style.top = s"${position.y.toInt - (if (centered) textHeight / 2 else 0)}px"
     container.appendChild(textElem)
   }
 

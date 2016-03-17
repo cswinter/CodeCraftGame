@@ -99,7 +99,7 @@ class FPSMeter(context: RunContext) {
 
 
   def drawFPS(): Unit = {
-    Debug.drawText(fpsString, -1, 1, ColorRGBA(1, 1, 1, 1), true, false)
+    Debug.drawText(fpsString, -1, 1, ColorRGBA(1, 1, 1, 1), true, false, false)
   }
 
   def printFPS(): Unit = println(fpsString)

@@ -270,7 +270,7 @@ class DroneWorldSimulator(
   }
 
   private def showVictoryMessage(winner: Player): Unit = {
-    Debug.drawText(s"${winner.name} has won!", 0, 0, ColorRGBA(winner.color, 0.6f), true, true)
+    Debug.drawText(s"${winner.name} has won!", 0, 0, ColorRGBA(winner.color, 0.6f), true, true, true)
   }
 
   private def processDroneEvents(): Unit = {

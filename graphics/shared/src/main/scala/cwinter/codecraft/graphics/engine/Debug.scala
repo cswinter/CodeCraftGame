@@ -19,11 +19,11 @@ object Debug {
 
   private[codecraft] def drawText(
     text: String, xPos: Double, yPos: Double, color: ColorRGBA,
-    absolutePosition: Boolean, largeFont: Boolean
-  ): Unit = _textModels ::= TextModel(text, xPos.toFloat, yPos.toFloat, color, absolutePosition, largeFont)
+    absolutePosition: Boolean, centered: Boolean, largeFont: Boolean
+  ): Unit = _textModels ::= TextModel(text, xPos.toFloat, yPos.toFloat, color, absolutePosition, centered, largeFont)
 
   def drawText(text: String, xPos: Double, yPos: Double, color: ColorRGBA): Unit =
-    drawText(text, xPos, yPos, color, absolutePosition=false, largeFont=false)
+    drawText(text, xPos, yPos, color, absolutePosition=false, centered = true, largeFont=false)
 
 
   private[this] var _cameraOverride: Option[() => Vector2] = None
