@@ -24,14 +24,17 @@ private[graphics] case class ConstructionBeamsModelBuilder(
   }
 
   private def constructionBeamModel(position: VertexXY, active: Boolean): ModelBuilder[_, Unit] = {
-    val dist = position.toVector2 - relativeConstructionPosition
+    val displacement = position.toVector2 - constructionDisplacement
     val angle =
-      if (dist.x == 0 && dist.y == 0) 0
-      else (position.toVector2 - relativeConstructionPosition).orientation.toFloat
-    val radius = dist.length.toFloat
+      if (displacement.x == 0 && displacement.y == 0) 0
+      else displacement.orientation.toFloat
+    val radius = displacement.length
     val focusColor =
       if (active) ColorRGBA(0.5f * playerColor + 0.5f * ColorRGB(1, 1, 1), 0.9f)
       else ColorRGBA(playerColor, 0.7f)
+
+    val width = 50
+    val alpha = math.Pi - 2 * math.atan2(radius, width / 2)
 
     val n = 5
     val n2 = n - 1
@@ -45,11 +48,11 @@ private[graphics] case class ConstructionBeamsModelBuilder(
         val color = 1 - Math.abs(i - midpoint) / range
         ColorRGBA(playerColor * color, 0)
       }).flatMap(x => Seq(x, x)) :+ ColorRGBA(0, 0, 0, 0),
-      radius,
+      radius.toFloat,
       position,
       0,
       angle,
-      fraction = 0.05f
+      fraction = (alpha / (2 * math.Pi)).toFloat
     )
   }
 }

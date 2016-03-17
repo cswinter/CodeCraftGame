@@ -99,13 +99,13 @@ private[codecraft] case class ManipulatorDescriptor(position: Int) extends Drone
 private[codecraft] case class HarvestingBeamsDescriptor(
   droneSize: Int,
   moduleIndices: Seq[Int],
-  relativeMineralPosition: Vector2
+  mineralDisplacement: Vector2
 ) extends WorldObjectDescriptor[Unit]
 
 private[codecraft] case class ConstructionBeamDescriptor(
   droneSize: Int,
   modules: Seq[(Int, Boolean)],
-  relativeConstructionPosition: Vector2,
+  constructionDisplacement: Vector2,
   playerColor: ColorRGB
 ) extends WorldObjectDescriptor[Unit]
 

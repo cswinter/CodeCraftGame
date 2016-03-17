@@ -27,10 +27,13 @@ private[graphics] case class HarvestingBeamModelBuilder(
   }
 
   private def buildBeamModel(position: VertexXY): ModelBuilder[_, Unit] = {
-    val dist = position.toVector2 - relativeMineralPosition
+    val displacement = position.toVector2 - mineralDisplacement
     val angle =
-      if (dist.x == 0 && dist.y == 0) 0
-      else dist.orientation.toFloat
+      if (displacement.x == 0 && displacement.y == 0) 0
+      else displacement.orientation.toFloat
+    val radius = displacement.length
+    val width = 20
+    val alpha = math.Pi - 2 * math.atan2(radius, width / 2)
 
     val n = 5
     val n2 = n - 1
@@ -44,11 +47,11 @@ private[graphics] case class HarvestingBeamModelBuilder(
         val color = 1 - Math.abs(i - midpoint) / range
         ColorRGBA(color / 2, color, color / 2, 0)
       }).flatMap(x => Seq(x, x)) :+ ColorRGBA(0, 0, 0, 0),
-      75,
+      radius.toFloat,
       position,
       0,
       angle,
-      fraction = 0.03f
+      fraction = (alpha / (2 * math.Pi)).toFloat
     )
   }
 }
