@@ -37,14 +37,14 @@ class DroneWorldSimulator(
   replayer: Option[Replayer] = None,
   multiplayerConfig: MultiplayerConfig = SingleplayerConfig,
   forceReplayRecorder: Option[ReplayRecorder] = None,
-  val settings: Settings = new Settings
+  val settings: Settings = Settings.default
 ) extends Simulator {
   private final val MaxDroneRadius = 60
 
 
   private val replayRecorder: ReplayRecorder =
     if (forceReplayRecorder.nonEmpty) forceReplayRecorder.get
-    else if (replayer.isEmpty) ReplayFactory.replayRecorder
+    else if (replayer.isEmpty && settings.recordReplays) ReplayFactory.replayRecorder
     else NullReplayRecorder
 
   replayer.foreach { r => Rng.seed = r.seed }
@@ -291,11 +291,10 @@ class DroneWorldSimulator(
   }
 
   private def executeGameMechanics(): Seq[SimulatorEvent] = {
-    for (obj <- dynamicObjects.toSeq; event <- obj.update())
-      yield event
-  } ++ {
-    for (drone <- dronesSorted.toSeq; event <- drone.update())
-      yield event
+    val result = ListBuffer.empty[SimulatorEvent]
+    for (obj <- dynamicObjects) result.appendAll(obj.update())
+    for (drone <- dronesSorted) result.appendAll(drone.update())
+    result.toList
   }
 
   private def debugEvents: Seq[SimulatorEvent] =

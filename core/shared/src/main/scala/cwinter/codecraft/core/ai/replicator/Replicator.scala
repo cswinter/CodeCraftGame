@@ -141,7 +141,7 @@ private[codecraft] class Replicator(ctx: ReplicatorContext) extends ReplicatorCo
       val targetOption = optimalTarget
       for (target <- targetOption)
         fireMissilesAt(target)
-      target = targetOption.filter(_.spec.missileBatteries > 0)
+      maybeClosest = targetOption.filter(_.spec.missileBatteries > 0)
     }
 
   override def onDeath(): Unit = {
@@ -149,7 +149,7 @@ private[codecraft] class Replicator(ctx: ReplicatorContext) extends ReplicatorCo
     for (m <- nextCrystal)
       harvestCoordinator.abortHarvestingMission(m)
     mothershipCoordinator.offline(this)
-    target = None
+    maybeClosest = None
   }
 
   override def onConstructionCancelled(): Unit = {

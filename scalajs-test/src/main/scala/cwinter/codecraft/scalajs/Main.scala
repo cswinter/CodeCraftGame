@@ -1,6 +1,6 @@
 package cwinter.codecraft.scalajs
 
-import cwinter.codecraft.core.DroneWorldSimulator
+import cwinter.codecraft.core.{Settings, DroneWorldSimulator}
 import cwinter.codecraft.core.api.{DroneControllerBase, TheGameMaster}
 import cwinter.codecraft.demos.graphics.BlogpostDemo
 import cwinter.codecraft.demos.physics.TheObjectManager
@@ -23,6 +23,7 @@ object Main {
       dom.clearInterval(intervalID)
       Debug.clearAllGraphicsState()
     }
+    new Settings(recordReplays = false).setAsDefault()
     TheGameMaster.canvas = canvas
     TheGameMaster.outputFPS = true
     run(TheGameMaster.replicatorAI(), TheGameMaster.replicatorAI())
