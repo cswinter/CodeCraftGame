@@ -17,9 +17,11 @@ with MissionExecutor[ReplicatorCommand] with TargetAcquisition {
   }
 
   override def onTick(): Unit = {
-    handleWeapons()
     mission.foreach(executeInstructions)
-    handleEnemies()
+    if (enemiesInSight.nonEmpty) {
+      handleWeapons()
+      handleEnemies()
+    }
   }
 
 
@@ -71,22 +73,21 @@ with MissionExecutor[ReplicatorCommand] with TargetAcquisition {
   }
 
   def handleEnemies(): Unit = {
-    val enemies = this.enemies
-    if (enemies.nonEmpty) {
-      val armed = enemies.filter(_.spec.missileBatteries > 0)
-      target = findClosest(armed)
-      for (
-        enemy <- target
-        if isCommited || context.battleCoordinator.shouldAttack(enemy)
-      ) {
-        if (dronesInSight.count(!_.isEnemy) > 3 || (enemy.position - position).lengthSquared > 200 * 200)
-          moveInDirection(enemy.position - position)
+    val armed = enemiesInSight.filter(_.spec.missileBatteries > 0)
+    maybeClosest = findClosest(armed)
+    maybeClosest match {
+      case Some(enemy) if shouldAttack(enemy) =>
+        if (shouldApproach(enemy)) moveInDirection(enemy.position - position)
         else halt()
-        return
-      }
-      huntCivilians()
+      case _ => huntCivilians()
     }
   }
+
+  private def shouldAttack(enemy: Drone) =
+    isCommited || context.battleCoordinator.shouldAttack(enemy)
+
+  private def shouldApproach(enemy: Drone) =
+    alliesInSight.size > 3 || (enemy.position - position).lengthSquared > 200 * 200
 
   def huntCivilians(): Unit = {
     val civilians = enemies.filter (_.spec.missileBatteries == 0)
@@ -135,7 +136,7 @@ with MissionExecutor[ReplicatorCommand] with TargetAcquisition {
     super.onDeath()
     context.battleCoordinator.offline(this)
     abortMission()
-    target = None
+    maybeClosest = None
   }
 
   def isIdle: Boolean = mission.isEmpty
