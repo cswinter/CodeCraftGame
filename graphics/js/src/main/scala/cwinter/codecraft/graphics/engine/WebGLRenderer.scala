@@ -169,11 +169,13 @@ private[codecraft] class WebGLRenderer(
       if (absolutePos) screenToBrowserCoords(x, y, width, height)
       else worldToBrowserCoords(x, y, width, height)
 
-    val testDivID = if (largeFont) "large-text-dim-test" else "small-text-dim-test"
-    val testDiv = document.getElementById(testDivID).asInstanceOf[HTMLDivElement]
-    testDiv.innerHTML = textModel.text
-    val textWidth = testDiv.clientWidth + 1
-    val textHeight = testDiv.clientHeight + 1
+    val (textWidth, textHeight) =
+      if (centered) {
+        val testDivID = if (largeFont) "large-text-dim-test" else "small-text-dim-test"
+        val testDiv = document.getElementById(testDivID).asInstanceOf[HTMLDivElement]
+        testDiv.innerHTML = textModel.text
+        (testDiv.clientWidth + 1, testDiv.clientHeight + 1)
+      } else (0, 0)
 
     if (!absolutePos && (position.x - textWidth / 2 < 0 ||
       position.y - textHeight < 0 ||
@@ -184,8 +186,8 @@ private[codecraft] class WebGLRenderer(
     textElem.className = if (largeFont) "large-floating-text" else "floating-text"
     textElem.style.color = s"rgba(${int(r)}, ${int(g)}, ${int(b)}, $a)"
     textElem.innerHTML = text
-    textElem.style.left = s"${position.x.toInt - (if (centered) textWidth / 2 else 0)}px"
-    textElem.style.top = s"${position.y.toInt - (if (centered) textHeight / 2 else 0)}px"
+    textElem.style.left = s"${position.x.toInt - textWidth / 2}px"
+    textElem.style.top = s"${position.y.toInt - textHeight / 2}px"
     container.appendChild(textElem)
   }
 
