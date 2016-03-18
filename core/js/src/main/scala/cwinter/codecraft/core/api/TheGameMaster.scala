@@ -1,18 +1,15 @@
 package cwinter.codecraft.core.api
 
-import cwinter.codecraft.core.multiplayer.{WebsocketClient, JSWebsocketClient, WebsocketServerConnection}
-import cwinter.codecraft.core.{DroneWorldSimulator, MultiplayerClientConfig, MultiplayerConfig, WorldMap}
+import cwinter.codecraft.core.DroneWorldSimulator
+import cwinter.codecraft.core.multiplayer.{JSWebsocketClient, WebsocketClient}
 import cwinter.codecraft.graphics.engine.{Debug, WebGLRenderer}
-import cwinter.codecraft.graphics.model.TheModelCache
 import cwinter.codecraft.util.maths.ColorRGBA
 import org.scalajs.dom
 import org.scalajs.dom.html
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.scalajs.js
 import scala.scalajs.js.annotation.{JSExport, JSExportAll}
-import scala.util.{Failure, Success}
 
 /**
  * Main entry point to start the game.

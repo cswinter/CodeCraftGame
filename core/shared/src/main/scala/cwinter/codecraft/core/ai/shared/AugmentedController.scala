@@ -9,9 +9,9 @@ private[codecraft] abstract class AugmentedController[TCommand, TContext <: Shar
   var searchToken: Option[SearchToken] = None
   context.droneCount.increment(getClass)
 
-  def enemies: Set[Drone] = dronesInSight.filter(_.isEnemy)
+  @inline final def enemies: Set[Drone] = enemiesInSight
   def armedEnemies: Set[Drone] =
-    dronesInSight.filter(d => d.isEnemy && d.spec.missileBatteries > 0)
+    enemiesInSight.filter(_.spec.missileBatteries > 0)
 
   def optimalTarget: Option[Drone] = {
     val inRange = enemies.filter(isInMissileRange)
@@ -19,7 +19,7 @@ private[codecraft] abstract class AugmentedController[TCommand, TContext <: Shar
     else Some(inRange.maxBy(x => x.spec.missileBatteries.toFloat / x.hitpoints))
   }
 
-  def closestEnemy: Drone = enemies.minBy(x => (x.position - position).lengthSquared)
+  def closestEnemy: Drone = enemiesInSight.minBy(x => (x.position - position).lengthSquared)
 
   def closestEnemyAndDist2: (Drone, Double) =
     enemies.map(x => (x, (x.position - position).lengthSquared)).minBy(_._2)

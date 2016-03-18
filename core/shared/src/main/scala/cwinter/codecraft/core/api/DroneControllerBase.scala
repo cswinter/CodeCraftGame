@@ -197,7 +197,9 @@ trait DroneControllerBase extends Drone {
   def isInHarvestingRange(mineralCrystal: MineralCrystal): Boolean =
     drone.isInHarvestingRange(mineralCrystal.mineralCrystal)
 
-  private[core] def dronesInSightScala: Set[Drone] = drone.dronesInSight
+  @inline private[core] final def dronesInSightScala: Set[Drone] = drone.dronesInSight
+  @inline private[core] final def alliesInSightScala: Set[Drone] = drone.alliesInSight
+  @inline private[core] final def enemiesInSightScala: Set[Drone] = drone.enemiesInSight
 
   /** Returns the confines of the game world. */
   def worldSize: Rectangle = drone.context.worldConfig.size

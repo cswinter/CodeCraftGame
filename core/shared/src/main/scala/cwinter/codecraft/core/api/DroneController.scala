@@ -15,5 +15,11 @@ class DroneController extends DroneControllerBase {
 
   /** Gets all drones currently within the sight radius of this drone. */
    def dronesInSight: Set[Drone] = super.dronesInSightScala
+
+  /** Gets all enemy drones currently within the sight radius of this drone. */
+  def enemiesInSight: Set[Drone] = super.enemiesInSightScala
+
+  /** Gets all allied drones currently within the sight radius of this drone. */
+  def alliesInSight: Set[Drone] = super.alliesInSightScala
  }
 

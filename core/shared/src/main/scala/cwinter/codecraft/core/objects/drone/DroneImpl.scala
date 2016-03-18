@@ -28,6 +28,8 @@ private[core] class DroneImpl(
 
   private[this] var _mineralsInSight = Set.empty[MineralCrystal]
   private[this] var _dronesInSight = Set.empty[Drone]
+  private[this] var _enemiesInSight = Set.empty[Drone]
+  private[this] var _alliesInSight = Set.empty[Drone]
 
   private[this] val eventQueue = collection.mutable.Queue[DroneEvent](Spawned)
 
@@ -209,7 +211,10 @@ private[core] class DroneImpl(
       _mineralsInSight += mineral.getHandle(player)
       eventQueue.enqueue(MineralEntersSightRadius(mineral))
     case drone: DroneImpl =>
-      _dronesInSight += drone.wrapperFor(player)
+      val wrapped = drone.wrapperFor(player)
+      _dronesInSight += wrapped
+      if (wrapped.isEnemy) _enemiesInSight += wrapped
+      else _alliesInSight += wrapped
       eventQueue.enqueue(DroneEntersSightRadius(drone))
   }
 
@@ -217,7 +222,10 @@ private[core] class DroneImpl(
     case mineral: MineralCrystalImpl =>
       _mineralsInSight -= mineral.getHandle(player)
     case drone: DroneImpl =>
-      _dronesInSight -= drone.wrapperFor(player)
+      val wrapped = drone.wrapperFor(player)
+      _dronesInSight -= wrapped
+      if (wrapped.isEnemy) _enemiesInSight -= wrapped
+      else _alliesInSight -= wrapped
   }
 
   override def objectRemoved(obj: VisionTracking): Unit = {
@@ -285,6 +293,8 @@ private[core] class DroneImpl(
   def missileCooldown: Int = weapons.map(_.cooldown).getOrElse(1)
   def hitpoints: Int = hullState.map(_.toInt).sum + shieldGenerators.map(_.currHitpoints).getOrElse(0)
   def dronesInSight: Set[Drone] = if (isDead) Set.empty else _dronesInSight
+  def enemiesInSight: Set[Drone] = if (isDead) Set.empty else _enemiesInSight
+  def alliesInSight: Set[Drone] = if (isDead) Set.empty else _alliesInSight
   def isConstructing: Boolean = manipulator.exists(_.isConstructing)
   def isHarvesting: Boolean = storage.exists(_.isHarvesting)
   def isMoving: Boolean = dynamics.isMoving

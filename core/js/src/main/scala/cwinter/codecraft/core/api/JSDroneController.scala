@@ -120,11 +120,17 @@ class JSDroneController(
   @deprecated("Drones do not store mineral crystals anymore, only resources.", "0.2.4.0")
   def storedMinerals: js.Array[MineralCrystal] = Seq.empty[MineralCrystal].toJSArray
 
-  /**
-   * Gets all drones currently within the sight radius of this drone.
-   */
+  /** Gets all drones currently within the sight radius of this drone. */
   @JSExport
   def dronesInSight: js.Array[Drone] = super.dronesInSightScala.toJSArray
+
+  /** Gets all enemy drones currently within the sight radius of this drone. */
+  @JSExport
+  def enemiesInSight: js.Array[Drone] = super.enemiesInSightScala.toJSArray
+
+  /** Gets all allied drones currently within the sight radius of this drone. */
+  @JSExport
+  def alliesInSight: js.Array[Drone] = super.alliesInSightScala.toJSArray
 
   private[core] override def willProcessEvents(): Unit = _preEventProcessingHook()
 }

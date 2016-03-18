@@ -28,7 +28,7 @@ with MissionExecutor[ReplicatorCommand] with TargetAcquisition {
     case Attack(maxDist, enemy, notFound) =>
       if ((enemy.lastKnownPosition - position).lengthSquared > (maxDist - 250) * (maxDist - 250)) {
         approachCarefully(enemy.lastKnownPosition)
-      } else if (armedEnemies.nonEmpty) {
+      } else if (enemiesInSight.exists(_.spec.missileBatteries > 0)) {
         moveInDirection(position - closestEnemy.position)
       } else halt()
       if ((enemy.lastKnownPosition - position).lengthSquared < 100 * 100) notFound()

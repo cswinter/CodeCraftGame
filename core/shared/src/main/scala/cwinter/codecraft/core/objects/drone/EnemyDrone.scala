@@ -2,6 +2,7 @@ package cwinter.codecraft.core.objects.drone
 
 import cwinter.codecraft.core.api.{Player, ObjectNotVisibleException, Drone, DroneSpec}
 import cwinter.codecraft.core.errors.Errors
+import cwinter.codecraft.util.PrecomputedHashcode
 import cwinter.codecraft.util.maths.Vector2
 
 /**
