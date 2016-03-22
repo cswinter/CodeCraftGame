@@ -1,7 +1,7 @@
 package cwinter.codecraft.core.objects.drone
 
-import cwinter.codecraft.core.WorldConfig
-import cwinter.codecraft.core.api.{DroneSpec, RedPlayer, BluePlayer, Player}
+import cwinter.codecraft.core.{DroneWorldSimulator, WorldConfig}
+import cwinter.codecraft.core.api.{DroneSpec, RedPlayer, BluePlayer, Player, TheGameMaster}
 import cwinter.codecraft.core.objects.IDGenerator
 import cwinter.codecraft.core.replay.DummyDroneController
 import cwinter.codecraft.util.maths.{Vector2, Rectangle}
@@ -10,6 +10,7 @@ import scala.util.Random
 
 
 object DroneFactory {
+  val mockSimulator = new DroneWorldSimulator(TheGameMaster.defaultMap, Seq(), t => Seq.empty)
   val blueDroneContext = mockDroneContext(BluePlayer)
   val redDroneContext = mockDroneContext(RedPlayer)
 
@@ -19,7 +20,8 @@ object DroneFactory {
     None,
     new IDGenerator(player.id),
     new Random(),
-    true
+    true,
+    mockSimulator
   )
 
   def blueDrone(spec: DroneSpec, position: Vector2): DroneImpl =

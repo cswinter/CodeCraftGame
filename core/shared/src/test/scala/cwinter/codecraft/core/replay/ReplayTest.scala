@@ -49,13 +49,13 @@ class ReplayTest extends FlatSpec {
   }
 
 
-  def runAndRecord(droneWorldSimulator: DroneWorldSimulator, timesteps: Int): IndexedSeq[Set[ModelDescriptor]] = {
-    val snapshots = ArrayBuffer.empty[Set[ModelDescriptor]]
+  def runAndRecord(droneWorldSimulator: DroneWorldSimulator, timesteps: Int): IndexedSeq[Set[ModelDescriptor[_]]] = {
+    val snapshots = ArrayBuffer.empty[Set[ModelDescriptor[_]]]
 
     for (i <- 0 to timesteps) {
       droneWorldSimulator.run(1)
       snapshots.append(droneWorldSimulator.worldState.filter{
-        case ModelDescriptor(a, b) => b.isInstanceOf[DroneDescriptor]
+        case ModelDescriptor(pos, descriptor, params) => descriptor.isInstanceOf[DroneDescriptor]
       }.toSet)
     }
 
