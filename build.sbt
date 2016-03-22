@@ -138,5 +138,7 @@ lazy val docs = (project in file("docs"))
 
 lazy val root = project.in(file(".")).
   aggregate(coreJS, coreJVM, graphicsJS, graphicsJVM, utilJS, utilJVM, physicsJS, physicsJVM, collisionsJS, collisionsJVM)
+  .settings(Commons.settings: _*)
+  .settings(publishArtifact := false)
 
 
