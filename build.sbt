@@ -18,7 +18,7 @@ val jogl_merge_strategy = new sbtassembly.MergeStrategy {
 lazy val util = (crossProject in file("util")).
   settings(Commons.settings: _*).
   settings(
-    name := "cg.util",
+    name := "codecraft-util",
     libraryDependencies ++= commonDependencies,
     libraryDependencies += "org.scala-lang" % "scala-reflect" % "2.11.7"
   )
@@ -28,7 +28,7 @@ lazy val utilJS = util.js
 lazy val graphics = (crossProject in file("graphics")).
   settings(Commons.settings: _*).
   settings(
-    name := "cg.graphics",
+    name := "codecraft-graphics",
     libraryDependencies ++= commonDependencies
   ).jvmSettings(
     libraryDependencies ++= graphicsJVMDependencies
@@ -43,7 +43,7 @@ lazy val graphicsJS = graphics.js
 lazy val collisions = (crossProject in file("collisions")).
   settings(Commons.settings: _*).
   settings(
-    name := "cg.collisions",
+    name := "codecraft-collisions",
     libraryDependencies ++= commonDependencies
   ).dependsOn(util)
 lazy val collisionsJVM = collisions.jvm
@@ -52,7 +52,7 @@ lazy val collisionsJS = collisions.js
 lazy val physics = (crossProject in file("physics")).
   settings(Commons.settings: _*).
   settings(
-    name := "cg.physics",
+    name := "codecraft-physics",
     libraryDependencies ++= commonDependencies
   ).dependsOn(util, collisions)
 lazy val physicsJVM = physics.jvm
@@ -61,14 +61,14 @@ lazy val physicsJS = physics.js
 lazy val testai = (project in file("testai")).
   settings(Commons.settings: _*).
   settings(
-    name := "cg.testai",
+    name := "codecraft-testai",
     libraryDependencies ++= commonDependencies
   ).dependsOn(coreJVM)
 
 val demos = (crossProject in file("demos")).
   settings(Commons.settings: _*).
   settings(
-    name := "cg.demos",
+    name := "codecraft-demos",
     libraryDependencies ++= commonDependencies
   ).dependsOn(graphics, collisions, physics)
 lazy val demosJVM = demos.jvm
@@ -103,7 +103,7 @@ lazy val scalajsTest = (project in file("scalajs-test")).
   enablePlugins(ScalaJSPlugin).
   settings(Commons.settings: _*).
   settings(
-    name := "scalajs-test",
+    name := "codecraft-scalajs-test",
     libraryDependencies ++= commonDependencies,
     libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.8.2"
   ).dependsOn(coreJS, demosJS)
