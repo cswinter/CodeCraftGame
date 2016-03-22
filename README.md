@@ -1,4 +1,5 @@
-# Welcome!
+# Welcome! [![Join the chat at https://gitter.im/cswinter/CodeCraftGame](https://badges.gitter.im/cswinter/CodeCraftGame.svg)](https://gitter.im/cswinter/CodeCraftGame?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 This is the official repository for the [CodeCraft Programming Game](http://www.codecraft.org).
 
 
