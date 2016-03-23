@@ -1,6 +1,6 @@
-# Welcome! [![Join the chat at https://gitter.im/cswinter/CodeCraftGame](https://badges.gitter.im/cswinter/CodeCraftGame.svg)](https://gitter.im/cswinter/CodeCraftGame?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+# Welcome! [![Join the chat at https://gitter.im/cswinter/CodeCraftGame](https://badges.gitter.im/cswinter/CodeCraftGame.svg)](https://gitter.im/cswinter/CodeCraftGame?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.codecraftgame/codecraft_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.codecraftgame/codecraft_2.11)
 
-This is the official repository for the [CodeCraft Programming Game](http://www.codecraft.org).
+This is the official repository for the [CodeCraft Programming Game](http://www.codecraftgame.org).
 
 
 # How to build
