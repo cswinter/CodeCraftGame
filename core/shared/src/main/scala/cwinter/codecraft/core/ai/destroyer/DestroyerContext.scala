@@ -86,7 +86,7 @@ private[codecraft] case class MoveClose(position: Vector2, dist: Double) extends
 private[codecraft] class AssaultCapitalShip(enemy: Drone) extends Mission[DestroyerCommand] {
   private var enemyStrength = enemy.spec.maxHitpoints * enemy.spec.missileBatteries
   var minRequired = calcMinRequired
-  def maxRequired = math.min((minRequired * 1.5).toInt, minRequired + 1)
+  def maxRequired = math.max((minRequired * 1.5).toInt, minRequired + 1)
   val basePriority = 10 - enemy.spec.missileBatteries + enemy.spec.constructors
   private var assemble = minRequired > 1
 
