@@ -55,8 +55,11 @@ private[core] class DroneImpl(
     result
   }
 
+  private[this] var _collisionMarkers = List.empty[(CollisionMarker, Float)]
+
   private[this] var cachedDescriptor: Option[DroneDescriptor] = None
 
+  final val CollisionMarkerLifetime = 50f
   final val MessageCooldown = 30
   private[this] var messageCooldown = 0
   private final val NJetPositions = 6
@@ -116,6 +119,12 @@ private[core] class DroneImpl(
     _oldPosition = position
 
     for ((_, wrapper) <- handles) wrapper.recordPosition()
+
+    _collisionMarkers = for (
+      (model, lifetime) <- _collisionMarkers
+      if lifetime > 0
+    ) yield (model, lifetime - 1)
+
 
     for (Some(m) <- droneModules) {
       val (events, resourceDepletions, resourceSpawns) = m.update(storedResources)
@@ -177,6 +186,11 @@ private[core] class DroneImpl(
     if (context.isLocallyComputed) {
       _missileHits ::= MissileHit(id, missile.position, missile.id)
     }
+  }
+
+  def collidedWith(other: DroneImpl): Unit = {
+    val collisionAngle = (other.position - position).orientation - dynamics.orientation
+    _collisionMarkers ::= ((CollisionMarker(radius.toFloat, collisionAngle.toFloat), CollisionMarkerLifetime))
   }
 
   @inline final def !(command: DroneCommand) = executeCommand(command)
@@ -350,7 +364,8 @@ private[core] class DroneImpl(
         cachedDescriptor.getOrElse(recreateDescriptor()),
         modelParameters
       )
-    ) ++ storage.toSeq.flatMap(_.energyGlobeAnimations) ++ harvestBeams.toSeq ++ constructionBeams.toSeq
+    ) ++ storage.toSeq.flatMap(_.energyGlobeAnimations) ++ harvestBeams.toSeq ++ constructionBeams.toSeq ++
+      _collisionMarkers.map(cm => ModelDescriptor(positionDescr, cm._1, cm._2 / CollisionMarkerLifetime))
   }
 
   private def recreateDescriptor(): DroneDescriptor = {

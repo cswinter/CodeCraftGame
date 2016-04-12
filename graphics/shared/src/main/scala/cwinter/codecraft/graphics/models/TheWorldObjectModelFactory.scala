@@ -42,6 +42,7 @@ private[graphics] object TheWorldObjectModelFactory {
       case drone: DroneDescriptor => new DroneModelBuilder(drone, timestep).getModel
       case h: HarvestingBeamsDescriptor => HarvestingBeamModelBuilder(h).getModel
       case c: ConstructionBeamDescriptor => ConstructionBeamsModelBuilder(c).getModel
+      case cm: CollisionMarker => CollisionMarkerModelBuilder(cm).getModel
       case lightFlash: LightFlashDescriptor => new LightFlashModelBuilder().getModel
       case HomingMissileDescriptor(positions, maxPos, player) =>
         HomingMissileModelFactory.build(positions, maxPos, player)

@@ -73,7 +73,7 @@ case class DroneSpec(
     */
   val radius: Double = {
     val radiusBody = 0.5f * 40 / math.sin(math.Pi / sides).toFloat
-    radiusBody + 0.5f * Geometry.circumradius(4, sides)
+    radiusBody + Geometry.circumradius(4, sides)
   }
 
   /** Returns a copy of this object with `storageModules` set to the specified value. */

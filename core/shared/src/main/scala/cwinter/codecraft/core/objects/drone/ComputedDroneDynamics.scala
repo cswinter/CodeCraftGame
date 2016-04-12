@@ -1,9 +1,8 @@
 package cwinter.codecraft.core.objects.drone
 
-import cwinter.codecraft.core.api.GameConstants
+import cwinter.codecraft.core.api.GameConstants.HarvestingRange
 import cwinter.codecraft.core.objects.{ConstantVelocityDynamics, MissileDynamics}
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
-import GameConstants.{HarvestingRange}
 
 
 private[core] class ComputedDroneDynamics(
@@ -181,6 +180,9 @@ private[core] class ComputedDroneDynamics(
         other.velocity = v2 - 2 * w1 / (w1 + w2) * (v2 - v1 dot x2 - x1) / (x2 - x1).lengthSquared * (x2 - x1)
         isStunned = true
         other.isStunned = true
+
+        drone.collidedWith(other.drone)
+        other.drone.collidedWith(drone)
       case missile: MissileDynamics =>
         missile.handleObjectCollision(this)
       // should probably do something here...

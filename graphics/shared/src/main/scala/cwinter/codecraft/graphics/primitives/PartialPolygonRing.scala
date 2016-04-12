@@ -20,9 +20,11 @@ private[graphics] case class PartialPolygonRing[TColor <: Vertex : ClassTag, TPa
   fraction: Float
 ) extends PrimitiveModelBuilder[PartialPolygonRing[TColor, TParams], TColor, TParams] {
   val shape = this
+  require(colorInside.size == n + 1)
+  require(colorOutside.size == n + 1)
 
   protected def computeVertexData(): Seq[(VertexXYZ, TColor)] = {
-    val orientation = this.orientation + math.Pi.toFloat * (1 - fraction)
+    val orientation = this.orientation - math.Pi.toFloat * fraction
 
     val innerVertices =
       for (i <- 0 until n + 1)
@@ -52,12 +54,12 @@ private[graphics] case class PartialPolygonRing[TColor <: Vertex : ClassTag, TPa
     val colors = new Array[TColor](vertexPos.length)
     for (i <- 0 until n) {
       colors(2 * 3 * i + 1) = colorOutside(i)
-      colors(2 * 3 * i + 2) = colorOutside(i)
-      colors(2 * 3 * i + 4) = colorOutside(i)
+      colors(2 * 3 * i + 2) = colorOutside(i + 1)
+      colors(2 * 3 * i + 4) = colorOutside(i + 1)
 
       colors(2 * 3 * i + 0) = colorInside(i)
       colors(2 * 3 * i + 3) = colorInside(i)
-      colors(2 * 3 * i + 5) = colorInside(i)
+      colors(2 * 3 * i + 5) = colorInside(i + 1)
     }
 
     vertexPos zip colors
