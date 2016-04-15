@@ -120,7 +120,7 @@ private[core] class ComputedDroneDynamics(
   override def update(): Unit = {
     velocity =
       if (isStunned) {
-        if (velocity.length <= maxSpeed * 0.05f) {
+        if (velocity.length <= maxSpeed * 0.10f) {
           isStunned = false
           Vector2.Null
         } else velocity * 0.9f
@@ -176,8 +176,9 @@ private[core] class ComputedDroneDynamics(
         val x2 = other.pos
         val w1 = weight
         val w2 = other.weight
-        velocity = v1 - 2 * w2 / (w1 + w2) * (v1 - v2 dot x1 - x2) / (x1 - x2).lengthSquared * (x1 - x2)
-        other.velocity = v2 - 2 * w1 / (w1 + w2) * (v2 - v1 dot x2 - x1) / (x2 - x1).lengthSquared * (x2 - x1)
+        val v3 =  8 * (x1 - x2).normalized
+        velocity = v1 - 2 * w2 / (w1 + w2) * (v1 - v2 dot x1 - x2) / (x1 - x2).lengthSquared * (x1 - x2) + v3 / w1
+        other.velocity = v2 - 2 * w1 / (w1 + w2) * (v2 - v1 dot x2 - x1) / (x2 - x1).lengthSquared * (x2 - x1) - v3 / w2
         isStunned = true
         other.isStunned = true
 
