@@ -180,6 +180,8 @@ private[core] class DroneImpl(
       for (s <- storage) s.droneHasDied()
     }
 
+    addCollisionMarker(missile.position)
+
     mustUpdateModel()
 
     // TODO: only do this in multiplayer games
@@ -188,8 +190,10 @@ private[core] class DroneImpl(
     }
   }
 
-  def collidedWith(other: DroneImpl): Unit = {
-    val collisionAngle = (other.position - position).orientation - dynamics.orientation
+  def collidedWith(other: DroneImpl): Unit = addCollisionMarker(other.position)
+
+  private def addCollisionMarker(collisionPosition: Vector2): Unit = {
+    val collisionAngle = (collisionPosition - position).orientation - dynamics.orientation
     _collisionMarkers ::= ((CollisionMarker(radius.toFloat, collisionAngle.toFloat), CollisionMarkerLifetime))
   }
 
