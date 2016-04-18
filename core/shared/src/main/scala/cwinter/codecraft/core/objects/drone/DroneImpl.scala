@@ -380,7 +380,8 @@ private[core] class DroneImpl(
         shieldGenerators.nonEmpty,
         hullState,
         constructionProgress.nonEmpty,
-        if (spec.engines > 0 && context.settings.allowModuleAnimation) context.simulator.timestep % 100
+        if (spec.engines > 0 && context.settings.allowModuleAnimation && constructionProgress.isEmpty)
+          context.simulator.timestep % 100
         else 0,
         player.color
       )
