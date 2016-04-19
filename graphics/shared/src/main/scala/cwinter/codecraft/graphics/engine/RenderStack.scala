@@ -5,7 +5,7 @@ import cwinter.codecraft.util.PrecomputedHashcode
 import cwinter.codecraft.util.maths._
 
 
-private[graphics] trait RenderStack extends PrecomputedHashcode {
+private[codecraft] trait RenderStack extends PrecomputedHashcode {
   self: Product =>
   val MaterialXYZRGB: Material[VertexXYZ, ColorRGB, Unit]
   val BloomShader: Material[VertexXYZ, ColorRGB, Unit]
@@ -22,6 +22,6 @@ private[graphics] trait RenderStack extends PrecomputedHashcode {
   val modelviewTranspose: Boolean = false
 
 
-  def postDraw(camera2D: Camera2D): Unit = ()
+  private[graphics] def postDraw(camera2D: Camera2D): Unit = ()
 }
 

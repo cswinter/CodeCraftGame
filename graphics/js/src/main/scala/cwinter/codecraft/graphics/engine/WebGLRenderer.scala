@@ -2,11 +2,10 @@ package cwinter.codecraft.graphics.engine
 
 import cwinter.codecraft.graphics.materials.Material
 import cwinter.codecraft.graphics.model.PrimitiveModelBuilder
-import cwinter.codecraft.graphics.models.TheWorldObjectModelFactory
 import cwinter.codecraft.graphics.worldstate.Simulator
-import cwinter.codecraft.util.maths.{ColorRGBA, VertexXY, Rectangle, Vector2}
+import cwinter.codecraft.util.maths.{ColorRGBA, Rectangle, Vector2, VertexXY}
 import org.scalajs.dom
-import org.scalajs.dom.raw.{WebGLRenderingContext => GL, HTMLDivElement, CanvasRenderingContext2D, HTMLCanvasElement}
+import org.scalajs.dom.raw.{HTMLDivElement, WebGLRenderingContext => GL}
 import org.scalajs.dom.{document, html}
 
 import scala.scalajs.js
@@ -119,8 +118,7 @@ private[codecraft] class WebGLRenderer(
       while (objcurr != Nil) {
         val modelDescriptor = objcurr.head
         if (modelDescriptor.intersects(onScreen)) {
-          val model = TheWorldObjectModelFactory.generateModel(modelDescriptor, gameWorld.timestep)
-          model.draw(material)
+          modelDescriptor.closedModel(gameWorld.timestep).draw(material)
         }
 
         objcurr = objcurr.tail

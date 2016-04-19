@@ -1,8 +1,11 @@
 package cwinter.codecraft.graphics.worldstate
 
-import cwinter.codecraft.graphics.model.Model
-import cwinter.codecraft.util.maths.matrices.Matrix4x4
-import cwinter.codecraft.util.maths.{ColorRGB, Float0To1, Rectangle, Vector2}
+import cwinter.codecraft.graphics.engine.RenderStack
+import cwinter.codecraft.graphics.model.{ClosedModel, Model}
+import cwinter.codecraft.graphics.models._
+import cwinter.codecraft.graphics.primitives.PolygonRing
+import cwinter.codecraft.util.maths.matrices.{RotationZTranslationXYMatrix4x4, RotationZTranslationXYTransposedMatrix4x4, Matrix4x4}
+import cwinter.codecraft.util.maths._
 import cwinter.codecraft.util.{PrecomputedHashcode, maths}
 
 
@@ -11,11 +14,29 @@ private[codecraft] case class ModelDescriptor[T](
   objectDescriptor: WorldObjectDescriptor[T],
   objectParameters: T
 ) {
-  @inline final def intersects(rectangle: Rectangle): Boolean =
+  @inline
+  final def intersects(rectangle: Rectangle): Boolean =
     objectDescriptor.intersects(position.x, position.y, rectangle)
+
+
+  def closedModel(timestep: Int)(implicit rs: RenderStack): ClosedModel[T] =
+    new ClosedModel[T](objectParameters, objectDescriptor.model(timestep), modelview)
+
+  private def modelview(implicit renderStack: RenderStack): Matrix4x4 = {
+    if (position.cachedModelviewMatrix.isEmpty) {
+      val xPos = position.x
+      val yPos = position.y
+      val orientation = position.orientation
+      val modelviewMatrix =
+        if (renderStack.modelviewTranspose) new RotationZTranslationXYTransposedMatrix4x4(orientation, xPos, yPos)
+        else new RotationZTranslationXYMatrix4x4(orientation, xPos, yPos)
+      position.cachedModelviewMatrix = modelviewMatrix
+    }
+    position.cachedModelviewMatrix.get
+  }
 }
 
-object ModelDescriptor {
+private[codecraft] object ModelDescriptor {
   def apply(position: PositionDescriptor, objectDescriptor: WorldObjectDescriptor[Unit]): ModelDescriptor[Unit] =
     ModelDescriptor(position, objectDescriptor, Unit)
 }
@@ -37,23 +58,39 @@ private[codecraft] case class PositionDescriptor(
 
 private[codecraft] object NullPositionDescriptor extends PositionDescriptor(0, 0, 0)
 
-private[codecraft] sealed trait WorldObjectDescriptor[T] extends PrecomputedHashcode {
+private[codecraft] trait WorldObjectDescriptor[T] extends PrecomputedHashcode {
   self: Product =>
 
   def intersects(xPos: Float, yPos: Float, rectangle: Rectangle): Boolean = true
-  @inline final protected def intersects(
-    xPos: Float, yPos: Float, rectangle: Rectangle, size: Float
-  ): Boolean = {
-    xPos + size > rectangle.xMin &&
-    xPos - size < rectangle.xMax &&
-    yPos + size > rectangle.yMin &&
-    yPos - size < rectangle.yMax
+
+  @inline
+  final protected def intersects(x: Float, y: Float, width: Float, rectangle: Rectangle): Boolean = {
+    x + width > rectangle.xMin &&
+    x - width < rectangle.xMax &&
+    y + width > rectangle.yMin &&
+    y - width < rectangle.yMax
+  }
+
+  def model(timestep: Int)(implicit rs: RenderStack): Model[T] = {
+    cachedModel match {
+      case Some(model) => model
+      case None =>
+        val model = createModel(timestep)
+        // FIXME: special case required for models that are not cached. need to rework caching to fix this properly.
+        if (!this.isInstanceOf[HomingMissileDescriptor] && !this.isInstanceOf[DrawCircleOutline] &&
+          !this.isInstanceOf[BasicHomingMissileDescriptor])
+          this.cachedModel = model
+        model
+    }
   }
 
 
   private[this] var _cachedModel: Option[Model[T]] = None
-  private[graphics] def cachedModel_=(value: Model[T]): Unit = _cachedModel = Some(value)
-  private[graphics] def cachedModel: Option[Model[T]] = _cachedModel
+  private[this] def cachedModel_=(value: Model[T]): Unit = _cachedModel = Some(value)
+  private[this] def cachedModel: Option[Model[T]] = _cachedModel
+
+
+  protected def createModel(timestep: Int)(implicit rs: RenderStack): Model[T]
 }
 
 
@@ -69,7 +106,10 @@ private[codecraft] case class DroneDescriptor(
   assert(hullState.size == sides - 1)
 
   override def intersects(xPos: Float, yPos: Float, rectangle: Rectangle) =
-    intersects(xPos, yPos, rectangle, 200) // FIXME
+    intersects(xPos, yPos, 100, rectangle) // FIXME
+
+  override protected def createModel(timestep: Int)(implicit rs: RenderStack) =
+    new DroneModelBuilder(this, timestep).getModel
 }
 
 private[codecraft] case class DroneModelParameters(
@@ -100,14 +140,20 @@ private[codecraft] case class HarvestingBeamsDescriptor(
   droneSize: Int,
   moduleIndices: Seq[Int],
   mineralDisplacement: Vector2
-) extends WorldObjectDescriptor[Unit]
+) extends WorldObjectDescriptor[Unit] {
+  override protected def createModel(timestep: Int)(implicit rs: RenderStack) =
+    HarvestingBeamModelBuilder(this).getModel
+}
 
 private[codecraft] case class ConstructionBeamDescriptor(
   droneSize: Int,
   modules: Seq[(Int, Boolean)],
   constructionDisplacement: Vector2,
   playerColor: ColorRGB
-) extends WorldObjectDescriptor[Unit]
+) extends WorldObjectDescriptor[Unit] {
+  override protected def createModel(timestep: Int)(implicit rs: RenderStack) =
+    ConstructionBeamsModelBuilder(this).getModel
+}
 
 private[codecraft] case class EnergyGlobeDescriptor(
   fade: Float
@@ -116,53 +162,92 @@ private[codecraft] case class EnergyGlobeDescriptor(
   assert(fade <= 1)
 
   override def intersects(xPos: Float, yPos: Float, rectangle: Rectangle): Boolean =
-    intersects(xPos, yPos, rectangle, 20) // FIXME
+    intersects(xPos, yPos, 20, rectangle) // FIXME
+
+  override protected def createModel(timestep: Int)(implicit rs: RenderStack) =
+    new EnergyGlobeModelBuilder(this).getModel
 }
 
 private[codecraft] case class CollisionMarker(
   radius: Float,
   orientation: Float
-) extends WorldObjectDescriptor[Float]
+) extends WorldObjectDescriptor[Float] {
+  override protected def createModel(timestep: Int)(implicit rs: RenderStack) =
+    CollisionMarkerModelBuilder(this).getModel
+}
 
 private[codecraft] object PlainEnergyGlobeDescriptor extends EnergyGlobeDescriptor(1)
 
 private[codecraft] case class MineralDescriptor(size: Int, xPos: Float, yPos: Float, orientation: Float)
-    extends WorldObjectDescriptor[Unit] {
+  extends WorldObjectDescriptor[Unit] {
+
   override def intersects(xPos: Float, yPos: Float, rectangle: Rectangle): Boolean =
-    intersects(this.xPos, this.yPos, rectangle, 50)
+    intersects(this.xPos, this.yPos, 50, rectangle)
+
+  override protected def createModel(timestep: Int)(implicit rs: RenderStack) =
+    new MineralModelBuilder(this).getModel
 }
 
 
-private[codecraft] case class LightFlashDescriptor(stage: Float) extends WorldObjectDescriptor[LightFlashDescriptor]
+private[codecraft] case class LightFlashDescriptor(stage: Float)
+  extends WorldObjectDescriptor[LightFlashDescriptor] {
+
+  override protected def createModel(timestep: Int)(implicit rs: RenderStack) =
+    new LightFlashModelBuilder().getModel
+}
 
 
 private[codecraft] case class HomingMissileDescriptor(
   positions: Seq[(Float, Float)],
   maxPos: Int,
   playerColor: ColorRGB
-) extends WorldObjectDescriptor[Unit]
+) extends WorldObjectDescriptor[Unit] {
+
+  override protected def createModel(timestep: Int)(implicit rs: RenderStack) =
+    HomingMissileModelFactory.build(positions, maxPos, playerColor)
+}
+
 
 private[codecraft] case class BasicHomingMissileDescriptor(
   x: Float,
   y: Float,
   playerColor: ColorRGB
-) extends WorldObjectDescriptor[Unit]
+) extends WorldObjectDescriptor[Unit] {
 
-private[codecraft] case class TestingObject(time: Int) extends WorldObjectDescriptor[TestingObject]
+  override protected def createModel(timestep: Int)(implicit rs: RenderStack) =
+    BasicHomingMissileModelFactory.build(x, y, playerColor)
+}
+
+private[codecraft] case class TestingObject(time: Int) extends WorldObjectDescriptor[Unit] {
+  override protected def createModel(timestep: Int)(implicit rs: RenderStack) =
+    new TestModelBuilder(time).getModel
+}
 
 private[codecraft] case class DrawCircle(
   radius: Float,
   identifier: Int
-) extends WorldObjectDescriptor[Unit]
+) extends WorldObjectDescriptor[Unit] {
+  override protected def createModel(timestep: Int)(implicit rs: RenderStack) =
+    CircleModelBuilder(radius, identifier).getModel
+}
 
 
 private[codecraft] case class DrawCircleOutline(
   radius: Float,
   color: ColorRGB = ColorRGB(1, 1, 1)
-) extends WorldObjectDescriptor[Unit]
+) extends WorldObjectDescriptor[Unit] {
+  override protected def createModel(timestep: Int)(implicit rs: RenderStack) =
+    new PolygonRing(
+      rs.MaterialXYZRGB, 40, Seq.fill(40)(color), Seq.fill(40)(color),
+      radius - 2, radius, VertexXY(0, 0), 0, 0
+    ).noCaching.getModel
+}
 
 
 private[codecraft] case class DrawRectangle(
   bounds: maths.Rectangle
-) extends WorldObjectDescriptor[Unit]
+) extends WorldObjectDescriptor[Unit] {
+  override protected def createModel(timestep: Int)(implicit rs: RenderStack) =
+    RectangleModelBuilder(bounds).getModel
+}
 

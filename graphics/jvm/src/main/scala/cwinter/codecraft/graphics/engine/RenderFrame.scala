@@ -8,7 +8,6 @@ import com.jogamp.opengl.util.awt.TextRenderer
 import cwinter.codecraft.graphics.engine
 import cwinter.codecraft.graphics.materials.Material
 import cwinter.codecraft.graphics.model.{PrimitiveModelBuilder, TheModelCache, VBO}
-import cwinter.codecraft.graphics.models.TheWorldObjectModelFactory
 import cwinter.codecraft.graphics.worldstate.Simulator
 import cwinter.codecraft.util.maths.VertexXY
 import org.joda.time.DateTime
@@ -63,10 +62,8 @@ private[graphics] object RenderFrame extends GLEventListener {
     for (material <- renderStack.materials) {
       material.beforeDraw(projection)
 
-      for {
-        worldObject <- worldObjects ++ engine.Debug.debugObjects
-        model = TheWorldObjectModelFactory.generateModel(worldObject, gameWorld.timestep)
-      } model.draw(material)
+      for (worldObject <- worldObjects ++ engine.Debug.debugObjects)
+        worldObject.closedModel(gameWorld.timestep).draw(material)
 
 
       material.afterDraw()
