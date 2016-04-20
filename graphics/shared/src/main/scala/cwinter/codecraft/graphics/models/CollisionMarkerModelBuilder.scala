@@ -1,17 +1,16 @@
 package cwinter.codecraft.graphics.models
 
-import cwinter.codecraft.graphics.engine.RenderStack
 import cwinter.codecraft.graphics.materials.Intensity
 import cwinter.codecraft.graphics.model._
 import cwinter.codecraft.graphics.primitives.PartialPolygonRing
-import cwinter.codecraft.graphics.worldstate.CollisionMarker
+import cwinter.codecraft.graphics.worldstate.WorldObjectDescriptor
 import cwinter.codecraft.util.maths.{ColorRGBA, NullVectorXY}
 
 
-private[graphics] case class CollisionMarkerModelBuilder(
-  signature: CollisionMarker
-)(implicit rs: RenderStack) extends CompositeModelBuilder[CollisionMarker, Float] {
-  import signature._
+private[codecraft] case class CollisionMarkerModelBuilder(
+  radius: Float,
+  orientation: Float
+) extends CompositeModelBuilder[CollisionMarkerModelBuilder, Float] with WorldObjectDescriptor[Float] {
   val colorGradient = IndexedSeq.tabulate(15)(i => 1 - math.abs(i.toFloat - 7f) / 7f)
 
   override protected def buildSubcomponents: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, Float]]) = {
@@ -31,5 +30,8 @@ private[graphics] case class CollisionMarkerModelBuilder(
 
     (Seq.empty, Seq(marker))
   }
+
+  override protected def createModel(timestep: Int) = getModel
+  override def signature = this
 }
 

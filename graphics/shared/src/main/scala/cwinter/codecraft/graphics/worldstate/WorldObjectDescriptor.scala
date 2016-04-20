@@ -113,14 +113,6 @@ private[codecraft] case class MissileBatteryDescriptor(position: Int, n: Int = 3
 private[codecraft] case class ManipulatorDescriptor(position: Int) extends DroneModuleDescriptor
 
 
-private[codecraft] case class CollisionMarker(
-  radius: Float,
-  orientation: Float
-) extends WorldObjectDescriptor[Float] {
-  override protected def createModel(timestep: Int) =
-    CollisionMarkerModelBuilder(this).getModel
-}
-
 private[codecraft] case class LightFlashDescriptor(stage: Float)
   extends WorldObjectDescriptor[LightFlashDescriptor] {
 

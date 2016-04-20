@@ -7,7 +7,7 @@ import cwinter.codecraft.core.api._
 import cwinter.codecraft.core.errors.Errors
 import cwinter.codecraft.core.objects._
 import cwinter.codecraft.core.replay._
-import cwinter.codecraft.graphics.models.{DroneModelBuilder, DroneModelParameters}
+import cwinter.codecraft.graphics.models.{CollisionMarkerModelBuilder, DroneModelBuilder, DroneModelParameters}
 import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.util.maths.{Float0To1, Rectangle, Vector2}
 
@@ -56,7 +56,7 @@ private[core] class DroneImpl(
     result
   }
 
-  private[this] var _collisionMarkers = List.empty[(CollisionMarker, Float)]
+  private[this] var _collisionMarkers = List.empty[(CollisionMarkerModelBuilder, Float)]
 
   private[this] var cachedDescriptor: Option[DroneModelBuilder] = None
 
@@ -195,7 +195,9 @@ private[core] class DroneImpl(
 
   private def addCollisionMarker(collisionPosition: Vector2): Unit = {
     val collisionAngle = (collisionPosition - position).orientation - dynamics.orientation
-    _collisionMarkers ::= ((CollisionMarker(radius.toFloat, collisionAngle.toFloat), CollisionMarkerLifetime))
+    _collisionMarkers ::= ((
+      CollisionMarkerModelBuilder(radius.toFloat, collisionAngle.toFloat),
+      CollisionMarkerLifetime))
   }
 
   @inline final def !(command: DroneCommand) = executeCommand(command)
