@@ -7,7 +7,7 @@ import cwinter.codecraft.util.maths.{ColorRGB, ColorRGBA, Vector2, VertexXY}
 import cwinter.codecraft.util.modules.ModulePosition
 
 
-private[graphics] case class ConstructionBeamsModelBuilder(
+private[codecraft] case class ConstructionBeamsModelBuilder(
   droneSize: Int,
   modules: Seq[(Int, Boolean)],
   constructionDisplacement: Vector2,

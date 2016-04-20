@@ -2,11 +2,12 @@ package cwinter.codecraft.core.objects.drone
 
 import cwinter.codecraft.core._
 import cwinter.codecraft.core.api.GameConstants
+import cwinter.codecraft.core.api.GameConstants.{HarvestingInterval, HarvestingRange}
 import cwinter.codecraft.core.objects.MineralCrystalImpl
+import cwinter.codecraft.graphics.models.HarvestingBeamModelBuilder
 import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.util.maths.Vector2
 import cwinter.codecraft.util.modules.ModulePosition
-import GameConstants.{HarvestingInterval, HarvestingRange}
 
 import scala.collection.mutable
 
@@ -22,7 +23,7 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
   private[this] var harvestCountdown: Int = 0
   private[this] var resourceDepositee: Option[DroneStorageModule] = None
 
-  private[this] var _beamDescriptor: Option[HarvestingBeamsDescriptor] = None
+  private[this] var _beamDescriptor: Option[HarvestingBeamModelBuilder] = None
 
 
   override def update(availableResources: Int): (Seq[SimulatorEvent], Seq[Vector2], Seq[Vector2]) = {
@@ -192,14 +193,14 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
     energyStorageDescriptors.toSeq
   }
 
-  def beamDescriptor: Option[HarvestingBeamsDescriptor] = _beamDescriptor
+  def beamDescriptor: Option[HarvestingBeamModelBuilder] = _beamDescriptor
 
   private def updateBeamDescriptor(): Unit =
     _beamDescriptor =
       for {
         m <- harvesting
         relativeMineralPos = (m.position - owner.position).rotated(-owner.dynamics.orientation)
-      } yield HarvestingBeamsDescriptor(owner.sides, positions, relativeMineralPos)
+      } yield HarvestingBeamModelBuilder(owner.sides, positions, relativeMineralPos)
 
   def energyGlobeAnimations: Seq[ModelDescriptor[_]] = {
     for {

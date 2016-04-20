@@ -7,7 +7,7 @@ import cwinter.codecraft.util.maths.{ColorRGBA, Vector2, VertexXY}
 import cwinter.codecraft.util.modules.ModulePosition
 
 
-private[graphics] case class HarvestingBeamModelBuilder(
+private[codecraft] case class HarvestingBeamModelBuilder(
   droneSize: Int,
   moduleIndices: Seq[Int],
   mineralDisplacement: Vector2
