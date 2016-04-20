@@ -1,6 +1,5 @@
 package cwinter.codecraft.graphics.model
 
-import cwinter.codecraft.graphics.engine.RenderStack
 import cwinter.codecraft.graphics.materials.Material
 import cwinter.codecraft.util.maths.{Vertex, VertexXYZ}
 

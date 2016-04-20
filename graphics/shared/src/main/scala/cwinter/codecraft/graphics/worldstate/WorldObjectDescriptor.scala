@@ -136,17 +136,6 @@ private[codecraft] case class CollisionMarker(
 
 private[codecraft] object PlainEnergyGlobeDescriptor extends EnergyGlobeDescriptor(1)
 
-private[codecraft] case class MineralDescriptor(size: Int, xPos: Float, yPos: Float, orientation: Float)
-  extends WorldObjectDescriptor[Unit] {
-
-  override def intersects(xPos: Float, yPos: Float, rectangle: Rectangle): Boolean =
-    intersects(this.xPos, this.yPos, 50, rectangle)
-
-  override protected def createModel(timestep: Int) =
-    new MineralModelBuilder(this).getModel
-}
-
-
 private[codecraft] case class LightFlashDescriptor(stage: Float)
   extends WorldObjectDescriptor[LightFlashDescriptor] {
 

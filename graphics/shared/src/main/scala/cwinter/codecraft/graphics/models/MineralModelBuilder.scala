@@ -1,16 +1,17 @@
 package cwinter.codecraft.graphics.models
 
-import cwinter.codecraft.graphics.engine.RenderStack
 import cwinter.codecraft.graphics.model.{Model, ModelBuilder}
 import cwinter.codecraft.graphics.primitives.Polygon
-import cwinter.codecraft.graphics.worldstate.MineralDescriptor
-import cwinter.codecraft.util.maths.{VertexXY, ColorRGB}
+import cwinter.codecraft.graphics.worldstate.WorldObjectDescriptor
+import cwinter.codecraft.util.maths.{ColorRGB, Rectangle, VertexXY}
 
 
-private[graphics] class MineralModelBuilder(
-  mineral: MineralDescriptor
-)(implicit val rs: RenderStack)
-  extends ModelBuilder[MineralDescriptor, Unit] {
+private[codecraft] case class MineralModelBuilder(
+  size: Int,
+  xPos: Float,
+  yPos: Float,
+  orientation: Float
+) extends ModelBuilder[MineralModelBuilder, Unit] with WorldObjectDescriptor[Unit] {
 
   override protected def buildModel: Model[Unit] = {
     val size = signature.size
@@ -23,10 +24,14 @@ private[graphics] class MineralModelBuilder(
       colorOutside = ColorRGB(0.0f, 0.1f, 0.0f),
       radius = radius,
       zPos = -5,
-      position = VertexXY(mineral.xPos, mineral.yPos),
-      orientation = mineral.orientation
+      position = VertexXY(xPos, yPos),
+      orientation = orientation
     ).getModel
   }
 
-  def signature = mineral
+  override def createModel(timestep: Int) = getModel
+  override def intersects(xPos: Float, yPos: Float, rectangle: Rectangle): Boolean =
+    intersects(this.xPos, this.yPos, 50, rectangle)
+  override def signature = this
 }
+
