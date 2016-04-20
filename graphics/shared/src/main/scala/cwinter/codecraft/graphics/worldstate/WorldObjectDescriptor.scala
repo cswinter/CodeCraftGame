@@ -113,19 +113,6 @@ private[codecraft] case class MissileBatteryDescriptor(position: Int, n: Int = 3
 private[codecraft] case class ManipulatorDescriptor(position: Int) extends DroneModuleDescriptor
 
 
-private[codecraft] case class EnergyGlobeDescriptor(
-  fade: Float
-) extends WorldObjectDescriptor[Unit] {
-  assert(fade >= 0)
-  assert(fade <= 1)
-
-  override def intersects(xPos: Float, yPos: Float, rectangle: Rectangle): Boolean =
-    intersects(xPos, yPos, 20, rectangle) // FIXME
-
-  override protected def createModel(timestep: Int) =
-    new EnergyGlobeModelBuilder(this).getModel
-}
-
 private[codecraft] case class CollisionMarker(
   radius: Float,
   orientation: Float
@@ -133,8 +120,6 @@ private[codecraft] case class CollisionMarker(
   override protected def createModel(timestep: Int) =
     CollisionMarkerModelBuilder(this).getModel
 }
-
-private[codecraft] object PlainEnergyGlobeDescriptor extends EnergyGlobeDescriptor(1)
 
 private[codecraft] case class LightFlashDescriptor(stage: Float)
   extends WorldObjectDescriptor[LightFlashDescriptor] {

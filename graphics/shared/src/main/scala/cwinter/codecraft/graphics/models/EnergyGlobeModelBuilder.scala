@@ -1,15 +1,15 @@
 package cwinter.codecraft.graphics.models
 
-import cwinter.codecraft.graphics.engine.RenderStack
 import cwinter.codecraft.graphics.model.ModelBuilder
 import cwinter.codecraft.graphics.primitives.Polygon
-import cwinter.codecraft.graphics.worldstate.EnergyGlobeDescriptor
-import cwinter.codecraft.util.maths.{ColorRGB, ColorRGBA, NullVectorXY}
+import cwinter.codecraft.graphics.worldstate.WorldObjectDescriptor
+import cwinter.codecraft.util.maths.{ColorRGB, ColorRGBA, NullVectorXY, Rectangle}
 
 
-private[graphics] class EnergyGlobeModelBuilder(
-  val signature: EnergyGlobeDescriptor
-)(implicit val rs: RenderStack) extends ModelBuilder[EnergyGlobeDescriptor, Unit] {
+private[codecraft] case class EnergyGlobeModelBuilder(fade: Float)
+  extends ModelBuilder[EnergyGlobeModelBuilder, Unit] with WorldObjectDescriptor[Unit] {
+  require(fade >= 0)
+  require(fade <= 1)
 
   override protected def buildModel = {
     if (signature.fade == 1) {
@@ -34,4 +34,13 @@ private[graphics] class EnergyGlobeModelBuilder(
       )
     }
   }.getModel
+
+  override def intersects(xPos: Float, yPos: Float, rectangle: Rectangle): Boolean =
+    intersects(xPos, yPos, 20, rectangle) // FIXME
+  override protected def createModel(timestep: Int) = getModel
+  override def signature = this
 }
+
+private[codecraft] object PlainEnergyGlobeModelBuilder extends EnergyGlobeModelBuilder(1)
+
+

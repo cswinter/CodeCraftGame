@@ -1,10 +1,9 @@
 package cwinter.codecraft.core.objects.drone
 
 import cwinter.codecraft.core._
-import cwinter.codecraft.core.api.GameConstants
 import cwinter.codecraft.core.api.GameConstants.{HarvestingInterval, HarvestingRange}
 import cwinter.codecraft.core.objects.MineralCrystalImpl
-import cwinter.codecraft.graphics.models.HarvestingBeamModelBuilder
+import cwinter.codecraft.graphics.models.{HarvestingBeamModelBuilder, PlainEnergyGlobeModelBuilder}
 import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.util.maths.Vector2
 import cwinter.codecraft.util.modules.ModulePosition
@@ -212,7 +211,7 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
       yPos = position.y.toFloat
     } yield ModelDescriptor(
       PositionDescriptor(xPos, yPos, 0),
-      PlainEnergyGlobeDescriptor
+      PlainEnergyGlobeModelBuilder
     )
   }
 
