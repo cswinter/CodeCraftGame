@@ -64,6 +64,8 @@ private[codecraft] trait WorldObjectDescriptor[T] extends PrecomputedHashcode {
   private[this] var _rs: RenderStack = null
   implicit protected def rs: RenderStack = _rs
 
+  private var cachedModel = Option.empty[Model[T]]
+
 
   def intersects(xPos: Float, yPos: Float, rectangle: Rectangle): Boolean = true
 
@@ -82,18 +84,12 @@ private[codecraft] trait WorldObjectDescriptor[T] extends PrecomputedHashcode {
         _rs = rs
         val model = createModel(timestep)
         // FIXME: special case required for models that are not cached. need to rework caching to fix this properly.
-        if (!this.isInstanceOf[HomingMissileDescriptor] && !this.isInstanceOf[DrawCircleOutline] &&
-          !this.isInstanceOf[BasicHomingMissileDescriptor])
-          this.cachedModel = model
+        if (!isInstanceOf[HomingMissileDescriptor] && !isInstanceOf[DrawCircleOutline] &&
+          !isInstanceOf[BasicHomingMissileDescriptor])
+          cachedModel = Some(model)
         model
     }
   }
-
-
-  private[this] var _cachedModel: Option[Model[T]] = None
-  private[this] def cachedModel_=(value: Model[T]): Unit = _cachedModel = Some(value)
-  private[this] def cachedModel: Option[Model[T]] = _cachedModel
-
 
   protected def createModel(timestep: Int): Model[T]
 }
@@ -116,24 +112,6 @@ private[codecraft] case class ShieldGeneratorDescriptor(position: Int) extends D
 private[codecraft] case class MissileBatteryDescriptor(position: Int, n: Int = 3) extends DroneModuleDescriptor
 private[codecraft] case class ManipulatorDescriptor(position: Int) extends DroneModuleDescriptor
 
-private[codecraft] case class HarvestingBeamsDescriptor(
-  droneSize: Int,
-  moduleIndices: Seq[Int],
-  mineralDisplacement: Vector2
-) extends WorldObjectDescriptor[Unit] {
-  override protected def createModel(timestep: Int) =
-    HarvestingBeamModelBuilder(this).getModel
-}
-
-private[codecraft] case class ConstructionBeamDescriptor(
-  droneSize: Int,
-  modules: Seq[(Int, Boolean)],
-  constructionDisplacement: Vector2,
-  playerColor: ColorRGB
-) extends WorldObjectDescriptor[Unit] {
-  override protected def createModel(timestep: Int) =
-    ConstructionBeamsModelBuilder(this).getModel
-}
 
 private[codecraft] case class EnergyGlobeDescriptor(
   fade: Float

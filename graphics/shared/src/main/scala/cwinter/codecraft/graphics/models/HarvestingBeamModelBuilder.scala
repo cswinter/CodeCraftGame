@@ -1,17 +1,17 @@
 package cwinter.codecraft.graphics.models
 
-import cwinter.codecraft.graphics.engine.RenderStack
 import cwinter.codecraft.graphics.model._
 import cwinter.codecraft.graphics.primitives.PartialPolygon
 import cwinter.codecraft.graphics.worldstate._
-import cwinter.codecraft.util.maths.{ColorRGBA, VertexXY}
+import cwinter.codecraft.util.maths.{ColorRGBA, Vector2, VertexXY}
 import cwinter.codecraft.util.modules.ModulePosition
 
 
 private[graphics] case class HarvestingBeamModelBuilder(
-  signature: HarvestingBeamsDescriptor
-)(implicit rs: RenderStack) extends CompositeModelBuilder[HarvestingBeamsDescriptor, Unit] {
-  import signature._
+  droneSize: Int,
+  moduleIndices: Seq[Int],
+  mineralDisplacement: Vector2
+) extends CompositeModelBuilder[HarvestingBeamModelBuilder, Unit] with WorldObjectDescriptor[Unit] {
   val radius = 8
   val outlineWidth = 1
 
@@ -54,5 +54,8 @@ private[graphics] case class HarvestingBeamModelBuilder(
       fraction = (alpha / (2 * math.Pi)).toFloat
     )
   }
+
+  override def signature = this
+  override protected def createModel(timestep: Int) = getModel
 }
 

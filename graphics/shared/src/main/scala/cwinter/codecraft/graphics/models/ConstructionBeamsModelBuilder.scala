@@ -1,17 +1,18 @@
 package cwinter.codecraft.graphics.models
 
-import cwinter.codecraft.graphics.engine.RenderStack
 import cwinter.codecraft.graphics.model._
-import cwinter.codecraft.graphics.primitives.{PartialPolygon, Polygon}
-import cwinter.codecraft.graphics.worldstate.ConstructionBeamDescriptor
+import cwinter.codecraft.graphics.primitives.PartialPolygon
+import cwinter.codecraft.graphics.worldstate.WorldObjectDescriptor
 import cwinter.codecraft.util.maths.{ColorRGB, ColorRGBA, Vector2, VertexXY}
 import cwinter.codecraft.util.modules.ModulePosition
 
 
 private[graphics] case class ConstructionBeamsModelBuilder(
-  signature: ConstructionBeamDescriptor
-)(implicit rs: RenderStack) extends CompositeModelBuilder[ConstructionBeamDescriptor, Unit] {
-  import signature._
+  droneSize: Int,
+  modules: Seq[(Int, Boolean)],
+  constructionDisplacement: Vector2,
+  playerColor: ColorRGB
+) extends CompositeModelBuilder[ConstructionBeamsModelBuilder, Unit] with WorldObjectDescriptor[Unit] {
 
   override protected def buildSubcomponents: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, Unit]]) = {
     val beams =
@@ -55,5 +56,9 @@ private[graphics] case class ConstructionBeamsModelBuilder(
       fraction = (alpha / (2 * math.Pi)).toFloat
     )
   }
+
+  override def signature = this
+  override protected def createModel(timestep: Int) = getModel
+
 }
 
