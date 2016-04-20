@@ -1,6 +1,6 @@
 package cwinter.codecraft.graphics.engine
 
-import cwinter.codecraft.graphics.models.{MineralModelBuilder, DroneModelBuilder}
+import cwinter.codecraft.graphics.models.{HomingMissileModel, MineralModelBuilder, DroneModelBuilder}
 import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.util.maths.{Vector2, Rectangle, ColorRGB}
 
@@ -26,7 +26,7 @@ private[codecraft] object AsciiVisualizer {
       case m: MineralModelBuilder =>
         val (x, y) = gridpoint(Vector2(obj.position.x, obj.position.y))
         image(y)(x) = '*'
-      case l: HomingMissileDescriptor =>
+      case l: HomingMissileModel =>
         val (x, y) = gridpoint(Vector2(l.positions.head._1, l.positions.head._2))
         image(y)(x) = '.'
       case _ =>

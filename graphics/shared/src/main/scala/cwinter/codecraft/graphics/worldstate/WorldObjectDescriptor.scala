@@ -84,8 +84,8 @@ private[codecraft] trait WorldObjectDescriptor[T] extends PrecomputedHashcode {
         _rs = rs
         val model = createModel(timestep)
         // FIXME: special case required for models that are not cached. need to rework caching to fix this properly.
-        if (!isInstanceOf[HomingMissileDescriptor] && !isInstanceOf[DrawCircleOutline] &&
-          !isInstanceOf[BasicHomingMissileDescriptor])
+        if (!isInstanceOf[HomingMissileModel] && !isInstanceOf[DrawCircleOutline] &&
+          !isInstanceOf[BasicHomingMissileModel])
           cachedModel = Some(model)
         model
     }
@@ -112,35 +112,6 @@ private[codecraft] case class ShieldGeneratorDescriptor(position: Int) extends D
 private[codecraft] case class MissileBatteryDescriptor(position: Int, n: Int = 3) extends DroneModuleDescriptor
 private[codecraft] case class ManipulatorDescriptor(position: Int) extends DroneModuleDescriptor
 
-
-private[codecraft] case class LightFlashDescriptor(stage: Float)
-  extends WorldObjectDescriptor[LightFlashDescriptor] {
-
-  override protected def createModel(timestep: Int) =
-    new LightFlashModelBuilder().getModel
-}
-
-
-private[codecraft] case class HomingMissileDescriptor(
-  positions: Seq[(Float, Float)],
-  maxPos: Int,
-  playerColor: ColorRGB
-) extends WorldObjectDescriptor[Unit] {
-
-  override protected def createModel(timestep: Int) =
-    HomingMissileModelFactory.build(positions, maxPos, playerColor)
-}
-
-
-private[codecraft] case class BasicHomingMissileDescriptor(
-  x: Float,
-  y: Float,
-  playerColor: ColorRGB
-) extends WorldObjectDescriptor[Unit] {
-
-  override protected def createModel(timestep: Int) =
-    BasicHomingMissileModelFactory.build(x, y, playerColor)
-}
 
 private[codecraft] case class TestingObject(time: Int) extends WorldObjectDescriptor[Unit] {
   override protected def createModel(timestep: Int) =

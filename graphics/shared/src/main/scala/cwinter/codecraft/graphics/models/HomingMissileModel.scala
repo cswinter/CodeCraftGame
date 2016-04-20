@@ -1,17 +1,21 @@
 package cwinter.codecraft.graphics.models
 
-import cwinter.codecraft.graphics.engine.RenderStack
-import cwinter.codecraft.graphics.model.EmptyModel
+import cwinter.codecraft.graphics.model.{EmptyModel, Model, ModelBuilder}
 import cwinter.codecraft.graphics.primitives.QuadStrip
+import cwinter.codecraft.graphics.worldstate.WorldObjectDescriptor
 import cwinter.codecraft.util.maths.{ColorRGB, ColorRGBA, VertexXY}
 
 
-private[graphics] object HomingMissileModelFactory {
-  def build(positions: Seq[(Float, Float)], nMaxPos: Int, playerColor: ColorRGB)(implicit rs: RenderStack) = {
+private[codecraft] case class HomingMissileModel(
+  positions: Seq[(Float, Float)],
+  nMaxPos: Int,
+  playerColor: ColorRGB
+) extends ModelBuilder[HomingMissileModel, Unit] with WorldObjectDescriptor[Unit] {
+  override protected def buildModel: Model[Unit] = {
     if (positions.length < 2) EmptyModel
     else {
       val midpoints = positions.map { case (x, y) => VertexXY(x, y)}
-      val n = nMaxPos // positions.length
+      val n = nMaxPos
       val colorHead = ColorRGB(1, 1, 1)
       val colorTail = playerColor
       val colors = positions.zipWithIndex.map {
@@ -32,4 +36,7 @@ private[graphics] object HomingMissileModelFactory {
       ).noCaching.getModel
     }
   }
+
+  override protected def createModel(timestep: Int) = getModel
+  override def signature = this
 }
