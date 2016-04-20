@@ -1,5 +1,6 @@
 package cwinter.codecraft.graphics.engine
 
+import cwinter.codecraft.graphics.models.DroneModelBuilder
 import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.util.maths.{Vector2, Rectangle, ColorRGB}
 
@@ -19,7 +20,7 @@ private[codecraft] object AsciiVisualizer {
     val image = Array.fill[Char](height, width)(' ')
 
     for (obj <- worldState) obj.objectDescriptor match {
-      case d: DroneDescriptor =>
+      case d: DroneModelBuilder =>
         val (x, y) = gridpoint(Vector2(obj.position.x, obj.position.y))
         image(y)(x) = toChar(d.playerColor)
       case m: MineralDescriptor =>

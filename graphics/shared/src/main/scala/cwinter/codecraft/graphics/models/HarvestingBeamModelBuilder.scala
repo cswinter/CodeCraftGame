@@ -2,9 +2,9 @@ package cwinter.codecraft.graphics.models
 
 import cwinter.codecraft.graphics.engine.RenderStack
 import cwinter.codecraft.graphics.model._
-import cwinter.codecraft.graphics.primitives.{PartialPolygon, Polygon, PolygonRing}
+import cwinter.codecraft.graphics.primitives.PartialPolygon
 import cwinter.codecraft.graphics.worldstate._
-import cwinter.codecraft.util.maths.{ColorRGB, ColorRGBA, Vector2, VertexXY}
+import cwinter.codecraft.util.maths.{ColorRGBA, VertexXY}
 import cwinter.codecraft.util.modules.ModulePosition
 
 

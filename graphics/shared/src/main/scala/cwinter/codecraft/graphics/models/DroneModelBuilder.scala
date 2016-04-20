@@ -1,6 +1,5 @@
 package cwinter.codecraft.graphics.models
 
-import cwinter.codecraft.graphics.engine.RenderStack
 import cwinter.codecraft.graphics.materials.Intensity
 import cwinter.codecraft.graphics.model._
 import cwinter.codecraft.graphics.primitives.{Polygon, PolygonRing}
@@ -12,15 +11,26 @@ import cwinter.codecraft.util.modules.ModulePosition
 import scala.math._
 
 
-private[graphics] class DroneModelBuilder(
-  val drone: DroneDescriptor,
-  val timestep: Int
-)(implicit val rs: RenderStack) extends CompositeModelBuilder[DroneDescriptor, DroneModelParameters] {
+private[codecraft] case class DroneModelBuilder(
+  sides: Int,
+  modules: Seq[DroneModuleDescriptor],
+  hasShields: Boolean,
+  hullState: Seq[Byte],
+  isBuilding: Boolean,
+  animationTime: Int,
+  playerColor: ColorRGB
+) extends CompositeModelBuilder[DroneModelBuilder, DroneModelParameters] with WorldObjectDescriptor[DroneModelParameters] {
 
-  def signature = drone
+  require(hullState.size == sides - 1)
+
+  def signature = this
+
+  override def intersects(xPos: Float, yPos: Float, rectangle: Rectangle) =
+    intersects(xPos, yPos, 100, rectangle) // FIXME
+
+  override protected def createModel(timestep: Int) = getModel
 
   override protected def buildSubcomponents: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, DroneModelParameters]]) = {
-    import drone._
     val colorPalette =
       if (signature.isBuilding) MutedDroneColors
       else DefaultDroneColors
@@ -65,15 +75,15 @@ private[graphics] class DroneModelBuilder(
         module <- modules
       } yield module match {
         case EnginesDescriptor(position) =>
-          DroneEnginesModel(ModulePosition(sides, position), colorPalette, playerColor, animationTime)
+          DroneEnginesModel(ModulePosition(sides, position), colorPalette, playerColor, animationTime)(rs)
         case MissileBatteryDescriptor(position, n) =>
-          DroneMissileBatteryModelBuilder(colorPalette, playerColor, ModulePosition(sides, position), n)
+          DroneMissileBatteryModelBuilder(colorPalette, playerColor, ModulePosition(sides, position), n)(rs)
         case ShieldGeneratorDescriptor(position) =>
-          DroneShieldGeneratorModel(ModulePosition(sides, position), colorPalette, playerColor)
+          DroneShieldGeneratorModel(ModulePosition(sides, position), colorPalette, playerColor)(rs)
         case StorageModuleDescriptor(position, contents) =>
-          DroneStorageModelBuilder(ModulePosition(sides, position), colorPalette, contents)
+          DroneStorageModelBuilder(ModulePosition(sides, position), colorPalette, contents)(rs)
         case ManipulatorDescriptor(position) =>
-          DroneConstructorModelBuilder(colorPalette, playerColor, ModulePosition(sides, position))
+          DroneConstructorModelBuilder(colorPalette, playerColor, ModulePosition(sides, position))(rs)
       }
 
 
@@ -116,6 +126,10 @@ private[graphics] class DroneModelBuilder(
     else model
 }
 
+private[codecraft] case class DroneModelParameters(
+  shieldState: Option[Float],
+  constructionState: Option[Float0To1] = None
+)
 
 private[graphics] trait DroneColors {
   val Black: ColorRGB

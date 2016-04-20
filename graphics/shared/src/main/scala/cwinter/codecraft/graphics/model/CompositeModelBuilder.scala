@@ -1,5 +1,6 @@
 package cwinter.codecraft.graphics.model
 
+import cwinter.codecraft.graphics.engine.RenderStack
 import cwinter.codecraft.graphics.materials.Material
 import cwinter.codecraft.util.maths.{Vertex, VertexXYZ}
 
@@ -17,10 +18,11 @@ extends ModelBuilder[TStatic, TDynamic] {
 
   def buildModel: Model[TDynamic] = {
     val (staticComponents, dynamicComponents) = subcomponents
-    decorate(CompositeModel(
+    val model = CompositeModel(
       staticComponents.map(_.getModel),
       dynamicComponents.map(_.getModel)
-    ))
+    )
+    decorate(model)
   }
 
   protected def decorate(model: Model[TDynamic]): Model[TDynamic] = model
@@ -57,7 +59,7 @@ extends ModelBuilder[TStatic, TDynamic] {
       case compositeChild: CompositeModelBuilder[_, TDynamic] =>
         val (static1, dynamic1) = compositeChild.flatten
         allStatic concat static1
-        allDynamic  concat dynamic1
+        allDynamic concat dynamic1
       case other => allDynamic append other.optimized
     }
 

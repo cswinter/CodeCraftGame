@@ -1,12 +1,13 @@
 package cwinter.codecraft.core.objects.drone
 
-import cwinter.codecraft.collisions.{VisionTracking, ActiveVisionTracking}
+import cwinter.codecraft.collisions.{ActiveVisionTracking, VisionTracking}
 import cwinter.codecraft.core._
 import cwinter.codecraft.core.api.GameConstants.HarvestingRange
 import cwinter.codecraft.core.api._
 import cwinter.codecraft.core.errors.Errors
 import cwinter.codecraft.core.objects._
 import cwinter.codecraft.core.replay._
+import cwinter.codecraft.graphics.models.{DroneModelBuilder, DroneModelParameters}
 import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.util.maths.{Float0To1, Rectangle, Vector2}
 
@@ -57,7 +58,7 @@ private[core] class DroneImpl(
 
   private[this] var _collisionMarkers = List.empty[(CollisionMarker, Float)]
 
-  private[this] var cachedDescriptor: Option[DroneDescriptor] = None
+  private[this] var cachedDescriptor: Option[DroneModelBuilder] = None
 
   final val CollisionMarkerLifetime = 50f
   final val MessageCooldown = 30
@@ -372,9 +373,9 @@ private[core] class DroneImpl(
       _collisionMarkers.map(cm => ModelDescriptor(positionDescr, cm._1, cm._2 / CollisionMarkerLifetime))
   }
 
-  private def recreateDescriptor(): DroneDescriptor = {
+  private def recreateDescriptor(): DroneModelBuilder = {
     val newDescriptor =
-      DroneDescriptor(
+      DroneModelBuilder(
         spec.sides,
         moduleDescriptors,
         shieldGenerators.nonEmpty,

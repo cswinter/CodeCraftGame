@@ -61,6 +61,10 @@ private[codecraft] object NullPositionDescriptor extends PositionDescriptor(0, 0
 private[codecraft] trait WorldObjectDescriptor[T] extends PrecomputedHashcode {
   self: Product =>
 
+  private[this] var _rs: RenderStack = null
+  implicit protected def rs: RenderStack = _rs
+
+
   def intersects(xPos: Float, yPos: Float, rectangle: Rectangle): Boolean = true
 
   @inline
@@ -75,6 +79,7 @@ private[codecraft] trait WorldObjectDescriptor[T] extends PrecomputedHashcode {
     cachedModel match {
       case Some(model) => model
       case None =>
+        _rs = rs
         val model = createModel(timestep)
         // FIXME: special case required for models that are not cached. need to rework caching to fix this properly.
         if (!this.isInstanceOf[HomingMissileDescriptor] && !this.isInstanceOf[DrawCircleOutline] &&
@@ -90,33 +95,8 @@ private[codecraft] trait WorldObjectDescriptor[T] extends PrecomputedHashcode {
   private[this] def cachedModel: Option[Model[T]] = _cachedModel
 
 
-  protected def createModel(timestep: Int)(implicit rs: RenderStack): Model[T]
+  protected def createModel(timestep: Int): Model[T]
 }
-
-
-private[codecraft] case class DroneDescriptor(
-  sides: Int,
-  modules: Seq[DroneModuleDescriptor],
-  hasShields: Boolean,
-  hullState: Seq[Byte],
-  isBuilding: Boolean,
-  animationTime: Int,
-  playerColor: ColorRGB
-) extends WorldObjectDescriptor[DroneModelParameters] {
-  assert(hullState.size == sides - 1)
-
-  override def intersects(xPos: Float, yPos: Float, rectangle: Rectangle) =
-    intersects(xPos, yPos, 100, rectangle) // FIXME
-
-  override protected def createModel(timestep: Int)(implicit rs: RenderStack) =
-    new DroneModelBuilder(this, timestep).getModel
-}
-
-private[codecraft] case class DroneModelParameters(
-  shieldState: Option[Float],
-  constructionState: Option[Float0To1] = None
-)
-
 
 private[codecraft] sealed trait DroneModuleDescriptor
 
@@ -141,7 +121,7 @@ private[codecraft] case class HarvestingBeamsDescriptor(
   moduleIndices: Seq[Int],
   mineralDisplacement: Vector2
 ) extends WorldObjectDescriptor[Unit] {
-  override protected def createModel(timestep: Int)(implicit rs: RenderStack) =
+  override protected def createModel(timestep: Int) =
     HarvestingBeamModelBuilder(this).getModel
 }
 
@@ -151,7 +131,7 @@ private[codecraft] case class ConstructionBeamDescriptor(
   constructionDisplacement: Vector2,
   playerColor: ColorRGB
 ) extends WorldObjectDescriptor[Unit] {
-  override protected def createModel(timestep: Int)(implicit rs: RenderStack) =
+  override protected def createModel(timestep: Int) =
     ConstructionBeamsModelBuilder(this).getModel
 }
 
@@ -164,7 +144,7 @@ private[codecraft] case class EnergyGlobeDescriptor(
   override def intersects(xPos: Float, yPos: Float, rectangle: Rectangle): Boolean =
     intersects(xPos, yPos, 20, rectangle) // FIXME
 
-  override protected def createModel(timestep: Int)(implicit rs: RenderStack) =
+  override protected def createModel(timestep: Int) =
     new EnergyGlobeModelBuilder(this).getModel
 }
 
@@ -172,7 +152,7 @@ private[codecraft] case class CollisionMarker(
   radius: Float,
   orientation: Float
 ) extends WorldObjectDescriptor[Float] {
-  override protected def createModel(timestep: Int)(implicit rs: RenderStack) =
+  override protected def createModel(timestep: Int) =
     CollisionMarkerModelBuilder(this).getModel
 }
 
@@ -184,7 +164,7 @@ private[codecraft] case class MineralDescriptor(size: Int, xPos: Float, yPos: Fl
   override def intersects(xPos: Float, yPos: Float, rectangle: Rectangle): Boolean =
     intersects(this.xPos, this.yPos, 50, rectangle)
 
-  override protected def createModel(timestep: Int)(implicit rs: RenderStack) =
+  override protected def createModel(timestep: Int) =
     new MineralModelBuilder(this).getModel
 }
 
@@ -192,7 +172,7 @@ private[codecraft] case class MineralDescriptor(size: Int, xPos: Float, yPos: Fl
 private[codecraft] case class LightFlashDescriptor(stage: Float)
   extends WorldObjectDescriptor[LightFlashDescriptor] {
 
-  override protected def createModel(timestep: Int)(implicit rs: RenderStack) =
+  override protected def createModel(timestep: Int) =
     new LightFlashModelBuilder().getModel
 }
 
@@ -203,7 +183,7 @@ private[codecraft] case class HomingMissileDescriptor(
   playerColor: ColorRGB
 ) extends WorldObjectDescriptor[Unit] {
 
-  override protected def createModel(timestep: Int)(implicit rs: RenderStack) =
+  override protected def createModel(timestep: Int) =
     HomingMissileModelFactory.build(positions, maxPos, playerColor)
 }
 
@@ -214,12 +194,12 @@ private[codecraft] case class BasicHomingMissileDescriptor(
   playerColor: ColorRGB
 ) extends WorldObjectDescriptor[Unit] {
 
-  override protected def createModel(timestep: Int)(implicit rs: RenderStack) =
+  override protected def createModel(timestep: Int) =
     BasicHomingMissileModelFactory.build(x, y, playerColor)
 }
 
 private[codecraft] case class TestingObject(time: Int) extends WorldObjectDescriptor[Unit] {
-  override protected def createModel(timestep: Int)(implicit rs: RenderStack) =
+  override protected def createModel(timestep: Int) =
     new TestModelBuilder(time).getModel
 }
 
@@ -227,7 +207,7 @@ private[codecraft] case class DrawCircle(
   radius: Float,
   identifier: Int
 ) extends WorldObjectDescriptor[Unit] {
-  override protected def createModel(timestep: Int)(implicit rs: RenderStack) =
+  override protected def createModel(timestep: Int) =
     CircleModelBuilder(radius, identifier).getModel
 }
 
@@ -236,7 +216,7 @@ private[codecraft] case class DrawCircleOutline(
   radius: Float,
   color: ColorRGB = ColorRGB(1, 1, 1)
 ) extends WorldObjectDescriptor[Unit] {
-  override protected def createModel(timestep: Int)(implicit rs: RenderStack) =
+  override protected def createModel(timestep: Int) =
     new PolygonRing(
       rs.MaterialXYZRGB, 40, Seq.fill(40)(color), Seq.fill(40)(color),
       radius - 2, radius, VertexXY(0, 0), 0, 0
@@ -247,7 +227,7 @@ private[codecraft] case class DrawCircleOutline(
 private[codecraft] case class DrawRectangle(
   bounds: maths.Rectangle
 ) extends WorldObjectDescriptor[Unit] {
-  override protected def createModel(timestep: Int)(implicit rs: RenderStack) =
+  override protected def createModel(timestep: Int) =
     RectangleModelBuilder(bounds).getModel
 }
 

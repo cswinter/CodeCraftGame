@@ -14,7 +14,7 @@ private[graphics] case class CollisionMarkerModelBuilder(
   import signature._
   val colorGradient = IndexedSeq.tabulate(15)(i => 1 - math.abs(i.toFloat - 7f) / 7f)
 
-  override protected def buildSubcomponents = {
+  override protected def buildSubcomponents: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, Float]]) = {
     val marker =
       PartialPolygonRing(
         position = NullVectorXY,
