@@ -1,7 +1,7 @@
 package cwinter.codecraft.graphics.models
 
+import cwinter.codecraft.graphics.engine.WorldObjectDescriptor
 import cwinter.codecraft.graphics.model._
-import cwinter.codecraft.graphics.worldstate.WorldObjectDescriptor
 
 
 private[graphics] case class TestModel(t: Int)

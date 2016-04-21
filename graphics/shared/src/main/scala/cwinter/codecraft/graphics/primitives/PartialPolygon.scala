@@ -7,7 +7,7 @@ import cwinter.codecraft.util.maths.{Vertex, VertexXY, VertexXYZ}
 import scala.reflect.ClassTag
 
 
-private[graphics] case class PartialPolygon[TColor <: Vertex : ClassTag, TParams](
+private[codecraft] case class PartialPolygon[TColor <: Vertex : ClassTag, TParams](
   material: Material[VertexXYZ, TColor, TParams],
   n: Int,
   colorMidpoint: Seq[TColor],

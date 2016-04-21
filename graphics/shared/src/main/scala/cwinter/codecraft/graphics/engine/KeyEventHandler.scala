@@ -1,6 +1,5 @@
 package cwinter.codecraft.graphics.engine
 
-import cwinter.codecraft.graphics.worldstate.Simulator
 
 private[codecraft] class KeyEventHandler(
   val gameWorld: Simulator,

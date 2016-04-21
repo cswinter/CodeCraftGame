@@ -1,7 +1,7 @@
 package cwinter.codecraft.core.objects.drone
 
 import cwinter.codecraft.core.SimulatorEvent
-import cwinter.codecraft.graphics.worldstate.DroneModuleDescriptor
+import cwinter.codecraft.core.graphics.DroneModuleDescriptor
 import cwinter.codecraft.util.maths.Vector2
 import cwinter.codecraft.util.modules.ModulePosition
 

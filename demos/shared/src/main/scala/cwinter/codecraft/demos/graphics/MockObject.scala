@@ -1,7 +1,8 @@
 package cwinter.codecraft.demos.graphics
 
 import cwinter.codecraft.collisions.{ActiveVisionTracking, VisionTracking, Positionable}
-import cwinter.codecraft.graphics.worldstate.{ModelDescriptor, WorldObjectDescriptor}
+import cwinter.codecraft.graphics.engine.ModelDescriptor
+import cwinter.codecraft.graphics.worldstate.ModelDescriptor
 import cwinter.codecraft.util.maths.Vector2
 
 

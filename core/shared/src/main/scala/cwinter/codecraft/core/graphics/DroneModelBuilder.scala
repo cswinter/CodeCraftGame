@@ -1,5 +1,6 @@
-package cwinter.codecraft.graphics.models
+package cwinter.codecraft.core.graphics
 
+import cwinter.codecraft.graphics.engine.WorldObjectDescriptor
 import cwinter.codecraft.graphics.materials.Intensity
 import cwinter.codecraft.graphics.model._
 import cwinter.codecraft.graphics.primitives.{Polygon, PolygonRing}
@@ -125,6 +126,24 @@ private[codecraft] case class DroneModelBuilder(
         .wireParameters[DroneModelParameters](d => (d.constructionState.get, d))
     else model
 }
+
+
+private[codecraft] sealed trait DroneModuleDescriptor
+
+private[codecraft] case class EnginesDescriptor(position: Int) extends DroneModuleDescriptor
+private[codecraft] case class ShieldGeneratorDescriptor(position: Int) extends DroneModuleDescriptor
+private[codecraft] case class MissileBatteryDescriptor(position: Int, n: Int = 3) extends DroneModuleDescriptor
+private[codecraft] case class ManipulatorDescriptor(position: Int) extends DroneModuleDescriptor
+private[codecraft] case class StorageModuleDescriptor(
+  position: Int,
+  contents: StorageModuleContents
+) extends DroneModuleDescriptor
+
+private[codecraft] sealed trait StorageModuleContents
+private[codecraft] case object EmptyStorage extends StorageModuleContents
+private[codecraft] case object MineralStorage extends StorageModuleContents
+private[codecraft] case class EnergyStorage(filledPositions: Set[Int] = Set(0, 1, 2, 3, 4, 5, 6)) extends StorageModuleContents
+
 
 private[codecraft] case class DroneModelParameters(
   shieldState: Option[Float],

@@ -2,8 +2,7 @@ package cwinter.codecraft.core.objects.drone
 
 import cwinter.codecraft.core._
 import cwinter.codecraft.core.api.GameConstants.DroneConstructionTime
-import cwinter.codecraft.graphics.models.ConstructionBeamsModelBuilder
-import cwinter.codecraft.graphics.worldstate.{DroneModuleDescriptor, ManipulatorDescriptor}
+import cwinter.codecraft.core.graphics.{ManipulatorDescriptor, DroneModuleDescriptor, ConstructionBeamsModelBuilder}
 import cwinter.codecraft.util.maths.Vector2
 import cwinter.codecraft.util.modules.ModulePosition
 

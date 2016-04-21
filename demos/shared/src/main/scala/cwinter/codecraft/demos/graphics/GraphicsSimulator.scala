@@ -1,8 +1,8 @@
 package cwinter.codecraft.demos.graphics
 
 import cwinter.codecraft.collisions.{VisionTracking, VisionTracker}
-import cwinter.codecraft.graphics.engine.GraphicsEngine
-import cwinter.codecraft.graphics.worldstate.{ModelDescriptor, NullPositionDescriptor, Simulator, TestingObject}
+import cwinter.codecraft.graphics.engine.{NullPositionDescriptor, ModelDescriptor, Simulator, GraphicsEngine}
+import cwinter.codecraft.graphics.worldstate.TestingObject
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

@@ -1,5 +1,6 @@
 package cwinter.codecraft.demos.graphics
 
+import cwinter.codecraft.graphics.engine.{NullPositionDescriptor, ModelDescriptor}
 import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.util.maths.Vector2
 

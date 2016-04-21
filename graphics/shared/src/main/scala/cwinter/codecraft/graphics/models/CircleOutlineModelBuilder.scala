@@ -1,8 +1,8 @@
 package cwinter.codecraft.graphics.models
 
+import cwinter.codecraft.graphics.engine.WorldObjectDescriptor
 import cwinter.codecraft.graphics.model.{Model, ModelBuilder}
 import cwinter.codecraft.graphics.primitives.PolygonRing
-import cwinter.codecraft.graphics.worldstate.WorldObjectDescriptor
 import cwinter.codecraft.util.maths.{ColorRGB, VertexXY}
 
 
@@ -20,4 +20,6 @@ private[codecraft] case class CircleOutlineModelBuilder(
 
   override protected def createModel(timestep: Int) = getModel
   override def signature = this
+  override def allowCaching = false
 }
+

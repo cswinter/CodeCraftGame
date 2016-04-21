@@ -3,7 +3,7 @@ package cwinter.codecraft.graphics.model
 import cwinter.codecraft.util.maths.matrices.Matrix4x4
 
 
-private[graphics] class EmptyModel[T] extends Model[T] {
+private[codecraft] class EmptyModel[T] extends Model[T] {
   def update(params: T) = ()
   def setVertexCount(n: Int) = ()
   def draw(modelview: Matrix4x4, material: GenericMaterial) = ()
@@ -14,5 +14,5 @@ private[graphics] class EmptyModel[T] extends Model[T] {
     prettyPrintNode(depth, "Empty")
 }
 
-private[graphics] object EmptyModel extends EmptyModel[Unit]
+private[codecraft] object EmptyModel extends EmptyModel[Unit]
 

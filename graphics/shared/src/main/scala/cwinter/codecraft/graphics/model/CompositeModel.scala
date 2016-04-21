@@ -5,7 +5,7 @@ import cwinter.codecraft.util.maths.matrices.Matrix4x4
 import scala.annotation.tailrec
 
 
-private[graphics] case class CompositeModel[T](
+private[codecraft] case class CompositeModel[T](
   staticModels: Seq[Model[Unit]],
   dynamicModels: Seq[Model[T]]
 ) extends Model[T] {

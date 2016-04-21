@@ -2,15 +2,15 @@ package cwinter.codecraft.core.objects.drone
 
 import cwinter.codecraft.core._
 import cwinter.codecraft.core.api.GameConstants.{HarvestingInterval, HarvestingRange}
+import cwinter.codecraft.core.graphics._
 import cwinter.codecraft.core.objects.MineralCrystalImpl
-import cwinter.codecraft.graphics.models.{HarvestingBeamModelBuilder, PlainEnergyGlobeModelBuilder}
-import cwinter.codecraft.graphics.worldstate._
+import cwinter.codecraft.graphics.engine.{ModelDescriptor, PositionDescriptor}
 import cwinter.codecraft.util.maths.Vector2
 import cwinter.codecraft.util.modules.ModulePosition
 
 import scala.collection.mutable
 
-// TODO: rework mineral slots system to find simpler and less error prone solution
+
 private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, startingResources: Int = 0)
   extends DroneModule(positions, owner) {
 

@@ -1,8 +1,8 @@
 package cwinter.codecraft.graphics.engine
 
-import cwinter.codecraft.graphics.worldstate.Simulator
 import org.scalajs.dom
-import org.scalajs.dom.{html, document}
+import org.scalajs.dom.{document, html}
+
 
 private[codecraft] object GraphicsEngine {
   def run(simulator: Simulator): Unit = {

@@ -5,10 +5,10 @@ import cwinter.codecraft.core._
 import cwinter.codecraft.core.api.GameConstants.HarvestingRange
 import cwinter.codecraft.core.api._
 import cwinter.codecraft.core.errors.Errors
+import cwinter.codecraft.core.graphics.{DroneModelParameters, DroneModuleDescriptor, DroneModelBuilder, CollisionMarkerModelBuilder}
 import cwinter.codecraft.core.objects._
 import cwinter.codecraft.core.replay._
-import cwinter.codecraft.graphics.models.{CollisionMarkerModelBuilder, DroneModelBuilder, DroneModelParameters}
-import cwinter.codecraft.graphics.worldstate._
+import cwinter.codecraft.graphics.engine.{PositionDescriptor, ModelDescriptor}
 import cwinter.codecraft.util.maths.{Float0To1, Rectangle, Vector2}
 
 

@@ -9,7 +9,6 @@ import javax.swing.JFrame
 import com.jogamp.opengl.util.FPSAnimator
 import cwinter.codecraft.graphics.engine._
 import RenderFrame._
-import cwinter.codecraft.graphics.worldstate.Simulator
 
 private[codecraft] object DrawingCanvas {
   def run(gameWorld: Simulator, fps: Int = 60): Unit = {

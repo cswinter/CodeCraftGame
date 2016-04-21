@@ -1,7 +1,7 @@
 package cwinter.codecraft.demos.physics
 
-import cwinter.codecraft.graphics.engine.GraphicsEngine
-import cwinter.codecraft.graphics.worldstate.{ModelDescriptor, Simulator, WorldObjectDescriptor}
+import cwinter.codecraft.graphics.engine.{ModelDescriptor, Simulator, GraphicsEngine}
+import cwinter.codecraft.graphics.worldstate.ModelDescriptor
 import cwinter.codecraft.physics.{ConstantVelocityObject, PhysicsEngine}
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 

@@ -1,9 +1,9 @@
-package cwinter.codecraft.graphics.models
+package cwinter.codecraft.core.graphics
 
+import cwinter.codecraft.graphics.engine.WorldObjectDescriptor
 import cwinter.codecraft.graphics.materials.Intensity
 import cwinter.codecraft.graphics.model._
 import cwinter.codecraft.graphics.primitives.PartialPolygonRing
-import cwinter.codecraft.graphics.worldstate.WorldObjectDescriptor
 import cwinter.codecraft.util.maths.{ColorRGBA, NullVectorXY}
 
 

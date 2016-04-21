@@ -7,7 +7,7 @@ import cwinter.codecraft.util.maths._
 import scala.reflect.ClassTag
 
 
-private[graphics] case class PolygonRing[TColor <: Vertex : ClassTag, TParams](
+private[codecraft] case class PolygonRing[TColor <: Vertex : ClassTag, TParams](
   material: Material[VertexXYZ, TColor, TParams],
   n: Int,
   colorInside: Seq[TColor],
@@ -57,7 +57,7 @@ private[graphics] case class PolygonRing[TColor <: Vertex : ClassTag, TParams](
   }
 }
 
-private[graphics] object PolygonRing {
+private[codecraft] object PolygonRing {
   def apply[TColor <: Vertex : ClassTag, TParams](
     material: Material[VertexXYZ, TColor, TParams],
     n: Int,

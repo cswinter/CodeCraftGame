@@ -1,9 +1,9 @@
-package cwinter.codecraft.graphics.models
+package cwinter.codecraft.core.graphics
 
 import cwinter.codecraft.graphics.engine.RenderStack
 import cwinter.codecraft.graphics.model._
-import cwinter.codecraft.graphics.primitives.{Polygon, PartialPolygon}
-import cwinter.codecraft.util.maths.{Vector2, ColorRGB, ColorRGBA, VertexXY}
+import cwinter.codecraft.graphics.primitives.Polygon
+import cwinter.codecraft.util.maths.{ColorRGB, ColorRGBA, VertexXY}
 
 
 private[graphics] case class DroneConstructorModelBuilder(

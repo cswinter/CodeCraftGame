@@ -1,8 +1,8 @@
-package cwinter.codecraft.graphics.models
+package cwinter.codecraft.core.graphics
 
+import cwinter.codecraft.graphics.engine.WorldObjectDescriptor
 import cwinter.codecraft.graphics.model.{Model, ModelBuilder}
 import cwinter.codecraft.graphics.primitives.Polygon
-import cwinter.codecraft.graphics.worldstate.WorldObjectDescriptor
 import cwinter.codecraft.util.maths.{ColorRGB, ColorRGBA, VertexXY}
 
 
@@ -27,4 +27,5 @@ private[codecraft] case class BasicHomingMissileModel(
 
   override protected def createModel(timestep: Int) = getModel
   override def signature = this
+  override def allowCaching = false
 }

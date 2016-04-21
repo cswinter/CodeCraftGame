@@ -1,7 +1,7 @@
 package cwinter.codecraft.graphics.model
 
 
-private[graphics] class StaticCompositeModel(
+private[codecraft] class StaticCompositeModel(
   models: Seq[Model[Unit]]
 ) extends CompositeModel[Unit](models, Seq.empty)
 

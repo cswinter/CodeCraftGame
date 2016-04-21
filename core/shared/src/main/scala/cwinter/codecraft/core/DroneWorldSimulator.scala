@@ -7,9 +7,8 @@ import cwinter.codecraft.core.multiplayer.RemoteClient
 import cwinter.codecraft.core.objects._
 import cwinter.codecraft.core.objects.drone._
 import cwinter.codecraft.core.replay._
-import cwinter.codecraft.graphics.engine.Debug
+import cwinter.codecraft.graphics.engine._
 import cwinter.codecraft.graphics.models.{CircleOutlineModelBuilder, RectangleModelBuilder}
-import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.physics.PhysicsEngine
 import cwinter.codecraft.util.maths.{ColorRGB, ColorRGBA, Rng, Vector2}
 import cwinter.codecraft.util.modules.ModulePosition

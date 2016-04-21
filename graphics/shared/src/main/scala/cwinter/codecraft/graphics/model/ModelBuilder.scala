@@ -1,7 +1,7 @@
 package cwinter.codecraft.graphics.model
 
 
-private[graphics] trait ModelBuilder[TStatic, TDynamic] {
+private[codecraft] trait ModelBuilder[TStatic, TDynamic] {
   def signature: TStatic
 
   def getModel: Model[TDynamic] =

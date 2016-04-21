@@ -8,7 +8,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 
-private[graphics] case class RichQuadStrip[TColor <: Vertex : ClassTag, TParams](
+private[codecraft] case class RichQuadStrip[TColor <: Vertex : ClassTag, TParams](
   material: Material[VertexXYZ, TColor, TParams],
   midpoints: Seq[VertexXY],
   colorsInside: Seq[TColor],

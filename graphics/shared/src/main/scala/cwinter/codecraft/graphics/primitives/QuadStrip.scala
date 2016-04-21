@@ -8,7 +8,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 
-private[graphics] case class QuadStrip[TColor <: Vertex : ClassTag, TParams](
+private[codecraft] case class QuadStrip[TColor <: Vertex : ClassTag, TParams](
   material: Material[VertexXYZ, TColor, TParams],
   midpoints: Seq[VertexXY],
   colors: Seq[TColor],
@@ -121,5 +121,5 @@ private[graphics] case class QuadStrip[TColor <: Vertex : ClassTag, TParams](
 
     vertexPos.toSeq zip vertexCol
   }
-
 }
+

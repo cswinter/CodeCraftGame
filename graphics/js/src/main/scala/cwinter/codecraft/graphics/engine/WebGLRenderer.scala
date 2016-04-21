@@ -2,7 +2,6 @@ package cwinter.codecraft.graphics.engine
 
 import cwinter.codecraft.graphics.materials.Material
 import cwinter.codecraft.graphics.model.PrimitiveModelBuilder
-import cwinter.codecraft.graphics.worldstate.Simulator
 import cwinter.codecraft.util.maths.{ColorRGBA, Rectangle, Vector2, VertexXY}
 import org.scalajs.dom
 import org.scalajs.dom.raw.{HTMLDivElement, WebGLRenderingContext => GL}

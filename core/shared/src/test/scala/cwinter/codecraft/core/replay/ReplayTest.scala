@@ -2,7 +2,8 @@ package cwinter.codecraft.core.replay
 
 import cwinter.codecraft.core.DroneWorldSimulator
 import cwinter.codecraft.core.api.TheGameMaster
-import cwinter.codecraft.graphics.worldstate.{DroneDescriptor, ModelDescriptor}
+import cwinter.codecraft.graphics.engine.ModelDescriptor
+import cwinter.codecraft.graphics.worldstate.DroneDescriptor
 import org.scalatest.FlatSpec
 
 import scala.collection.mutable.ArrayBuffer

@@ -1,10 +1,11 @@
 package cwinter.codecraft.core.objects
 
+import cwinter.codecraft.core.graphics.{EnergyGlobeModelBuilder, PlainEnergyGlobeModelBuilder}
 import cwinter.codecraft.core.objects.drone.DroneImpl
 import cwinter.codecraft.core.{RemoveEnergyGlobeAnimation, SimulatorEvent}
-import cwinter.codecraft.graphics.models.{EnergyGlobeModelBuilder, PlainEnergyGlobeModelBuilder}
-import cwinter.codecraft.graphics.worldstate.{ModelDescriptor, PositionDescriptor}
+import cwinter.codecraft.graphics.engine.{ModelDescriptor, PositionDescriptor}
 import cwinter.codecraft.util.maths.Vector2
+
 
 private[core] class EnergyGlobeObject(
   val frameOfReference: DroneImpl,

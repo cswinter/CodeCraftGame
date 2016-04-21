@@ -4,7 +4,7 @@ import cwinter.codecraft.core.{Settings, DroneWorldSimulator}
 import cwinter.codecraft.core.api.{DroneControllerBase, TheGameMaster}
 import cwinter.codecraft.demos.graphics.BlogpostDemo
 import cwinter.codecraft.demos.physics.TheObjectManager
-import cwinter.codecraft.graphics.engine.{AsciiVisualizer, Debug}
+import cwinter.codecraft.graphics.engine.{ModelDescriptor, AsciiVisualizer, Debug}
 import cwinter.codecraft.graphics.model.TheModelCache
 import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.util.maths.Rectangle

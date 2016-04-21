@@ -1,4 +1,4 @@
-package cwinter.codecraft.graphics.models
+package cwinter.codecraft.core.graphics
 
 import cwinter.codecraft.graphics.engine.RenderStack
 import cwinter.codecraft.graphics.model.{CompositeModelBuilder, ModelBuilder}
@@ -6,7 +6,7 @@ import cwinter.codecraft.graphics.primitives.SquarePrimitive
 import cwinter.codecraft.util.maths.{ColorRGB, VertexXY}
 
 
-private[graphics] case class DroneMissileBatteryModelBuilder(
+private[codecraft] case class DroneMissileBatteryModelBuilder(
   colors: DroneColors,
   playerColor: ColorRGB,
   position: VertexXY,
@@ -59,3 +59,4 @@ private[graphics] case class DroneMissileBatteryModelBuilder(
     Seq(background, element)
   }
 }
+

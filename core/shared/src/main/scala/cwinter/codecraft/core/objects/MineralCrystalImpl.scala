@@ -3,9 +3,9 @@ package cwinter.codecraft.core.objects
 import cwinter.codecraft.collisions.PassiveVisionTracking
 import cwinter.codecraft.core.SimulatorEvent
 import cwinter.codecraft.core.api.{MineralCrystal, Player}
+import cwinter.codecraft.core.graphics.MineralModelBuilder
 import cwinter.codecraft.core.objects.drone.DroneStorageModule
-import cwinter.codecraft.graphics.models.MineralModelBuilder
-import cwinter.codecraft.graphics.worldstate.{ModelDescriptor, NullPositionDescriptor}
+import cwinter.codecraft.graphics.engine.{ModelDescriptor, NullPositionDescriptor}
 import cwinter.codecraft.util.maths.{Rng, Vector2}
 
 

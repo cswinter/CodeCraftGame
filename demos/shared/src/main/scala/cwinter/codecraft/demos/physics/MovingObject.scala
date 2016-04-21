@@ -1,7 +1,8 @@
 package cwinter.codecraft.demos.physics
 
+import cwinter.codecraft.graphics.engine.{PositionDescriptor, ModelDescriptor}
 import cwinter.codecraft.graphics.models.CircleModelBuilder
-import cwinter.codecraft.graphics.worldstate.{ModelDescriptor, PositionDescriptor}
+import cwinter.codecraft.graphics.worldstate.PositionDescriptor
 import cwinter.codecraft.physics.{ConstantVelocityObject, DynamicObject}
 import cwinter.codecraft.util.maths.{Rng, Vector2}
 

@@ -1,4 +1,4 @@
-package cwinter.codecraft.graphics.models
+package cwinter.codecraft.core.graphics
 
 import cwinter.codecraft.graphics.engine.RenderStack
 import cwinter.codecraft.graphics.model._

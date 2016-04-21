@@ -1,10 +1,10 @@
-package cwinter.codecraft.graphics.worldstate
+package cwinter.codecraft.graphics.engine
 
-import cwinter.codecraft.graphics.engine.Debug
 import cwinter.codecraft.util.maths.Vector2
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+
 
 private[codecraft] trait Simulator {
   @volatile private[this] var savedWorldState = Seq.empty[ModelDescriptor[_]]

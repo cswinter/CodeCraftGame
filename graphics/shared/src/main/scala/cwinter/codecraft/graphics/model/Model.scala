@@ -4,7 +4,7 @@ import cwinter.codecraft.util.maths.VertexXYZ
 import cwinter.codecraft.util.maths.matrices.Matrix4x4
 
 
-private[graphics] trait Model[T] {
+private[codecraft] trait Model[T] {
   def update(params: T): Unit
   def setVertexCount(n: Int): Unit
 

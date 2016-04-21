@@ -5,14 +5,14 @@ import cwinter.codecraft.util.maths.Vertex
 import cwinter.codecraft.util.maths.matrices.Matrix4x4
 
 
-private[graphics] trait Material[TPosition <: Vertex, TColor <: Vertex, TParams] {
+private[codecraft] trait Material[TPosition <: Vertex, TColor <: Vertex, TParams] {
   var params: TParams = _
 
-  def beforeDraw(projection: Matrix4x4): Unit
-  def draw(vbo: VBO, modelview: Matrix4x4): Unit
-  def afterDraw(): Unit
+  private[graphics] def beforeDraw(projection: Matrix4x4): Unit
+  private[graphics] def draw(vbo: VBO, modelview: Matrix4x4): Unit
+  private[graphics] def afterDraw(): Unit
 
-  protected def createVBO(vertexData: Array[Float], dynamic: Boolean): VBO
+  private[graphics] def createVBO(vertexData: Array[Float], dynamic: Boolean): VBO
   def nCompPos: Int
   def nCompCol: Int
 

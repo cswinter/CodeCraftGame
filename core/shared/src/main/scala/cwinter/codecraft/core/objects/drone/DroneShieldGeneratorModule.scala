@@ -1,10 +1,10 @@
 package cwinter.codecraft.core.objects.drone
 
 import cwinter.codecraft.core.SimulatorEvent
-import cwinter.codecraft.core.api.GameConstants
-import cwinter.codecraft.graphics.worldstate.{ShieldGeneratorDescriptor, DroneModuleDescriptor}
+import cwinter.codecraft.core.api.GameConstants.{ShieldMaximumHitpoints, ShieldRegenerationInterval}
+import cwinter.codecraft.core.graphics.{DroneModuleDescriptor, ShieldGeneratorDescriptor}
 import cwinter.codecraft.util.maths.Vector2
-import GameConstants.{ShieldMaximumHitpoints, ShieldRegenerationInterval}
+
 
 private[core] class DroneShieldGeneratorModule(positions: Seq[Int], owner: DroneImpl)
   extends DroneModule(positions, owner) {

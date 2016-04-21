@@ -1,7 +1,8 @@
 package cwinter.codecraft.demos.graphics
 
 import cwinter.codecraft.collisions.VisionTracking
-import cwinter.codecraft.graphics.worldstate.{HomingMissileDescriptor, ModelDescriptor, NullPositionDescriptor}
+import cwinter.codecraft.graphics.engine.{NullPositionDescriptor, ModelDescriptor}
+import cwinter.codecraft.graphics.worldstate.HomingMissileDescriptor
 import cwinter.codecraft.util.maths.{Vector2, ColorRGB, Rng}
 
 import scala.collection.mutable

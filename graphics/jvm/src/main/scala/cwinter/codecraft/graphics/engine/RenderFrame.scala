@@ -8,7 +8,6 @@ import com.jogamp.opengl.util.awt.TextRenderer
 import cwinter.codecraft.graphics.engine
 import cwinter.codecraft.graphics.materials.Material
 import cwinter.codecraft.graphics.model.{PrimitiveModelBuilder, TheModelCache, VBO}
-import cwinter.codecraft.graphics.worldstate.Simulator
 import cwinter.codecraft.util.maths.VertexXY
 import org.joda.time.DateTime
 
