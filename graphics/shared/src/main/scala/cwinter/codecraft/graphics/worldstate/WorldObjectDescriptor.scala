@@ -3,10 +3,9 @@ package cwinter.codecraft.graphics.worldstate
 import cwinter.codecraft.graphics.engine.RenderStack
 import cwinter.codecraft.graphics.model.{ClosedModel, Model}
 import cwinter.codecraft.graphics.models._
-import cwinter.codecraft.graphics.primitives.PolygonRing
-import cwinter.codecraft.util.maths.matrices.{RotationZTranslationXYMatrix4x4, RotationZTranslationXYTransposedMatrix4x4, Matrix4x4}
+import cwinter.codecraft.util.PrecomputedHashcode
 import cwinter.codecraft.util.maths._
-import cwinter.codecraft.util.{PrecomputedHashcode, maths}
+import cwinter.codecraft.util.maths.matrices.{Matrix4x4, RotationZTranslationXYMatrix4x4, RotationZTranslationXYTransposedMatrix4x4}
 
 
 private[codecraft] case class ModelDescriptor[T](
@@ -111,13 +110,4 @@ private[codecraft] case class EnginesDescriptor(position: Int) extends DroneModu
 private[codecraft] case class ShieldGeneratorDescriptor(position: Int) extends DroneModuleDescriptor
 private[codecraft] case class MissileBatteryDescriptor(position: Int, n: Int = 3) extends DroneModuleDescriptor
 private[codecraft] case class ManipulatorDescriptor(position: Int) extends DroneModuleDescriptor
-
-
-private[codecraft] case class TestingObject(time: Int) extends WorldObjectDescriptor[Unit] {
-  override protected def createModel(timestep: Int) =
-    new TestModelBuilder(time).getModel
-}
-
-
-
 
