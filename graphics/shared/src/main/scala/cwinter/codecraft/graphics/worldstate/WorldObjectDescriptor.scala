@@ -84,7 +84,7 @@ private[codecraft] trait WorldObjectDescriptor[T] extends PrecomputedHashcode {
         _rs = rs
         val model = createModel(timestep)
         // FIXME: special case required for models that are not cached. need to rework caching to fix this properly.
-        if (!isInstanceOf[HomingMissileModel] && !isInstanceOf[DrawCircleOutline] &&
+        if (!isInstanceOf[HomingMissileModel] && !isInstanceOf[CircleOutlineModelBuilder] &&
           !isInstanceOf[BasicHomingMissileModel])
           cachedModel = Some(model)
         model
@@ -118,31 +118,6 @@ private[codecraft] case class TestingObject(time: Int) extends WorldObjectDescri
     new TestModelBuilder(time).getModel
 }
 
-private[codecraft] case class DrawCircle(
-  radius: Float,
-  identifier: Int
-) extends WorldObjectDescriptor[Unit] {
-  override protected def createModel(timestep: Int) =
-    CircleModelBuilder(radius, identifier).getModel
-}
 
 
-private[codecraft] case class DrawCircleOutline(
-  radius: Float,
-  color: ColorRGB = ColorRGB(1, 1, 1)
-) extends WorldObjectDescriptor[Unit] {
-  override protected def createModel(timestep: Int) =
-    new PolygonRing(
-      rs.MaterialXYZRGB, 40, Seq.fill(40)(color), Seq.fill(40)(color),
-      radius - 2, radius, VertexXY(0, 0), 0, 0
-    ).noCaching.getModel
-}
-
-
-private[codecraft] case class DrawRectangle(
-  bounds: maths.Rectangle
-) extends WorldObjectDescriptor[Unit] {
-  override protected def createModel(timestep: Int) =
-    RectangleModelBuilder(bounds).getModel
-}
 

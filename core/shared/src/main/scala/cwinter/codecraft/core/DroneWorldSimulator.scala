@@ -8,6 +8,7 @@ import cwinter.codecraft.core.objects._
 import cwinter.codecraft.core.objects.drone._
 import cwinter.codecraft.core.replay._
 import cwinter.codecraft.graphics.engine.Debug
+import cwinter.codecraft.graphics.models.{CircleOutlineModelBuilder, RectangleModelBuilder}
 import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.physics.PhysicsEngine
 import cwinter.codecraft.util.maths.{ColorRGB, ColorRGBA, Rng, Vector2}
@@ -91,7 +92,7 @@ class DroneWorldSimulator(
       )
   }.toMap
 
-  Debug.drawAlways(ModelDescriptor(NullPositionDescriptor, DrawRectangle(map.size)))
+  Debug.drawAlways(ModelDescriptor(NullPositionDescriptor, RectangleModelBuilder(map.size)))
 
 
 
@@ -242,7 +243,7 @@ class DroneWorldSimulator(
       ) Debug.draw(
           ModelDescriptor(
             PositionDescriptor(d.position.x.toFloat, d.position.y.toFloat, 0),
-            DrawCircleOutline(GameConstants.MissileLockOnRange, ColorRGB(1, 0, 0))
+            CircleOutlineModelBuilder(GameConstants.MissileLockOnRange, ColorRGB(1, 0, 0))
           )
         )
     }
@@ -251,7 +252,7 @@ class DroneWorldSimulator(
         Debug.draw(
           ModelDescriptor(
             PositionDescriptor(d.position.x.toFloat, d.position.y.toFloat, 0),
-            DrawCircleOutline(GameConstants.DroneVisionRange, ColorRGB(0, 1, 0))
+            CircleOutlineModelBuilder(GameConstants.DroneVisionRange, ColorRGB(0, 1, 0))
           )
         )
       }

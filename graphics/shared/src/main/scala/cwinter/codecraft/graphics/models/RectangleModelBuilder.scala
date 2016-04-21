@@ -1,15 +1,14 @@
 package cwinter.codecraft.graphics.models
 
-import cwinter.codecraft.graphics.engine.RenderStack
 import cwinter.codecraft.graphics.model.{Model, ModelBuilder}
 import cwinter.codecraft.graphics.primitives.RectanglePrimitive
+import cwinter.codecraft.graphics.worldstate.WorldObjectDescriptor
 import cwinter.codecraft.util.maths
 import cwinter.codecraft.util.maths.ColorRGB
 
 
-private[graphics] case class RectangleModelBuilder(rectangle: maths.Rectangle)(implicit val rs: RenderStack)
-  extends ModelBuilder[RectangleModelBuilder, Unit] {
-  val signature = this
+private[codecraft] case class RectangleModelBuilder(rectangle: maths.Rectangle)
+  extends ModelBuilder[RectangleModelBuilder, Unit] with WorldObjectDescriptor[Unit] {
 
   override protected def buildModel: Model[Unit] = {
     RectanglePrimitive(
@@ -23,4 +22,7 @@ private[graphics] case class RectangleModelBuilder(rectangle: maths.Rectangle)(i
       0
     ).getModel
   }
+
+  override protected def createModel(timestep: Int) = getModel
+  override def signature = this
 }

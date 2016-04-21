@@ -1,14 +1,13 @@
 package cwinter.codecraft.graphics.models
 
-import cwinter.codecraft.graphics.engine.RenderStack
 import cwinter.codecraft.graphics.model.{Model, ModelBuilder}
 import cwinter.codecraft.graphics.primitives.Polygon
+import cwinter.codecraft.graphics.worldstate.WorldObjectDescriptor
 import cwinter.codecraft.util.maths.ColorRGB
 
 
-private[graphics] case class CircleModelBuilder(radius: Float, id: Int)(implicit val rs: RenderStack)
-  extends ModelBuilder[CircleModelBuilder, Unit] {
-  val signature = this
+private[graphics] case class CircleModelBuilder(radius: Float, id: Int)
+  extends ModelBuilder[CircleModelBuilder, Unit] with WorldObjectDescriptor[Unit] {
   val ColorCode = false
 
   override protected def buildModel: Model[Unit] = {
@@ -38,4 +37,7 @@ private[graphics] case class CircleModelBuilder(radius: Float, id: Int)(implicit
 
     ColorRGB(0.5f, 0, 0)
   )
+
+  override protected def createModel(timestep: Int) = getModel
+  override def signature = this
 }
