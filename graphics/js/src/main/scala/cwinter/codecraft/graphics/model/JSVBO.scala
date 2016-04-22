@@ -7,7 +7,8 @@ import org.scalajs.dom.raw.{WebGLBuffer, WebGLRenderingContext => GL}
  */
 private[graphics] case class JSVBO(id: WebGLBuffer, size: Int) extends VBO {
   def withSize(size: Int): JSVBO = copy(size = size)
-  def dispose(anyGL: Any): Unit = {
+  override def dispose(anyGL: Any): Unit = {
+    super.dispose(anyGL)
     assert(anyGL.isInstanceOf[GL], s"Expected gl of type ${GL.getClass.getName}. Actual: ${anyGL.getClass.getName}")
     val gl = anyGL.asInstanceOf[GL]
     gl.deleteBuffer(id)

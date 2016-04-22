@@ -61,8 +61,13 @@ private[graphics] object RenderFrame extends GLEventListener {
     for (material <- renderStack.materials) {
       material.beforeDraw(projection)
 
-      for (worldObject <- worldObjects ++ engine.Debug.debugObjects)
-        worldObject.closedModel(gameWorld.timestep).draw(material)
+      for (worldObject <- worldObjects ++ engine.Debug.debugObjects) {
+        try {
+          worldObject.closedModel(gameWorld.timestep).draw(material)
+        } catch {
+          case t: Throwable => println(s"Encountered error while trying to draw $worldObject\n$t")
+        }
+      }
 
 
       material.afterDraw()

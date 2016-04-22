@@ -8,7 +8,8 @@ import javax.media.opengl._
  */
 private[graphics] case class JVMVBO(id: Int, size: Int, vao: Int) extends VBO {
   def withSize(size: Int): JVMVBO = copy(size = size)
-  def dispose(anyGL: Any): Unit = {
+  override def dispose(anyGL: Any): Unit = {
+    super.dispose(anyGL)
     assert(anyGL.isInstanceOf[GL4], s"Expected gl of type javax.media.opengl.GL4. Actual: ${anyGL.getClass.getName}")
     val gl = anyGL.asInstanceOf[GL4]
     gl.glDeleteBuffers(1, Array(id), 0)
