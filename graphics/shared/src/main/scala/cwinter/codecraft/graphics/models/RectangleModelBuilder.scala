@@ -23,6 +23,5 @@ private[codecraft] case class RectangleModelBuilder(rectangle: maths.Rectangle)
     ).getModel
   }
 
-  override protected def createModel(timestep: Int) = getModel
   override def signature = this
 }

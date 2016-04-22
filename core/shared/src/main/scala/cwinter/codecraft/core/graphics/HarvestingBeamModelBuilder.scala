@@ -57,6 +57,5 @@ private[codecraft] case class HarvestingBeamModelBuilder(
   }
 
   override def signature = this
-  override protected def createModel(timestep: Int) = getModel
 }
 

@@ -30,13 +30,13 @@ private[codecraft] trait WorldObjectDescriptor[T] extends PrecomputedHashcode {
       case Some(model) => model
       case None =>
         _rs = rs
-        val model = createModel(timestep)
+        val model = getModel
         if (allowCaching) cachedModel = Some(model)
         model
     }
   }
 
-  protected def createModel(timestep: Int): Model[T]
+  protected def getModel: Model[T]
   protected def allowCaching: Boolean = true
 }
 

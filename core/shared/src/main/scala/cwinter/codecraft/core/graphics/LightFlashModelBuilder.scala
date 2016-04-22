@@ -34,7 +34,6 @@ private[codecraft] case object LightFlashModelBuilder
     )
   }
 
-  override protected def createModel(timestep: Int) = getModel
   override def signature = this
 }
 

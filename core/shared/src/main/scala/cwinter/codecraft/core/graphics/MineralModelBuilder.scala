@@ -29,7 +29,6 @@ private[codecraft] case class MineralModelBuilder(
     ).getModel
   }
 
-  override def createModel(timestep: Int) = getModel
   override def intersects(xPos: Float, yPos: Float, rectangle: Rectangle): Boolean =
     intersects(this.xPos, this.yPos, 50, rectangle)
   override def signature = this

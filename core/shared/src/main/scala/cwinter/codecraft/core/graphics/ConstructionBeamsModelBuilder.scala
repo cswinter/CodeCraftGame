@@ -60,6 +60,5 @@ private[codecraft] case class ConstructionBeamsModelBuilder(
   }
 
   override def signature = this
-  override protected def createModel(timestep: Int) = getModel
-
 }
+

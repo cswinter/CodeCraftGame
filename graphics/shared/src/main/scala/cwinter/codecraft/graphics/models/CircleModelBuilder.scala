@@ -38,6 +38,6 @@ private[graphics] case class CircleModelBuilder(radius: Float, id: Int)
     ColorRGB(0.5f, 0, 0)
   )
 
-  override protected def createModel(timestep: Int) = getModel
   override def signature = this
 }
+

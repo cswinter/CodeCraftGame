@@ -18,7 +18,6 @@ private[codecraft] case class CircleOutlineModelBuilder(
     ).noCaching.getModel
 
 
-  override protected def createModel(timestep: Int) = getModel
   override def signature = this
   override def isCacheable = false
   override def allowCaching = false

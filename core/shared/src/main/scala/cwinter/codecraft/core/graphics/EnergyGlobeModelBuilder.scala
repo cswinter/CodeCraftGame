@@ -37,7 +37,6 @@ private[codecraft] case class EnergyGlobeModelBuilder(fade: Float)
 
   override def intersects(xPos: Float, yPos: Float, rectangle: Rectangle): Boolean =
     intersects(xPos, yPos, 20, rectangle) // FIXME
-  override protected def createModel(timestep: Int) = getModel
   override def signature = this
 }
 

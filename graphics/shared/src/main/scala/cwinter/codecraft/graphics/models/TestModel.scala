@@ -10,7 +10,6 @@ private[graphics] case class TestModel(t: Int)
 
   protected def buildModel: Model[Unit] = EmptyModel
 
-  override def createModel(timestep: Int) = getModel
   override def isCacheable: Boolean = false
   override def signature = this
 }

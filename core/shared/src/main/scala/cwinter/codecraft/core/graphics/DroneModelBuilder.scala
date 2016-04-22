@@ -24,13 +24,6 @@ private[codecraft] case class DroneModelBuilder(
 
   require(hullState.size == sides - 1)
 
-  def signature = this
-
-  override def intersects(xPos: Float, yPos: Float, rectangle: Rectangle) =
-    intersects(xPos, yPos, 100, rectangle) // FIXME
-
-  override protected def createModel(timestep: Int) = getModel
-
   override protected def buildSubcomponents: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, DroneModelParameters]]) = {
     val colorPalette =
       if (signature.isBuilding) MutedDroneColors
@@ -125,6 +118,11 @@ private[codecraft] case class DroneModelBuilder(
         .withDynamicVertexCount
         .wireParameters[DroneModelParameters](d => (d.constructionState.get, d))
     else model
+
+  def signature = this
+  override def intersects(xPos: Float, yPos: Float, rectangle: Rectangle) =
+    intersects(xPos, yPos, 100, rectangle) // FIXME
+
 }
 
 

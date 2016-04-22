@@ -31,7 +31,6 @@ private[codecraft] case class CollisionMarkerModelBuilder(
     (Seq.empty, Seq(marker))
   }
 
-  override protected def createModel(timestep: Int) = getModel
   override def signature = this
 }
 
