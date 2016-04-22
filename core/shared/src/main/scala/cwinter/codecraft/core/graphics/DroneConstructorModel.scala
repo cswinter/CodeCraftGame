@@ -6,12 +6,12 @@ import cwinter.codecraft.graphics.primitives.Polygon
 import cwinter.codecraft.util.maths.{ColorRGB, ColorRGBA, VertexXY}
 
 
-private[graphics] case class DroneConstructorModelBuilder(
+private[graphics] case class DroneConstructorModel(
   colors: DroneColors,
   playerColor: ColorRGB,
   position: VertexXY
-)(implicit rs: RenderStack) extends CompositeModelBuilder[DroneConstructorModelBuilder, Unit] {
-  override def signature: DroneConstructorModelBuilder = this
+)(implicit rs: RenderStack) extends CompositeModelBuilder[DroneConstructorModel, Unit] {
+  override def signature: DroneConstructorModel = this
 
   override protected def buildSubcomponents: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, Unit]]) = {
     val module = Polygon(

@@ -22,7 +22,7 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
   private[this] var harvestCountdown: Int = 0
   private[this] var resourceDepositee: Option[DroneStorageModule] = None
 
-  private[this] var _beamDescriptor: Option[HarvestingBeamModelBuilder] = None
+  private[this] var _beamDescriptor: Option[HarvestingBeamsModel] = None
 
 
   override def update(availableResources: Int): (Seq[SimulatorEvent], Seq[Vector2], Seq[Vector2]) = {
@@ -192,14 +192,14 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
     energyStorageDescriptors.toSeq
   }
 
-  def beamDescriptor: Option[HarvestingBeamModelBuilder] = _beamDescriptor
+  def beamDescriptor: Option[HarvestingBeamsModel] = _beamDescriptor
 
   private def updateBeamDescriptor(): Unit =
     _beamDescriptor =
       for {
         m <- harvesting
         relativeMineralPos = (m.position - owner.position).rotated(-owner.dynamics.orientation)
-      } yield HarvestingBeamModelBuilder(owner.sides, positions, relativeMineralPos)
+      } yield HarvestingBeamsModel(owner.sides, positions, relativeMineralPos)
 
   def energyGlobeAnimations: Seq[ModelDescriptor[_]] = {
     for {
@@ -211,7 +211,7 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
       yPos = position.y.toFloat
     } yield ModelDescriptor(
       PositionDescriptor(xPos, yPos, 0),
-      PlainEnergyGlobeModelBuilder
+      PlainEnergyGlobeModel
     )
   }
 

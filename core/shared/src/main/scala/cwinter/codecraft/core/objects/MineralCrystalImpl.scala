@@ -3,7 +3,7 @@ package cwinter.codecraft.core.objects
 import cwinter.codecraft.collisions.PassiveVisionTracking
 import cwinter.codecraft.core.SimulatorEvent
 import cwinter.codecraft.core.api.{MineralCrystal, Player}
-import cwinter.codecraft.core.graphics.MineralModelBuilder
+import cwinter.codecraft.core.graphics.MineralCrystalModel
 import cwinter.codecraft.core.objects.drone.DroneStorageModule
 import cwinter.codecraft.graphics.engine.{ModelDescriptor, NullPositionDescriptor}
 import cwinter.codecraft.util.maths.{Rng, Vector2}
@@ -37,7 +37,7 @@ private[core] class MineralCrystalImpl(
   private def createDescriptor: ModelDescriptor[Unit] =
     ModelDescriptor(
       NullPositionDescriptor,
-      MineralModelBuilder(size, position.x.toFloat, position.y.toFloat, orientation)
+      MineralCrystalModel(size, position.x.toFloat, position.y.toFloat, orientation)
     )
 
   override private[core] def descriptor: Seq[ModelDescriptor[Unit]] = _descriptor

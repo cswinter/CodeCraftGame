@@ -6,12 +6,12 @@ import cwinter.codecraft.graphics.primitives.Polygon
 import cwinter.codecraft.util.maths.{ColorRGB, Rectangle, VertexXY}
 
 
-private[codecraft] case class MineralModelBuilder(
+private[codecraft] case class MineralCrystalModel(
   size: Int,
   xPos: Float,
   yPos: Float,
   orientation: Float
-) extends ModelBuilder[MineralModelBuilder, Unit] with WorldObjectDescriptor[Unit] {
+) extends ModelBuilder[MineralCrystalModel, Unit] with WorldObjectDescriptor[Unit] {
 
   override protected def buildModel: Model[Unit] = {
     val size = signature.size

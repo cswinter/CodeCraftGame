@@ -7,10 +7,10 @@ import cwinter.codecraft.graphics.primitives.PartialPolygonRing
 import cwinter.codecraft.util.maths.{ColorRGBA, NullVectorXY}
 
 
-private[codecraft] case class CollisionMarkerModelBuilder(
+private[codecraft] case class CollisionMarkerModel(
   radius: Float,
   orientation: Float
-) extends CompositeModelBuilder[CollisionMarkerModelBuilder, Float] with WorldObjectDescriptor[Float] {
+) extends CompositeModelBuilder[CollisionMarkerModel, Float] with WorldObjectDescriptor[Float] {
   val colorGradient = IndexedSeq.tabulate(15)(i => 1 - math.abs(i.toFloat - 7f) / 7f)
 
   override protected def buildSubcomponents: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, Float]]) = {

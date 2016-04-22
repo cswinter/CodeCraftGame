@@ -1,6 +1,6 @@
 package cwinter.codecraft.core.objects
 
-import cwinter.codecraft.core.graphics.{EnergyGlobeModelBuilder, PlainEnergyGlobeModelBuilder}
+import cwinter.codecraft.core.graphics.{EnergyGlobeModel, PlainEnergyGlobeModel}
 import cwinter.codecraft.core.objects.drone.DroneImpl
 import cwinter.codecraft.core.{RemoveEnergyGlobeAnimation, SimulatorEvent}
 import cwinter.codecraft.graphics.engine.{ModelDescriptor, PositionDescriptor}
@@ -29,8 +29,8 @@ private[core] class EnergyGlobeObject(
         PositionDescriptor(
           (x + dronePos.x).toFloat,
           (y + dronePos.y).toFloat, 0),
-        if (tta > 0) PlainEnergyGlobeModelBuilder
-        else EnergyGlobeModelBuilder(fade / FadeTime.toFloat)
+        if (tta > 0) PlainEnergyGlobeModel
+        else EnergyGlobeModel(fade / FadeTime.toFloat)
       )
     )
   }

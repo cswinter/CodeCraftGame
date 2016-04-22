@@ -6,8 +6,8 @@ import cwinter.codecraft.graphics.primitives.Polygon
 import cwinter.codecraft.util.maths.{ColorRGB, ColorRGBA, NullVectorXY, Rectangle}
 
 
-private[codecraft] case class EnergyGlobeModelBuilder(fade: Float)
-  extends ModelBuilder[EnergyGlobeModelBuilder, Unit] with WorldObjectDescriptor[Unit] {
+private[codecraft] case class EnergyGlobeModel(fade: Float)
+  extends ModelBuilder[EnergyGlobeModel, Unit] with WorldObjectDescriptor[Unit] {
   require(fade >= 0)
   require(fade <= 1)
 
@@ -40,6 +40,6 @@ private[codecraft] case class EnergyGlobeModelBuilder(fade: Float)
   override def signature = this
 }
 
-private[codecraft] object PlainEnergyGlobeModelBuilder extends EnergyGlobeModelBuilder(1)
+private[codecraft] object PlainEnergyGlobeModel extends EnergyGlobeModel(1)
 
 

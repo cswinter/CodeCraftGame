@@ -1,6 +1,6 @@
 package cwinter.codecraft.core.objects
 
-import cwinter.codecraft.core.graphics.LightFlashModelBuilder
+import cwinter.codecraft.core.graphics.LightFlashModel
 import cwinter.codecraft.core.{LightFlashDestroyed, SimulatorEvent}
 import cwinter.codecraft.graphics.engine.{PositionDescriptor, ModelDescriptor}
 import cwinter.codecraft.graphics.worldstate.LightFlashDescriptor
@@ -16,7 +16,7 @@ private[core] class LightFlash(val position: Vector2) extends WorldObject {
   override private[core] def descriptor: Seq[ModelDescriptor[_]] = Seq(
     ModelDescriptor(
       positionDescriptor,
-      LightFlashModelBuilder,
+      LightFlashModel,
       stage
     )
   )

@@ -6,13 +6,13 @@ import cwinter.codecraft.graphics.primitives.SquarePrimitive
 import cwinter.codecraft.util.maths.{ColorRGB, VertexXY}
 
 
-private[codecraft] case class DroneMissileBatteryModelBuilder(
+private[codecraft] case class DroneMissileBatteryModel(
   colors: DroneColors,
   playerColor: ColorRGB,
   position: VertexXY,
   n: Int
-)(implicit rs: RenderStack) extends CompositeModelBuilder[DroneMissileBatteryModelBuilder, Unit] {
-  override def signature: DroneMissileBatteryModelBuilder = this
+)(implicit rs: RenderStack) extends CompositeModelBuilder[DroneMissileBatteryModel, Unit] {
+  override def signature: DroneMissileBatteryModel = this
 
 
   override protected def buildSubcomponents: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, Unit]]) = {

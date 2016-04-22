@@ -12,7 +12,7 @@ import cwinter.codecraft.util.modules.ModulePosition
 import scala.math._
 
 
-private[codecraft] case class DroneModelBuilder(
+private[codecraft] case class DroneModel(
   sides: Int,
   modules: Seq[DroneModuleDescriptor],
   hasShields: Boolean,
@@ -20,7 +20,7 @@ private[codecraft] case class DroneModelBuilder(
   isBuilding: Boolean,
   animationTime: Int,
   playerColor: ColorRGB
-) extends CompositeModelBuilder[DroneModelBuilder, DroneModelParameters] with WorldObjectDescriptor[DroneModelParameters] {
+) extends CompositeModelBuilder[DroneModel, DroneModelParameters] with WorldObjectDescriptor[DroneModelParameters] {
 
   require(hullState.size == sides - 1)
 
@@ -71,13 +71,13 @@ private[codecraft] case class DroneModelBuilder(
         case EnginesDescriptor(position) =>
           DroneEnginesModel(ModulePosition(sides, position), colorPalette, playerColor, animationTime)(rs)
         case MissileBatteryDescriptor(position, n) =>
-          DroneMissileBatteryModelBuilder(colorPalette, playerColor, ModulePosition(sides, position), n)(rs)
+          DroneMissileBatteryModel(colorPalette, playerColor, ModulePosition(sides, position), n)(rs)
         case ShieldGeneratorDescriptor(position) =>
           DroneShieldGeneratorModel(ModulePosition(sides, position), colorPalette, playerColor)(rs)
         case StorageModuleDescriptor(position, contents) =>
-          DroneStorageModelBuilder(ModulePosition(sides, position), colorPalette, contents)(rs)
+          DroneStorageModel(ModulePosition(sides, position), colorPalette, contents)(rs)
         case ManipulatorDescriptor(position) =>
-          DroneConstructorModelBuilder(colorPalette, playerColor, ModulePosition(sides, position))(rs)
+          DroneConstructorModel(colorPalette, playerColor, ModulePosition(sides, position))(rs)
       }
 
 

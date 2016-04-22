@@ -5,7 +5,7 @@ import cwinter.codecraft.core._
 import cwinter.codecraft.core.api.GameConstants.HarvestingRange
 import cwinter.codecraft.core.api._
 import cwinter.codecraft.core.errors.Errors
-import cwinter.codecraft.core.graphics.{DroneModelParameters, DroneModuleDescriptor, DroneModelBuilder, CollisionMarkerModelBuilder}
+import cwinter.codecraft.core.graphics.{DroneModelParameters, DroneModuleDescriptor, DroneModel, CollisionMarkerModel}
 import cwinter.codecraft.core.objects._
 import cwinter.codecraft.core.replay._
 import cwinter.codecraft.graphics.engine.{PositionDescriptor, ModelDescriptor}
@@ -56,9 +56,9 @@ private[core] class DroneImpl(
     result
   }
 
-  private[this] var _collisionMarkers = List.empty[(CollisionMarkerModelBuilder, Float)]
+  private[this] var _collisionMarkers = List.empty[(CollisionMarkerModel, Float)]
 
-  private[this] var cachedDescriptor: Option[DroneModelBuilder] = None
+  private[this] var cachedDescriptor: Option[DroneModel] = None
 
   final val CollisionMarkerLifetime = 50f
   final val MessageCooldown = 30
@@ -196,7 +196,7 @@ private[core] class DroneImpl(
   private def addCollisionMarker(collisionPosition: Vector2): Unit = {
     val collisionAngle = (collisionPosition - position).orientation - dynamics.orientation
     _collisionMarkers ::= ((
-      CollisionMarkerModelBuilder(radius.toFloat, collisionAngle.toFloat),
+      CollisionMarkerModel(radius.toFloat, collisionAngle.toFloat),
       CollisionMarkerLifetime))
   }
 
@@ -375,9 +375,9 @@ private[core] class DroneImpl(
       _collisionMarkers.map(cm => ModelDescriptor(positionDescr, cm._1, cm._2 / CollisionMarkerLifetime))
   }
 
-  private def recreateDescriptor(): DroneModelBuilder = {
+  private def recreateDescriptor(): DroneModel = {
     val newDescriptor =
-      DroneModelBuilder(
+      DroneModel(
         spec.sides,
         moduleDescriptors,
         shieldGenerators.nonEmpty,

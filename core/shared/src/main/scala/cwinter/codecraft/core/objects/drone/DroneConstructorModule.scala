@@ -2,7 +2,7 @@ package cwinter.codecraft.core.objects.drone
 
 import cwinter.codecraft.core._
 import cwinter.codecraft.core.api.GameConstants.DroneConstructionTime
-import cwinter.codecraft.core.graphics.{ManipulatorDescriptor, DroneModuleDescriptor, ConstructionBeamsModelBuilder}
+import cwinter.codecraft.core.graphics.{ManipulatorDescriptor, DroneModuleDescriptor, ConstructionBeamsModel}
 import cwinter.codecraft.util.maths.Vector2
 import cwinter.codecraft.util.modules.ModulePosition
 
@@ -14,7 +14,7 @@ private[core] class DroneConstructorModule(positions: Seq[Int], owner: DroneImpl
   private[this] var droneConstruction: Option[(DroneImpl, Int)] = None
   private[this] val constructorEnergy = new Array[Int](positions.length)
 
-  private[this] var _beamDescriptor: Option[ConstructionBeamsModelBuilder] = None
+  private[this] var _beamDescriptor: Option[ConstructionBeamsModel] = None
 
 
   override def update(availableResources: Int): (Seq[SimulatorEvent], Seq[Vector2], Seq[Vector2]) = {
@@ -93,7 +93,7 @@ private[core] class DroneConstructorModule(positions: Seq[Int], owner: DroneImpl
         d <- droneInConstruction
         relativeConstructionPos = (d.position - owner.position).rotated(-owner.dynamics.orientation)
         modules = positions zip constructorEnergy.map(_ > 0)
-      } yield ConstructionBeamsModelBuilder(owner.sides, modules, relativeConstructionPos, owner.player.color)
+      } yield ConstructionBeamsModel(owner.sides, modules, relativeConstructionPos, owner.player.color)
 
   def droneInConstruction: Option[DroneImpl] = droneConstruction.map(_._1)
   override def cancelMovement: Boolean = isConstructing

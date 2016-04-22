@@ -7,11 +7,11 @@ import cwinter.codecraft.util.maths.{ColorRGB, VertexXY}
 import cwinter.codecraft.util.modules.ModulePosition
 
 
-private[graphics] case class DroneStorageModelBuilder(
+private[graphics] case class DroneStorageModel(
   position: VertexXY,
   colors: DroneColors,
   moduleContents: StorageModuleContents
-)(implicit rs: RenderStack) extends CompositeModelBuilder[DroneStorageModelBuilder, Unit] {
+)(implicit rs: RenderStack) extends CompositeModelBuilder[DroneStorageModel, Unit] {
 
   val radius = 8
   val outlineWidth = 1

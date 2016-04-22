@@ -7,7 +7,7 @@ import cwinter.codecraft.graphics.primitives.Polygon
 import cwinter.codecraft.util.maths.ColorRGBA
 
 
-private[codecraft] case object LightFlashModelBuilder
+private[codecraft] case object LightFlashModel
   extends ModelBuilder[Any, Float] with WorldObjectDescriptor[Float] {
 
   override protected def buildModel: Model[Float] = {
