@@ -6,7 +6,7 @@ import cwinter.codecraft.core.{SimulatorEvent, SpawnHomingMissile}
 import cwinter.codecraft.util.maths.Vector2
 
 
-private[core] class DroneMissileBatteryModule(positions: Seq[Int], owner: DroneImpl)
+private[core] class MissileBatteryModule(positions: Seq[Int], owner: DroneImpl)
   extends DroneModule(positions, owner) {
 
   private[this] var nextEffect = NoEffects

@@ -4,10 +4,10 @@ import cwinter.codecraft.core.api.DroneSpec
 import cwinter.codecraft.util.maths.Vector2
 import org.scalatest.FlatSpec
 
-class DroneShieldGeneratorModuleTest extends FlatSpec {
+class ShieldGeneratorModuleTest extends FlatSpec {
   val mockDroneSpec = DroneSpec(5, missileBatteries = 2, shieldGenerators = 1, engines = 1)
   val mockDrone = DroneFactory.blueDrone(mockDroneSpec, Vector2(0, 0))
-  val shieldGenerator = new DroneShieldGeneratorModule(Seq(2), mockDrone)
+  val shieldGenerator = new ShieldGeneratorModule(Seq(2), mockDrone)
 
 
   "A shield generator module" should "absorb damage and loose hitpoints" in {

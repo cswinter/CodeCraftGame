@@ -11,7 +11,7 @@ import cwinter.codecraft.util.modules.ModulePosition
 import scala.collection.mutable
 
 
-private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, startingResources: Int = 0)
+private[core] class StorageModule(positions: Seq[Int], owner: DroneImpl, startingResources: Int = 0)
   extends DroneModule(positions, owner) {
 
 
@@ -20,7 +20,7 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
 
   private[this] var harvesting: Option[MineralCrystalImpl] = None
   private[this] var harvestCountdown: Int = 0
-  private[this] var resourceDepositee: Option[DroneStorageModule] = None
+  private[this] var resourceDepositee: Option[StorageModule] = None
 
   private[this] var _beamDescriptor: Option[HarvestingBeamsModel] = None
 
@@ -73,7 +73,7 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
     else None
   }
 
-  private def performResourceDeposit(depositee: DroneStorageModule): Unit = {
+  private def performResourceDeposit(depositee: StorageModule): Unit = {
     val capacity = depositee.availableStorage
     if (capacity == 0) {
       owner.inform(s"Cannot deposit minerals - storage is completely full.")
@@ -158,7 +158,7 @@ private[core] class DroneStorageModule(positions: Seq[Int], owner: DroneImpl, st
     updateBeamDescriptor()
   }
 
-  def depositResources(other: Option[DroneStorageModule]) = resourceDepositee = other
+  def depositResources(other: Option[StorageModule]) = resourceDepositee = other
 
   def storedResources: Int = storedEnergyGlobes.size
 

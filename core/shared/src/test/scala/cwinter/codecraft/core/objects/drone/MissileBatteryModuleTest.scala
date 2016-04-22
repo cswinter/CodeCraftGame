@@ -6,13 +6,13 @@ import cwinter.codecraft.util.maths.Vector2
 import org.scalatest.FlatSpec
 
 
-class DroneMissileBatteryModuleTest extends FlatSpec {
+class MissileBatteryModuleTest extends FlatSpec {
   val mockDroneSpec = DroneSpec(missileBatteries = 3, engines = 1)
   val mockDrone = DroneFactory.blueDrone(mockDroneSpec, Vector2(0, 0))
   val mockEnemy = DroneFactory.redDrone(DroneSpec(storageModules = 1), Vector2(100, 100))
 
   "A laser module" should "not generate spurious events" in {
-    val missileBattery = new DroneMissileBatteryModule(Seq(0, 1, 2), mockDrone)
+    val missileBattery = new MissileBatteryModule(Seq(0, 1, 2), mockDrone)
     for {
       i <- 0 to 100
       event <- missileBattery.update(i)._1
@@ -20,7 +20,7 @@ class DroneMissileBatteryModuleTest extends FlatSpec {
   }
 
   it should "not consume resources" in {
-    val lasers = new DroneMissileBatteryModule(Seq(0, 1, 2), mockDrone)
+    val lasers = new MissileBatteryModule(Seq(0, 1, 2), mockDrone)
     for {
       i <- 0 to 100
       (events, resources, resourcesSpawned) = lasers.update(i)
@@ -29,7 +29,7 @@ class DroneMissileBatteryModuleTest extends FlatSpec {
 
 
   it should "generate missile events exactly once after firing" in {
-    val lasers = new DroneMissileBatteryModule(Seq(0, 1, 2), mockDrone)
+    val lasers = new MissileBatteryModule(Seq(0, 1, 2), mockDrone)
 
     assert(lasers.update(10) == ((Seq(), Seq(), Seq.empty[Vector2])))
 

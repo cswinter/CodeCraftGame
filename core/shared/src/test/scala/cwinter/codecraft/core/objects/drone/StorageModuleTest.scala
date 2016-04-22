@@ -6,7 +6,7 @@ import cwinter.codecraft.core.objects.MineralCrystalImpl
 import cwinter.codecraft.util.maths.Vector2
 import org.scalatest.{Matchers, FlatSpec}
 
-class DroneStorageModuleTest extends FlatSpec with Matchers {
+class StorageModuleTest extends FlatSpec with Matchers {
   val mockDrone1 = DroneFactory.blueDrone(DroneSpec(storageModules = 4), Vector2.Null)
   val mockDrone2 = DroneFactory.blueDrone(DroneSpec(storageModules = 2), Vector2.Null)
   val mineralSize = 2

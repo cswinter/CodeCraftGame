@@ -7,7 +7,7 @@ import cwinter.codecraft.util.maths.Vector2
 import cwinter.codecraft.util.modules.ModulePosition
 
 
-private[core] class DroneConstructorModule(positions: Seq[Int], owner: DroneImpl)
+private[core] class ConstructorModule(positions: Seq[Int], owner: DroneImpl)
   extends DroneModule(positions, owner) {
 
   private[this] var newDrone: Option[ConstructDrone] = None

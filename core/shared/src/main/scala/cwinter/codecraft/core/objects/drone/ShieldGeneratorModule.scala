@@ -6,7 +6,7 @@ import cwinter.codecraft.core.graphics.{DroneModuleDescriptor, ShieldGeneratorDe
 import cwinter.codecraft.util.maths.Vector2
 
 
-private[core] class DroneShieldGeneratorModule(positions: Seq[Int], owner: DroneImpl)
+private[core] class ShieldGeneratorModule(positions: Seq[Int], owner: DroneImpl)
   extends DroneModule(positions, owner) {
 
   val nShieldGenerators: Int = positions.size
