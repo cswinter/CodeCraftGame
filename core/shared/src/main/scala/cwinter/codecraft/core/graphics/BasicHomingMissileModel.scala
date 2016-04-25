@@ -1,7 +1,7 @@
 package cwinter.codecraft.core.graphics
 
 import cwinter.codecraft.graphics.engine.WorldObjectDescriptor
-import cwinter.codecraft.graphics.model.{Model, ModelBuilder}
+import cwinter.codecraft.graphics.model.{SimpleModelBuilder, Model, ModelBuilder}
 import cwinter.codecraft.graphics.primitives.Polygon
 import cwinter.codecraft.util.maths.{ColorRGB, ColorRGBA, VertexXY}
 
@@ -10,9 +10,9 @@ private[codecraft] case class BasicHomingMissileModel(
   x: Float,
   y: Float,
   playerColor: ColorRGB
-) extends ModelBuilder[BasicHomingMissileModel, Unit] with WorldObjectDescriptor[Unit] {
+) extends SimpleModelBuilder[BasicHomingMissileModel, Unit] with WorldObjectDescriptor[Unit] {
 
-  def buildModel: Model[Unit] = {
+  def model =
     Polygon(
       material = rs.TranslucentAdditive,
       n = 10,
@@ -21,8 +21,7 @@ private[codecraft] case class BasicHomingMissileModel(
       radius = 5,
       position = VertexXY(x, y),
       zPos = 3
-    ).noCaching.getModel
-  }
+    ).noCaching
 
 
   override def signature = this

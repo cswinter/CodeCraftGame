@@ -1,6 +1,6 @@
 package cwinter.codecraft.core.graphics
 
-import cwinter.codecraft.graphics.engine.RenderStack
+import cwinter.codecraft.graphics.engine.{GraphicsContext, RenderStack}
 import cwinter.codecraft.graphics.model.{EmptyModel, Model, StaticCompositeModel}
 import cwinter.codecraft.graphics.primitives.RichQuadStrip
 import cwinter.codecraft.util.maths.Geometry._
@@ -13,7 +13,7 @@ private[graphics] class DroneThrusterTrailsModelFactory(
   val sides: Int,
   val playerColor: ColorRGB
 )(implicit rs: RenderStack) {
-  def buildModel(positions: Seq[(Float, Float, Float)]): Model[Unit] = {
+  def buildModel(positions: Seq[(Float, Float, Float)], context: GraphicsContext): Model[Unit] = {
     val n = positions.length
 
     if (n <= 1) {
@@ -39,14 +39,14 @@ private[graphics] class DroneThrusterTrailsModelFactory(
         colors,
         colors,
         sideLength * 0.4f
-      ).noCaching.getModel,
+      ).noCaching.getModel(context),
       RichQuadStrip(
         rs.TranslucentAdditive,
         trail2,
         colors,
         colors,
         sideLength * 0.4f
-      ).noCaching.getModel
+      ).noCaching.getModel(context)
     )).identityModelview
   }
 

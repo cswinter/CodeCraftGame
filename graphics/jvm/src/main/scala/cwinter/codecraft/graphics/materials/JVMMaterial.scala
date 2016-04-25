@@ -230,5 +230,8 @@ private[graphics] class JVMMaterial[TPosition <: Vertex, TColor <: Vertex, TPara
       println(new String(log))
     }
   }
+
+  override def dispose(): Unit =
+    glDeleteProgram(programID)
 }
 

@@ -1,20 +1,14 @@
 package cwinter.codecraft.graphics.engine
 
-import cwinter.codecraft.graphics.model.{TheModelCache, TheCompositeModelBuilderCache}
-import cwinter.codecraft.util.maths.{Vector2, ColorRGBA}
+import cwinter.codecraft.util.maths.{ColorRGBA, Vector2}
 
 
 object Debug {
   private[this] var objects = List.empty[ModelDescriptor[_]]
-  private[this] var staticObjects = List.empty[ModelDescriptor[_]]
   private[this] var _textModels = List.empty[TextModel]
 
   private[codecraft] def draw(worldObject: ModelDescriptor[_]): Unit = {
     objects ::= worldObject
-  }
-
-  private[codecraft] def drawAlways(worldObject: ModelDescriptor[_]): Unit = {
-    staticObjects ::= worldObject
   }
 
   private[codecraft] def drawText(
@@ -34,7 +28,7 @@ object Debug {
   def cameraOverride: Option[Vector2] = _cameraOverride.map(_())
 
   private[engine] def debugObjects = {
-    objects ++ staticObjects
+    objects
   }
 
   private[engine] def textModels = _textModels
@@ -43,15 +37,4 @@ object Debug {
     objects = List.empty[ModelDescriptor[_]]
     _textModels = List.empty[TextModel]
   }
-
-  private[cwinter] def clearDrawAlways(): Unit = {
-    staticObjects = List.empty[ModelDescriptor[_]]
-  }
-
-  private[cwinter] def clearAllGraphicsState(): Unit = {
-    clearDrawAlways()
-    TheModelCache.clear()
-    TheCompositeModelBuilderCache.clear()
-  }
 }
-

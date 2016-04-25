@@ -126,16 +126,16 @@ private[graphics] class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
       glBlendFunc(GL_ONE, GL_ONE)
 
       // - set texture0 as _destination_ texture
-      glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, RenderFrame.fbo.texture0, 0)
+      glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, fbo.texture0, 0)
 
       // - set texture1 as _source_ texture
       glActiveTexture(GL_TEXTURE0)
-      glBindTexture(GL_TEXTURE_2D, RenderFrame.fbo.texture2)
+      glBindTexture(GL_TEXTURE_2D, fbo.texture2)
     }
 
     override def afterDraw(): Unit = {
       super.afterDraw()
-      glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, RenderFrame.fbo.texture0, 0)
+      glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, fbo.texture0, 0)
     }
   }
 
@@ -156,4 +156,15 @@ private[graphics] class BloomShader(implicit gl: GL4, fbo: FramebufferObject)
       )
     )
   }
+
+
+  override def dispose(): Unit = {
+    super.dispose()
+    VConvolution.dispose()
+    HConvolution.dispose()
+    hconvQuad.dispose(gl)
+    vconvQuad.dispose(gl)
+    addQuad.dispose(gl)
+  }
 }
+

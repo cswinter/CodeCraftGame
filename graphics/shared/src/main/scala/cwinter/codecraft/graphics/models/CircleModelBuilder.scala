@@ -1,16 +1,16 @@
 package cwinter.codecraft.graphics.models
 
-import cwinter.codecraft.graphics.engine.WorldObjectDescriptor
+import cwinter.codecraft.graphics.engine.{GraphicsContext, WorldObjectDescriptor}
 import cwinter.codecraft.graphics.model.{Model, ModelBuilder}
 import cwinter.codecraft.graphics.primitives.Polygon
 import cwinter.codecraft.util.maths.ColorRGB
 
 
 private[graphics] case class CircleModelBuilder(radius: Float, id: Int)
-  extends ModelBuilder[CircleModelBuilder, Unit] with WorldObjectDescriptor[Unit] {
+    extends ModelBuilder[CircleModelBuilder, Unit] with WorldObjectDescriptor[Unit] {
   val ColorCode = false
 
-  override protected def buildModel: Model[Unit] = {
+  override protected def buildModel(context: GraphicsContext): Model[Unit] = {
     Polygon(
       rs.MaterialXYZRGB,
       n = 50,
@@ -18,7 +18,7 @@ private[graphics] case class CircleModelBuilder(radius: Float, id: Int)
       colorOutside = if (ColorCode) Colors(id % 10) else ColorRGB(0.7f, 0.7f, 0.7f),
       radius = radius,
       zPos = 0
-    ).getModel
+    ).getModel(context)
   }
 
 

@@ -4,7 +4,6 @@ import javax.media.opengl.GL._
 import javax.media.opengl.GL4
 
 import cwinter.codecraft.graphics.materials._
-import cwinter.codecraft.util.PrecomputedHashcode
 import cwinter.codecraft.util.maths.matrices.IdentityMatrix4x4
 import cwinter.codecraft.util.maths.VertexXY
 
@@ -56,5 +55,8 @@ private[graphics] case class JVMRenderStack(implicit gl: GL4, fbo: FramebufferOb
     RenderToScreen.afterDraw()
     glBindTexture(GL_TEXTURE_2D, 0)
   }
+
+
+  override def dispose(): Unit = materials.foreach(_.dispose())
 }
 

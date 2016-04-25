@@ -1,6 +1,6 @@
 package cwinter.codecraft.core.graphics
 
-import cwinter.codecraft.graphics.engine.WorldObjectDescriptor
+import cwinter.codecraft.graphics.engine.{GraphicsContext, WorldObjectDescriptor}
 import cwinter.codecraft.graphics.materials.Intensity
 import cwinter.codecraft.graphics.model._
 import cwinter.codecraft.graphics.primitives.{Polygon, PolygonRing}
@@ -111,10 +111,13 @@ private[codecraft] case class DroneModel(
   }
 
 
-  override protected def decorate(model: Model[DroneModelParameters]): Model[DroneModelParameters] =
+  override protected def decorate(
+    model: Model[DroneModelParameters],
+    context: GraphicsContext
+  ): Model[DroneModelParameters] =
     if (signature.isBuilding)
       model
-        .translated(VertexXYZ(0, 0, -3), rs.modelviewTranspose)
+        .translated(VertexXYZ(0, 0, -3), context.useTransposedModelview)
         .withDynamicVertexCount
         .wireParameters[DroneModelParameters](d => (d.constructionState.get, d))
     else model

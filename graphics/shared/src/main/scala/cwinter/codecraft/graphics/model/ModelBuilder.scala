@@ -1,14 +1,16 @@
 package cwinter.codecraft.graphics.model
 
+import cwinter.codecraft.graphics.engine.GraphicsContext
+
 
 private[codecraft] trait ModelBuilder[TStatic, TDynamic] {
   def signature: TStatic
 
-  def getModel: Model[TDynamic] =
-    if (isCacheable) TheModelCache.getOrElseUpdate(signature)(optimized.buildModel)
-    else buildModel
+  def getModel(context: GraphicsContext): Model[TDynamic] =
+    if (isCacheable) context.modelCache.getOrElseUpdate(signature)(optimized.buildModel(context))
+    else buildModel(context)
 
-  protected def buildModel: Model[TDynamic]
+  protected def buildModel(context: GraphicsContext): Model[TDynamic]
 
   def isCacheable: Boolean = true
 

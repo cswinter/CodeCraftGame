@@ -56,6 +56,9 @@ private[codecraft] trait Material[TPosition <: Vertex, TColor <: Vertex, TParams
 
     createVBO(data, dynamic)
   }
+
+
+  def dispose(): Unit
 }
 
 

@@ -1,7 +1,6 @@
 package cwinter.codecraft.demos.graphics
 
-import cwinter.codecraft.graphics.engine.{PositionDescriptor, ModelDescriptor}
-import cwinter.codecraft.graphics.worldstate.LightFlashDescriptor
+import cwinter.codecraft.graphics.engine.{ModelDescriptor, PositionDescriptor}
 
 
 private[graphics] class MockLightFlash(val xPos: Float, val yPos: Float) extends MockObject {
@@ -11,8 +10,8 @@ private[graphics] class MockLightFlash(val xPos: Float, val yPos: Float) extends
 
   def state(): ModelDescriptor[_] = ModelDescriptor(
     PositionDescriptor(xPos, yPos, 0),
-    LightFlashDescriptor(stage),
-    LightFlashDescriptor(stage)
+    LightFlashModel,
+    stage
   )
 
   def dead: Boolean = stage > 1

@@ -15,5 +15,8 @@ private[graphics] case class JVMGL2RenderStack(implicit gl: GL2) extends RenderS
   val TranslucentAdditive = new TranslucentAdditive110
   val TranslucentProportional = new TranslucentAdditive110 // FIXME
   val TranslucentAdditivePIntensity = new TranslucentAdditivePIntensity110
+
+
+  override def dispose(): Unit = materials.foreach(_.dispose())
 }
 

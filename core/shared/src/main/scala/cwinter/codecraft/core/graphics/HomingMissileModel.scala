@@ -1,7 +1,7 @@
 package cwinter.codecraft.core.graphics
 
 import cwinter.codecraft.graphics.engine.WorldObjectDescriptor
-import cwinter.codecraft.graphics.model.{EmptyModel, Model, ModelBuilder}
+import cwinter.codecraft.graphics.model._
 import cwinter.codecraft.graphics.primitives.QuadStrip
 import cwinter.codecraft.util.maths.{ColorRGB, ColorRGBA, VertexXY}
 
@@ -10,9 +10,9 @@ private[codecraft] case class HomingMissileModel(
   positions: Seq[(Float, Float)],
   nMaxPos: Int,
   playerColor: ColorRGB
-) extends ModelBuilder[HomingMissileModel, Unit] with WorldObjectDescriptor[Unit] {
-  override protected def buildModel: Model[Unit] = {
-    if (positions.length < 2) EmptyModel
+) extends SimpleModelBuilder[HomingMissileModel, Unit] with WorldObjectDescriptor[Unit] {
+  override protected def model = {
+    if (positions.length < 2) EmptyModelBuilder
     else {
       val midpoints = positions.map { case (x, y) => VertexXY(x, y)}
       val n = nMaxPos
@@ -33,7 +33,7 @@ private[codecraft] case class HomingMissileModel(
         colors,
         3,
         zPos = 3
-      ).noCaching.getModel
+      ).noCaching
     }
   }
 

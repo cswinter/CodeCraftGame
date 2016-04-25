@@ -1,16 +1,16 @@
 package cwinter.codecraft.graphics.models
 
-import cwinter.codecraft.graphics.engine.WorldObjectDescriptor
-import cwinter.codecraft.graphics.model.{Model, ModelBuilder}
+import cwinter.codecraft.graphics.engine.{GraphicsContext, WorldObjectDescriptor}
+import cwinter.codecraft.graphics.model.{Model, SimpleModelBuilder}
 import cwinter.codecraft.graphics.primitives.RectanglePrimitive
 import cwinter.codecraft.util.maths
 import cwinter.codecraft.util.maths.ColorRGB
 
 
 private[codecraft] case class RectangleModelBuilder(rectangle: maths.Rectangle)
-  extends ModelBuilder[RectangleModelBuilder, Unit] with WorldObjectDescriptor[Unit] {
+  extends SimpleModelBuilder[RectangleModelBuilder, Unit] with WorldObjectDescriptor[Unit] {
 
-  override protected def buildModel: Model[Unit] = {
+  override protected def model =
     RectanglePrimitive(
       rs.MaterialXYZRGB,
       rectangle.xMin.toFloat,
@@ -20,8 +20,7 @@ private[codecraft] case class RectangleModelBuilder(rectangle: maths.Rectangle)
       3,
       ColorRGB(0.7f, 0.7f, 0.7f),
       0
-    ).getModel
-  }
+    )
 
   override def signature = this
 }

@@ -67,3 +67,4 @@ private[codecraft] object Polygon {
     Polygon(material, n, Seq.fill(n)(colorMidpoint), Seq.fill(n)(colorOutside),
       radius, position, zPos, orientation, colorEdges = colorEdges)
 }
+

@@ -91,8 +91,7 @@ class DroneWorldSimulator(
       )
   }.toMap
 
-  Debug.drawAlways(ModelDescriptor(NullPositionDescriptor, RectangleModelBuilder(map.size)))
-
+  val worldBoundaries = ModelDescriptor(NullPositionDescriptor, RectangleModelBuilder(map.size))
 
 
   replayRecorder.recordInitialWorldState(map)
@@ -450,6 +449,7 @@ class DroneWorldSimulator(
 
   private[codecraft] override def computeWorldState: Iterable[ModelDescriptor[_]] = {
     val result = ListBuffer.empty[ModelDescriptor[_]]
+    result.append(worldBoundaries)
     for {
       obj <- visibleObjects
     } result.appendAll(obj.descriptor)

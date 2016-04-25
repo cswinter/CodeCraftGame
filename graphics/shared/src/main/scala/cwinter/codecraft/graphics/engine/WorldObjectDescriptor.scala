@@ -25,18 +25,18 @@ private[codecraft] trait WorldObjectDescriptor[T] extends PrecomputedHashcode {
     y - width < rectangle.yMax
   }
 
-  def model(timestep: Int)(implicit rs: RenderStack): Model[T] = {
+  def model(timestep: Int, context: GraphicsContext): Model[T] = {
     cachedModel match {
       case Some(model) => model
       case None =>
-        _rs = rs
-        val model = getModel
+        _rs = context.materials
+        val model = getModel(context)
         if (allowCaching) cachedModel = Some(model)
         model
     }
   }
 
-  protected def getModel: Model[T]
+  protected def getModel(context: GraphicsContext): Model[T]
   protected def allowCaching: Boolean = true
 }
 

@@ -1,5 +1,6 @@
 package cwinter.codecraft.graphics.model
 
+import cwinter.codecraft.graphics.engine.GraphicsContext
 import cwinter.codecraft.graphics.materials.Material
 import cwinter.codecraft.util.maths.{Vertex, VertexXYZ}
 
@@ -11,20 +12,20 @@ private[codecraft] trait CompositeModelBuilder[TStatic <: AnyRef, TDynamic]
     extends ModelBuilder[TStatic, TDynamic] {
   protected def buildSubcomponents: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, TDynamic]])
 
-  def subcomponents: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, TDynamic]]) =
-    if (isCacheable) TheCompositeModelBuilderCache.getOrElseUpdate(signature)(optimized.buildSubcomponents)
+  def subcomponents(context: GraphicsContext): (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, TDynamic]]) =
+    if (isCacheable) context.modelBuilderCache.getOrElseUpdate(signature)(optimized.buildSubcomponents)
     else buildSubcomponents
 
-  def buildModel: Model[TDynamic] = {
-    val (staticComponents, dynamicComponents) = subcomponents
+  def buildModel(context: GraphicsContext): Model[TDynamic] = {
+    val (staticComponents, dynamicComponents) = subcomponents(context)
     val model = CompositeModel(
-      staticComponents.map(_.getModel),
-      dynamicComponents.map(_.getModel)
+      staticComponents.map(_.getModel(context)),
+      dynamicComponents.map(_.getModel(context))
     )
-    decorate(model)
+    decorate(model, context)
   }
 
-  protected def decorate(model: Model[TDynamic]): Model[TDynamic] = model
+  protected def decorate(model: Model[TDynamic], context: GraphicsContext): Model[TDynamic] = model
 
 
   override def optimized: CompositeModelBuilder[TStatic, TDynamic] = {
@@ -34,7 +35,8 @@ private[codecraft] trait CompositeModelBuilder[TStatic <: AnyRef, TDynamic]
 
     val self = this
     new CompositeModelBuilder[TStatic, TDynamic] {
-      override def decorate(model: Model[TDynamic]) = self.decorate(model)
+      override def decorate(model: Model[TDynamic], context: GraphicsContext) =
+        self.decorate(model, context)
       override def signature = self.signature
       override def buildSubcomponents = (compactedStatic, allDynamic)
     }

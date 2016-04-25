@@ -19,9 +19,8 @@ private[codecraft] trait RenderStack extends PrecomputedHashcode {
     MaterialXYZRGB, BloomShader, GaussianGlow, GaussianGlowPIntensity,
     TranslucentAdditive, TranslucentProportional, TranslucentAdditivePIntensity)
 
-  val modelviewTranspose: Boolean = false
-
-
   private[graphics] def postDraw(camera2D: Camera2D): Unit = ()
+
+  def dispose(): Unit
 }
 

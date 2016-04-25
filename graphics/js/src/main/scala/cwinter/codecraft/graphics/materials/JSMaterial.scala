@@ -167,5 +167,10 @@ private[graphics] class JSMaterial[TPosition <: Vertex, TColor <: Vertex, TParam
 
     shaderHandle
   }
+
+
+  override def dispose(): Unit = {
+    gl.deleteProgram(programID)
+  }
 }
 

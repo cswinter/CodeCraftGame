@@ -1,5 +1,6 @@
 package cwinter.codecraft.graphics.model
 
+import cwinter.codecraft.graphics.engine.GraphicsContext
 import cwinter.codecraft.graphics.materials.Material
 import cwinter.codecraft.util.maths.{Vertex, VertexXYZ}
 
@@ -11,11 +12,9 @@ private[graphics] case class VertexCollectionModelBuilder[TColor <: Vertex](
 
   def signature = throw new Exception("ConcreteVerticesModelBuilder has no signature.")
 
-  protected def buildModel: Model[Unit] = {
-    val typedMaterial = material
-    val typedVertices = vertexData
-    val vbo = typedMaterial.createVBOSeq(typedVertices, dynamic=false)
-    new StaticModel(vbo, typedMaterial)
+  protected def buildModel(context: GraphicsContext): Model[Unit] = {
+    val vbo = material.createVBOSeq(vertexData, dynamic=false)
+    new StaticModel(vbo, material)
   }
 
   override def isCacheable = false

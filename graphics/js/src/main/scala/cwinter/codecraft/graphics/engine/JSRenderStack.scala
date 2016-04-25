@@ -16,6 +16,6 @@ private[graphics] case class JSRenderStack(implicit gl: GL) extends RenderStack 
   override val BloomShader =  new MaterialBrightenedXYZRGB // FIXME
   override val TranslucentAdditivePIntensity = new TranslucentAdditivePIntensity
 
-  override val modelviewTranspose = true
+  override def dispose(): Unit = materials.foreach(_.dispose())
 }
 

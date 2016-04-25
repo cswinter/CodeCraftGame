@@ -7,14 +7,15 @@ import javax.media.opengl._
 import com.jogamp.opengl.util.awt.TextRenderer
 import cwinter.codecraft.graphics.engine
 import cwinter.codecraft.graphics.materials.Material
-import cwinter.codecraft.graphics.model.{PrimitiveModelBuilder, TheModelCache, VBO}
+import cwinter.codecraft.graphics.model.{TheCompositeModelBuilderCache, PrimitiveModelBuilder, TheModelCache, VBO}
 import cwinter.codecraft.util.maths.VertexXY
 import org.joda.time.DateTime
 
 import scala.util.Try
 
 
-private[graphics] object RenderFrame extends GLEventListener {
+private[graphics] class RenderFrame(val gameWorld: Simulator)
+    extends GLEventListener {
   val DebugMode = false
 
   implicit var fbo: FramebufferObject = null
@@ -22,13 +23,15 @@ private[graphics] object RenderFrame extends GLEventListener {
   var camera = new Camera2D
   var textRenderer: TextRenderer = null
   var largeTextRenderer: TextRenderer = null
+  val modelCache = new TheModelCache
+  val compositeModelBuilderCache = new TheCompositeModelBuilderCache
   var isGL4Supported = false
+  lazy val context = new GraphicsContext(renderStack, false, modelCache, compositeModelBuilderCache)
 
   var cullFaceToggle = false
   val FrametimeSamples = 100
   var frameTimes = scala.collection.mutable.Queue.fill(FrametimeSamples - 1)(new DateTime().getMillis)
   var textField: TextField = null
-  var gameWorld: Simulator = null
   var error = false
 
 
@@ -63,9 +66,11 @@ private[graphics] object RenderFrame extends GLEventListener {
 
       for (worldObject <- worldObjects ++ engine.Debug.debugObjects) {
         try {
-          worldObject.closedModel(gameWorld.timestep).draw(material)
+          worldObject.closedModel(gameWorld.timestep, context).draw(material)
         } catch {
-          case t: Throwable => println(s"Encountered error while trying to draw $worldObject\n$t")
+          case t: Throwable =>
+            println(s"Encountered error while trying to draw $worldObject.")
+            t.printStackTrace()
         }
       }
 
@@ -79,7 +84,7 @@ private[graphics] object RenderFrame extends GLEventListener {
     renderText(drawable)
 
     // dispose one-time VBOs
-    PrimitiveModelBuilder.disposeAll(gl)
+    context.freeTempVBOs(gl)
 
     // update fps
     val now = new DateTime().getMillis
@@ -90,9 +95,9 @@ private[graphics] object RenderFrame extends GLEventListener {
       f"FPS: $fps   " +
       f"Draw calls: ${Material.drawCalls}   " +
       f"Modelview uploads: ${Material.modelviewUploads}   " +
-      f"Cached models: ${TheModelCache.CachedModelCount}   " +
+      f"Cached models: ${modelCache.CachedModelCount}   " +
       f"Allocated VBOs: ${VBO.count}   " +
-      f"Last cached model: ${TheModelCache.lastCachedModel}"
+      f"Last cached model: ${modelCache.lastCachedModel}"
     )
   }
 
@@ -151,9 +156,7 @@ private[graphics] object RenderFrame extends GLEventListener {
        |""".stripMargin + gameWorld.additionalInfoText
 
 
-  def dispose(arg0: GLAutoDrawable): Unit = {
-    // stub
-  }
+  def dispose(arg0: GLAutoDrawable): Unit = context.dispose(arg0.getGL)
 
 
   def init(drawable: GLAutoDrawable): Unit = {

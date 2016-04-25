@@ -1,7 +1,7 @@
 package cwinter.codecraft.graphics.engine
 
 import cwinter.codecraft.graphics.materials.Material
-import cwinter.codecraft.graphics.model.PrimitiveModelBuilder
+import cwinter.codecraft.graphics.model.{TheCompositeModelBuilderCache, TheModelCache, PrimitiveModelBuilder}
 import cwinter.codecraft.util.maths.{ColorRGBA, Rectangle, Vector2, VertexXY}
 import org.scalajs.dom
 import org.scalajs.dom.raw.{HTMLDivElement, WebGLRenderingContext => GL}
@@ -18,6 +18,9 @@ private[codecraft] class WebGLRenderer(
   implicit val gl = initGL()
   implicit val renderStack = new JSRenderStack()
   val camera = new Camera2D
+  val modelCache = new TheModelCache
+  val compositeModelBuilderCache = new TheCompositeModelBuilderCache
+  lazy val context = new GraphicsContext(renderStack, true, modelCache, compositeModelBuilderCache)
   camera.position = (initialCameraPos.x.toFloat, initialCameraPos.y.toFloat)
   camera.screenDims = (canvas.width, canvas.height)
 
@@ -117,7 +120,7 @@ private[codecraft] class WebGLRenderer(
       while (objcurr != Nil) {
         val modelDescriptor = objcurr.head
         if (modelDescriptor.intersects(onScreen)) {
-          modelDescriptor.closedModel(gameWorld.timestep).draw(material)
+          modelDescriptor.closedModel(gameWorld.timestep, context).draw(material)
         }
 
         objcurr = objcurr.tail
@@ -154,7 +157,7 @@ private[codecraft] class WebGLRenderer(
     }
 
     // dispose one-time VBOs
-    PrimitiveModelBuilder.disposeAll(gl)
+    //context.freeTempVBOs(gl)
   }
 
   private def renderText(container: HTMLDivElement, textModel: TextModel, width: Int, height: Int): Unit = {
@@ -208,5 +211,7 @@ private[codecraft] class WebGLRenderer(
     gl.viewport(-1, 1, canvas.width, canvas.height)
     gl
   }
+
+  def dispose(): Unit = context.dispose(gl)
 }
 

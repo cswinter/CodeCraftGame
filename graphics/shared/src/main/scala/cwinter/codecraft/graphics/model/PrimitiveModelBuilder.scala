@@ -1,13 +1,13 @@
 package cwinter.codecraft.graphics.model
 
+import cwinter.codecraft.graphics.engine.GraphicsContext
 import cwinter.codecraft.graphics.materials.Material
 import cwinter.codecraft.util.PrecomputedHashcode
 import cwinter.codecraft.util.maths.{Vertex, VertexXYZ}
 
-
-
-private[graphics] trait PrimitiveModelBuilder[TShape, TColor <: Vertex, TParams]
-extends ModelBuilder[TShape, TParams] with PrecomputedHashcode {
+private[graphics] trait PrimitiveModelBuilder[
+    TShape, TColor <: Vertex, TParams]
+    extends ModelBuilder[TShape, TParams] with PrecomputedHashcode {
   self: Product =>
 
   val material: Material[VertexXYZ, TColor, TParams]
@@ -15,9 +15,9 @@ extends ModelBuilder[TShape, TParams] with PrecomputedHashcode {
   private[this] var _cacheable = true
   def signature = shape
 
-  protected def buildModel: Model[TParams] = {
+  protected def buildModel(context: GraphicsContext): Model[TParams] = {
     val vbo = material.createVBO(computeVertexData(), !_cacheable)
-    if (!_cacheable) PrimitiveModelBuilder.toDispose ::= vbo
+    if (!_cacheable) context.createdTempVBO(vbo)
     new StaticModel(vbo, material)
   }
 
@@ -30,14 +30,5 @@ extends ModelBuilder[TShape, TParams] with PrecomputedHashcode {
   protected def computeVertexData(): Seq[(VertexXYZ, TColor)]
 
   def getVertexData: Seq[(VertexXYZ, TColor)] = computeVertexData()
-}
-
-private[graphics] object PrimitiveModelBuilder {
-  private var toDispose = List.empty[VBO]
-
-  def disposeAll(gl: Any): Unit = {
-    toDispose.foreach(_.dispose(gl))
-    toDispose = List.empty[VBO]
-  }
 }
 

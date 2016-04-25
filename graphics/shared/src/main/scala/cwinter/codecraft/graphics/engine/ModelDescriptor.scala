@@ -15,16 +15,16 @@ private[codecraft] case class ModelDescriptor[T](
     objectDescriptor.intersects(position.x, position.y, rectangle)
 
 
-  def closedModel(timestep: Int)(implicit rs: RenderStack): ClosedModel[T] =
-    new ClosedModel[T](objectParameters, objectDescriptor.model(timestep), modelview)
+  def closedModel(timestep: Int, context: GraphicsContext): ClosedModel[T] =
+    new ClosedModel[T](objectParameters, objectDescriptor.model(timestep, context), modelview(context))
 
-  private def modelview(implicit renderStack: RenderStack): Matrix4x4 = {
+  private def modelview(context: GraphicsContext): Matrix4x4 = {
     if (position.cachedModelviewMatrix.isEmpty) {
       val xPos = position.x
       val yPos = position.y
       val orientation = position.orientation
       val modelviewMatrix =
-        if (renderStack.modelviewTranspose) new RotationZTranslationXYTransposedMatrix4x4(orientation, xPos, yPos)
+        if (context.useTransposedModelview) new RotationZTranslationXYTransposedMatrix4x4(orientation, xPos, yPos)
         else new RotationZTranslationXYMatrix4x4(orientation, xPos, yPos)
       position.cachedModelviewMatrix = modelviewMatrix
     }

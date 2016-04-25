@@ -1,7 +1,7 @@
 package cwinter.codecraft.core.graphics
 
 import cwinter.codecraft.graphics.engine.WorldObjectDescriptor
-import cwinter.codecraft.graphics.model.{Model, ModelBuilder}
+import cwinter.codecraft.graphics.model.{SimpleModelBuilder, Model, ModelBuilder}
 import cwinter.codecraft.graphics.primitives.Polygon
 import cwinter.codecraft.util.maths.{ColorRGB, Rectangle, VertexXY}
 
@@ -11,9 +11,9 @@ private[codecraft] case class MineralCrystalModel(
   xPos: Float,
   yPos: Float,
   orientation: Float
-) extends ModelBuilder[MineralCrystalModel, Unit] with WorldObjectDescriptor[Unit] {
+) extends SimpleModelBuilder[MineralCrystalModel, Unit] with WorldObjectDescriptor[Unit] {
 
-  override protected def buildModel: Model[Unit] = {
+  override protected def model = {
     val size = signature.size
     val radius = math.sqrt(size).toFloat * 3
 
@@ -26,7 +26,7 @@ private[codecraft] case class MineralCrystalModel(
       zPos = -5,
       position = VertexXY(xPos, yPos),
       orientation = orientation
-    ).getModel
+    )
   }
 
   override def intersects(xPos: Float, yPos: Float, rectangle: Rectangle): Boolean =

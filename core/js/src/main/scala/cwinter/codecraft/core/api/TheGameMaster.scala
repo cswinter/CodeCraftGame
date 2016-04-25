@@ -18,7 +18,6 @@ import scala.scalajs.js.annotation.{JSExport, JSExportAll}
 @JSExportAll
 object TheGameMaster extends GameMasterLike {
   var canvas: html.Canvas = null
-  private var running: Future[Unit] = Future.successful(Unit)
   private[this] var runContext: Option[RunContext] = None
   private[codecraft] var outputFPS: Boolean = false
 
@@ -57,7 +56,6 @@ object TheGameMaster extends GameMasterLike {
   def stop(): Unit = {
     runContext.foreach(_.stop())
     runContext = None
-    Debug.clearAllGraphicsState()
   }
 
   override def connectToWebsocket(connectionString: String): WebsocketClient =
@@ -76,7 +74,10 @@ class RunContext(
   val fps = new FPSMeter(this)
   private[this] var _stopped = false
   def stopped: Boolean = _stopped
-  def stop(): Unit = _stopped = true
+  def stop(): Unit = {
+    _stopped = true
+    renderer.dispose()
+  }
 
   def computeWaitTime(): Double = {
     val time = js.Date.now()

@@ -8,13 +8,13 @@ import javax.swing.JFrame
 
 import com.jogamp.opengl.util.FPSAnimator
 import cwinter.codecraft.graphics.engine._
-import RenderFrame._
+
 
 private[codecraft] object DrawingCanvas {
   def run(gameWorld: Simulator, fps: Int = 60): Unit = {
     println("Initialising...")
 
-    RenderFrame.gameWorld = gameWorld
+    val graphicsEngine = new RenderFrame(gameWorld)
 
     // Setup code
     GLProfile.initSingleton()
@@ -22,8 +22,7 @@ private[codecraft] object DrawingCanvas {
     val caps = new GLCapabilities(glp)
     val canvas = new GLCanvas(caps)
 
-    canvas.addGLEventListener(RenderFrame)
-
+    canvas.addGLEventListener(graphicsEngine)
 
 
     val jframe = new JFrame("Graphics engine drawing canvas")
@@ -37,15 +36,15 @@ private[codecraft] object DrawingCanvas {
 
     jframe.getContentPane.add(canvas, BorderLayout.CENTER)
 
-    textField = new TextField("FPS: -")
-    jframe.getContentPane.add(textField, BorderLayout.NORTH)
+    graphicsEngine.textField = new TextField("FPS: -")
+    jframe.getContentPane.add(graphicsEngine.textField, BorderLayout.NORTH)
 
     jframe.setResizable(true)
     jframe.setSize(3840, 2160)
     jframe.setVisible(true)
 
 
-    val keyEventHandler = new KeyEventHandler(gameWorld, camera)
+    val keyEventHandler = new KeyEventHandler(gameWorld, graphicsEngine.camera)
     canvas.addKeyListener(new KeyListener {
       override def keyPressed(keyEvent: KeyEvent): Unit = {
         val key = keyEvent.getKeyCode match {
@@ -67,3 +66,4 @@ private[codecraft] object DrawingCanvas {
     canvas.transferFocus()
   }
 }
+

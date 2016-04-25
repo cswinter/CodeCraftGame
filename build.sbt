@@ -106,7 +106,7 @@ lazy val scalajsTest = (project in file("scalajs-test")).
     name := "codecraft-scalajs-test",
     libraryDependencies ++= commonDependencies,
     libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.8.2"
-  ).dependsOn(coreJS, demosJS)
+  ).dependsOn(coreJS)
 
 
 val skippedPackages = List(
