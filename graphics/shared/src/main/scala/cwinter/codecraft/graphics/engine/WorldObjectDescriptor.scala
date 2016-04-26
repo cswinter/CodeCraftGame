@@ -27,8 +27,8 @@ private[codecraft] trait WorldObjectDescriptor[T] extends PrecomputedHashcode {
 
   def model(timestep: Int, context: GraphicsContext): Model[T] = {
     cachedModel match {
-      case Some(model) => model
-      case None =>
+      case Some(model) if rs == context.materials => model
+      case _ =>
         _rs = context.materials
         val model = getModel(context)
         if (allowCaching) cachedModel = Some(model)
