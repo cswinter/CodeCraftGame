@@ -193,12 +193,13 @@ private[core] class DroneImpl(
 
   def collidedWith(other: DroneImpl): Unit = addCollisionMarker(other.position)
 
-  private def addCollisionMarker(collisionPosition: Vector2): Unit = {
-    val collisionAngle = (collisionPosition - position).orientation - dynamics.orientation
-    _collisionMarkers ::= ((
-      CollisionMarkerModel(radius.toFloat, collisionAngle.toFloat),
-      CollisionMarkerLifetime))
-  }
+  private def addCollisionMarker(collisionPosition: Vector2): Unit =
+    if (context.settings.allowCollisionAnimation) {
+      val collisionAngle = (collisionPosition - position).orientation - dynamics.orientation
+      _collisionMarkers ::= ((
+        CollisionMarkerModel(radius.toFloat, collisionAngle.toFloat),
+        CollisionMarkerLifetime))
+    }
 
   @inline final def !(command: DroneCommand) = executeCommand(command)
 

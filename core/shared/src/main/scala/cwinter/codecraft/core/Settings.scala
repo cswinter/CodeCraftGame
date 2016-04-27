@@ -18,6 +18,7 @@ final class Settings(
   var allowEnergyGlobeAnimation: Boolean = true,
   var allowMissileAnimation: Boolean = true,
   var allowModuleAnimation: Boolean = true,
+  var allowCollisionAnimation: Boolean = true,
   val recordReplays: Boolean = true
 ) {
   /** Sets all graphics options to the fastest setting. */
@@ -25,6 +26,7 @@ final class Settings(
     allowEnergyGlobeAnimation = false
     allowMissileAnimation = false
     allowModuleAnimation = false
+    allowCollisionAnimation = false
   }
 
   /** Sets all graphics options to their best setting */
@@ -32,6 +34,7 @@ final class Settings(
     allowEnergyGlobeAnimation = true
     allowMissileAnimation = true
     allowModuleAnimation = true
+    allowCollisionAnimation = true
   }
 
   /** This settings object will be used as the default for all new games. */
