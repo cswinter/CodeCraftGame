@@ -9,8 +9,10 @@ import cwinter.codecraft.util.maths.matrices.{Matrix4x4, RotationZTranslationXYM
 private[codecraft] trait WorldObjectDescriptor[T] extends PrecomputedHashcode {
   self: Product =>
 
-  private[this] var _rs: RenderStack = null
-  implicit protected def rs: RenderStack = _rs
+  // making `ctx` private causes an issue with Scala.js
+  // (it looks like `rs` gets inlined in subclasses, where `cxt` is not visible if private)
+  protected var ctx: GraphicsContext = null
+  implicit protected def rs: RenderStack = ctx.materials
 
   private var cachedModel = Option.empty[Model[T]]
 
@@ -27,9 +29,9 @@ private[codecraft] trait WorldObjectDescriptor[T] extends PrecomputedHashcode {
 
   def model(timestep: Int, context: GraphicsContext): Model[T] = {
     cachedModel match {
-      case Some(model) if rs == context.materials => model
+      case Some(model) if ctx == context => model
       case _ =>
-        _rs = context.materials
+        ctx = context
         val model = getModel(context)
         if (allowCaching) cachedModel = Some(model)
         model
