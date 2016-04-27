@@ -102,6 +102,7 @@ private[codecraft] final class VisionTracker[T <: VisionTracking](
   val height = (yMax - yMin) / radius
   val radius2 = radius * radius
 
+  private val movingObjects = mutable.Set.empty[T]
   private val trackingObjects = mutable.Set.empty[T with ActiveVisionTracking]
   private val allObjects = mutable.Set.empty[T]
   private val grid = new SquareGrid[T](xMin, xMax, yMin, yMax, radius)
@@ -117,6 +118,7 @@ private[codecraft] final class VisionTracker[T <: VisionTracking](
 
   private[this] def insert(obj: T): Unit = {
     allObjects += obj
+    if (obj.maxSpeed != 0) movingObjects += obj
     val cell@(x, y) = grid.computeCell(obj)
     obj.cell = cell
 
@@ -138,6 +140,7 @@ private[codecraft] final class VisionTracker[T <: VisionTracking](
   }
 
   private[this] def remove(obj: T): Unit = {
+    movingObjects -= obj
     allObjects -= obj
     grid.remove(obj, obj.x, obj.y)
     obj.removed = true
@@ -149,15 +152,15 @@ private[codecraft] final class VisionTracker[T <: VisionTracking](
   }
 
   def checkForCellTransfers(): Unit = {
-    for (obj <- trackingObjects) {
+    for (obj <- movingObjects) {
       val (newX, newY) = grid.computeCell(obj)
       val dx = newX - obj.x
       val dy = newY - obj.y
       if (dx < -1 || dx > 1 || dy < -1 || dy > 1) {
-        assert(false)
         grid.remove(obj, obj.cell)
-        grid.insert(obj, newX, newY)
         obj.cell = (newX, newY)
+        updateNearby(obj, grid.nearbyObjects(newX, newY))
+        grid.insert(obj, newX, newY)
       } else {
         if (obj.x != newX) {
           updateNearby(obj, grid.xTransfer(obj, obj.cell, dx))
