@@ -2,11 +2,10 @@ package cwinter.codecraft.core.objects
 
 import cwinter.codecraft.core._
 import cwinter.codecraft.core.api.GameConstants.{MissileLifetime, MissileSpeed}
-import cwinter.codecraft.core.api.{GameConstants, Player}
-import cwinter.codecraft.core.graphics.{HomingMissileModel, BasicHomingMissileModel}
+import cwinter.codecraft.core.api.Player
+import cwinter.codecraft.core.graphics.{BasicHomingMissileModel, HomingMissileModel}
 import cwinter.codecraft.core.objects.drone.DroneImpl
-import cwinter.codecraft.graphics.engine.{NullPositionDescriptor, ModelDescriptor}
-import cwinter.codecraft.graphics.worldstate._
+import cwinter.codecraft.graphics.engine.{ModelDescriptor, NullPositionDescriptor}
 import cwinter.codecraft.util.maths.Vector2
 
 private[core] class HomingMissile(

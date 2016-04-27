@@ -4,7 +4,6 @@ import cwinter.codecraft.graphics.engine.{GraphicsContext, WorldObjectDescriptor
 import cwinter.codecraft.graphics.materials.Intensity
 import cwinter.codecraft.graphics.model._
 import cwinter.codecraft.graphics.primitives.{Polygon, PolygonRing}
-import cwinter.codecraft.graphics.worldstate._
 import cwinter.codecraft.util.maths.Geometry.circumradius
 import cwinter.codecraft.util.maths._
 import cwinter.codecraft.util.modules.ModulePosition
