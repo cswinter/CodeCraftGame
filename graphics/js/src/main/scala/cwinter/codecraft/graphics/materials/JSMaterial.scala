@@ -82,6 +82,7 @@ private[graphics] class JSMaterial[TPosition <: Vertex, TColor <: Vertex, TParam
 
   def draw(vbo: VBO, modelview: Matrix4x4): Unit = {
     Material._drawCalls += 1
+    if (vbo.size == 0) return
 
     // upload modelview
     if (lastModelview ne modelview) {

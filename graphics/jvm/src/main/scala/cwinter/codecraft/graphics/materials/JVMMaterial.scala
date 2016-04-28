@@ -86,6 +86,7 @@ private[graphics] class JVMMaterial[TPosition <: Vertex, TColor <: Vertex, TPara
 
   def draw(vbo: VBO, modelview: Matrix4x4): Unit = {
     assert(!vbo.disposed, "Trying to draw deallocated VBO!")
+    if (vbo.size == 0) return
     Material._drawCalls += 1
 
     // upload modelview
