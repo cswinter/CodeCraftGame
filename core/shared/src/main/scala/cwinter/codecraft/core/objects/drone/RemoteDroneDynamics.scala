@@ -11,19 +11,29 @@ private[core] class RemoteDroneDynamics(
   private[this] var _orientation: Double = 0
   private[this] var _removed: Boolean = false
   private[this] var _arrivalEvent: Option[DroneEvent] = None
+  private[this] var _isMoving: Boolean = false
 
   private[this] var stateIsFresh: Boolean = true
 
 
   override def setTime(time: Double): Unit = {}
   override def remove(): Unit = _removed = true
-  override def setMovementCommand(movementCommand: MovementCommand): Boolean = false
+  override def setMovementCommand(movementCommand: MovementCommand): Boolean = {
+    val redundant = movementCommand match {
+      case MoveToPosition(p) if p ~ pos => true
+      case _ => false
+    }
+    _isMoving = !(redundant || movementCommand == HoldPosition)
+    redundant
+  }
+
   override def removed: Boolean = _removed
 
   def update(state: DroneDynamicsState)(implicit context: SimulationContext): Unit = {
     position = state.position
     _orientation = state.orientation
     _arrivalEvent = state.arrivalEvent.map(DroneEvent(_))
+    if (_arrivalEvent.nonEmpty) _isMoving = false
     stateIsFresh = true
   }
 
@@ -36,6 +46,6 @@ private[core] class RemoteDroneDynamics(
   override def orientation: Double = _orientation
   override def pos: Vector2 = position
 
-  override def isMoving: Boolean = throw new Exception("RemoteDroneDynamics.isMoving should never be called.")
+  override def isMoving: Boolean = _isMoving
 }
 
