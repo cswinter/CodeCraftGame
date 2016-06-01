@@ -81,6 +81,7 @@ val core = (crossProject in file("core")).
     name := "codecraft",
     libraryDependencies ++= commonDependencies,
     libraryDependencies +=  "org.scala-lang.modules" % "scala-async_2.11" % "0.9.5",
+    libraryDependencies += "me.chrons" %%% "boopickle" % "1.1.3",
     libraryDependencies += "com.lihaoyi" %%% "upickle" % "0.3.6"
   ).jvmSettings(
     assemblyMergeStrategy in assembly := {
@@ -127,6 +128,7 @@ lazy val docs = (project in file("docs"))
   )
   .settings(
     libraryDependencies +=  "org.scala-lang.modules" % "scala-async_2.11" % "0.9.5",
+    libraryDependencies += "me.chrons" %%% "boopickle" % "1.1.3",
     libraryDependencies += "com.lihaoyi" %%% "upickle" % "0.3.6",
     libraryDependencies ++= coreJVMDependencies,
     unmanagedSourceDirectories in Compile <<=

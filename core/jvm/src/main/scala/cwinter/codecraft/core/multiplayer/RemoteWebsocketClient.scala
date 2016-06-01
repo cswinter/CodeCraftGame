@@ -1,5 +1,7 @@
 package cwinter.codecraft.core.multiplayer
 
+import java.nio.ByteBuffer
+
 import cwinter.codecraft.core.api.{OrangePlayer, BluePlayer, Player}
 import cwinter.codecraft.core.objects.drone._
 import cwinter.codecraft.core.{SimulationContext, WorldMap}
@@ -17,19 +19,9 @@ private[core] class RemoteWebsocketClient(
 
 
   override def receive(message: String): Unit = {
-    if (debug)
-      println(message)
+    if (debug) println(message)
     try {
-      MultiplayerMessage.parse(message) match {
-        case CommandsMessage(commands) =>
-          clientCommands.success(commands)
-        case WorldStateMessage(_) =>
-          throw new Exception("Authoritative server received WorldStateMessage!")
-        case _: InitialSync =>
-          throw new Exception("Authoritative server received InitialSync!")
-        case Register =>
-          send(syncMessage)
-      }
+      handleMessage(MultiplayerMessage.parse(message))
     } catch {
       case t: Throwable =>
         println(s"Failed to deserialize string '$message'")
@@ -37,8 +29,26 @@ private[core] class RemoteWebsocketClient(
     }
   }
 
+  override def receiveBytes(message: ByteBuffer): Unit = {
+    try {
+      handleMessage(MultiplayerMessage.parseBytes(message))
+    } catch {
+      case t: Throwable =>
+        println(s"Failed to deserialize bytes '$message'")
+        println(s"Exception: $t")
+        t.printStackTrace()
+    }
+  }
+
+  private def handleMessage(msg: MultiplayerMessage): Unit = msg match {
+    case CommandsMessage(commands) => clientCommands.success(commands)
+    case WorldStateMessage(_) => throw new Exception("Authoritative server received WorldStateMessage!")
+    case _: InitialSync => throw new Exception("Authoritative server received InitialSync!")
+    case Register => send(syncMessage)
+  }
+
   def syncMessage =
-    MultiplayerMessage.serialize(
+    MultiplayerMessage.serializeBinary(
       map.size,
       map.minerals,
       map.initialDrones,
@@ -47,8 +57,7 @@ private[core] class RemoteWebsocketClient(
     )
 
   override def waitForCommands()(implicit context: SimulationContext): Future[Seq[(Int, DroneCommand)]] = {
-    if (debug)
-      println(s"[t=${context.timestep}] Waiting for commands...")
+    if (debug) println(s"[t=${context.timestep}] Waiting for commands...")
     for (
       commands <- clientCommands.future
     ) yield {
@@ -60,14 +69,14 @@ private[core] class RemoteWebsocketClient(
   }
 
   override def sendWorldState(worldState: Iterable[DroneStateMessage]): Unit = {
-    send(MultiplayerMessage.serialize(worldState))
+    send(MultiplayerMessage.serializeBinary(worldState))
   }
 
   def sendCommands(commands: Seq[(Int, DroneCommand)]): Unit = {
     val serializable =
       for ((id, command) <- commands)
         yield (id, command.toSerializable)
-    val serialized = MultiplayerMessage.serialize(serializable)
+    val serialized = MultiplayerMessage.serializeBinary(serializable)
     send(serialized)
   }
 

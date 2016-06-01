@@ -1,5 +1,7 @@
 package cwinter.codecraft.core.multiplayer
 
+import java.nio.ByteBuffer
+
 import cwinter.codecraft.core.SimulationContext
 import cwinter.codecraft.core.objects.drone._
 
@@ -21,19 +23,17 @@ private[core] class WebsocketServerConnection(
 
 
   connection.onMessage(handleMessage)
-  connection.sendMessage(MultiplayerMessage.register)
+  val binaryRegister = MultiplayerMessage.registerBinary
+  val registerDecoded = MultiplayerMessage.parseBytes(binaryRegister)
+  connection.sendMessage(MultiplayerMessage.registerBinary)
 
 
-  def handleMessage(client: WebsocketClient, message: String): Unit = {
-    if (debug)
-      println(message)
-    MultiplayerMessage.parse(message) match {
-      case CommandsMessage(commands) =>
-        serverCommands.success(commands)
-      case WorldStateMessage(state) =>
-        worldState.success(state)
-      case start: InitialSync =>
-        initialWorldState.success(start)
+  def handleMessage(client: WebsocketClient, message: ByteBuffer): Unit = {
+    if (debug) println(message)
+    MultiplayerMessage.parseBytes(message) match {
+      case CommandsMessage(commands) => serverCommands.success(commands)
+      case WorldStateMessage(state) => worldState.success(state)
+      case start: InitialSync => initialWorldState.success(start)
       case Register =>
     }
   }
@@ -42,11 +42,9 @@ private[core] class WebsocketServerConnection(
     initialWorldState.future
 
   override def receiveCommands()(implicit context: SimulationContext): Future[Seq[(Int, DroneCommand)]] = {
-    if (debug)
-      println(s"[t=${context.timestep}] Waiting for commands...")
+    if (debug) println(s"[t=${context.timestep}] Waiting for commands...")
     for (commands <- serverCommands.future) yield {
-      if (debug)
-        println("Commands received.")
+      if (debug) println("Commands received.")
       serverCommands = Promise[Seq[(Int, SerializableDroneCommand)]]
       deserialize(commands)
     }
@@ -63,9 +61,8 @@ private[core] class WebsocketServerConnection(
     val serializable =
       for ((id, command) <- commands)
         yield (id, command.toSerializable)
-    val message = MultiplayerMessage.serialize(serializable)
-    if (debug)
-      println(s"sendCommands($message)")
+    val message = MultiplayerMessage.serializeBinary(serializable)
+    if (debug) println(s"sendCommands($commands)")
     connection.sendMessage(message)
   }
 

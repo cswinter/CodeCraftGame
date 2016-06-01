@@ -1,6 +1,7 @@
 package cwinter.codecraft.core.multiplayer
 
 import java.net.URI
+import java.nio.ByteBuffer
 import javax.websocket._
 
 
@@ -13,19 +14,20 @@ private[core] class JavaXWebsocketClient(uri: String) extends WebsocketClient {
   private[this] var _closed = false
   def isClosed: Boolean = _closed
   private[this] var userSession: Session = null
-  private[this] var messageHandler: (WebsocketClient, String) => Unit = null
+  private[this] var messageHandler: (WebsocketClient, ByteBuffer) => Unit = null
+  private[this] var parts: List[Array[Byte]] = List.empty
 
 
-  def onMessage(handler: (WebsocketClient, String) => Unit): WebsocketClient = {
+  def onMessage(handler: (WebsocketClient, ByteBuffer) => Unit): WebsocketClient = {
     val container = ContainerProvider.getWebSocketContainer
     container.connectToServer(this, new URI(uri))
     messageHandler = handler
     this
   }
 
-  def sendMessage(message: String): Unit = {
+  def sendMessage(message: ByteBuffer): Unit = {
     assert(messageHandler != null, "You must assign a message handler using `onMessage` before calling sendMessage.")
-    this.userSession.getAsyncRemote.sendText(message)
+    this.userSession.getAsyncRemote.sendBinary(message)
   }
 
   @OnOpen
@@ -38,7 +40,27 @@ private[core] class JavaXWebsocketClient(uri: String) extends WebsocketClient {
 
   @OnMessage
   def _onMessage(message: String): Unit =
-    messageHandler(this, message)
+    println(s"Websocket recieved unexpected string message $message.")
+
+  @OnMessage
+  def _onMessage(message: Array[Byte], last: Boolean, session: Session): Unit = {
+    parts ::= message
+    if (last) {
+      messageHandler(this, combineParts(parts))
+      parts = List.empty
+    }
+  }
+
+  private def combineParts(parts: List[Array[Byte]]): ByteBuffer = parts match {
+    case List(part) => ByteBuffer.wrap(part)
+    case _ =>
+      assert(parts.nonEmpty)
+      val totalBytes = parts.foldLeft(0)(_ + _.length)
+      val buffer = ByteBuffer.allocate(totalBytes)
+      for (part <- parts.reverse) buffer.put(part)
+      buffer
+  }
+
 
   def close(): Unit = {
     userSession.close()

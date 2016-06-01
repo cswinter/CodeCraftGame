@@ -1,6 +1,7 @@
 package cwinter.codecraft.core
 
 import cwinter.codecraft.core.api.TheGameMaster
+import cwinter.codecraft.core.objects.drone.MultiplayerMessage
 
 import scala.async.Async.{async, await}
 import scala.concurrent.ExecutionContext.Implicits.global

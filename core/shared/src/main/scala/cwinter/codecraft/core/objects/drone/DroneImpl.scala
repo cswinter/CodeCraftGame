@@ -1,5 +1,7 @@
 package cwinter.codecraft.core.objects.drone
 
+import java.nio.ByteBuffer
+
 import cwinter.codecraft.collisions.{ActiveVisionTracking, VisionTracking}
 import cwinter.codecraft.core._
 import cwinter.codecraft.core.api.GameConstants.HarvestingRange
@@ -10,6 +12,7 @@ import cwinter.codecraft.core.objects._
 import cwinter.codecraft.core.replay._
 import cwinter.codecraft.graphics.engine.{PositionDescriptor, ModelDescriptor}
 import cwinter.codecraft.util.maths.{Float0To1, Rectangle, Vector2}
+import boopickle.Default._
 
 
 private[core] class DroneImpl(
@@ -563,11 +566,21 @@ private[core] object MultiplayerMessage {
   def parse(json: String): MultiplayerMessage =
     read[MultiplayerMessage](json)
 
+  def parseBytes(bytes: ByteBuffer): MultiplayerMessage = {
+    Unpickle[MultiplayerMessage].fromBytes(bytes)
+  }
+
   def serialize(commands: Seq[(Int, SerializableDroneCommand)]): String =
     write(CommandsMessage(commands))
 
+  def serializeBinary(commands: Seq[(Int, SerializableDroneCommand)]): ByteBuffer =
+    Pickle.intoBytes[MultiplayerMessage](CommandsMessage(commands))
+
   def serialize(worldState: Iterable[DroneStateMessage]): String =
      write[WorldStateMessage](WorldStateMessage(worldState))
+
+  def serializeBinary(worldState: Iterable[DroneStateMessage]): ByteBuffer =
+    Pickle.intoBytes[MultiplayerMessage](WorldStateMessage(worldState))
 
   def serialize(
     worldSize: Rectangle,
@@ -583,7 +596,23 @@ private[core] object MultiplayerMessage {
     remotePlayers.map(_.id)
   ))
 
+  def serializeBinary(
+    worldSize: Rectangle,
+    minerals: Seq[MineralSpawn],
+    initialDrones: Seq[Spawn],
+    localPlayers: Set[Player],
+    remotePlayers: Set[Player]
+  ): ByteBuffer = Pickle.intoBytes[MultiplayerMessage](InitialSync(
+    worldSize,
+    minerals,
+    initialDrones.map(x => SerializableSpawn(x)),
+    localPlayers.map(_.id),
+    remotePlayers.map(_.id)
+  ))
+
   def register: String = write(Register)
+
+  def registerBinary: ByteBuffer = Pickle.intoBytes[MultiplayerMessage](Register)
 }
 
 private[core] object DroneOrdering extends Ordering[DroneImpl] {

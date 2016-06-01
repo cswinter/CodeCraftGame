@@ -1,6 +1,9 @@
 package cwinter.codecraft.core.multiplayer
 
+import java.nio.ByteBuffer
+
 import akka.actor.{ActorRef, Props}
+import akka.util.ByteString
 import spray.can.websocket
 import spray.can.websocket.FrameCommandFailed
 import spray.can.websocket.frame.{BinaryFrame, TextFrame}
@@ -14,11 +17,19 @@ private[core] trait WebsocketWorker {
 
   def receive(message: String): Unit
 
+  def receiveBytes(bytes: ByteBuffer): Unit
+
   def installActorRef(actorRef: ActorRef): Unit = {
     websocketActor = Some(actorRef)
   }
 
-  def send(message: String): Unit = websocketActor match {
+  /*def send(message: String): Unit = websocketActor match {
+    case Some(actor) => actor ! WebsocketActor.Send(message)
+    case None => throw new Exception(
+      "WebsocketWorker must be installed with a RemoteWebsocketClient before calling send.")
+  }*/
+
+  def send(message: ByteBuffer): Unit = websocketActor match {
     case Some(actor) => actor ! WebsocketActor.Send(message)
     case None => throw new Exception(
       "WebsocketWorker must be installed with a RemoteWebsocketClient before calling send.")
@@ -38,12 +49,13 @@ private[core] class WebsocketActor(
   override def receive = handshaking orElse closeLogic
 
   def businessLogic: Receive = {
-    case BinaryFrame(bytes) => throw new Exception("Received unexpected binary frame")
+    case BinaryFrame(bytes) =>
+      websocketWorker.receiveBytes(bytes.asByteBuffer)
     case TextFrame(text) =>
       val decoded = text.decodeString("UTF-8")
       websocketWorker.receive(decoded)
     case Send(message) =>
-      send(TextFrame(message))
+      send(BinaryFrame(ByteString.fromByteBuffer(message)))
     case x: FrameCommandFailed =>
       log.error("frame command failed", x)
       throw new Exception(s"Frame command failed: $x")
@@ -57,6 +69,6 @@ private[core] object WebsocketActor {
   def props(serverConnection: ActorRef, worker: WebsocketWorker) =
     Props(classOf[WebsocketActor], serverConnection, worker)
 
-  case class Send(message: String)
+  case class Send(message: ByteBuffer)
 }
 
