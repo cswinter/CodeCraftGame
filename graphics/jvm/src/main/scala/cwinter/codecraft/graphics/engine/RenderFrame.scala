@@ -93,6 +93,7 @@ private[graphics] class RenderFrame(val gameWorld: Simulator)
     val fps = FrametimeSamples * 1000 / (now - tThen)
     textField.setText(
       f"FPS: $fps   " +
+      f"TPS: ${gameWorld.measuredFramerate}   " +
       f"Draw calls: ${Material.drawCalls}   " +
       f"Modelview uploads: ${Material.modelviewUploads}   " +
       f"Cached models: ${modelCache.CachedModelCount}   " +
