@@ -185,13 +185,15 @@ private[graphics] class RenderFrame(val gameWorld: Simulator)
     import gl._
     println("Chosen GLCapabilities: " + drawable.getChosenGLCapabilities)
     println("INIT GL IS: " + gl.getClass.getName)
-    println("GL_VENDOR: " + glGetString(GL.GL_VENDOR))
-    println("GL_RENDERER: " + glGetString(GL.GL_RENDERER))
-    println("GL_VERSION: " + glGetString(GL.GL_VERSION))
+    println("GL_VENDOR: " + glGetString(GL_VENDOR))
+    println("GL_RENDERER: " + glGetString(GL_RENDERER))
+    println("GL_VERSION: " + glGetString(GL_VERSION))
   }
 
   def performVersionCheck(gl: GL): Boolean = {
-    val gl4Supported = Try { gl.getGL4 }.isSuccess
+    val versionString = gl.glGetString(GL_VERSION)
+    val isGL2OrGL3 = versionString.startsWith("2") || versionString.startsWith("3")
+    val gl4Supported = !isGL2OrGL3 && Try { gl.getGL4 }.isSuccess
     val gl2Supported = Try { gl.getGL2 }.isSuccess
     if (!gl2Supported && !gl4Supported) {
       println("Failed to obtain OpenGL graphics device :(\n" +
