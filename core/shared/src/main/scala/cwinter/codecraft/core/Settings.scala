@@ -19,7 +19,8 @@ final class Settings(
   var allowMissileAnimation: Boolean = true,
   var allowModuleAnimation: Boolean = true,
   var allowCollisionAnimation: Boolean = true,
-  val recordReplays: Boolean = true
+  val recordReplays: Boolean = true,
+  var forceGL2: Boolean = false
 ) {
   /** Sets all graphics options to the fastest setting. */
   def setFastestGraphics(): Unit = {
