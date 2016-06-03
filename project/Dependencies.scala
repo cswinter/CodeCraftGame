@@ -2,8 +2,8 @@ import sbt._
 
 object Dependencies {
   // libraryDependencies += groupID % artifactID % revision
-  val gluegen = "org.jogamp.gluegen" % "gluegen-rt-main" % "2.2.4"
-  val jogl = "org.jogamp.jogl" % "jogl-all-main" % "2.2.4"
+  val gluegen = "org.jogamp.gluegen" % "gluegen-rt-main" % "2.3.2"
+  val jogl = "org.jogamp.jogl" % "jogl-all-main" % "2.3.2"
   val scalaSwing = "org.scala-lang.modules" % "scala-swing_2.11" % "1.0.1"
   val jodaTime =   "joda-time" % "joda-time" % "2.7"
   val jodaConvert = "org.joda" % "joda-convert" % "1.2"

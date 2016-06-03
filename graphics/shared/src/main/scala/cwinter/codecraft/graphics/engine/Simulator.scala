@@ -138,5 +138,7 @@ private[codecraft] trait Simulator {
   private[codecraft] def computeWorldState: Iterable[ModelDescriptor[_]]
   private[codecraft] def handleKeypress(keychar: Char): Unit = ()
   private[codecraft] def additionalInfoText: String = ""
+
+  def forceGL2: Boolean = false
 }
 

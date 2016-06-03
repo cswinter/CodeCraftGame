@@ -1,8 +1,8 @@
 package cwinter.codecraft.graphics.engine
 
 import java.awt.{Font, TextField}
-import javax.media.opengl.GL._
-import javax.media.opengl._
+import com.jogamp.opengl.GL._
+import com.jogamp.opengl._
 
 import com.jogamp.opengl.util.awt.TextRenderer
 import cwinter.codecraft.graphics.engine
@@ -33,11 +33,15 @@ private[graphics] class RenderFrame(val gameWorld: Simulator)
   var frameTimes = scala.collection.mutable.Queue.fill(FrametimeSamples - 1)(new DateTime().getMillis)
   var textField: TextField = null
   var error = false
+  @volatile var rendering = true
 
 
   override def display(drawable: GLAutoDrawable): Unit = {
     implicit val gl = drawable.getGL
     import gl._
+
+    if (rendering) println("WARNING: Concurrent render calls!")
+    rendering = true
 
     Material.resetDrawCalls()
     Material.resetModelviewUploads()
@@ -100,6 +104,8 @@ private[graphics] class RenderFrame(val gameWorld: Simulator)
       f"Allocated VBOs: ${VBO.count}   " +
       f"Last cached model: ${modelCache.lastCachedModel}"
     )
+
+    rendering = false
   }
 
   private def renderText(drawable: GLAutoDrawable): Unit = {
@@ -119,7 +125,7 @@ private[graphics] class RenderFrame(val gameWorld: Simulator)
     val minHeight = textRenderer.getBounds("A").getHeight.toInt
     for (line <- infoText.split("\n")) {
       textRenderer.draw(line, 0, yPos)
-      yPos = yPos - math.max(textRenderer.getBounds(line).getHeight.toInt, minHeight)
+      yPos = yPos - scala.math.max(textRenderer.getBounds(line).getHeight.toInt, minHeight)
     }
 
     textRenderer.endRendering()
@@ -193,7 +199,7 @@ private[graphics] class RenderFrame(val gameWorld: Simulator)
   def performVersionCheck(gl: GL): Boolean = {
     val versionString = gl.glGetString(GL_VERSION)
     val isGL2OrGL3 = versionString.startsWith("2") || versionString.startsWith("3")
-    val gl4Supported = !isGL2OrGL3 && Try { gl.getGL4 }.isSuccess
+    val gl4Supported = !gameWorld.forceGL2 && !isGL2OrGL3 && Try { gl.getGL4 }.isSuccess
     val gl2Supported = Try { gl.getGL2 }.isSuccess
     if (!gl2Supported && !gl4Supported) {
       println("Failed to obtain OpenGL graphics device :(\n" +

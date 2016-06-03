@@ -1,6 +1,6 @@
 package cwinter.codecraft.graphics.engine
 
-import javax.media.opengl.GL2
+import com.jogamp.opengl.GL2
 
 import cwinter.codecraft.graphics.materials._
 

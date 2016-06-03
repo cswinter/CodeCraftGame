@@ -2,8 +2,8 @@ package cwinter.codecraft.graphics.application
 
 import java.awt.{TextField, BorderLayout}
 import java.awt.event.{KeyEvent, KeyListener, WindowEvent, WindowAdapter}
-import javax.media.opengl.awt.GLCanvas
-import javax.media.opengl.{GLCapabilities, GLProfile}
+import com.jogamp.opengl.awt.GLCanvas
+import com.jogamp.opengl.{GLCapabilities, GLProfile}
 import javax.swing.JFrame
 
 import com.jogamp.opengl.util.FPSAnimator

@@ -1,6 +1,6 @@
 package cwinter.codecraft.graphics.model
 
-import javax.media.opengl._
+import com.jogamp.opengl._
 
 /**
   * Vertex Buffer Object

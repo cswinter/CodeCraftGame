@@ -1,8 +1,8 @@
 package cwinter.codecraft.graphics.engine
 
-import javax.media.opengl.GL._
-import javax.media.opengl.GL2ES3._
-import javax.media.opengl.GL4
+import com.jogamp.opengl.GL._
+import com.jogamp.opengl.GL2ES3._
+import com.jogamp.opengl.GL4
 
 private[graphics] class FramebufferObject(implicit val gl: GL4) {
   import gl._
