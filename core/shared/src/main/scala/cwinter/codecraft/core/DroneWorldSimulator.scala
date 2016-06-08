@@ -367,10 +367,15 @@ class DroneWorldSimulator(
           syncWithClients(clients, localCommands)
         }
       case MultiplayerClientConfig(local, remote, server) =>
+        monitor.beginMeasurement('sendCommandsToServer)
         server.sendCommands(localCommands)
-        await {
+        monitor.endMeasurement('sendCommandsToServer)
+        monitor.beginMeasurement('receiveCommandsFromServer)
+        val result = await {
           server.receiveCommands()(simulationContext)
         }
+        monitor.endMeasurement('receiveCommandsFromServer)
+        result
       case SingleplayerConfig =>
         throw new Exception("Matched SingleplayerConfig in syncDroneCommands().")
     }
@@ -385,7 +390,9 @@ class DroneWorldSimulator(
     localCommands: Seq[(Int, DroneCommand)]
   ): Future[Seq[(Int, DroneCommand)]] = async {
     monitor.beginMeasurement('syncWithClients)
+    monitor.beginMeasurement('receiveCommandsFromClients)
     val remoteCommands = await { receiveCommandsFromClients(clients) }
+    monitor.endMeasurement('receiveCommandsFromClients)
     distributeCommandsToClients(clients, remoteCommands ++ localCommands)
     monitor.endMeasurement('syncWithClients)
     remoteCommands
@@ -409,7 +416,7 @@ class DroneWorldSimulator(
   private def distributeCommandsToClients(
     clients: Set[RemoteClient],
     allCommands: Seq[(Int, DroneCommand)]
-  ): Unit = {
+  ): Unit = monitor.measure('distributeCommandsToClients) {
     for (
       client <- clients;
       commands = allCommands.filter(d => !client.players.contains(droneRegistry(d._1).player))

@@ -6,10 +6,12 @@ import scala.collection.mutable.ArrayBuffer
 class Stopwatch {
   private type Millis = Double
   private var measurements = Map.empty[Symbol, ArrayBuffer[Long]]
+  private var measurementOrder = Map.empty[Symbol, Int]
   private var startTime = Map.empty[Symbol, Long]
 
 
   def measure[T](name: Symbol)(code: => T): T = {
+    touch(name)
     val start = System.nanoTime()
     try {
       code
@@ -21,6 +23,7 @@ class Stopwatch {
   def beginMeasurement(name: Symbol): Unit = synchronized {
     require(!startTime.contains(name),
       s"Trying to measure $name, but measurement of $name has already begun.")
+    touch(name)
     startTime += name -> System.nanoTime()
   }
 
@@ -29,6 +32,11 @@ class Stopwatch {
       s"Trying to measure runtime for $name, but no such measurement is currently running.")
     collectMeasurement(name, System.nanoTime() - startTime(name))
     startTime -= name
+  }
+
+  private def touch(name: Symbol): Unit = synchronized {
+    if (!measurementOrder.contains(name))
+      measurementOrder += name -> measurementOrder.size
   }
 
   private def collectMeasurement(name: Symbol, elapsedNanos: Long) = synchronized {
@@ -42,7 +50,7 @@ class Stopwatch {
     val header = List("Section", "Count", "Mean", "Min", "Max")
     val rows =
       for {
-        (name, data) <- measurements
+        (name, data) <- measurements.toList.sortBy(x => measurementOrder(x._1))
         statistics = computeStatistics(data)
       } yield name.toString.tail :: toRow(statistics)
     asciiTable(header :: rows.toList)
