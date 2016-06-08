@@ -49,6 +49,7 @@ class DroneWorldSimulator(
 
   replayer.foreach { r => Rng.seed = r.seed }
 
+  val monitor: PerformanceMonitor = PerformanceMonitorFactory.performanceMonitor
   private val metaControllers =
     for (c <- controllers; mc <- c.metaController) yield mc
   private val worldConfig = WorldConfig(map.size)
@@ -62,6 +63,7 @@ class DroneWorldSimulator(
   private var newlySpawnedDrones = List.empty[DroneImpl]
   private val rng = new Random(Rng.seed)
   private var _winner = Option.empty[Player]
+
 
   /** Returns the winning player. */
   def winner = _winner
@@ -175,10 +177,15 @@ class DroneWorldSimulator(
   }
 
   override def update(): Unit = {
-    if (multiplayerConfig.isMultiplayerGame) {
-      Await.result(multiplayerUpdate(), 30 seconds)
-    } else {
-      singleplayerUpdate()
+    if (timestep > 0 && (timestep == 1 || timestep % 1000 == 0)) {
+      println(monitor.compileReport + "\n")
+    }
+    monitor.measure('update){
+      if (multiplayerConfig.isMultiplayerGame) {
+        Await.result(multiplayerUpdate(), 30 seconds)
+      } else {
+        singleplayerUpdate()
+      }
     }
   }
 
@@ -192,20 +199,22 @@ class DroneWorldSimulator(
   }
 
   private def multiplayerUpdate(): Future[Unit] = async {
+    monitor.beginMeasurement('multiplayerUpdate)
     prepareDroneCommands()
     await { syncDroneCommands() }
     updateWorldState()
     await { syncWorldState() }
     completeUpdate()
+    monitor.endMeasurement('multiplayerUpdate)
   }
 
-  private def singleplayerUpdate(): Unit = {
+  private def singleplayerUpdate(): Unit = monitor.measure('singleplayerUpdate){
     prepareDroneCommands()
     updateWorldState()
     completeUpdate()
   }
 
-  private def prepareDroneCommands(): Unit = {
+  private def prepareDroneCommands(): Unit = monitor.measure('prepareDroneCommands){
     replayRecorder.newTimestep(timestep)
     showSightAndMissileRadii()
     checkWinConditions()
@@ -217,13 +226,13 @@ class DroneWorldSimulator(
     processDroneEvents()
   }
 
-  private def updateWorldState(): Unit = {
+  private def updateWorldState(): Unit = monitor.measure('updateWorldState){
     val events = executeGameMechanics()
     physicsEngine.update()
     processSimulatorEvents(events ++ debugEvents)
   }
 
-  private def completeUpdate(): Unit = {
+  private def completeUpdate(): Unit = monitor.measure('completeUpdate){
     val deathEvents =
       for (drone <- drones; d <- drone.deathEvents)
         yield d
@@ -340,6 +349,7 @@ class DroneWorldSimulator(
   }
 
   private def syncDroneCommands(): Future[Unit] = async {
+    monitor.beginMeasurement('syncDroneCommands)
     // [CLIENTS + SERVER] COLLECT COMMANDS FROM LOCAL DRONES
     // [CLIENTS] SEND COMMANDS FROM LOCAL DRONES
     // [CLIENTS} RECEIVE COMMANDS FROM SERVER
@@ -351,15 +361,20 @@ class DroneWorldSimulator(
 
     val remoteCommands: Seq[(Int, DroneCommand)] = multiplayerConfig match {
       case AuthoritativeServerConfig(local, remote, clients) =>
-        await { syncWithClients(clients, localCommands) }
+        await {
+          syncWithClients(clients, localCommands)
+        }
       case MultiplayerClientConfig(local, remote, server) =>
         server.sendCommands(localCommands)
-        await { server.receiveCommands()(simulationContext) }
+        await {
+          server.receiveCommands()(simulationContext)
+        }
       case SingleplayerConfig =>
         throw new Exception("Matched SingleplayerConfig in syncDroneCommands().")
     }
 
     executeCommands(remoteCommands)
+    monitor.endMeasurement('syncDroneCommands)
   }
 
   private def syncWithClients(
@@ -404,6 +419,7 @@ class DroneWorldSimulator(
   }
 
   private def syncWorldState(): Future[Unit] = async {
+    monitor.beginMeasurement('syncWorldState)
     multiplayerConfig match {
       case AuthoritativeServerConfig(_, _, clients) =>
         val syncMessages = collectWorldState()
@@ -422,6 +438,7 @@ class DroneWorldSimulator(
       case SingleplayerConfig =>
         throw new Exception("Matched SingleplayerConfig in syncWorldState().")
     }
+    monitor.endMeasurement('syncWorldState)
   }
 
   private def collectWorldState(): Iterable[DroneStateMessage] = {
@@ -436,7 +453,7 @@ class DroneWorldSimulator(
   }
 
   private def players = map.initialDrones.map(_.player)
-  
+
   private def playerHasWon(winCondition: WinCondition, player: Player): Boolean =
     winCondition match {
       case DestroyEnemyMotherships =>

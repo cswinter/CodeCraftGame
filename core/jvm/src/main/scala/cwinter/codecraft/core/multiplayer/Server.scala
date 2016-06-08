@@ -70,6 +70,7 @@ private[codecraft] class MultiplayerServer(displayGame: Boolean = false) extends
         None,
         AuthoritativeServerConfig(serverPlayers, clientPlayers, Set(worker))
       )
+      server.framerateTarget = 1001
 
       serverConnection ! Http.Register(conn)
 
@@ -150,6 +151,7 @@ private[codecraft] class TwoPlayerMultiplayerServer extends Actor with ActorLogg
       None,
       AuthoritativeServerConfig(Set.empty, Set(OrangePlayer, BluePlayer), clients)
     )
+    simulator.framerateTarget = 1001
     simulator.onException((e: Throwable) => {
       log.info(s"Terminating running multiplayer game because of uncaught exception.")
       log.info(s"Exception message ${e.getMessage}")
