@@ -37,7 +37,8 @@ class DroneWorldSimulator(
   replayer: Option[Replayer] = None,
   multiplayerConfig: MultiplayerConfig = SingleplayerConfig,
   forceReplayRecorder: Option[ReplayRecorder] = None,
-  val settings: Settings = Settings.default
+  val settings: Settings = Settings.default,
+  private var seed: Int = Rng.seed
 ) extends Simulator {
   private final val MaxDroneRadius = 60
 
@@ -47,7 +48,10 @@ class DroneWorldSimulator(
     else if (replayer.isEmpty && settings.recordReplays) ReplayFactory.replayRecorder
     else NullReplayRecorder
 
-  replayer.foreach { r => Rng.seed = r.seed }
+  replayer.foreach { r =>
+    Rng.seed = r.seed
+    seed = r.seed
+  }
 
   val monitor: PerformanceMonitor = PerformanceMonitorFactory.performanceMonitor
   private val metaControllers =
@@ -61,7 +65,7 @@ class DroneWorldSimulator(
   private def drones = _drones.values
   private var deadDrones = List.empty[DroneImpl]
   private var newlySpawnedDrones = List.empty[DroneImpl]
-  private val rng = new Random(Rng.seed)
+  private val rng = new Random(seed)
   private var _winner = Option.empty[Player]
 
 

@@ -14,6 +14,7 @@ import scala.concurrent.{Future, Promise}
 private[core] class RemoteWebsocketClient(
   override val players: Set[Player],
   val map: WorldMap,
+  val rngSeed: Int,
   val debug: Boolean = false,
   val info: Boolean = true
 ) extends RemoteClient with WebsocketWorker {
@@ -63,7 +64,8 @@ private[core] class RemoteWebsocketClient(
       map.minerals,
       map.initialDrones,
       players,
-      Set(OrangePlayer, BluePlayer) -- players
+      Set(OrangePlayer, BluePlayer) -- players,
+      rngSeed
     )
 
   override def waitForCommands()(implicit context: SimulationContext): Future[Seq[(Int, DroneCommand)]] = {

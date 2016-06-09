@@ -546,7 +546,8 @@ private[core] sealed trait MultiplayerMessage
   minerals: Seq[MineralSpawn],
   initialDrones: Seq[SerializableSpawn],
   localPlayerIDs: Set[Int],
-  remotePlayerIDs: Set[Int]
+  remotePlayerIDs: Set[Int],
+  rngSeed: Int
 ) extends MultiplayerMessage {
   def worldMap: WorldMap = new WorldMap(
     minerals,
@@ -590,13 +591,15 @@ private[core] object MultiplayerMessage {
     minerals: Seq[MineralSpawn],
     initialDrones: Seq[Spawn],
     localPlayers: Set[Player],
-    remotePlayers: Set[Player]
+    remotePlayers: Set[Player],
+    rngSeed: Int
   ): String = write(InitialSync(
     worldSize,
     minerals,
     initialDrones.map(x => SerializableSpawn(x)),
     localPlayers.map(_.id),
-    remotePlayers.map(_.id)
+    remotePlayers.map(_.id),
+    rngSeed
   ))
 
   def serializeBinary(
@@ -604,13 +607,15 @@ private[core] object MultiplayerMessage {
     minerals: Seq[MineralSpawn],
     initialDrones: Seq[Spawn],
     localPlayers: Set[Player],
-    remotePlayers: Set[Player]
+    remotePlayers: Set[Player],
+    rngSeed: Int
   ): ByteBuffer = Pickle.intoBytes[MultiplayerMessage](InitialSync(
     worldSize,
     minerals,
     initialDrones.map(x => SerializableSpawn(x)),
     localPlayers.map(_.id),
-    remotePlayers.map(_.id)
+    remotePlayers.map(_.id),
+    rngSeed
   ))
 
   def register: String = write(Register)
