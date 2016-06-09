@@ -34,7 +34,7 @@ private[core] object WebsocketMultiplayerTest {
 
     async {
       val client = await {
-        TheGameMaster.prepareMultiplayerGame("localhost", TheGameMaster.level2AI())
+        TheGameMaster.prepareMultiplayerGame("localhost", TheGameMaster.replicatorAI())
       }
       TheGameMaster.run(client)
     }

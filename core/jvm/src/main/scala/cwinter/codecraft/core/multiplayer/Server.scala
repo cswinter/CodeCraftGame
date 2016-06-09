@@ -65,7 +65,7 @@ private[codecraft] class MultiplayerServer(displayGame: Boolean = false) extends
 
       val server = new DroneWorldSimulator(
         map,
-        Seq(new DummyDroneController, TheGameMaster.level2AI()),
+        Seq(new DummyDroneController, TheGameMaster.destroyerAI()),
         t => Seq.empty,
         None,
         AuthoritativeServerConfig(serverPlayers, clientPlayers, Set(worker))
