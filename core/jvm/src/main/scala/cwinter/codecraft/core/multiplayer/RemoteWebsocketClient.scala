@@ -45,6 +45,9 @@ private[core] class RemoteWebsocketClient(
     case WorldStateMessage(_) => throw new Exception("Authoritative server received WorldStateMessage!")
     case _: InitialSync => throw new Exception("Authoritative server received InitialSync!")
     case Register => send(syncMessage)
+    case RTT(time, message) =>
+      val ms = (System.nanoTime - time) / 1000000.0
+      println(f"RTT for $message: $ms%.2fms")
   }
 
   def syncMessage =
@@ -58,9 +61,7 @@ private[core] class RemoteWebsocketClient(
 
   override def waitForCommands()(implicit context: SimulationContext): Future[Seq[(Int, DroneCommand)]] = {
     if (debug) println(s"[t=${context.timestep}] Waiting for commands...")
-    for (
-      commands <- clientCommands.future
-    ) yield {
+    for (commands <- clientCommands.future) yield {
       if (debug)
         println("Commands received.")
       clientCommands = Promise[Seq[(Int, SerializableDroneCommand)]]
@@ -69,10 +70,12 @@ private[core] class RemoteWebsocketClient(
   }
 
   override def sendWorldState(worldState: Iterable[DroneStateMessage]): Unit = {
+    send(MultiplayerMessage.serializeBinary(RTT(System.nanoTime, "ws")))
     send(MultiplayerMessage.serializeBinary(worldState))
   }
 
   def sendCommands(commands: Seq[(Int, DroneCommand)]): Unit = {
+    send(MultiplayerMessage.serializeBinary(RTT(System.nanoTime, "sc")))
     val serializable =
       for ((id, command) <- commands)
         yield (id, command.toSerializable)

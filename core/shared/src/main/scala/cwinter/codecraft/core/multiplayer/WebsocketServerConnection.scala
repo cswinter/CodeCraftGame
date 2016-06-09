@@ -35,6 +35,7 @@ private[core] class WebsocketServerConnection(
       case WorldStateMessage(state) => worldState.success(state)
       case start: InitialSync => initialWorldState.success(start)
       case Register =>
+      case rtt: RTT => connection.sendMessage(MultiplayerMessage.serializeBinary(rtt))
     }
   }
 

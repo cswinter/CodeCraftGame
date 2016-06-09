@@ -559,6 +559,7 @@ private[core] sealed trait MultiplayerMessage
   def remotePlayers: Set[Player] = remotePlayerIDs.map(Player.fromID)
 }
 @key("Register") private[core] case object Register extends MultiplayerMessage
+private[core] case class RTT(sent: Long, msg: String) extends MultiplayerMessage
 
 
 
@@ -569,6 +570,8 @@ private[core] object MultiplayerMessage {
   def parseBytes(bytes: ByteBuffer): MultiplayerMessage = {
     Unpickle[MultiplayerMessage].fromBytes(bytes)
   }
+
+  def serializeBinary(msg: MultiplayerMessage): ByteBuffer = Pickle.intoBytes(msg)
 
   def serialize(commands: Seq[(Int, SerializableDroneCommand)]): String =
     write(CommandsMessage(commands))
