@@ -10,8 +10,8 @@ import cwinter.codecraft.core.errors.Errors
 import cwinter.codecraft.core.graphics.{DroneModelParameters, DroneModuleDescriptor, DroneModel, CollisionMarkerModel}
 import cwinter.codecraft.core.objects._
 import cwinter.codecraft.core.replay._
-import cwinter.codecraft.graphics.engine.{PositionDescriptor, ModelDescriptor}
-import cwinter.codecraft.util.maths.{Float0To1, Rectangle, Vector2}
+import cwinter.codecraft.graphics.engine.{TextModel, Debug, PositionDescriptor, ModelDescriptor}
+import cwinter.codecraft.util.maths._
 import boopickle.Default._
 
 
@@ -60,6 +60,7 @@ private[core] class DroneImpl(
   }
 
   private[this] var _collisionMarkers = List.empty[(CollisionMarkerModel, Float)]
+  private[this] var debugText = Option.empty[String]
 
   private[this] var cachedDescriptor: Option[DroneModel] = None
 
@@ -89,6 +90,7 @@ private[core] class DroneImpl(
 
   var t = 0
   def processEvents(): Unit = {
+    debugText = None
     controller.willProcessEvents()
 
     t += 1
@@ -145,7 +147,7 @@ private[core] class DroneImpl(
 
     messageCooldown -= 1
 
-    oldPositions.enqueue((position.x.toFloat, position.y.toFloat, dynamics.orientation.toFloat))
+    oldPositions.enqueue((position.x, position.y, dynamics.orientation))
     if (oldPositions.length > NJetPositions) oldPositions.dequeue()
 
     for (event <- dynamics.checkArrivalConditions()) {
@@ -354,9 +356,9 @@ private[core] class DroneImpl(
   override def descriptor: Seq[ModelDescriptor[_]] = {
     val positionDescr =
       PositionDescriptor(
-        position.x.toFloat,
-        position.y.toFloat,
-        dynamics.orientation.toFloat
+        position.x,
+        position.y,
+        dynamics.orientation
       )
     val harvestBeams =
       for {
@@ -428,6 +430,17 @@ private[core] class DroneImpl(
       Errors.inform(message, position)
     }
   }
+
+  def showText(message: String): Unit = {
+    debugText = Some(debugText match {
+      case Some(text) => s"$text;$message"
+      case None => message
+    })
+  }
+
+  def textModel: Option[TextModel] =
+    for (message <- debugText)
+      yield TextModel(message, position.x, position.y, ColorRGBA(ColorRGB(1, 1, 1) - context.player.color, 1))
 
   override def isDead = _hasDied
 

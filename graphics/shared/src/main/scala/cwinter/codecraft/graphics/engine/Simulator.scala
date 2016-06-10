@@ -138,5 +138,6 @@ private[codecraft] trait Simulator {
   private[codecraft] def computeWorldState: Iterable[ModelDescriptor[_]]
   private[codecraft] def handleKeypress(keychar: Char): Unit = ()
   private[codecraft] def additionalInfoText: String = ""
+  private[codecraft] def textModels: Iterable[TextModel]
 }
 

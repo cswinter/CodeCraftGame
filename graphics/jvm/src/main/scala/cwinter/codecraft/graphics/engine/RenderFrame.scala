@@ -113,6 +113,8 @@ private[graphics] class RenderFrame(val gameWorld: Simulator)
 
     for (text <- Debug.textModels if !text.largeFont)
       renderTextModel(textRenderer, text, width, height)
+    for (text <- gameWorld.textModels if !text.largeFont)
+      renderTextModel(textRenderer, text, width, height)
 
     textRenderer.setColor(1, 1, 1, 0.7f)
     var yPos = height - 15
@@ -127,6 +129,8 @@ private[graphics] class RenderFrame(val gameWorld: Simulator)
     largeTextRenderer.beginRendering(width, height)
     for (text <- Debug.textModels if text.largeFont)
       renderTextModel(largeTextRenderer, text, width, height)
+    for (text <- gameWorld.textModels if text.largeFont)
+      renderTextModel(textRenderer, text, width, height)
     largeTextRenderer.endRendering()
   }
 

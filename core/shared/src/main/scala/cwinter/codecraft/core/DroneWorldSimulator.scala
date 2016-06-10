@@ -67,6 +67,7 @@ class DroneWorldSimulator(
   private var newlySpawnedDrones = List.empty[DroneImpl]
   private val rng = new Random(seed)
   private var _winner = Option.empty[Player]
+  private var droneTexts = Iterable.empty[TextModel]
 
 
   /** Returns the winning player. */
@@ -243,6 +244,10 @@ class DroneWorldSimulator(
     processSimulatorEvents(deathEvents)
     visionTracker.updateAll()
     Errors.updateMessages()
+    droneTexts = for {
+      drone <- _drones.values
+      model <- drone.textModel
+    } yield model
   }
 
 
@@ -494,6 +499,7 @@ class DroneWorldSimulator(
   private implicit def simulationContext: SimulationContext =
     SimulationContext(droneRegistry, mineralRegistry, timestep)
 
+  override def textModels = droneTexts
 
   def replayString: Option[String] = replayRecorder.replayString
 

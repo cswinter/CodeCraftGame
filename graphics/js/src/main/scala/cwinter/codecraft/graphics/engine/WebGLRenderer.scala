@@ -137,9 +137,8 @@ private[codecraft] class WebGLRenderer(
     } else if (Debug.textModels.nonEmpty || textDiv.innerHTML != "") {
       textTestDiv.innerHTML = """<div id="large-text-dim-test"></div><div id="small-text-dim-test"></div>"""
       textDiv.innerHTML = ""
-      for (text <- Debug.textModels) {
-        renderText(textDiv, text, width, height)
-      }
+      for (text <- Debug.textModels) renderText(textDiv, text, width, height)
+      for (text <- gameWorld.textModels) renderText(textDiv, text, width, height)
       if (gameWorld.isPaused) {
         renderText(
           textDiv,
