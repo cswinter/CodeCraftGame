@@ -8,7 +8,7 @@ private[core] class RemoteDroneDynamics(
   initialPosition: Vector2
 ) extends DroneDynamics {
   private[this] var position: Vector2 = initialPosition
-  private[this] var _orientation: Double = 0
+  private[this] var _orientation: Float = 0
   private[this] var _removed: Boolean = false
   private[this] var _arrivalEvent: Option[DroneEvent] = None
   private[this] var _isMoving: Boolean = false
@@ -43,7 +43,7 @@ private[core] class RemoteDroneDynamics(
   }
 
   override def checkArrivalConditions(): Option[DroneEvent] = _arrivalEvent
-  override def orientation: Double = _orientation
+  override def orientation: Float = _orientation
   override def pos: Vector2 = position
 
   override def isMoving: Boolean = _isMoving

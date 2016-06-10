@@ -7,9 +7,9 @@ import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 
 private[core] class ComputedDroneDynamics(
   val drone: DroneImpl,
-  val maxSpeed: Double,
-  val weight: Double,
-  radius: Double,
+  val maxSpeed: Float,
+  val weight: Float,
+  radius: Float,
   initialPosition: Vector2,
   initialTime: Double
 ) extends ConstantVelocityDynamics(
@@ -20,8 +20,8 @@ private[core] class ComputedDroneDynamics(
   initialTime
 ) with DroneDynamics {
 
-  final val MaxTurnSpeed = 0.25
-  private var _orientation: Double = 0
+  final val MaxTurnSpeed = 0.25f
+  private var _orientation: Float = 0
   private var speed = maxSpeed
   private var isStunned: Boolean = false
   private[this] var _movementCommand: MovementCommand = HoldPosition
@@ -37,13 +37,13 @@ private[core] class ComputedDroneDynamics(
     redundant
   }
 
-  def orientation_=(value: Double): Unit = _orientation = value
-  def orientation: Double = _orientation
+  def orientation_=(value: Float): Unit = _orientation = value
+  def orientation: Float = _orientation
 
   def setPosition(value: Vector2): Unit = pos = value
 
 
-  def limitSpeed(limit: Double): Unit = {
+  def limitSpeed(limit: Float): Unit = {
     require(limit <= maxSpeed)
     speed = limit
   }
@@ -56,7 +56,7 @@ private[core] class ComputedDroneDynamics(
   }
 
 
-  def adjustOrientation(target: Double): Unit = {
+  def adjustOrientation(target: Float): Unit = {
     if (target == orientation) return
 
     val orientation2 =
@@ -73,8 +73,8 @@ private[core] class ComputedDroneDynamics(
       orientation -= MaxTurnSpeed
     }
 
-    if (orientation < 0) orientation += 2 * math.Pi
-    if (orientation > 2 * math.Pi) orientation -= 2 * math.Pi
+    if (orientation < 0) orientation += (2 * math.Pi).toFloat
+    if (orientation > 2 * math.Pi) orientation -= (2 * math.Pi).toFloat
   }
 
   def checkArrivalConditions(): Option[DroneEvent] = {
@@ -145,7 +145,7 @@ private[core] class ComputedDroneDynamics(
       }
   }
 
-  def moveInDirection(direction: Double): Vector2 = {
+  def moveInDirection(direction: Float): Vector2 = {
     val targetOrientation = direction
     adjustOrientation(targetOrientation)
 
@@ -210,7 +210,7 @@ private[core] sealed trait DroneStateMessage
 
 @key("State") private[core] case class DroneDynamicsState(
   position: Vector2,
-  orientation: Double,
+  orientation: Float,
   arrivalEvent: Option[SerializableDroneEvent],
   droneId: Int
 ) extends DroneStateMessage

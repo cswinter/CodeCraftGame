@@ -72,7 +72,7 @@ object WorldMap {
       for (i <- 0 to resourceCount)
         yield new MineralSpawn(
           Rng.int(1, 2),
-          new Vector2(Rng.double(size.xMin, size.xMax), Rng.double(size.yMin, size.yMax))
+          Vector2(Rng.double(size.xMin, size.xMax), Rng.double(size.yMin, size.yMax))
         )
 
     WorldMap(minerals, size, initialDrones)

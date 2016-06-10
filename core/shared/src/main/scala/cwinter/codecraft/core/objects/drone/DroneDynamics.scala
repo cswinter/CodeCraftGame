@@ -7,7 +7,7 @@ private[core] trait DroneDynamics {
   def setTime(time: Double)
   def checkArrivalConditions(): Option[DroneEvent]
   def update(): Unit
-  def orientation: Double
+  def orientation: Float
   def setMovementCommand(movementCommand: MovementCommand): Boolean
   def pos: Vector2
   def remove(): Unit

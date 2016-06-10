@@ -66,7 +66,10 @@ trait DroneControllerBase extends Drone {
   }
 
   /** Order the drone to keep moving in the direction of `direction`. */
-  def moveInDirection(direction: Double): Unit = drone ! MoveInDirection(direction)
+  def moveInDirection(direction: Double): Unit = drone ! MoveInDirection(direction.toFloat)
+
+  /** Order the drone to keep moving in the direction of `direction`. */
+  def moveInDirection(direction: Float): Unit = drone ! MoveInDirection(direction)
 
   /** Order the drone to move towards `otherDrone`, until it is within 10 units distance of colliding. */
   def moveTo(otherDrone: Drone): Unit = {

@@ -21,7 +21,7 @@ private[codecraft] abstract class AugmentedController[TCommand, TContext <: Shar
 
   def closestEnemy: Drone = enemiesInSight.minBy(x => (x.position - position).lengthSquared)
 
-  def closestEnemyAndDist2: (Drone, Double) =
+  def closestEnemyAndDist2: (Drone, Float) =
     enemies.map(x => (x, (x.position - position).lengthSquared)).minBy(_._2)
 
   def handleWeapons(): Unit =

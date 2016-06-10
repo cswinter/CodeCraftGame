@@ -507,7 +507,7 @@ private[core] case class HarvestMineral(mineral: MineralCrystalImpl) extends Dro
 }
 
 private[core] sealed trait MovementCommand extends DroneCommand
-@key("MoveInDirec") private[core] case class MoveInDirection(direction: Double) extends MovementCommand with SerializableDroneCommand {
+@key("MoveInDirec") private[core] case class MoveInDirection(direction: Float) extends MovementCommand with SerializableDroneCommand {
   def toSerializable = this
 }
 @key("MoveToPos") private[core] case class MoveToPosition(position: Vector2) extends MovementCommand with SerializableDroneCommand {
