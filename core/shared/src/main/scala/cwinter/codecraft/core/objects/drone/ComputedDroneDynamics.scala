@@ -109,7 +109,7 @@ private[core] class ComputedDroneDynamics(
       val targetOrientation = dist.orientation
       adjustOrientation(targetOrientation)
       if (targetOrientation == orientation) {
-        if ((dist dot dist) > maxSpeed * maxSpeed) maxSpeed * dist.normalized
+        if (dist.lengthSquared > maxSpeed * maxSpeed) maxSpeed * dist.normalized
         else dist
       } else {
         Vector2.Null
@@ -191,6 +191,8 @@ private[core] class ComputedDroneDynamics(
   }
 
   def isMoving = _movementCommand != HoldPosition
+
+  def activeCommand: MovementCommand = _movementCommand
 
   override def toString: String = s"DroneDynamics(pos=$pos, velocity=$velocity)"
   
