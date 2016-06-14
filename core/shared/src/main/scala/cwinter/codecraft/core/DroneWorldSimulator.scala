@@ -258,7 +258,7 @@ class DroneWorldSimulator(
         if d.spec.missileBatteries > 0
       ) Debug.draw(
           ModelDescriptor(
-            PositionDescriptor(d.position.x.toFloat, d.position.y.toFloat, 0),
+            PositionDescriptor(d.position.x, d.position.y, 0),
             CircleOutlineModelBuilder(GameConstants.MissileLockOnRange, ColorRGB(1, 0, 0))
           )
         )
@@ -267,7 +267,7 @@ class DroneWorldSimulator(
       for (d <- drones) {
         Debug.draw(
           ModelDescriptor(
-            PositionDescriptor(d.position.x.toFloat, d.position.y.toFloat, 0),
+            PositionDescriptor(d.position.x, d.position.y, 0),
             CircleOutlineModelBuilder(GameConstants.DroneVisionRange, ColorRGB(0, 1, 0))
           )
         )

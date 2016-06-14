@@ -93,6 +93,10 @@ private[core] class DroneImpl(
     debugText = None
     controller.willProcessEvents()
 
+    for (event <- dynamics.checkArrivalConditions()) {
+      enqueueEvent(event)
+    }
+
     t += 1
     if (isDead) {
       controller.onDeath()
@@ -149,10 +153,6 @@ private[core] class DroneImpl(
 
     oldPositions.enqueue((position.x, position.y, dynamics.orientation))
     if (oldPositions.length > NJetPositions) oldPositions.dequeue()
-
-    for (event <- dynamics.checkArrivalConditions()) {
-      enqueueEvent(event)
-    }
 
     val events = simulatorEvents
     simulatorEvents = List.empty[SimulatorEvent]
@@ -230,7 +230,7 @@ private[core] class DroneImpl(
 
   def applyState(state: DroneDynamicsState)(implicit context: SimulationContext): Unit = {
     assert(dynamics.isInstanceOf[RemoteDroneDynamics], "Trying to apply state to locally computed drone.")
-    dynamics.asInstanceOf[RemoteDroneDynamics].update(state)
+    dynamics.asInstanceOf[RemoteDroneDynamics].synchronize(state)
   }
 
   override def objectEnteredVision(obj: VisionTracking): Unit = obj match {

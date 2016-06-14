@@ -21,24 +21,9 @@ private[core] class ComputedDroneDynamics(
 ) with DroneDynamics {
 
   final val MaxTurnSpeed = 0.25f
-  private var _orientation: Float = 0
   private var speed = maxSpeed
   private var isStunned: Boolean = false
-  private[this] var _movementCommand: MovementCommand = HoldPosition
 
-
-  def setMovementCommand(value: MovementCommand): Boolean = {
-    value match {
-      case MoveToPosition(p) if p ~ pos => return true
-      case _ =>
-    }
-    val redundant = value == _movementCommand
-    _movementCommand = value
-    redundant
-  }
-
-  def orientation_=(value: Float): Unit = _orientation = value
-  def orientation: Float = _orientation
 
   def setPosition(value: Vector2): Unit = pos = value
 
@@ -48,10 +33,8 @@ private[core] class ComputedDroneDynamics(
     speed = limit
   }
 
-  private def halt(): Unit = {
-    if (!isStunned) {
-      velocity = Vector2.Null
-    }
+  protected def halt(): Unit = {
+    if (!isStunned) velocity = Vector2.Null
     _movementCommand = HoldPosition
   }
 
@@ -65,26 +48,16 @@ private[core] class ComputedDroneDynamics(
 
     val diff = orientation2 - target
 
-    if (diff <= MaxTurnSpeed || diff >= 2 * math.Pi - MaxTurnSpeed) {
-      orientation = target
-    } else if (diff > math.Pi) {
-      orientation += MaxTurnSpeed
-    } else {
-      orientation -= MaxTurnSpeed
-    }
+    _orientation =
+      if (diff <= MaxTurnSpeed || diff >= 2 * math.Pi - MaxTurnSpeed) target
+      else if (diff > math.Pi) orientation + MaxTurnSpeed
+      else orientation - MaxTurnSpeed
 
-    if (orientation < 0) orientation += (2 * math.Pi).toFloat
-    if (orientation > 2 * math.Pi) orientation -= (2 * math.Pi).toFloat
+    if (orientation < 0) _orientation += (2 * math.Pi).toFloat
+    if (orientation > 2 * math.Pi) _orientation -= (2 * math.Pi).toFloat
   }
 
-  def checkArrivalConditions(): Option[DroneEvent] = {
-    val event = arrivalEvent
-    val hasArrived = event.nonEmpty
-    if (hasArrived) halt()
-    event
-  }
-
-  def arrivalEvent: Option[DroneEvent] = _movementCommand match {
+  override def arrivalEvent: Option[DroneEvent] = _movementCommand match {
     case MoveToPosition(position) if position ~ this.pos =>
       Some(ArrivedAtPosition)
       // TODO: create a rigorous method to get within radius of some position, unify with moveToDrone
@@ -190,13 +163,8 @@ private[core] class ComputedDroneDynamics(
     }
   }
 
-  def isMoving = _movementCommand != HoldPosition
-
-  def activeCommand: MovementCommand = _movementCommand
-
   override def toString: String = s"DroneDynamics(pos=$pos, velocity=$velocity)"
-  
-  
+
   def state: DroneDynamicsState = DroneDynamicsState(pos, orientation, arrivalEvent.map(_.toSerializable), drone.id)
 }
 
