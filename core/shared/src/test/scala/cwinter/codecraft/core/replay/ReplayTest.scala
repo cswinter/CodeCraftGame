@@ -2,8 +2,8 @@ package cwinter.codecraft.core.replay
 
 import cwinter.codecraft.core.DroneWorldSimulator
 import cwinter.codecraft.core.api.TheGameMaster
+import cwinter.codecraft.core.graphics.DroneModel
 import cwinter.codecraft.graphics.engine.ModelDescriptor
-import cwinter.codecraft.graphics.worldstate.DroneDescriptor
 import org.scalatest.FlatSpec
 
 import scala.collection.mutable.ArrayBuffer
@@ -56,7 +56,7 @@ class ReplayTest extends FlatSpec {
     for (i <- 0 to timesteps) {
       droneWorldSimulator.run(1)
       snapshots.append(droneWorldSimulator.worldState.filter{
-        case ModelDescriptor(pos, descriptor, params) => descriptor.isInstanceOf[DroneDescriptor]
+        case ModelDescriptor(pos, descriptor, params) => descriptor.isInstanceOf[DroneModel]
       }.toSet)
     }
 
