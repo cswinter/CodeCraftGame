@@ -167,29 +167,49 @@ private[core] class ComputedDroneDynamics(
 
   override def toString: String = s"DroneDynamics(pos=$pos, velocity=$velocity)"
 
-  def syncMsg(): Option[DroneDynamicsState] = {
-    if (oldPos != pos || oldOrientation != orientation || arrivalEvent.nonEmpty) {
-      oldPos = pos
-      oldOrientation = orientation
-      Some(DroneDynamicsState(pos, orientation, arrivalEvent.map(_.toSerializable), drone.id))
-    } else None
+  def syncMsg(): Option[DroneStateChangeMsg] = {
+    val positionChanged = oldPos != pos
+    val orientationChanged = oldOrientation != orientation
+    oldPos = pos
+    oldOrientation = orientation
+    if (positionChanged && orientationChanged) Some(PositionAndOrientationChanged(pos, orientation, drone.id))
+    else if (positionChanged) Some(PositionChanged(pos, drone.id))
+    else if (orientationChanged) Some(OrientationChanged(orientation, drone.id))
+    else None
   }
+
+  def arrivalMsg: Option[NewArrivalEvent] =
+    arrivalEvent.map(event => NewArrivalEvent(event.toSerializable, drone.id))
 }
 
-
-import upickle.default.key
-private[core] sealed trait DroneStateMessage
-
-@key("Hit") private[core] case class MissileHit(
+private[core] case class MissileHit(
   droneID: Int,
   location: Vector2,
   missileID: Int
-) extends DroneStateMessage
+)
 
-@key("State") private[core] case class DroneDynamicsState(
-  position: Vector2,
-  orientation: Float,
-  arrivalEvent: Option[SerializableDroneEvent],
-  droneId: Int
-) extends DroneStateMessage
+private[core] sealed trait DroneStateChangeMsg {
+  def droneID: Int
+}
+
+private[core] case class PositionChanged(
+  newPosition: Vector2,
+  droneID: Int
+) extends DroneStateChangeMsg
+
+private[core] case class OrientationChanged(
+  newOrientation: Float,
+  droneID: Int
+) extends DroneStateChangeMsg
+
+private[core] case class PositionAndOrientationChanged(
+  newPosition: Vector2,
+  newOrientation: Float,
+  droneID: Int
+) extends DroneStateChangeMsg
+
+private[core] case class NewArrivalEvent(
+  arrivalEvent: SerializableDroneEvent,
+  droneID: Int
+) extends DroneStateChangeMsg
 

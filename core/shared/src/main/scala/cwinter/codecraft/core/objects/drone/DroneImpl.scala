@@ -229,7 +229,7 @@ private[core] class DroneImpl(
     }
   }
 
-  def applyState(state: DroneDynamicsState)(implicit context: SimulationContext): Unit = {
+  def applyState(state: DroneStateChangeMsg)(implicit context: SimulationContext): Unit = {
     assert(dynamics.isInstanceOf[RemoteDroneDynamics], "Trying to apply state to locally computed drone.")
     dynamics.asInstanceOf[RemoteDroneDynamics].synchronize(state)
   }
@@ -551,11 +551,16 @@ private[core] object SerializableSpawn {
 
 private[core] sealed trait MultiplayerMessage
 
-@key("Cmds") private[core] case class CommandsMessage(
+private[core] case class CommandsMessage(
   commands: Seq[(Int, SerializableDroneCommand)]
 ) extends MultiplayerMessage
-@key("State") private[core] case class WorldStateMessage(worldState: Iterable[DroneStateMessage]) extends MultiplayerMessage
-@key("Start") private[core] case class InitialSync(
+
+private[core] case class WorldStateMessage(
+  missileHits: Seq[MissileHit],
+  stateChanges: Seq[DroneStateChangeMsg]
+) extends MultiplayerMessage
+
+private[core] case class InitialSync(
   worldSize: Rectangle,
   minerals: Seq[MineralSpawn],
   initialDrones: Seq[SerializableSpawn],
@@ -573,9 +578,10 @@ private[core] sealed trait MultiplayerMessage
   def localPlayers: Set[Player] = localPlayerIDs.map(Player.fromID)
   def remotePlayers: Set[Player] = remotePlayerIDs.map(Player.fromID)
 }
-@key("Register") private[core] case object Register extends MultiplayerMessage
-private[core] case class RTT(sent: Long, msg: String) extends MultiplayerMessage
 
+private[core] case object Register extends MultiplayerMessage
+
+private[core] case class RTT(sent: Long, msg: String) extends MultiplayerMessage
 
 
 private[core] object MultiplayerMessage {
@@ -593,12 +599,6 @@ private[core] object MultiplayerMessage {
 
   def serializeBinary(commands: Seq[(Int, SerializableDroneCommand)]): ByteBuffer =
     Pickle.intoBytes[MultiplayerMessage](CommandsMessage(commands))
-
-  def serialize(worldState: Iterable[DroneStateMessage]): String =
-     write[WorldStateMessage](WorldStateMessage(worldState))
-
-  def serializeBinary(worldState: Iterable[DroneStateMessage]): ByteBuffer =
-    Pickle.intoBytes[MultiplayerMessage](WorldStateMessage(worldState))
 
   def serialize(
     worldSize: Rectangle,

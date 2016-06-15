@@ -14,7 +14,7 @@ import cwinter.codecraft.util.maths.{ColorRGB, ColorRGBA, Rng, Vector2}
 import cwinter.codecraft.util.modules.ModulePosition
 
 import scala.async.Async.{async, await}
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -443,37 +443,36 @@ class DroneWorldSimulator(
     monitor.beginMeasurement('syncWorldState)
     multiplayerConfig match {
       case AuthoritativeServerConfig(_, _, clients) =>
-        val syncMessages = collectWorldState()
+        val worldState = collectWorldState()
         for (client <- clients)
-          client.sendWorldState(syncMessages)
+          client.sendWorldState(worldState)
       case MultiplayerClientConfig(_, _, server) =>
-        val worldState = await { server.receiveWorldState() }
-        for (state <- worldState) state match {
-          case MissileHit(droneID, position, missileID) =>
-            val missile = missiles(missileID)
-            simulationContext.drone(droneID).missileHit(missile)
-            missile.dynamics.remove()
-          case d: DroneDynamicsState =>
-            simulationContext.drone(d.droneId).applyState(d)
+        val WorldStateMessage(missileHits, stateChanges)= await { server.receiveWorldState() }
+        for (MissileHit(droneID, position, missileID) <- missileHits) {
+          val missile = missiles(missileID)
+          simulationContext.drone(droneID).missileHit(missile)
+          missile.dynamics.remove()
         }
+        for (state <- stateChanges) simulationContext.drone(state.droneID).applyState(state)
       case SingleplayerConfig =>
         throw new Exception("Matched SingleplayerConfig in syncWorldState().")
     }
     monitor.endMeasurement('syncWorldState)
   }
 
-  private def collectWorldState(): Iterable[DroneStateMessage] = {
-    val positions =
-      for {
-        drone <- drones
-        msg <- drone.dynamics.asInstanceOf[ComputedDroneDynamics].syncMsg()
-      } yield msg
-    val missileHits = for (
+  private def collectWorldState(): WorldStateMessage = {
+    val stateChanges = ArrayBuffer.empty[DroneStateChangeMsg]
+    val missileHits = ArrayBuffer.empty[MissileHit]
+    for (
       drone <- drones;
-      missileHit <- drone.popMissileHits()
-    ) yield missileHit
+      dynamics = drone.dynamics.asInstanceOf[ComputedDroneDynamics]
+    ) {
+      stateChanges.appendAll(dynamics.syncMsg())
+      stateChanges.appendAll(dynamics.arrivalMsg)
+      missileHits.appendAll(drone.popMissileHits())
+    }
 
-    positions ++ missileHits
+    WorldStateMessage(missileHits, stateChanges)
   }
 
   private def players = map.initialDrones.map(_.player)

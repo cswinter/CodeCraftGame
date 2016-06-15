@@ -19,7 +19,7 @@ private[core] class WebsocketServerConnection(
   val initialWorldState = Promise[InitialSync]
 
   private[this] var serverCommands = Promise[Seq[(Int, SerializableDroneCommand)]]
-  private[this] var worldState = Promise[Iterable[DroneStateMessage]]
+  private[this] var worldState = Promise[WorldStateMessage]
 
 
   connection.onMessage(handleMessage)
@@ -32,7 +32,7 @@ private[core] class WebsocketServerConnection(
     if (debug) println(message)
     MultiplayerMessage.parseBytes(message) match {
       case CommandsMessage(commands) => serverCommands.success(commands)
-      case WorldStateMessage(state) => worldState.success(state)
+      case state: WorldStateMessage => worldState.success(state)
       case start: InitialSync => initialWorldState.success(start)
       case Register =>
       case rtt: RTT => connection.sendMessage(MultiplayerMessage.serializeBinary(rtt))
@@ -51,9 +51,9 @@ private[core] class WebsocketServerConnection(
     }
   }
 
-  override def receiveWorldState(): Future[Iterable[DroneStateMessage]] = {
+  override def receiveWorldState(): Future[WorldStateMessage] = {
     for (state <- worldState.future) yield {
-      worldState = Promise[Iterable[DroneStateMessage]]
+      worldState = Promise[WorldStateMessage]
       state
     }
   }

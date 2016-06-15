@@ -49,7 +49,7 @@ private[core] class RemoteWebsocketClient(
 
   private def handleMessage(msg: MultiplayerMessage): Unit = msg match {
     case CommandsMessage(commands) => clientCommands.success(commands)
-    case WorldStateMessage(_) => throw new Exception("Authoritative server received WorldStateMessage!")
+    case WorldStateMessage(_, _) => throw new Exception("Authoritative server received WorldStateMessage!")
     case _: InitialSync => throw new Exception("Authoritative server received InitialSync!")
     case Register => send(syncMessage)
     case RTT(time, message) => if (debug) {
@@ -77,7 +77,7 @@ private[core] class RemoteWebsocketClient(
     }
   }
 
-  override def sendWorldState(worldState: Iterable[DroneStateMessage]): Unit = {
+  override def sendWorldState(worldState: WorldStateMessage): Unit = {
     val serialized = MultiplayerMessage.serializeBinary(worldState)
     positionsSentSize.addMeasurement(serialized.remaining)
     send(serialized)
