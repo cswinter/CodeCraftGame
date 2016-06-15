@@ -183,7 +183,7 @@ class DroneWorldSimulator(
 
   override def update(): Unit = {
     if (timestep > 0 && (timestep == 1 || timestep % 1000 == 0)) {
-      println(monitor.compileReport + "\n")
+      //println(monitor.compileReport + "\n")
     }
     monitor.measure('update){
       if (multiplayerConfig.isMultiplayerGame) {
@@ -463,8 +463,11 @@ class DroneWorldSimulator(
   }
 
   private def collectWorldState(): Iterable[DroneStateMessage] = {
-    val positions = for (drone <- drones)
-      yield drone.dynamics.asInstanceOf[ComputedDroneDynamics].state
+    val positions =
+      for {
+        drone <- drones
+        msg <- drone.dynamics.asInstanceOf[ComputedDroneDynamics].syncMsg()
+      } yield msg
     val missileHits = for (
       drone <- drones;
       missileHit <- drone.popMissileHits()

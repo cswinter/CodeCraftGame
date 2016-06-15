@@ -125,8 +125,9 @@ private[core] class DroneImpl(
   }
 
   override def update(): Seq[SimulatorEvent] = {
-    _hasMoved = _oldPosition != position
+    _hasMoved = _oldPosition != position || _oldOrientation != dynamics.orientation
     _oldPosition = position
+    _oldOrientation = dynamics.orientation
 
     for ((_, wrapper) <- handles) wrapper.recordPosition()
 

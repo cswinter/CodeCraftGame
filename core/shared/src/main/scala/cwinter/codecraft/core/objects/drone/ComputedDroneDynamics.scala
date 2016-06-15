@@ -23,6 +23,8 @@ private[core] class ComputedDroneDynamics(
   final val MaxTurnSpeed = 0.25f
   private var speed = maxSpeed
   private var isStunned: Boolean = false
+  private var oldPos = pos
+  private var oldOrientation = orientation
 
 
   def setPosition(value: Vector2): Unit = pos = value
@@ -165,7 +167,13 @@ private[core] class ComputedDroneDynamics(
 
   override def toString: String = s"DroneDynamics(pos=$pos, velocity=$velocity)"
 
-  def state: DroneDynamicsState = DroneDynamicsState(pos, orientation, arrivalEvent.map(_.toSerializable), drone.id)
+  def syncMsg(): Option[DroneDynamicsState] = {
+    if (oldPos != pos || oldOrientation != orientation || arrivalEvent.nonEmpty) {
+      oldPos = pos
+      oldOrientation = orientation
+      Some(DroneDynamicsState(pos, orientation, arrivalEvent.map(_.toSerializable), drone.id))
+    } else None
+  }
 }
 
 

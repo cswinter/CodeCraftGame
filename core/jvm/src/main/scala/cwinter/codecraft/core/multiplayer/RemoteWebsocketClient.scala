@@ -87,7 +87,7 @@ private[core] class RemoteWebsocketClient(
       println(s"Commands Received Message Size: ${commandsReceivedSize.display}")
       val bandwidthEstimate =
         (commandsReceivedSize.ema + commandsSentSize.ema + positionsSentSize.ema) * 8 * 60 / 1000
-      println(f"Required bandwidth for 60FPS: $bandwidthEstimate%.2gKbps")
+      println(f"Required bandwidth for 60FPS: $bandwidthEstimate%.3gKbps")
     }
   }
 
