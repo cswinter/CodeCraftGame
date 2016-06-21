@@ -226,9 +226,10 @@ class DroneWorldSimulator(
 
     // TODO: expose a simulationHasFinished property that will stop the update method from being called
     if (replayer.exists(_.finished)) return
-    for (r <- replayer) r.run(timestep)
 
     processDroneEvents()
+
+    for (r <- replayer) r.run(timestep)
   }
 
   private def updateWorldState(): Unit = monitor.measure('updateWorldState){
