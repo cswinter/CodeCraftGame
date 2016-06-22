@@ -98,6 +98,7 @@ private[graphics] class RenderFrame(val gameWorld: Simulator)
       f"Modelview uploads: ${Material.modelviewUploads}   " +
       f"Cached models: ${modelCache.CachedModelCount}   " +
       f"Allocated VBOs: ${VBO.count}   " +
+      f"Timestep: ${gameWorld.timestep}   " +
       f"Last cached model: ${modelCache.lastCachedModel}"
     )
   }

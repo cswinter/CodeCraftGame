@@ -2,7 +2,7 @@ package cwinter.codecraft.core
 
 import cwinter.codecraft.core.api._
 import cwinter.codecraft.core.objects.MineralCrystalImpl
-import cwinter.codecraft.util.maths.{Rng, Rectangle, Vector2}
+import cwinter.codecraft.util.maths.{GlobalRNG, RNG, Rectangle, Vector2}
 
 
 /** Defines the initial world state for a game.
@@ -71,8 +71,8 @@ object WorldMap {
     val minerals =
       for (i <- 0 to resourceCount)
         yield new MineralSpawn(
-          Rng.int(1, 2),
-          Vector2(Rng.double(size.xMin, size.xMax), Rng.double(size.yMin, size.yMax))
+          GlobalRNG.int(1, 2),
+          Vector2(GlobalRNG.double(size.xMin, size.xMax), GlobalRNG.double(size.yMin, size.yMax))
         )
 
     WorldMap(minerals, size, initialDrones)
@@ -91,7 +91,7 @@ object WorldMap {
       var cpos: Vector2 = null
       var fairPos: Vector2 = null
       do {
-        cpos = 0.75 * Rng.vector2(size)
+        cpos = 0.75 * GlobalRNG.vector2(size)
         fairPos =
           if (left) Vector2(math.abs(cpos.x), cpos.y)
           else Vector2(-math.abs(cpos.x), cpos.y)
@@ -104,7 +104,7 @@ object WorldMap {
     val minerals =
       for {
         (mineralCount, size) <- resourceClusters
-        m <- generateResourceCluster(freshClusterPosition, 25, spread, mineralCount, Rng.int(1, size))
+        m <- generateResourceCluster(freshClusterPosition, 25, spread, mineralCount, GlobalRNG.int(1, size))
       } yield m
 
     WorldMap(minerals, size, initialDrones)
@@ -116,10 +116,10 @@ object WorldMap {
     var minerals = Seq.empty[MineralSpawn]
 
     while (minerals.size < amount) {
-      val pos = midpoint + spread * Rng.gaussian2D()
+      val pos = midpoint + spread * GlobalRNG.gaussian2D()
       val dist = (pos - midpoint).length
       val p = math.sqrt(math.exp(-dist * dist / 100000))
-      val size = (Rng.double(0, p) * 3 * maxSize).toInt + 1
+      val size = (GlobalRNG.double(0, p) * 3 * maxSize).toInt + 1
       if (!minerals.exists(m => (m.position - pos).lengthSquared <= minDist * minDist * size)) {
         minerals :+= new MineralSpawn(size, pos)
       }

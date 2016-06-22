@@ -28,7 +28,7 @@ private[core] class DroneImpl(
   def maxSpeed = spec.maxSpeed
 
   val id = context.idGenerator.getAndIncrement()
-  val priority = context.rng.nextInt()
+  val priority = context.rng.int()
 
   private[this] var _mineralsInSight = Set.empty[MineralCrystal]
   private[this] var _dronesInSight = Set.empty[Drone]

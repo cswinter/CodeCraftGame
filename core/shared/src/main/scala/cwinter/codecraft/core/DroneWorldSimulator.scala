@@ -10,7 +10,7 @@ import cwinter.codecraft.core.replay._
 import cwinter.codecraft.graphics.engine._
 import cwinter.codecraft.graphics.models.{CircleOutlineModelBuilder, RectangleModelBuilder}
 import cwinter.codecraft.physics.PhysicsEngine
-import cwinter.codecraft.util.maths.{ColorRGB, ColorRGBA, Rng, Vector2}
+import cwinter.codecraft.util.maths._
 import cwinter.codecraft.util.modules.ModulePosition
 
 import scala.async.Async.{async, await}
@@ -38,7 +38,7 @@ class DroneWorldSimulator(
   multiplayerConfig: MultiplayerConfig = SingleplayerConfig,
   forceReplayRecorder: Option[ReplayRecorder] = None,
   val settings: Settings = Settings.default,
-  private var seed: Int = Rng.seed
+  private var rngSeed: Int = Rng.seed
 ) extends Simulator {
   private final val MaxDroneRadius = 60
 
@@ -50,7 +50,7 @@ class DroneWorldSimulator(
 
   replayer.foreach { r =>
     Rng.seed = r.seed
-    seed = r.seed
+    rngSeed = r.seed
   }
 
   val monitor: PerformanceMonitor = PerformanceMonitorFactory.performanceMonitor
@@ -65,9 +65,9 @@ class DroneWorldSimulator(
   private def drones = _drones.values
   private var deadDrones = List.empty[DroneImpl]
   private var newlySpawnedDrones = List.empty[DroneImpl]
-  private val rng = new Random(seed)
   private var _winner = Option.empty[Player]
   private var droneTexts = Iterable.empty[TextModel]
+  private val rng = new RNG(rngSeed)
 
 
   /** Returns the winning player. */
@@ -101,7 +101,7 @@ class DroneWorldSimulator(
   val worldBoundaries = ModelDescriptor(NullPositionDescriptor, RectangleModelBuilder(map.size))
 
 
-  replayRecorder.recordInitialWorldState(map)
+  replayRecorder.recordInitialWorldState(map, rngSeed)
 
   private[codecraft] val minerals = map.instantiateMinerals()
   implicit private val mineralRegistry = minerals.map(m => (m.id, m)).toMap
@@ -164,7 +164,7 @@ class DroneWorldSimulator(
 
     for {
       i <- 0 until ModulePosition.moduleCount(drone.sides)
-      pos = drone.position + Rng.double(0, drone.radius) * Rng.vector2()
+      pos = drone.position + GlobalRNG.double(0, drone.radius) * GlobalRNG.vector2()
     } spawnLightflash(pos)
   }
 

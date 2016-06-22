@@ -146,7 +146,7 @@ trait DroneControllerBase extends Drone {
       cap(pos.x, worldSize.xMin, worldSize.xMax),
       cap(pos.y, worldSize.yMin, worldSize.yMax)
     )
-    drone ! ConstructDrone(spec, controller, drone.position - 110 * Rng.vector2())
+    drone ! ConstructDrone(spec, controller, drone.position - 110 * Vector2(_drone.dynamics.orientation))
   }
 
   /** Order the drone to start the construction of a new drone.

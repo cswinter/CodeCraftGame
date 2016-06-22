@@ -1,6 +1,7 @@
 package cwinter.codecraft.core.ai.basicplus
 
-import cwinter.codecraft.util.maths.Rng
+import cwinter.codecraft.util.maths.GlobalRNG
+
 
 private[core] class Hunter(val mothership: Mothership) extends BasicPlusController('Hunter) {
   override def onTick(): Unit = {
@@ -17,8 +18,8 @@ private[core] class Hunter(val mothership: Mothership) extends BasicPlusControll
       }
     }
 
-    if (Rng.bernoulli(0.005)) {
-      moveTo(0.9 * Rng.vector2(worldSize))
+    if (GlobalRNG.bernoulli(0.005)) {
+      moveTo(0.9 * GlobalRNG.vector2(worldSize))
     }
   }
 }

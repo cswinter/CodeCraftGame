@@ -28,8 +28,8 @@ private[codecraft] class Scout(ctx: DestroyerContext) extends DestroyerControlle
     import context.rng
     if (!isMoving) {
       moveTo(Vector2(
-        rng.nextDouble() * (worldSize.xMax - worldSize.xMin) + worldSize.xMin,
-        rng.nextDouble() * (worldSize.yMax - worldSize.yMin) + worldSize.yMin
+        rng.double() * (worldSize.xMax - worldSize.xMin) + worldSize.xMin,
+        rng.double() * (worldSize.yMax - worldSize.yMin) + worldSize.yMin
       ))
     }
   }

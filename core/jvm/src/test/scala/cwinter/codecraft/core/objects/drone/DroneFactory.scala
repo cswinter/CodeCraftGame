@@ -4,7 +4,7 @@ import cwinter.codecraft.core.{DroneWorldSimulator, WorldConfig}
 import cwinter.codecraft.core.api.{DroneSpec, RedPlayer, BluePlayer, Player, TheGameMaster}
 import cwinter.codecraft.core.objects.IDGenerator
 import cwinter.codecraft.core.replay.DummyDroneController
-import cwinter.codecraft.util.maths.{Vector2, Rectangle}
+import cwinter.codecraft.util.maths.{GlobalRNG, Vector2, Rectangle}
 
 import scala.util.Random
 
@@ -19,7 +19,7 @@ object DroneFactory {
     WorldConfig(Rectangle(-100, 100, -100, 100)),
     None,
     new IDGenerator(player.id),
-    new Random(),
+    GlobalRNG,
     true,
     mockSimulator
   )

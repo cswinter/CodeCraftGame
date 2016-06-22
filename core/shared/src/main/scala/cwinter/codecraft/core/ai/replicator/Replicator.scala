@@ -104,7 +104,7 @@ private[codecraft] class Replicator(ctx: ReplicatorContext) extends ReplicatorCo
   }
 
   private def chooseNextReplicatorSpec(): DroneSpec =
-    rng.nextInt(10) match {
+    rng.int(10) match {
       case 0 if droneCount(classOf[Soldier]) >= 5 => shieldedReplicatorSpec
       case 1 | 2 => minimalReplicatorSpec
       case _ => replicatorSpec

@@ -4,7 +4,7 @@ import cwinter.codecraft.graphics.engine.{PositionDescriptor, ModelDescriptor}
 import cwinter.codecraft.graphics.models.CircleModelBuilder
 import cwinter.codecraft.graphics.worldstate.PositionDescriptor
 import cwinter.codecraft.physics.{ConstantVelocityObject, DynamicObject}
-import cwinter.codecraft.util.maths.{Rng, Vector2}
+import cwinter.codecraft.util.maths.{RNG, Vector2}
 
 
 class MovingObject[TDynamics](

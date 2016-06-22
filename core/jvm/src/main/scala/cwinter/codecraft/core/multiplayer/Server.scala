@@ -4,8 +4,7 @@ import akka.actor._
 import akka.io.IO
 import cwinter.codecraft.core.api.{BluePlayer, OrangePlayer, Player, TheGameMaster}
 import cwinter.codecraft.core.replay.DummyDroneController
-import cwinter.codecraft.core.{AuthoritativeServerConfig, DroneWorldSimulator}
-import cwinter.codecraft.util.maths.Rng
+import cwinter.codecraft.core.{WorldMap, AuthoritativeServerConfig, DroneWorldSimulator}
 import spray.can.Http
 import spray.can.server.UHttp
 
@@ -15,16 +14,16 @@ import scala.language.postfixOps
 
 
 object Server {
-  def spawnServerInstance(displayGame: Boolean = false): Unit = {
+  def spawnServerInstance(seed: Option[Int] = None, displayGame: Boolean = false): Unit = {
     implicit val system = ActorSystem()
-    val server = system.actorOf(MultiplayerServer.props(displayGame), "websocket")
+    val server = system.actorOf(MultiplayerServer.props(seed, displayGame), "websocket")
     IO(UHttp) ! Http.Bind(server, "0.0.0.0", 8080)
     system.awaitTermination()
   }
 
-  def spawnServerInstance2(): Unit = {
+  def spawnServerInstance2(seed: Int = scala.util.Random.nextInt, map: WorldMap = TheGameMaster.defaultMap): Unit = {
     implicit val system = ActorSystem()
-    val server = system.actorOf(Props(classOf[TwoPlayerMultiplayerServer]), "websocket")
+    val server = system.actorOf(Props(classOf[TwoPlayerMultiplayerServer], seed, map), "websocket")
     IO(UHttp) ! Http.Bind(server, "0.0.0.0", 8080)
     system.awaitTermination()
   }
@@ -37,7 +36,7 @@ object Server {
   }
 
   def main(args: Array[String]): Unit = {
-    spawnServerInstance(false)
+    spawnServerInstance(displayGame = false)
   }
 
 
@@ -51,7 +50,7 @@ object Server {
 }
 
 
-private[codecraft] class MultiplayerServer(displayGame: Boolean = false) extends Actor with ActorLogging {
+private[codecraft] class MultiplayerServer(seed: Option[Int], displayGame: Boolean = false) extends Actor with ActorLogging {
   val map = TheGameMaster.defaultMap
   val clientPlayers = Set[Player](BluePlayer)
   val serverPlayers = Set[Player](OrangePlayer)
@@ -61,8 +60,8 @@ private[codecraft] class MultiplayerServer(displayGame: Boolean = false) extends
     // when a new connection comes in we register a WebSocketConnection actor as the per connection handler
     case Http.Connected(remoteAddress, localAddress) =>
       val serverConnection = sender()
-      val seed = scala.util.Random.nextInt
-      val worker = new RemoteWebsocketClient(clientPlayers, map, seed)
+      val rngSeed = this.seed.getOrElse(scala.util.Random.nextInt)
+      val worker = new RemoteWebsocketClient(clientPlayers, map, rngSeed)
       val conn = context.actorOf(WebsocketActor.props(serverConnection, worker))
 
       val server = new DroneWorldSimulator(
@@ -71,7 +70,7 @@ private[codecraft] class MultiplayerServer(displayGame: Boolean = false) extends
         t => Seq.empty,
         None,
         AuthoritativeServerConfig(serverPlayers, clientPlayers, Set(worker)),
-        seed = seed
+        rngSeed = rngSeed
       )
       server.framerateTarget = 1001
 
@@ -85,11 +84,12 @@ private[codecraft] class MultiplayerServer(displayGame: Boolean = false) extends
   }
 }
 
-private[codecraft] class TwoPlayerMultiplayerServer extends Actor with ActorLogging {
-  import Server.{Stop, GetStatus, Status}
-  val map = TheGameMaster.defaultMap
+private[codecraft] class TwoPlayerMultiplayerServer(
+  private var nextRNGSeed: Int = scala.util.Random.nextInt,
+  val map: WorldMap = TheGameMaster.defaultMap
+) extends Actor with ActorLogging {
+  import Server.{GetStatus, Status, Stop}
 
-  private var currSeed = scala.util.Random.nextInt
   private var clients = Set.empty[RemoteClient]
   private var freeSlots = Seq(MultiplayerSlot(OrangePlayer), MultiplayerSlot(BluePlayer))
   private var slotAssignments = Map.empty[ActorRef, Connection]
@@ -136,7 +136,7 @@ private[codecraft] class TwoPlayerMultiplayerServer extends Actor with ActorLogg
 
   private def acceptConnection(rawConnection: ActorRef): Connection = {
     val slot = popSlot()
-    val worker = new RemoteWebsocketClient(slot.players, map, currSeed)
+    val worker = new RemoteWebsocketClient(slot.players, map, nextRNGSeed)
     val websocketActor = context.actorOf(WebsocketActor.props(rawConnection, worker))
     rawConnection ! Http.Register(websocketActor)
     clients += worker
@@ -154,9 +154,9 @@ private[codecraft] class TwoPlayerMultiplayerServer extends Actor with ActorLogg
       t => Seq.empty,
       None,
       AuthoritativeServerConfig(Set.empty, Set(OrangePlayer, BluePlayer), clients),
-      seed = currSeed
+      rngSeed = nextRNGSeed
     )
-    currSeed = scala.util.Random.nextInt
+    nextRNGSeed = scala.util.Random.nextInt
     simulator.framerateTarget = 1001
     simulator.onException((e: Throwable) => {
       log.info(s"Terminating running multiplayer game because of uncaught exception.")
@@ -206,6 +206,6 @@ private[codecraft] class TwoPlayerMultiplayerServer extends Actor with ActorLogg
 
 
 private[codecraft] object MultiplayerServer {
-  def props(displayGame: Boolean = false) = Props(classOf[MultiplayerServer], displayGame)
+  def props(seed: Option[Int], displayGame: Boolean = false) = Props(classOf[MultiplayerServer], seed, displayGame)
 }
 

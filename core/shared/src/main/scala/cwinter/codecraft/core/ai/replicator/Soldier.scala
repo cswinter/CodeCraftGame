@@ -4,7 +4,7 @@ import cwinter.codecraft.core.ai.replicator.combat._
 import cwinter.codecraft.core.ai.shared.{MissionExecutor, Mission}
 import cwinter.codecraft.core.api.Drone
 import cwinter.codecraft.core.api.GameConstants.MissileLockOnRange
-import cwinter.codecraft.util.maths.{Rng, Vector2}
+import cwinter.codecraft.util.maths.{RNG, Vector2}
 
 
 private[codecraft] class Soldier(ctx: ReplicatorContext) extends ReplicatorController(ctx)
@@ -36,7 +36,7 @@ with MissionExecutor[ReplicatorCommand] with TargetAcquisition {
       if ((enemy.lastKnownPosition - position).lengthSquared < 100 * 100) notFound()
     case Search(position, radius) =>
       if (!isMoving) {
-        approachCarefully(position + radius * Vector2(2 * math.Pi * context.rng.nextDouble()))
+        approachCarefully(position + radius * Vector2(2 * math.Pi * context.rng.double()))
       }
     case AttackMove(position) =>
       approachCarefully(position)
@@ -53,7 +53,7 @@ with MissionExecutor[ReplicatorCommand] with TargetAcquisition {
       else approachCarefully(t.pos)
     }
     if (searchToken.isEmpty && !isMoving) {
-      moveTo(0.9 * Rng.vector2(worldSize))
+      moveTo(0.9 * context.rng.vector2(worldSize))
     }
   }
 

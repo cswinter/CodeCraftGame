@@ -1,13 +1,13 @@
 package cwinter.codecraft.core.ai.shared
 
 import cwinter.codecraft.core.api.MetaController
-import cwinter.codecraft.util.maths.Rectangle
+import cwinter.codecraft.util.maths.{RNG, Rectangle}
 
 import scala.util.Random
 
 
 private[codecraft] trait SharedContext[TCommand] extends MetaController {
-  val rng = new Random()
+  val rng = new RNG(0)
   val droneCount = new DroneCounter
 
   private[this] var _searchCoordinator: SearchCoordinator = null
