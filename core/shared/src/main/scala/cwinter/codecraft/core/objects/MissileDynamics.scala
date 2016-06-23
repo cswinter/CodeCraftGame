@@ -29,7 +29,7 @@ private[core] class MissileDynamics(
     // just die on collision (or maybe bounce?)
   }
 
-  override def update(): Unit = {
+  def recomputeVelocity(): Unit = {
     val targetDirection = target.pos - pos
     if (!target.removed && targetDirection.length >= 0.0001) {
       velocity = speed * targetDirection.normalized

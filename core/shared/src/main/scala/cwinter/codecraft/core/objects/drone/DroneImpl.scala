@@ -93,10 +93,6 @@ private[core] class DroneImpl(
     debugText = None
     controller.willProcessEvents()
 
-    for (event <- dynamics.checkArrivalConditions()) {
-      enqueueEvent(event)
-    }
-
     t += 1
     if (isDead) {
       controller.onDeath()
@@ -148,7 +144,8 @@ private[core] class DroneImpl(
       } simulatorEvents ::= SpawnEnergyGlobeAnimation(new EnergyGlobeObject(this, pos, 30, rd))
       for (s <- storage; rs <- resourceSpawns) s.depositEnergyGlobe(rs)
     }
-    dynamics.update()
+
+    dynamics.recomputeVelocity()
 
     messageCooldown -= 1
 
@@ -160,9 +157,11 @@ private[core] class DroneImpl(
     events
   }
 
-  def enqueueEvent(event: DroneEvent): Unit = {
-    eventQueue.enqueue(event)
-  }
+  def checkForArrival(): Unit =
+    for (event <- dynamics.checkArrivalConditions())
+      enqueueEvent(event)
+
+  def enqueueEvent(event: DroneEvent): Unit = eventQueue.enqueue(event)
 
   // TODO: mb only record hits here and do all processing as part of update()
   // NOTE: death state probable must be determined before (or at very start of) next update()

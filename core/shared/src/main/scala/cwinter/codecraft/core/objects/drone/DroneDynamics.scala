@@ -24,14 +24,15 @@ private[core] trait DroneDynamics {
     event
   }
 
+  protected def arrivalEvent: Option[DroneEvent]
+  protected def halt(): Unit
+
   def orientation: Float = _orientation
   def isMoving: Boolean = _movementCommand != HoldPosition
 
-  protected def arrivalEvent: Option[DroneEvent]
-  protected def halt(): Unit
   def pos: Vector2
   def setTime(time: Double)
-  def update(): Unit
+  def recomputeVelocity(): Unit
   def remove(): Unit
   def removed: Boolean
   def activeCommand: MovementCommand = _movementCommand

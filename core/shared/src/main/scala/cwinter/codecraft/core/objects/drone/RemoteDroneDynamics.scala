@@ -23,7 +23,7 @@ private[core] class RemoteDroneDynamics(initialPos: Vector2) extends DroneDynami
     case NewArrivalEvent(event, _) => _arrivalEvent = Some(DroneEvent(event))
   }
 
-  override def update(): Unit = {
+  override def recomputeVelocity(): Unit = {
     _arrivalEvent = None
   }
 

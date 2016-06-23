@@ -92,7 +92,7 @@ private[core] class ComputedDroneDynamics(
     }
   }
 
-  override def update(): Unit = {
+  def recomputeVelocity(): Unit = {
     velocity =
       if (isStunned) {
         if (velocity.length <= maxSpeed * 0.10f) {

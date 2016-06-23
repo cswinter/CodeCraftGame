@@ -34,7 +34,7 @@ private[core] class HomingMissile(
   }
 
   private def updatePosition() = {
-    dynamics.update()
+    dynamics.recomputeVelocity()
     lifetime -= 1
 
     if (isAnimated) recordPosition()

@@ -13,7 +13,6 @@ abstract private[core] class ConstantVelocityDynamics(
   protected var velocity: Vector2 = Vector2.Null
 
 
-  def update(): Unit
   // inherited form DynamicObject:
   // def handleObjectCollision(other: ConstantVelocityDynamics): Unit
   // def handleWallCollision(area: Rectangle): Unit

@@ -239,6 +239,7 @@ class DroneWorldSimulator(
   }
 
   private def completeUpdate(): Unit = monitor.measure('completeUpdate){
+    for (drone <- drones) drone.checkForArrival()
     val deathEvents =
       for (drone <- drones; d <- drone.deathEvents)
         yield d

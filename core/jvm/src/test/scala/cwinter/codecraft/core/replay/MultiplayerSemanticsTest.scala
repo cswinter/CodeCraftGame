@@ -36,7 +36,7 @@ class MultiplayerSemanticsTest extends FlatSpec {
     )
     val client1 = connectClient()
     client1.framerateTarget = 1001
-    TheGameMaster.run(client1)
+    client1.run()
     TestUtils.runAndRecord(connectClient(), timesteps)
   }
 
