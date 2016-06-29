@@ -3,7 +3,6 @@ package cwinter.codecraft.core
 import cwinter.codecraft.collisions.{VisionTracker, VisionTracking}
 import cwinter.codecraft.core.api._
 import cwinter.codecraft.core.errors.Errors
-import cwinter.codecraft.core.multiplayer.RemoteClient
 import cwinter.codecraft.core.objects._
 import cwinter.codecraft.core.objects.drone._
 import cwinter.codecraft.core.replay._
@@ -20,7 +19,6 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.scalajs.js.annotation.JSExport
-import scala.util.Random
 
 
 /** Aggregates all datastructures required to run a game and implements the game loop.
@@ -40,8 +38,8 @@ class DroneWorldSimulator(
   val settings: Settings = Settings.default,
   private var rngSeed: Int = Rng.seed
 ) extends Simulator {
+  outer =>
   private final val MaxDroneRadius = 60
-
 
   private val replayRecorder: ReplayRecorder =
     if (forceReplayRecorder.nonEmpty) forceReplayRecorder.get
@@ -62,13 +60,15 @@ class DroneWorldSimulator(
   private val dronesSorted = collection.mutable.TreeSet.empty[DroneImpl](DroneOrdering)
   private var _drones = Map.empty[Int, DroneImpl]
   private val missiles = collection.mutable.Map.empty[Int, HomingMissile]
+
   private def drones = _drones.values
+
   private var deadDrones = List.empty[DroneImpl]
   private var newlySpawnedDrones = List.empty[DroneImpl]
   private var _winner = Option.empty[Player]
-  private var droneTexts = Iterable.empty[TextModel]
+  private var _textModels = Iterable.empty[TextModel]
   private val rng = new RNG(rngSeed)
-
+  private final val debug = true
 
   /** Returns the winning player. */
   def winner = _winner
@@ -112,15 +112,188 @@ class DroneWorldSimulator(
   } spawnDrone(drone)
 
 
+  override def update(): Unit = gameLoop.run()
+
+  override protected def asyncUpdate(): Future[Unit] = gameLoop.runAsync()
+
+  private val gameLoop: SimulationPhase =
+    IfDebug ? printDebugInfo <*>
+    runDroneControllers <*>
+    IfServer ? serverSyncDroneCommands <*>
+    IfClient ? clientSyncDroneCommands <*>
+    recomputeWorldState <*>
+    IfServer ? distributeWorldState <*>
+    IfClient ? (awaitWorldState <*> applyWorldState) <*>
+    completeStateUpdate <*>
+    checkWinConditions <*>
+    updateTextModels
+
+  private def printDebugInfo = Local('PrintDebugInfo) {
+    if (timestep > 0 && (timestep == 1 || timestep % 1000 == 0)) {
+      println(monitor.compileReport + "\n")
+    }
+  }
+
+  private def runDroneControllers = Local('RunDroneControllers) {
+    replayRecorder.newTimestep(timestep)
+    // TODO: expose a simulationHasFinished property that will stop the update method from being called
+    if (!replayer.exists(_.finished)) {
+      for (r <- replayer) r.run(timestep)
+      for (mc <- metaControllers) mc.onTick()
+      for (drone <- deadDrones) drone.processEvents()
+      for (drone <- newlySpawnedDrones) drone.controller.onSpawn()
+      for (drone <- drones) drone.processEvents()
+      deadDrones = List.empty
+      newlySpawnedDrones = List.empty
+    }
+  }
+
+  private def recomputeWorldState = Local('RecomputeWorldState) {
+    val events = ListBuffer.empty[SimulatorEvent]
+    for (obj <- dynamicObjects) events.appendAll(obj.update())
+    for (drone <- dronesSorted) events.appendAll(drone.update())
+    physicsEngine.update()
+    processSimulatorEvents(events.toList)
+  }
+
+  private def completeStateUpdate = Local('CompleteStateUpdate) {
+    for (drone <- drones) drone.checkForArrival()
+    val deathEvents =
+      for (drone <- drones; d <- drone.deathEvents)
+        yield d
+    processSimulatorEvents(deathEvents ++ debugEvents)
+    visionTracker.updateAll()
+  }
+
+  private def checkWinConditions = Local('CheckWinConditions) {
+    if (winner.isEmpty) {
+      for (
+        wc <- map.winCondition;
+        player <- players
+        if playerHasWon(wc, player)
+      ) _winner = Some(player)
+    }
+  }
+
+  //noinspection MutatorLikeMethodIsParameterless
+  private def updateTextModels = Local('UpdateTextModels) {
+    Errors.updateMessages()
+
+    val victoryMessage =
+      for (winner <- winner)
+        yield TextModel(
+          s"${winner.name} has won!",
+          0, 0,
+          ColorRGBA(winner.color, 0.6f),
+          absolutePos = true, centered = true, largeFont = true)
+
+    val droneTexts =
+      for {
+        drone <- drones
+        model <- drone.textModel
+      } yield model
+    _textModels = victoryMessage.toIterable ++ droneTexts
+  }
+
+  private def clientSyncDroneCommands =
+    sendCommandsToServer <*> awaitRemoteCommands <*> executeRemoteCommands
+
+  private def serverSyncDroneCommands =
+    awaitClientCommands <*> distributeCommandsToClients <*> executeRemoteCommands
+
+
+  private def sendCommandsToServer = Local('SendCommandsToServer) {
+    val MultiplayerClientConfig(_, _, server) = multiplayerConfig.asInstanceOf[MultiplayerClientConfig]
+    val localCommands = multiplayerConfig.commandRecorder.popAll()
+    server.sendCommands(localCommands)
+  }
+
+  private var remoteCommands = Seq.empty[(Int, DroneCommand)]
+
+  private def awaitRemoteCommands = Async('AwaitRemoteCommands) {
+    val MultiplayerClientConfig(_, _, server) = multiplayerConfig.asInstanceOf[MultiplayerClientConfig]
+    server.receiveCommands().map(remoteCommands = _)
+  }
+
+  private def awaitClientCommands = Async('AwaitClientCommands) {
+    val AuthoritativeServerConfig(_, _, clients) = multiplayerConfig.asInstanceOf[AuthoritativeServerConfig]
+    val commandFutures = for (
+      client <- clients.toSeq
+    ) yield client.waitForCommands()
+
+    val futureCommandSequences = Future.sequence(commandFutures)
+    async {
+      val commandSequences = await { futureCommandSequences }
+      for {
+        commands <- commandSequences
+        command <- commands
+      } yield command
+    }.map(remoteCommands = _)
+  }
+
+  private def distributeCommandsToClients = Local('DistributeCommandsToClients) {
+    val AuthoritativeServerConfig(_, _, clients) = multiplayerConfig.asInstanceOf[AuthoritativeServerConfig]
+    val allCommands = multiplayerConfig.commandRecorder.popAll() ++ remoteCommands
+    for (
+      client <- clients;
+      commands = allCommands.filter(d => !client.players.contains(simulationContext.drone(d._1).player))
+    ) client.sendCommands(commands)
+  }
+
+  private def executeRemoteCommands = Local('ExecuteRemoteCommands) {
+    for (
+      (id, command) <- remoteCommands;
+      drone = simulationContext.drone(id)
+    ) drone ! command
+  }
+
+  private def distributeWorldState = Local('DistributeWorldState) {
+    val AuthoritativeServerConfig(_, _, clients) = multiplayerConfig.asInstanceOf[AuthoritativeServerConfig]
+    val worldState = collectWorldState(drones)
+    for (client <- clients) client.sendWorldState(worldState)
+  }
+
+  private def collectWorldState(drones: Iterable[DroneImpl]): WorldStateMessage = {
+    val stateChanges = ArrayBuffer.empty[DroneStateChangeMsg]
+    val missileHits = ArrayBuffer.empty[MissileHit]
+    for (
+      drone <- drones;
+      dynamics = drone.dynamics.asInstanceOf[ComputedDroneDynamics]
+    ) {
+      stateChanges.appendAll(dynamics.syncMsg())
+      stateChanges.appendAll(dynamics.arrivalMsg)
+      missileHits.appendAll(drone.popMissileHits())
+    }
+
+    WorldStateMessage(missileHits, stateChanges)
+  }
+
+  private var remoteWorldState: WorldStateMessage = null
+  private def awaitWorldState = Async('AwaitWorldState) {
+    val MultiplayerClientConfig(_, _, server) = multiplayerConfig.asInstanceOf[MultiplayerClientConfig]
+    server.receiveWorldState().map(remoteWorldState = _)
+  }
+
+  private def applyWorldState = Local('ApplyWorldState) {
+    val WorldStateMessage(missileHits, stateChanges) = remoteWorldState
+    for (MissileHit(droneID, position, missileID) <- missileHits) {
+      val missile = missiles(missileID)
+      simulationContext.drone(droneID).missileHit(missile)
+      missile.dynamics.remove()
+    }
+    for (state <- stateChanges) simulationContext.drone(state.droneID).applyState(state)
+  }
+
+
   @JSExport
   val namedDrones = (
-    for ((Spawn(_, _,player, _, Some(name)), controller) <- map.initialDrones zip controllers)
-    yield (
-      name,
-      if (player == BluePlayer) controller
-      else new EnemyDrone(controller.drone, controller.drone.player)
-    )
-  ).toMap
+    for ((Spawn(_, _, player, _, Some(name)), controller) <- map.initialDrones zip controllers)
+      yield (
+        name,
+        if (player == BluePlayer) controller
+        else new EnemyDrone(controller.drone, controller.drone.player)
+        )
+    ).toMap
 
   private def spawnMineral(mineralCrystal: MineralCrystalImpl): Unit = {
     visibleObjects.add(mineralCrystal)
@@ -181,147 +354,9 @@ class DroneWorldSimulator(
     dynamicObjects.add(lightFlash)
   }
 
-  override def update(): Unit = {
-    if (timestep > 0 && (timestep == 1 || timestep % 1000 == 0)) {
-      //println(monitor.compileReport + "\n")
-    }
-    monitor.measure('update){
-      if (multiplayerConfig.isMultiplayerGame) {
-        Await.result(multiplayerUpdate(), 30 seconds)
-      } else {
-        singleplayerUpdate()
-      }
-    }
-  }
+  private def debugEvents: Seq[SimulatorEvent] = eventGenerator(timestep)
 
-  override protected def asyncUpdate(): Future[Unit] = {
-    if (multiplayerConfig.isMultiplayerGame) {
-      multiplayerUpdate()
-    } else {
-      singleplayerUpdate()
-      Future.successful(Unit)
-    }
-  }
-
-  private def multiplayerUpdate(): Future[Unit] = async {
-    monitor.beginMeasurement('multiplayerUpdate)
-    prepareDroneCommands()
-    await { syncDroneCommands() }
-    updateWorldState()
-    await { syncWorldState() }
-    completeUpdate()
-    monitor.endMeasurement('multiplayerUpdate)
-  }
-
-  private def singleplayerUpdate(): Unit = monitor.measure('singleplayerUpdate){
-    prepareDroneCommands()
-    updateWorldState()
-    completeUpdate()
-  }
-
-  private def prepareDroneCommands(): Unit = monitor.measure('prepareDroneCommands){
-    replayRecorder.newTimestep(timestep)
-    showSightAndMissileRadii()
-    checkWinConditions()
-
-    // TODO: expose a simulationHasFinished property that will stop the update method from being called
-    if (replayer.exists(_.finished)) return
-
-    processDroneEvents()
-
-    for (r <- replayer) r.run(timestep)
-  }
-
-  private def updateWorldState(): Unit = monitor.measure('updateWorldState){
-    val events = executeGameMechanics()
-    physicsEngine.update()
-    processSimulatorEvents(events ++ debugEvents)
-  }
-
-  private def completeUpdate(): Unit = monitor.measure('completeUpdate){
-    for (drone <- drones) drone.checkForArrival()
-    val deathEvents =
-      for (drone <- drones; d <- drone.deathEvents)
-        yield d
-    processSimulatorEvents(deathEvents)
-    visionTracker.updateAll()
-    Errors.updateMessages()
-    droneTexts = for {
-      drone <- _drones.values
-      model <- drone.textModel
-    } yield model
-  }
-
-
-  private def showSightAndMissileRadii(): Unit = {
-    if (settings.showMissileRadius) {
-      for (
-        d <- drones
-        if d.spec.missileBatteries > 0
-      ) Debug.draw(
-          ModelDescriptor(
-            PositionDescriptor(d.position.x, d.position.y, 0),
-            CircleOutlineModelBuilder(GameConstants.MissileLockOnRange, ColorRGB(1, 0, 0))
-          )
-        )
-    }
-    if (settings.showSightRadius) {
-      for (d <- drones) {
-        Debug.draw(
-          ModelDescriptor(
-            PositionDescriptor(d.position.x, d.position.y, 0),
-            CircleOutlineModelBuilder(GameConstants.DroneVisionRange, ColorRGB(0, 1, 0))
-          )
-        )
-      }
-    }
-  }
-
-  private def checkWinConditions(): Unit = {
-    if (_winner.isEmpty) {
-      for (
-        wc <- map.winCondition;
-        player <- players
-        if playerHasWon(wc, player)
-      ) _winner = Some(player)
-    }
-    for (player <- _winner) showVictoryMessage(player)
-  }
-
-  private def showVictoryMessage(winner: Player): Unit = {
-    Debug.drawText(s"${winner.name} has won!", 0, 0, ColorRGBA(winner.color, 0.6f), true, true, true)
-  }
-
-  private def processDroneEvents(): Unit = {
-    for (mc <- metaControllers) mc.onTick()
-
-    for (drone <- deadDrones) {
-      drone.processEvents()
-    }
-    for (drone <- newlySpawnedDrones) {
-      drone.controller.onSpawn()
-    }
-
-    for (drone <- drones) {
-      drone.processEvents()
-    }
-    deadDrones = List.empty[DroneImpl]
-    newlySpawnedDrones = List.empty[DroneImpl]
-  }
-
-  private def executeGameMechanics(): Seq[SimulatorEvent] = {
-    val result = ListBuffer.empty[SimulatorEvent]
-    for (obj <- dynamicObjects) result.appendAll(obj.update())
-    for (drone <- dronesSorted) result.appendAll(drone.update())
-    result.toList
-  }
-
-  private def debugEvents: Seq[SimulatorEvent] =
-    eventGenerator(timestep)
-
-  private def processSimulatorEvents(events: Iterable[SimulatorEvent]): Unit = {
-    events.foreach(processEvent)
-  }
+  private def processSimulatorEvents(events: Iterable[SimulatorEvent]): Unit = events.foreach(processEvent)
 
   private def processEvent(event: SimulatorEvent): Unit = event match {
     case MineralCrystalHarvested(mineralCrystal) =>
@@ -359,143 +394,33 @@ class DroneWorldSimulator(
       dynamicObjects.remove(energyGlobeObject)
   }
 
-  private def syncDroneCommands(): Future[Unit] = async {
-    monitor.beginMeasurement('syncDroneCommands)
-    // [CLIENTS + SERVER] COLLECT COMMANDS FROM LOCAL DRONES
-    // [CLIENTS] SEND COMMANDS FROM LOCAL DRONES
-    // [CLIENTS} RECEIVE COMMANDS FROM SERVER
-    // [SERVER] RECEIVE ALL COMMANDS
-    // [SERVER] DISTRIBUTE COMMANDS TO ALL CLIENTS
-    // [CLIENTS + SERVER] EXECUTE COMMANDS FROM REMOTE DRONES
-
-
-    val localCommands = monitor.measure('getLocalCommands)(multiplayerConfig.commandRecorder.popAll())
-
-    monitor.beginMeasurement('getRemoteCommands)
-    val remoteCommands: Seq[(Int, DroneCommand)] = multiplayerConfig match {
-      case AuthoritativeServerConfig(local, remote, clients) =>
-        await {
-          syncWithClients(clients, localCommands)
-        }
-      case MultiplayerClientConfig(local, remote, server) =>
-        monitor.beginMeasurement('sendCommandsToServer)
-        server.sendCommands(localCommands)
-        monitor.endMeasurement('sendCommandsToServer)
-        monitor.beginMeasurement('receiveCommandsFromServer)
-        val result = await {
-          server.receiveCommands()(simulationContext)
-        }
-        monitor.endMeasurement('receiveCommandsFromServer)
-        result
-      case SingleplayerConfig =>
-        throw new Exception("Matched SingleplayerConfig in syncDroneCommands().")
-    }
-    monitor.endMeasurement('getRemoteCommands)
-
-    executeCommands(remoteCommands)
-    monitor.endMeasurement('syncDroneCommands)
-  }
-
-  private def syncWithClients(
-    clients: Set[RemoteClient],
-    localCommands: Seq[(Int, DroneCommand)]
-  ): Future[Seq[(Int, DroneCommand)]] = async {
-    monitor.beginMeasurement('syncWithClients)
-    monitor.beginMeasurement('receiveCommandsFromClients)
-    val remoteCommands = await { receiveCommandsFromClients(clients) }
-    monitor.endMeasurement('receiveCommandsFromClients)
-    distributeCommandsToClients(clients, remoteCommands ++ localCommands)
-    monitor.endMeasurement('syncWithClients)
-    remoteCommands
-  }
-
-  private def receiveCommandsFromClients(clients: Set[RemoteClient]): Future[Seq[(Int, DroneCommand)]] = {
-    val commandFutures = for (
-      client <- clients.toSeq
-    ) yield client.waitForCommands()
-
-    val futureCommandSequences = Future.sequence(commandFutures)
-    async {
-      val commandSequences = await { futureCommandSequences }
-      for {
-        commands <- commandSequences
-        command <- commands
-      } yield command
-    }
-  }
-
-  private def distributeCommandsToClients(
-    clients: Set[RemoteClient],
-    allCommands: Seq[(Int, DroneCommand)]
-  ): Unit = monitor.measure('distributeCommandsToClients) {
-    for (
-      client <- clients;
-      commands = allCommands.filter(d => !client.players.contains(droneRegistry(d._1).player))
-    ) client.sendCommands(commands)
-  }
-
-  private def executeCommands(commands: Seq[(Int, DroneCommand)]): Unit = monitor.measure('executeCommands) {
-    for (
-      (id, command) <- commands;
-      drone = droneRegistry(id)
-    ) drone ! command
-  }
-
-  private def syncWorldState(): Future[Unit] = async {
-    monitor.beginMeasurement('syncWorldState)
-    multiplayerConfig match {
-      case AuthoritativeServerConfig(_, _, clients) =>
-        val worldState = collectWorldState()
-        for (client <- clients)
-          client.sendWorldState(worldState)
-      case MultiplayerClientConfig(_, _, server) =>
-        val WorldStateMessage(missileHits, stateChanges)= await { server.receiveWorldState() }
-        for (MissileHit(droneID, position, missileID) <- missileHits) {
-          val missile = missiles(missileID)
-          simulationContext.drone(droneID).missileHit(missile)
-          missile.dynamics.remove()
-        }
-        for (state <- stateChanges) simulationContext.drone(state.droneID).applyState(state)
-      case SingleplayerConfig =>
-        throw new Exception("Matched SingleplayerConfig in syncWorldState().")
-    }
-    monitor.endMeasurement('syncWorldState)
-  }
-
-  private def collectWorldState(): WorldStateMessage = {
-    val stateChanges = ArrayBuffer.empty[DroneStateChangeMsg]
-    val missileHits = ArrayBuffer.empty[MissileHit]
-    for (
-      drone <- drones;
-      dynamics = drone.dynamics.asInstanceOf[ComputedDroneDynamics]
-    ) {
-      stateChanges.appendAll(dynamics.syncMsg())
-      stateChanges.appendAll(dynamics.arrivalMsg)
-      missileHits.appendAll(drone.popMissileHits())
-    }
-
-    WorldStateMessage(missileHits, stateChanges)
-  }
-
   private def players = map.initialDrones.map(_.player)
-
-  private def playerHasWon(winCondition: WinCondition, player: Player): Boolean =
-    winCondition match {
-      case DestroyEnemyMotherships =>
-        !drones.exists(isLivingEnemyMothership(_, player))
-    }
-
-  private def isLivingEnemyMothership(drone: DroneImpl, player: Player): Boolean =
-    drone.player != player && !drone.isDead && drone.spec.constructors > 0
 
 
   private[codecraft] override def computeWorldState: Iterable[ModelDescriptor[_]] = {
     val result = ListBuffer.empty[ModelDescriptor[_]]
     result.append(worldBoundaries)
-    for {
-      obj <- visibleObjects
-    } result.appendAll(obj.descriptor)
+    for (obj <- visibleObjects) result.appendAll(obj.descriptor)
+    if (settings.showMissileRadius) appendMissileRadii(result)
+    if (settings.showSightRadius) appendSightRadii(result)
     result.toList
+  }
+
+  private def appendMissileRadii(buffer: ListBuffer[ModelDescriptor[_]]): Unit = {
+    for {
+      d <- drones
+      if d.spec.missileBatteries > 0
+    } buffer.append(
+      ModelDescriptor(
+        PositionDescriptor(d.position.x, d.position.y, 0),
+        CircleOutlineModelBuilder(GameConstants.MissileLockOnRange, ColorRGB(1, 0, 0))))
+  }
+
+  private def appendSightRadii(buffer: ListBuffer[ModelDescriptor[_]]): Unit = {
+    for (d <- drones) buffer.append(
+      ModelDescriptor(
+        PositionDescriptor(d.position.x, d.position.y, 0),
+        CircleOutlineModelBuilder(GameConstants.DroneVisionRange, ColorRGB(0, 1, 0))))
   }
 
   private implicit def droneRegistry: Map[Int, DroneImpl] = _drones
@@ -503,7 +428,7 @@ class DroneWorldSimulator(
   private implicit def simulationContext: SimulationContext =
     SimulationContext(droneRegistry, mineralRegistry, timestep)
 
-  override def textModels = droneTexts
+  override def textModels = _textModels
 
   def replayString: Option[String] = replayRecorder.replayString
 
@@ -517,14 +442,110 @@ class DroneWorldSimulator(
     }
   }
 
-
   private[codecraft] override def additionalInfoText: String =
     s"""${if (settings.showSightRadius) "Hide" else "Show"} sight radius: 1
        |${if (settings.showMissileRadius) "Hide" else "Show"} missile range: 2
-       |${replayRecorder.replayFilepath match{ case Some(path) => "Replay path: " + path case _ => ""}}
-     """.stripMargin
-}
+       |${replayRecorder.replayFilepath match { case Some(path) => "Replay path: " + path case _ => "" }}
+       """.stripMargin
 
+
+  private trait SimulationPhase {
+    def run(): Unit
+    def runAsync(): Future[Unit]
+    def <*>[Out2](next: SimulationPhase): SimulationPhase = sequence(next)
+    final def sequence(next: SimulationPhase): SimulationPhase = SimulationPhase.sequence(this, next)
+    def isFullyLocal: Boolean
+  }
+
+  private object SimulationPhase {
+    def sequence(phase1: SimulationPhase, phase2: SimulationPhase): SimulationPhase = (phase1, phase2) match {
+      case (NoopSimulationPhase, _) => phase2
+      case (_, NoopSimulationPhase) => phase1
+      case (SimulationPhaseSeq(seq1), SimulationPhaseSeq(seq2)) => SimulationPhaseSeq(seq1 ++ seq2)
+      case (SimulationPhaseSeq(seq), _) => SimulationPhaseSeq(seq :+ phase2)
+      case (_, SimulationPhaseSeq(seq)) => SimulationPhaseSeq(phase1 +: seq)
+      case _ => SimulationPhaseSeq(Seq(phase1, phase2))
+    }
+  }
+
+  private object Local {
+    def apply(label: Symbol)(code: => Unit) = new SimulationPhase {
+      override def run(): Unit = monitor.measure(label)(code)
+      override def runAsync(): Future[Unit] = {
+        run()
+        Future.successful(Unit)
+      }
+      override def isFullyLocal = true
+    }
+  }
+
+  private object Async {
+    def apply(label: Symbol)(code: => Future[Unit]) = {
+      def instrumentedCode = {
+        monitor.beginMeasurement(label)
+        code.map(_ => monitor.endMeasurement(label))
+      }
+      new SimulationPhase {
+        override def runAsync(): Future[Unit] = instrumentedCode
+        override def run(): Unit = Await.result(runAsync(), 30 seconds)
+        override def isFullyLocal = false
+      }
+    }
+  }
+
+  private object NoopSimulationPhase extends SimulationPhase {
+    override def run(): Unit = ()
+    override def runAsync(): Future[Unit] = Future.successful(Unit)
+    override def isFullyLocal = true
+  }
+
+  private case class SimulationPhaseSeq(subphases: Seq[SimulationPhase]) extends SimulationPhase {
+    override def run(): Unit = subphases.foreach(_.run())
+
+    override def runAsync(): Future[Unit] = runAsync(subphases)
+
+    private def runAsync(remaining: Seq[SimulationPhase]): Future[Unit] = remaining match {
+      case Seq(last) => last.runAsync()
+      case Seq(head, tail@_*) =>
+        if (head.isFullyLocal) {
+          head.run()
+          runAsync(tail)
+        } else {
+          head.runAsync().flatMap(_ => runAsync(tail))
+        }
+    }
+
+    override def isFullyLocal = subphases.forall(_.isFullyLocal)
+  }
+
+  private trait SimulationPhaseGuard {
+    def shouldExecute(): Boolean
+    def ?(phase: SimulationPhase): SimulationPhase =
+      if (shouldExecute()) phase
+      else NoopSimulationPhase
+  }
+
+  private object IfServer extends SimulationPhaseGuard {
+    override def shouldExecute(): Boolean = multiplayerConfig.isInstanceOf[AuthoritativeServerConfig]
+  }
+
+  private object IfClient extends SimulationPhaseGuard {
+    override def shouldExecute(): Boolean = multiplayerConfig.isInstanceOf[MultiplayerClientConfig]
+  }
+
+  private object IfDebug extends SimulationPhaseGuard {
+    override def shouldExecute(): Boolean = debug
+  }
+
+  private def playerHasWon(winCondition: WinCondition, player: Player): Boolean = {
+    winCondition match {
+      case DestroyEnemyMotherships => !drones.exists(isLivingEnemyMothership(player))
+    }
+  }
+
+  private def isLivingEnemyMothership(player: Player)(drone: DroneImpl): Boolean =
+    drone.player != player && !drone.isDead && drone.spec.constructors > 0
+}
 
 
 private[codecraft] sealed trait SimulatorEvent

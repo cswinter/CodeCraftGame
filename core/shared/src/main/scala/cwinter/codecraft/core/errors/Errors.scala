@@ -7,6 +7,8 @@ private[codecraft] object Errors {
   private[this] var errorMessages = List.empty[ErrorMessageObject]
 
   def error(exception: CodeCraftException, position: Vector2): Nothing = {
+    println(exception)
+    exception.printStackTrace()
     addMessage(exception.getMessage, position, Error)
     throw exception
   }

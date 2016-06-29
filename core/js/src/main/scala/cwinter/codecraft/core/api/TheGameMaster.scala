@@ -38,6 +38,7 @@ object TheGameMaster extends GameMasterLike {
     import context._
     if (stopped) return
     dom.requestAnimationFrame((d: Double) => run(context))
+    if (simulator.isCurrentlyUpdating) { println(s"Skipped frame at ${simulator.timestep}"); return }
 
     if (!fps.shouldSkipFrame(simulator.framerateTarget)) {
       fps.startedFrame(simulator.framerateTarget)

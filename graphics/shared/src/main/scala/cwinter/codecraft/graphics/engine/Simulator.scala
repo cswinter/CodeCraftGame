@@ -4,6 +4,7 @@ import cwinter.codecraft.util.maths.Vector2
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
 
 private[codecraft] trait Simulator {
@@ -19,6 +20,7 @@ private[codecraft] trait Simulator {
   private[this] var exceptionHandler: Option[Throwable => _] = None
   private[this] var _measuredFramerate: Int = 0
   private[this] var _nanoTimeLastMeasurement: Long = 0
+  private var currentlyUpdating = false
 
   /** Runs the game until the program is terminated. */
   def run(): Unit = synchronized {
@@ -58,17 +60,25 @@ private[codecraft] trait Simulator {
   }
 
   private[codecraft] def performAsyncUpdate(): Future[Unit] = {
+    assert(!currentlyUpdating)
+    currentlyUpdating = true
     Debug.clear()
     savedWorldState = Seq(computeWorldState.toSeq: _*)
     t += 1
     measureFPS()
     val result = asyncUpdate()
-    result.onFailure{
-      case e: Throwable =>
+
+    // optimization that prevents JavaScript from sometimes skipping an animation frame (in single player)
+    if (result.isCompleted) currentlyUpdating = false
+
+    result.onComplete {
+      case Success(_) => currentlyUpdating = false
+      case Failure(e) =>
         exceptionHandler.foreach(_(e))
         if (stopped) return Future.successful(Unit)
         e.printStackTrace()
         paused = true
+        currentlyUpdating = false
     }
     result
   }
@@ -106,6 +116,7 @@ private[codecraft] trait Simulator {
   def togglePause(): Unit = paused = !paused
 
   /** Sets the target framerate to the given value.
+    *
     * @param value The new framerate target.
     */
   def framerateTarget_=(value: Int): Unit = {
@@ -129,6 +140,8 @@ private[codecraft] trait Simulator {
   def terminate(): Unit = {
     stopped = true
   }
+
+  private[codecraft] def isCurrentlyUpdating: Boolean = currentlyUpdating
 
   private[codecraft] def onException(callback: Throwable => _): Unit = {
     exceptionHandler = Some(callback)
