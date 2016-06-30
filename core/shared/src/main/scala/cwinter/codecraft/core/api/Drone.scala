@@ -1,9 +1,7 @@
 package cwinter.codecraft.core.api
 
-import cwinter.codecraft.core.errors.Errors
 import cwinter.codecraft.core.objects.drone.DroneImpl
-import cwinter.codecraft.graphics.engine.Debug
-import cwinter.codecraft.util.maths.{ColorRGB, ColorRGBA, Vector2}
+import cwinter.codecraft.util.maths.Vector2
 
 import scala.scalajs.js.annotation.JSExportAll
 
@@ -68,11 +66,6 @@ trait Drone {
   def showText(text: String): Unit =
     if (drone.context.settings.allowMessages)
       drone.showText(text)
-
-  /** Draws the specified text at the specified position on this timestep. */
-  def showText(text: String, position: Vector2): Unit =
-    if (drone.context.settings.allowMessages)
-      drone.showText(text, position.x, position.y)
 
   /** Returns an object that specifies how many copies of each module the drone has. */
   @inline

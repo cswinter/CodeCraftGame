@@ -40,6 +40,7 @@ class DroneWorldSimulator(
 ) extends Simulator {
   outer =>
   private final val MaxDroneRadius = 60
+  private final val TickPeriod = 10
 
   private val replayRecorder: ReplayRecorder =
     if (forceReplayRecorder.nonEmpty) forceReplayRecorder.get
@@ -88,6 +89,7 @@ class DroneWorldSimulator(
       yield player -> DroneContext(
         player,
         worldConfig,
+        TickPeriod,
         if (shouldRecordCommands(player)) Some(multiplayerConfig.commandRecorder)
         else None,
         new IDGenerator(player.id),
@@ -139,7 +141,7 @@ class DroneWorldSimulator(
   private def runDroneControllers = Local('RunDroneControllers) {
     replayRecorder.newTimestep(timestep)
     // TODO: expose a simulationHasFinished property that will stop the update method from being called
-    if (!replayer.exists(_.finished)) {
+    if (timestep % TickPeriod == 0 && !replayer.exists(_.finished)) {
       for (r <- replayer) r.run(timestep)
       for (mc <- metaControllers) mc.onTick()
       for (drone <- deadDrones) drone.processEvents()
@@ -159,7 +161,9 @@ class DroneWorldSimulator(
   }
 
   private def completeStateUpdate = Local('CompleteStateUpdate) {
-    for (drone <- drones) drone.checkForArrival()
+    if (timestep % TickPeriod == TickPeriod - 1)
+      for (drone <- drones) drone.checkForArrival()
+
     val deathEvents =
       for (drone <- drones; d <- drone.deathEvents)
         yield d

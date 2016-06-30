@@ -14,6 +14,7 @@ import scala.util.Random
 private[core] case class DroneContext(
   player: Player,
   worldConfig: WorldConfig,
+  tickPeriod: Int,
   commandRecorder: Option[CommandRecorder],
   idGenerator: IDGenerator,
   rng: RNG,

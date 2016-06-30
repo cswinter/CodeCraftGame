@@ -207,6 +207,19 @@ trait DroneControllerBase extends Drone {
   /** Returns the confines of the game world. */
   def worldSize: Rectangle = drone.context.worldConfig.size
 
+  /** Indicates how many simulation steps pass in between calls to event methods.
+    *
+    * E.g. if `tickDuration` == 1, then event methods will be called on every simulation step.
+    * This is the default setting for singleplayer games.
+    * If `tickDuration` == 10, event methods will only be called on every 10th simulation step.
+    */
+  def tickPeriod: Int = drone.context.tickPeriod
+
+  /** Draws the specified text at the specified position on this timestep. */
+  def showText(text: String, position: Vector2): Unit =
+    if (drone.context.settings.allowMessages)
+      drone.showText(text, position.x, position.y)
+
   private[core] def willProcessEvents(): Unit = {}
 
   private[core] def initialise(drone: DroneImpl): Unit = {
