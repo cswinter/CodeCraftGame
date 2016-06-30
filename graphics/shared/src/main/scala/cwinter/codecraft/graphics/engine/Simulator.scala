@@ -21,6 +21,7 @@ private[codecraft] trait Simulator {
   private[this] var _measuredFramerate: Int = 0
   private[this] var _nanoTimeLastMeasurement: Long = 0
   private var currentlyUpdating = false
+  protected var debug = new Debug
 
   /** Runs the game until the program is terminated. */
   def run(): Unit = synchronized {
@@ -44,7 +45,7 @@ private[codecraft] trait Simulator {
   }
 
   private def performUpdate(): Unit = {
-    Debug.clear()
+    debug.clear()
     savedWorldState = Seq(computeWorldState.toSeq: _*)
     t += 1
     try {
@@ -62,7 +63,7 @@ private[codecraft] trait Simulator {
   private[codecraft] def performAsyncUpdate(): Future[Unit] = {
     assert(!currentlyUpdating)
     currentlyUpdating = true
-    Debug.clear()
+    debug.clear()
     savedWorldState = Seq(computeWorldState.toSeq: _*)
     t += 1
     measureFPS()
@@ -137,9 +138,7 @@ private[codecraft] trait Simulator {
   def initialCameraPos: Vector2 = Vector2.Null
 
   /** Terminates any running game loops. */
-  def terminate(): Unit = {
-    stopped = true
-  }
+  def terminate(): Unit = stopped = true
 
   private[codecraft] def isCurrentlyUpdating: Boolean = currentlyUpdating
 
@@ -147,10 +146,10 @@ private[codecraft] trait Simulator {
     exceptionHandler = Some(callback)
   }
 
-  private[codecraft] def worldState: Seq[ModelDescriptor[_]] = savedWorldState
+  private[codecraft] def worldState: Seq[ModelDescriptor[_]] = debug.debugObjects ++ savedWorldState
   private[codecraft] def computeWorldState: Iterable[ModelDescriptor[_]]
   private[codecraft] def handleKeypress(keychar: Char): Unit = ()
   private[codecraft] def additionalInfoText: String = ""
-  private[codecraft] def textModels: Iterable[TextModel]
+  private[codecraft] def textModels: Iterable[TextModel] = debug.textModels
 }
 

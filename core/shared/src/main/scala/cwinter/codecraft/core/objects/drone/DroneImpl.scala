@@ -10,7 +10,7 @@ import cwinter.codecraft.core.errors.Errors
 import cwinter.codecraft.core.graphics.{DroneModelParameters, DroneModuleDescriptor, DroneModel, CollisionMarkerModel}
 import cwinter.codecraft.core.objects._
 import cwinter.codecraft.core.replay._
-import cwinter.codecraft.graphics.engine.{TextModel, Debug, PositionDescriptor, ModelDescriptor}
+import cwinter.codecraft.graphics.engine.{TextModel, PositionDescriptor, ModelDescriptor}
 import cwinter.codecraft.util.maths._
 import boopickle.Default._
 
@@ -60,7 +60,8 @@ private[core] class DroneImpl(
   }
 
   private[this] var _collisionMarkers = List.empty[(CollisionMarkerModel, Float)]
-  private[this] var debugText = Option.empty[String]
+  private[this] var debugMessage = Option.empty[String]
+  private[this] var debugTexts = List.empty[TextModel]
 
   private[this] var cachedDescriptor: Option[DroneModel] = None
 
@@ -90,7 +91,8 @@ private[core] class DroneImpl(
 
   var t = 0
   def processEvents(): Unit = {
-    debugText = None
+    debugMessage = None
+    debugTexts = List.empty[TextModel]
     controller.willProcessEvents()
 
     t += 1
@@ -152,6 +154,12 @@ private[core] class DroneImpl(
     oldPositions.enqueue((position.x, position.y, dynamics.orientation))
     if (oldPositions.length > NJetPositions) oldPositions.dequeue()
 
+    for (text <- debugTexts) context.debug.drawText(text)
+    for (message <- debugMessage)
+      yield context.debug.drawText(
+        message, position.x, position.y, ColorRGBA(ColorRGB(1, 1, 1) - context.player.color, 1))
+
+
     val events = simulatorEvents
     simulatorEvents = List.empty[SimulatorEvent]
     events
@@ -202,7 +210,7 @@ private[core] class DroneImpl(
     if (context.settings.allowCollisionAnimation) {
       val collisionAngle = (collisionPosition - position).orientation - dynamics.orientation
       _collisionMarkers ::= ((
-        CollisionMarkerModel(radius.toFloat, collisionAngle.toFloat),
+        CollisionMarkerModel(radius, collisionAngle.toFloat),
         CollisionMarkerLifetime))
     }
 
@@ -413,34 +421,33 @@ private[core] class DroneImpl(
   def error(message: String): Unit = {
     if (messageCooldown <= 0 && context.settings.allowMessages) {
       messageCooldown = MessageCooldown
-      Errors.addMessage(message, position, errors.Error)
+      context.errors.addMessage(message, position, errors.Error)
     }
   }
 
   def warn(message: String): Unit = {
     if (messageCooldown <= 0 && context.settings.allowMessages) {
       messageCooldown = MessageCooldown
-      Errors.warn(message, position)
+      context.errors.warn(message, position)
     }
   }
 
   def inform(message: String): Unit = {
     if (messageCooldown <= 0 && context.settings.allowMessages) {
       messageCooldown = MessageCooldown
-      Errors.inform(message, position)
+      context.errors.inform(message, position)
     }
   }
 
   def showText(message: String): Unit = {
-    debugText = Some(debugText match {
+    debugMessage = Some(debugMessage match {
       case Some(text) => s"$text;$message"
       case None => message
     })
   }
 
-  def textModel: Option[TextModel] =
-    for (message <- debugText)
-      yield TextModel(message, position.x, position.y, ColorRGBA(ColorRGB(1, 1, 1) - context.player.color, 1))
+  def showText(message: String, xPos: Float, yPos: Float): Unit =
+      debugTexts ::= TextModel(message, xPos, yPos, ColorRGBA(context.player.color, 1f))
 
   override def isDead = _hasDied
 

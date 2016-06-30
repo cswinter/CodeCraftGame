@@ -2,9 +2,7 @@ package cwinter.codecraft.core.ai.replicator.combat
 
 import cwinter.codecraft.core.ai.replicator._
 import cwinter.codecraft.core.ai.shared.BattleCoordinator
-import cwinter.codecraft.core.api.{DroneSpec, Drone}
-import cwinter.codecraft.graphics.engine.Debug
-import cwinter.codecraft.util.maths.{Vector2, ColorRGBA}
+import cwinter.codecraft.core.api.{Drone, DroneSpec}
 
 
 private[codecraft] class ReplicatorBattleCoordinator(val context: ReplicatorContext)
@@ -125,13 +123,13 @@ private[codecraft] class ReplicatorBattleCoordinator(val context: ReplicatorCont
   class EnemyCluster {
     private[this] var _drones = Set.empty[Drone]
     def add(drone: Drone): Unit = _drones += drone
-    def show(): Unit = {
+    def show(): Unit = ???/*{
       val midpoint = _drones.foldLeft(Vector2.Null)(_ + _.lastKnownPosition) / _drones.size
       val totalCover = _drones.flatMap(targetRegistry).foldLeft(0.0)(_ + _.normalizedStrength)
-      Debug.drawText(
+      showText(
         f"${_drones.size}: $totalCover%.1f/$strength%.1f} shouldAttack=$shouldAttack",
       midpoint.x, midpoint.y, ColorRGBA(1, 1, 0, 1))
-    }
+    }*/
 
     def strength: Double = Util.approximateStrength(_drones)
 

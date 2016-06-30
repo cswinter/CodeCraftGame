@@ -66,9 +66,9 @@ class DroneWorldSimulator(
   private var deadDrones = List.empty[DroneImpl]
   private var newlySpawnedDrones = List.empty[DroneImpl]
   private var _winner = Option.empty[Player]
-  private var _textModels = Iterable.empty[TextModel]
   private val rng = new RNG(rngSeed)
-  private final val debug = true
+  private final val debugMode = true
+  private val errors = new Errors(debug)
 
   /** Returns the winning player. */
   def winner = _winner
@@ -94,7 +94,9 @@ class DroneWorldSimulator(
         rng,
         !multiplayerConfig.isInstanceOf[MultiplayerClientConfig],
         this,
-        replayRecorder
+        replayRecorder,
+        debug,
+        errors
       )
   }.toMap
 
@@ -177,22 +179,13 @@ class DroneWorldSimulator(
 
   //noinspection MutatorLikeMethodIsParameterless
   private def updateTextModels = Local('UpdateTextModels) {
-    Errors.updateMessages()
-
-    val victoryMessage =
-      for (winner <- winner)
-        yield TextModel(
-          s"${winner.name} has won!",
-          0, 0,
-          ColorRGBA(winner.color, 0.6f),
-          absolutePos = true, centered = true, largeFont = true)
-
-    val droneTexts =
-      for {
-        drone <- drones
-        model <- drone.textModel
-      } yield model
-    _textModels = victoryMessage.toIterable ++ droneTexts
+    errors.updateMessages()
+    for (winner <- winner)
+      debug.drawText(
+        s"${winner.name} has won!",
+        0, 0,
+        ColorRGBA(winner.color, 0.6f),
+        absolutePosition = true, centered = true, largeFont = true)
   }
 
   private def clientSyncDroneCommands =
@@ -428,8 +421,6 @@ class DroneWorldSimulator(
   private implicit def simulationContext: SimulationContext =
     SimulationContext(droneRegistry, mineralRegistry, timestep)
 
-  override def textModels = _textModels
-
   def replayString: Option[String] = replayRecorder.replayString
 
   override def initialCameraPos: Vector2 = map.initialDrones.head.position
@@ -534,7 +525,7 @@ class DroneWorldSimulator(
   }
 
   private object IfDebug extends SimulationPhaseGuard {
-    override def shouldExecute(): Boolean = debug
+    override def shouldExecute(): Boolean = debugMode
   }
 
   private def playerHasWon(winCondition: WinCondition, player: Player): Boolean = {

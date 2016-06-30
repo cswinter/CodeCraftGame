@@ -69,6 +69,11 @@ trait Drone {
     if (drone.context.settings.allowMessages)
       drone.showText(text)
 
+  /** Draws the specified text at the specified position on this timestep. */
+  def showText(text: String, position: Vector2): Unit =
+    if (drone.context.settings.allowMessages)
+      drone.showText(text, position.x, position.y)
+
   /** Returns an object that specifies how many copies of each module the drone has. */
   @inline
   final def spec: DroneSpec = drone.spec
@@ -89,7 +94,7 @@ trait Drone {
 
   private def ensureVisible[T](property: => T, message: String = ""): T = {
     if (isVisible) property
-    else Errors.error(
+    else drone.context.errors.error(
       new ObjectNotVisibleException(
         s"Trying to access state of an enemy drone that is not inside the sight radius of any of your drones.$message"),
       drone.position

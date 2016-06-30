@@ -64,7 +64,7 @@ private[graphics] class RenderFrame(val gameWorld: Simulator)
     for (material <- renderStack.materials) {
       material.beforeDraw(projection)
 
-      for (worldObject <- worldObjects ++ engine.Debug.debugObjects) {
+      for (worldObject <- worldObjects) {
         try {
           worldObject.closedModel(gameWorld.timestep, context).draw(material)
         } catch {
@@ -112,8 +112,6 @@ private[graphics] class RenderFrame(val gameWorld: Simulator)
 
     textRenderer.beginRendering(width, height)
 
-    for (text <- Debug.textModels if !text.largeFont)
-      renderTextModel(textRenderer, text, width, height)
     for (text <- gameWorld.textModels if !text.largeFont)
       renderTextModel(textRenderer, text, width, height)
 
@@ -128,8 +126,6 @@ private[graphics] class RenderFrame(val gameWorld: Simulator)
     textRenderer.endRendering()
 
     largeTextRenderer.beginRendering(width, height)
-    for (text <- Debug.textModels if text.largeFont)
-      renderTextModel(largeTextRenderer, text, width, height)
     for (text <- gameWorld.textModels if text.largeFont)
       renderTextModel(textRenderer, text, width, height)
     largeTextRenderer.endRendering()

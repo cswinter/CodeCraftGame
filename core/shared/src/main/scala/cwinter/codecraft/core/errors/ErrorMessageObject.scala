@@ -1,6 +1,6 @@
 package cwinter.codecraft.core.errors
 
-import cwinter.codecraft.graphics.engine.Debug
+import cwinter.codecraft.graphics.engine.{TextModel, Debug}
 import cwinter.codecraft.util.maths.{ColorRGBA, Vector2}
 
 private[core] class ErrorMessageObject(
@@ -12,11 +12,15 @@ private[core] class ErrorMessageObject(
   private[this] var age = 0
 
   def update(): Unit = {
-    val color = ColorRGBA(errorLevel.color, 1 - (age.toFloat * age / (lifetime * lifetime)))
-    Debug.drawText(message, position.x.toFloat, position.y.toFloat, color)
     position += Vector2(0, 0.66f)
     age += 1
   }
+
+  def model: TextModel = {
+    val color = ColorRGBA(errorLevel.color, 1 - (age.toFloat * age / (lifetime * lifetime)))
+    TextModel(message, position.x, position.y, color)
+  }
+
 
   def hasFaded: Boolean = age >= lifetime
 }
