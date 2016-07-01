@@ -166,14 +166,15 @@ class DroneWorldSimulator(
   }
 
   private def completeStateUpdate = Local('CompleteStateUpdate) {
-    if (timestep % TickPeriod == TickPeriod - 1)
-      for (drone <- drones) drone.checkForArrival()
-
     val deathEvents =
       for (drone <- drones; d <- drone.deathEvents)
         yield d
     processSimulatorEvents(deathEvents ++ debugEvents)
-    visionTracker.updateAll()
+
+    if (timestep % TickPeriod == TickPeriod - 1) {
+      for (drone <- drones) drone.checkForArrival()
+      visionTracker.updateAll(timestep)
+    }
   }
 
   private def checkWinConditions = Local('CheckWinConditions) {
