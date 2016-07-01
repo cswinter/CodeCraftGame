@@ -16,12 +16,9 @@ private[codecraft] class Mothership(ctx: DestroyerContext) extends DestroyerCont
   var currentConstruction: Option[DroneSpec] = None
   var lastOneLarge = false
 
-  def this() = this(new DestroyerContext)
-
 
   override def onSpawn(): Unit = {
     super.onSpawn()
-    context.initialise(worldSize, this)
   }
 
   override def onTick(): Unit = {
@@ -29,7 +26,7 @@ private[codecraft] class Mothership(ctx: DestroyerContext) extends DestroyerCont
       currentConstruction = None
       nextConstructionSpec match {
         case Some((spec, controller))
-        if shouldBeginConstruction(spec.resourceCost) =>
+          if shouldBeginConstruction(spec.resourceCost) =>
           buildDrone(controller(), spec)
           currentConstruction = Some(spec)
           if (spec == battlecruiserSpec || spec == destroyerSpec2) lastOneLarge = true

@@ -142,7 +142,7 @@ private[codecraft] trait GameMasterLike {
     new ai.replicator.Replicator(greedy, confident, aggressive)
 
   /** Returns a drone controller for the Destroyer AI. */
-  def destroyerAI(): DroneControllerBase = new ai.destroyer.Mothership
+  def destroyerAI(): DroneControllerBase = new ai.destroyer.DestroyerContext().mothership
 
   /** The default [[WorldMap]]. */
   val defaultMap: WorldMap = {

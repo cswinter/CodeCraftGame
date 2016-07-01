@@ -53,14 +53,11 @@ private[codecraft] abstract class AugmentedController[TCommand, TContext <: Shar
   }
 
   def scout(): Unit = {
-    if (searchToken.isEmpty) searchToken = requestSearchToken()
-    for (t <- searchToken) {
-      if ((position - t.pos).lengthSquared < 1) {
+    for (t <- searchToken)
+      if ((position - t.pos).lengthSquared < 1)
         searchToken = None
-      } else {
-        moveTo(t.pos)
-      }
-    }
+    if (searchToken.isEmpty) searchToken = requestSearchToken()
+    for (t <- searchToken) moveTo(t.pos)
   }
 
   def requestSearchToken(): Option[SearchToken] = {

@@ -115,6 +115,11 @@ class DroneWorldSimulator(
     drone = createDrone(spec, controller, player, position, resources)
   } spawnDrone(drone)
 
+  for (mc <- metaControllers) {
+    mc._tickPeriod = TickPeriod
+    mc._worldSize = map.size
+    mc.init()
+  }
 
   override def update(): Unit = gameLoop.run()
 

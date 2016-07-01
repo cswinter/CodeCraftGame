@@ -11,8 +11,8 @@ private[codecraft] class Scout(ctx: DestroyerContext) extends DestroyerControlle
   var afraid = 0
 
   override def onTick(): Unit = {
-    flightTimer -= 1
-    afraid -= 1
+    flightTimer -= tickPeriod
+    afraid -= tickPeriod
     if (flightTimer == 0) halt()
 
     if (flightTimer <= 0) {

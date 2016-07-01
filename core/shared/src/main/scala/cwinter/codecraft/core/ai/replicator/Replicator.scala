@@ -31,7 +31,6 @@ private[codecraft] class Replicator(ctx: ReplicatorContext) extends ReplicatorCo
 
   override def onSpawn(): Unit = {
     super.onSpawn()
-    context.initialise(worldSize)
     context.isReplicatorInConstruction = false
     mothershipCoordinator.online(this)
   }
