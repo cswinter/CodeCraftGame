@@ -52,13 +52,6 @@ private[core] class DroneImpl(
 
   private[this] var handles = Map.empty[Player, EnemyDrone]
 
-  private[this] var _missileHits = List.empty[MissileHit]
-  def popMissileHits(): Seq[MissileHit] = {
-    val result = _missileHits
-    _missileHits = List.empty[MissileHit]
-    result
-  }
-
   private[this] var _collisionMarkers = List.empty[(CollisionMarkerModel, Float)]
   private[this] var debugMessage = Option.empty[String]
   private[this] var debugTexts = List.empty[TextModel]
@@ -198,9 +191,8 @@ private[core] class DroneImpl(
 
     mustUpdateModel()
 
-    // TODO: only do this in multiplayer games
-    if (context.isLocallyComputed) {
-      _missileHits ::= MissileHit(id, missile.position, missile.id)
+    if (context.isLocallyComputed && context.isMultiplayer) {
+      context.missileHits ::= MissileHit(id, missile.position, missile.id)
     }
   }
 

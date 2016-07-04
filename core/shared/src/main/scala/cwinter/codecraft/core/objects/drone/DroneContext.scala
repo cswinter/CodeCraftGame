@@ -19,11 +19,14 @@ private[core] case class DroneContext(
   idGenerator: IDGenerator,
   rng: RNG,
   isLocallyComputed: Boolean,
+  isMultiplayer: Boolean,
   simulator: DroneWorldSimulator,
   replayRecorder: ReplayRecorder = NullReplayRecorder,
   debug: Debug,
   errors: Errors
 ) {
   def settings = simulator.settings
+
+  var missileHits = List.empty[MissileHit]
 }
 

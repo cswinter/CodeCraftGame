@@ -95,6 +95,7 @@ class DroneWorldSimulator(
         new IDGenerator(player.id),
         rng,
         !multiplayerConfig.isInstanceOf[MultiplayerClientConfig],
+        !multiplayerConfig.isInstanceOf[SingleplayerConfig.type],
         this,
         replayRecorder,
         debug,
@@ -127,13 +128,14 @@ class DroneWorldSimulator(
 
   private val gameLoop: SimulationPhase =
     IfDebug ? printDebugInfo <*>
-    runDroneControllers <*>
-    IfServer ? serverSyncDroneCommands <*>
-    IfClient ? clientSyncDroneCommands <*>
+    OnTick ? runDroneControllers <*>
+    (IfServer & OnTick) ? serverSyncDroneCommands <*>
+    (IfClient & OnTick) ? clientSyncDroneCommands <*>
     recomputeWorldState <*>
-    IfServer ? distributeWorldState <*>
-    IfClient ? (awaitWorldState <*> applyWorldState) <*>
-    completeStateUpdate <*>
+    (IfServer & BeforeTick) ? distributeWorldState <*>
+    (IfClient & BeforeTick) ? (awaitWorldState <*> applyWorldState) <*>
+    processDeathEvents <*>
+    BeforeTick ? updateDroneState <*>
     checkWinConditions <*>
     updateTextModels
 
@@ -145,16 +147,13 @@ class DroneWorldSimulator(
 
   private def runDroneControllers = Local('RunDroneControllers) {
     replayRecorder.newTimestep(timestep)
-    // TODO: expose a simulationHasFinished property that will stop the update method from being called
-    if (timestep % TickPeriod == 0 && !replayer.exists(_.finished)) {
-      for (r <- replayer) r.run(timestep)
-      for (mc <- metaControllers) mc.onTick()
-      for (drone <- deadDrones) drone.processEvents()
-      for (drone <- newlySpawnedDrones) drone.controller.onSpawn()
-      for (drone <- drones) drone.processEvents()
-      deadDrones = List.empty
-      newlySpawnedDrones = List.empty
-    }
+    for (r <- replayer) r.run(timestep)
+    for (mc <- metaControllers) mc.onTick()
+    for (drone <- deadDrones) drone.processEvents()
+    for (drone <- newlySpawnedDrones) drone.controller.onSpawn()
+    for (drone <- drones) drone.processEvents()
+    deadDrones = List.empty
+    newlySpawnedDrones = List.empty
   }
 
   private def recomputeWorldState = Local('RecomputeWorldState) {
@@ -165,16 +164,16 @@ class DroneWorldSimulator(
     processSimulatorEvents(events.toList)
   }
 
-  private def completeStateUpdate = Local('CompleteStateUpdate) {
+  private def processDeathEvents = Local('ProcessDeathEvents) {
     val deathEvents =
       for (drone <- drones; d <- drone.deathEvents)
         yield d
     processSimulatorEvents(deathEvents ++ debugEvents)
+  }
 
-    if (timestep % TickPeriod == TickPeriod - 1) {
-      for (drone <- drones) drone.checkForArrival()
-      visionTracker.updateAll(timestep)
-    }
+  private def updateDroneState = Local('CompleteStateUpdate) {
+    for (drone <- drones) drone.checkForArrival()
+    visionTracker.updateAll(timestep)
   }
 
   private def checkWinConditions = Local('CheckWinConditions) {
@@ -265,7 +264,11 @@ class DroneWorldSimulator(
     ) {
       stateChanges.appendAll(dynamics.syncMsg())
       stateChanges.appendAll(dynamics.arrivalMsg)
-      missileHits.appendAll(drone.popMissileHits())
+    }
+
+    for (context <- contextForPlayer.values) {
+      missileHits.appendAll(context.missileHits)
+      context.missileHits = List.empty
     }
 
     WorldStateMessage(missileHits, stateChanges)
@@ -519,23 +522,60 @@ class DroneWorldSimulator(
     override def isFullyLocal = subphases.forall(_.isFullyLocal)
   }
 
+  private trait ConditionalSimulationPhase extends SimulationPhase {
+    def shouldRun: Boolean
+    def phase: SimulationPhase
+
+    override def run(): Unit = if (shouldRun) phase.run()
+    override def isFullyLocal: Boolean = phase.isFullyLocal || !shouldRun
+    override def runAsync(): Future[Unit] =
+      if (shouldRun) phase.runAsync() else Future.successful(Unit)
+  }
+
+  private trait RunOnCondition {
+    self =>
+    def shouldRun: Boolean
+    def ?(conditionalPhase: SimulationPhase): SimulationPhase = new ConditionalSimulationPhase {
+      override def shouldRun: Boolean = self.shouldRun
+      override def phase: SimulationPhase = conditionalPhase
+    }
+  }
+
+  private object OnTick extends RunOnCondition {
+    override def shouldRun: Boolean = timestep % TickPeriod == 0
+  }
+
+  private object BeforeTick extends RunOnCondition {
+    override def shouldRun: Boolean = timestep % TickPeriod == TickPeriod - 1
+  }
+
+
   private trait SimulationPhaseGuard {
-    def shouldExecute(): Boolean
+    self =>
+
+    def shouldExecute: Boolean
     def ?(phase: SimulationPhase): SimulationPhase =
-      if (shouldExecute()) phase
+      if (shouldExecute) phase
       else NoopSimulationPhase
+
+    def &(dynamicGuard: RunOnCondition): SimulationPhaseGuard = new SimulationPhaseGuard {
+      def shouldExecute = self.shouldExecute
+      override def ?(phase: SimulationPhase): SimulationPhase =
+        if (shouldExecute) dynamicGuard ? phase
+        else NoopSimulationPhase
+    }
   }
 
   private object IfServer extends SimulationPhaseGuard {
-    override def shouldExecute(): Boolean = multiplayerConfig.isInstanceOf[AuthoritativeServerConfig]
+    override def shouldExecute: Boolean = multiplayerConfig.isInstanceOf[AuthoritativeServerConfig]
   }
 
   private object IfClient extends SimulationPhaseGuard {
-    override def shouldExecute(): Boolean = multiplayerConfig.isInstanceOf[MultiplayerClientConfig]
+    override def shouldExecute: Boolean = multiplayerConfig.isInstanceOf[MultiplayerClientConfig]
   }
 
   private object IfDebug extends SimulationPhaseGuard {
-    override def shouldExecute(): Boolean = debugMode
+    override def shouldExecute: Boolean = debugMode
   }
 
   private def playerHasWon(winCondition: WinCondition, player: Player): Boolean = {
