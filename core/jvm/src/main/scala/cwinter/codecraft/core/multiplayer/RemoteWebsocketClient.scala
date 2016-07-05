@@ -59,14 +59,14 @@ private[core] class RemoteWebsocketClient(
   }
 
   def syncMessage =
-    MultiplayerMessage.serializeBinary(
+    InitialSync(
       map.size,
       map.minerals,
-      map.initialDrones,
-      players,
-      Set(OrangePlayer, BluePlayer) -- players,
+      map.initialDrones.map(x => SerializableSpawn(x)),
+      players.map(_.id),
+      (Set(OrangePlayer, BluePlayer) -- players).map(_.id),
       rngSeed
-    )
+    ).toBinary
 
   override def waitForCommands()(implicit context: SimulationContext): Future[Seq[(Int, DroneCommand)]] = {
     if (debug) println(s"[t=${context.timestep}] Waiting for commands...")
@@ -95,7 +95,7 @@ private[core] class RemoteWebsocketClient(
     val serializable =
       for ((id, command) <- commands)
         yield (id, command.toSerializable)
-    val serialized = MultiplayerMessage.serializeBinary(serializable)
+    val serialized = CommandsMessage(serializable).toBinary
     commandsSentSize.addMeasurement(serialized.remaining)
     send(serialized)
   }

@@ -23,9 +23,7 @@ private[core] class WebsocketServerConnection(
 
 
   connection.onMessage(handleMessage)
-  val binaryRegister = MultiplayerMessage.registerBinary
-  val registerDecoded = MultiplayerMessage.parseBytes(binaryRegister)
-  connection.sendMessage(MultiplayerMessage.registerBinary)
+  connection.sendMessage(Register.toBinary)
 
 
   def handleMessage(client: WebsocketClient, message: ByteBuffer): Unit = {
@@ -35,7 +33,7 @@ private[core] class WebsocketServerConnection(
       case state: WorldStateMessage => worldState.success(state)
       case start: InitialSync => initialWorldState.success(start)
       case Register =>
-      case rtt: RTT => connection.sendMessage(MultiplayerMessage.serializeBinary(rtt))
+      case rtt: RTT => connection.sendMessage(rtt.toBinary)
     }
   }
 
@@ -62,9 +60,9 @@ private[core] class WebsocketServerConnection(
     val serializable =
       for ((id, command) <- commands)
         yield (id, command.toSerializable)
-    val message = MultiplayerMessage.serializeBinary(serializable)
-    if (debug) println(s"sendCommands($commands)")
+    val message = CommandsMessage(serializable).toBinary
     connection.sendMessage(message)
+    if (debug) println(s"sendCommands($commands)")
   }
 
 

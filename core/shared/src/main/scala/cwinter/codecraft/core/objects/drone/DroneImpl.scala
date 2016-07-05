@@ -547,7 +547,9 @@ private[core] object SerializableSpawn {
     SerializableSpawn(spawn.droneSpec, spawn.position, spawn.player.id, spawn.resources, spawn.name)
 }
 
-private[core] sealed trait MultiplayerMessage
+private[core] sealed trait MultiplayerMessage {
+  def toBinary: ByteBuffer = MultiplayerMessage.serializeBinary(this)
+}
 
 private[core] case class CommandsMessage(
   commands: Seq[(Int, SerializableDroneCommand)]
@@ -583,56 +585,9 @@ private[core] case class RTT(sent: Long, msg: String) extends MultiplayerMessage
 
 
 private[core] object MultiplayerMessage {
-  def parse(json: String): MultiplayerMessage =
-    read[MultiplayerMessage](json)
-
-  def parseBytes(bytes: ByteBuffer): MultiplayerMessage = {
-    Unpickle[MultiplayerMessage].fromBytes(bytes)
-  }
-
+  def parse(json: String): MultiplayerMessage = read[MultiplayerMessage](json)
+  def parseBytes(bytes: ByteBuffer): MultiplayerMessage = Unpickle[MultiplayerMessage].fromBytes(bytes)
   def serializeBinary(msg: MultiplayerMessage): ByteBuffer = Pickle.intoBytes(msg)
-
-  def serialize(commands: Seq[(Int, SerializableDroneCommand)]): String =
-    write(CommandsMessage(commands))
-
-  def serializeBinary(commands: Seq[(Int, SerializableDroneCommand)]): ByteBuffer =
-    Pickle.intoBytes[MultiplayerMessage](CommandsMessage(commands))
-
-  def serialize(
-    worldSize: Rectangle,
-    minerals: Seq[MineralSpawn],
-    initialDrones: Seq[Spawn],
-    localPlayers: Set[Player],
-    remotePlayers: Set[Player],
-    rngSeed: Int
-  ): String = write(InitialSync(
-    worldSize,
-    minerals,
-    initialDrones.map(x => SerializableSpawn(x)),
-    localPlayers.map(_.id),
-    remotePlayers.map(_.id),
-    rngSeed
-  ))
-
-  def serializeBinary(
-    worldSize: Rectangle,
-    minerals: Seq[MineralSpawn],
-    initialDrones: Seq[Spawn],
-    localPlayers: Set[Player],
-    remotePlayers: Set[Player],
-    rngSeed: Int
-  ): ByteBuffer = Pickle.intoBytes[MultiplayerMessage](InitialSync(
-    worldSize,
-    minerals,
-    initialDrones.map(x => SerializableSpawn(x)),
-    localPlayers.map(_.id),
-    remotePlayers.map(_.id),
-    rngSeed
-  ))
-
-  def register: String = write(Register)
-
-  def registerBinary: ByteBuffer = Pickle.intoBytes[MultiplayerMessage](Register)
 }
 
 private[core] object DroneOrdering extends Ordering[DroneImpl] {
