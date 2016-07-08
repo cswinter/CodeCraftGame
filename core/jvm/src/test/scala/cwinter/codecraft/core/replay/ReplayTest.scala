@@ -1,7 +1,8 @@
 package cwinter.codecraft.core.replay
 
-import cwinter.codecraft.core.{TestUtils, DroneWorldSimulator}
+import cwinter.codecraft.core.TestUtils
 import cwinter.codecraft.core.api.TheGameMaster
+import cwinter.codecraft.core.game.DroneWorldSimulator
 import org.scalatest.FlatSpec
 
 

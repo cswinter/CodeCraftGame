@@ -1,8 +1,7 @@
 package cwinter.codecraft.core.multiplayer
 
 import java.nio.ByteBuffer
-
-import cwinter.codecraft.core.SimulationContext
+import cwinter.codecraft.core.game.SimulationContext
 import cwinter.codecraft.core.objects.drone._
 
 import scala.concurrent.ExecutionContext.Implicits.global

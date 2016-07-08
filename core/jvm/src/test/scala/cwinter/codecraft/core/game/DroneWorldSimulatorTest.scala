@@ -1,8 +1,8 @@
-package cwinter.codecraft.core
+package cwinter.codecraft.core.game
 
 import cwinter.codecraft.core.api._
 import cwinter.codecraft.core.objects.drone.HarvestMineral
-import cwinter.codecraft.core.replay.DummyDroneController
+import cwinter.codecraft.core.replay.{NullReplayRecorder, DummyDroneController}
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -16,7 +16,8 @@ class DroneWorldSimulatorTest extends FlatSpec with Matchers {
     Seq(Spawn(mockDroneSpec, Vector2(0, 0), BluePlayer))
   )
 
-  val simulator = new DroneWorldSimulator(map, Seq(mockDrone), _ => Seq())
+  val simulator = new DroneWorldSimulator(
+    map, Seq(mockDrone), _ => Seq(),forceReplayRecorder = Some(NullReplayRecorder))
   val mineral = simulator.minerals.head
 
 

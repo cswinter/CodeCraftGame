@@ -2,9 +2,9 @@ package cwinter.codecraft.core.multiplayer
 
 import java.nio.ByteBuffer
 
-import cwinter.codecraft.core.api.{OrangePlayer, BluePlayer, Player}
+import cwinter.codecraft.core.api.{BluePlayer, OrangePlayer, Player}
+import cwinter.codecraft.core.game.{SimulationContext, WorldMap}
 import cwinter.codecraft.core.objects.drone._
-import cwinter.codecraft.core.{SimulationContext, WorldMap}
 import cwinter.codecraft.util.AggregateStatistics
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -16,7 +16,7 @@ private[core] class RemoteWebsocketClient(
   val map: WorldMap,
   val rngSeed: Int,
   val debug: Boolean = false,
-  val info: Boolean = true
+  val info: Boolean = false
 ) extends RemoteClient with WebsocketWorker {
   private var clientCommands = Promise[Seq[(Int, SerializableDroneCommand)]]
   private val commandsSentSize = new AggregateStatistics

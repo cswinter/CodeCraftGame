@@ -1,8 +1,8 @@
-package cwinter.codecraft.core
+package cwinter.codecraft.core.game
 
 import cwinter.codecraft.core.api._
 import cwinter.codecraft.core.objects.MineralCrystalImpl
-import cwinter.codecraft.util.maths.{GlobalRNG, RNG, Rectangle, Vector2}
+import cwinter.codecraft.util.maths.{GlobalRNG, Rectangle, Vector2}
 
 
 /** Defines the initial world state for a game.
@@ -109,7 +109,6 @@ object WorldMap {
 
     WorldMap(minerals, size, initialDrones)
   }
-
 
 
   private def generateResourceCluster(midpoint: Vector2, minDist: Double, spread: Double, amount: Int, maxSize: Int): Seq[MineralSpawn] = {

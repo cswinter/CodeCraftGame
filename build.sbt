@@ -83,7 +83,7 @@ val core = (crossProject in file("core")).
     libraryDependencies ++= commonDependencies,
     libraryDependencies +=  "org.scala-lang.modules" % "scala-async_2.11" % "0.9.5",
     libraryDependencies += "me.chrons" %%% "boopickle" % "1.1.3",
-    libraryDependencies += "com.lihaoyi" %%% "upickle" % "0.3.6"
+    libraryDependencies += "com.lihaoyi" %%% "upickle" % "0.4.1"
   ).jvmSettings(
     assemblyMergeStrategy in assembly := {
       case x if x.endsWith(".so") || x.endsWith(".dll") || x.endsWith(".jnilib") =>
@@ -130,7 +130,7 @@ lazy val docs = (project in file("docs"))
   .settings(
     libraryDependencies +=  "org.scala-lang.modules" % "scala-async_2.11" % "0.9.5",
     libraryDependencies += "me.chrons" %%% "boopickle" % "1.1.3",
-    libraryDependencies += "com.lihaoyi" %%% "upickle" % "0.3.6",
+    libraryDependencies += "com.lihaoyi" %%% "upickle" % "0.4.1",
     libraryDependencies ++= coreJVMDependencies,
     unmanagedSourceDirectories in Compile <<=
       (projects map (unmanagedSourceDirectories in _ in Compile)).join.apply{(s) => s.flatten},

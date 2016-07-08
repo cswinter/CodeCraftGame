@@ -3,6 +3,7 @@ package cwinter.codecraft.core.objects
 import cwinter.codecraft.core._
 import cwinter.codecraft.core.api.GameConstants.{MissileLifetime, MissileSpeed}
 import cwinter.codecraft.core.api.Player
+import cwinter.codecraft.core.game.{MissileExplodes, HomingMissileFaded, SimulatorEvent}
 import cwinter.codecraft.core.graphics.{BasicHomingMissileModel, HomingMissileModel}
 import cwinter.codecraft.core.objects.drone.DroneImpl
 import cwinter.codecraft.graphics.engine.{ModelDescriptor, NullPositionDescriptor}

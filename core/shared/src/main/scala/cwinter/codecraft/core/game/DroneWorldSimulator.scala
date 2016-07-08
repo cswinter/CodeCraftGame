@@ -1,25 +1,25 @@
-package cwinter.codecraft.core
+package cwinter.codecraft.core.game
 
 import cwinter.codecraft.collisions.{VisionTracker, VisionTracking}
+import cwinter.codecraft.core.{PerformanceMonitor, PerformanceMonitorFactory}
 import cwinter.codecraft.core.api._
 import cwinter.codecraft.core.errors.Errors
 import cwinter.codecraft.core.objects._
 import cwinter.codecraft.core.objects.drone._
-import cwinter.codecraft.core.replay._
-import cwinter.codecraft.graphics.engine._
+import cwinter.codecraft.core.replay.{NullReplayRecorder, ReplayRecorder, Replayer, ReplayFactory}
+import cwinter.codecraft.graphics.engine.{ModelDescriptor, NullPositionDescriptor, PositionDescriptor, Simulator}
 import cwinter.codecraft.graphics.models.{CircleOutlineModelBuilder, RectangleModelBuilder}
 import cwinter.codecraft.physics.PhysicsEngine
 import cwinter.codecraft.util.maths._
 import cwinter.codecraft.util.modules.ModulePosition
 
-import scala.async.Async.{async, await}
+import scala.async.Async._
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import scala.scalajs.js.annotation.JSExport
-
 
 /** Aggregates all datastructures required to run a game and implements the game loop.
   *
@@ -40,7 +40,7 @@ class DroneWorldSimulator(
 ) extends Simulator {
   outer =>
   private final val MaxDroneRadius = 60
-  private final val TickPeriod = 10
+  final val TickPeriod = 10
 
   private val replayRecorder: ReplayRecorder =
     if (forceReplayRecorder.nonEmpty) forceReplayRecorder.get
@@ -68,7 +68,7 @@ class DroneWorldSimulator(
   private var newlySpawnedDrones = List.empty[DroneImpl]
   private var _winner = Option.empty[Player]
   private val rng = new RNG(rngSeed)
-  private final val debugMode = true
+  private final val debugMode = false
   private val errors = new Errors(debug)
 
   /** Returns the winning player. */
@@ -590,15 +590,15 @@ class DroneWorldSimulator(
 
 
 private[codecraft] sealed trait SimulatorEvent
-private[codecraft] case class MineralCrystalHarvested(mineralCrystal: MineralCrystalImpl) extends SimulatorEvent
+private[codecraft] case class RemoveEnergyGlobeAnimation(energyGlobeObject: EnergyGlobeObject) extends SimulatorEvent
+private[codecraft] case class DroneConstructionCancelled(drone: DroneImpl) extends SimulatorEvent
 private[codecraft] case class DroneConstructionStarted(drone: DroneImpl) extends SimulatorEvent
+private[codecraft] case class DroneKilled(drone: DroneImpl) extends SimulatorEvent
+private[codecraft] case class HomingMissileFaded(missile: HomingMissile) extends SimulatorEvent
+private[codecraft] case class LightFlashDestroyed(lightFlash: LightFlash) extends SimulatorEvent
+private[codecraft] case class MineralCrystalHarvested(mineralCrystal: MineralCrystalImpl) extends SimulatorEvent
+private[codecraft] case class MissileExplodes(homingMissile: HomingMissile) extends SimulatorEvent
 private[codecraft] case class SpawnDrone(drone: DroneImpl) extends SimulatorEvent
 private[codecraft] case class SpawnHomingMissile(player: Player, position: Vector2, missileID: Int, target: DroneImpl) extends SimulatorEvent
-private[codecraft] case class HomingMissileFaded(missile: HomingMissile) extends SimulatorEvent
-private[codecraft] case class MissileExplodes(homingMissile: HomingMissile) extends SimulatorEvent
-private[codecraft] case class LightFlashDestroyed(lightFlash: LightFlash) extends SimulatorEvent
-private[codecraft] case class DroneKilled(drone: DroneImpl) extends SimulatorEvent
-private[codecraft] case class DroneConstructionCancelled(drone: DroneImpl) extends SimulatorEvent
 private[codecraft] case class SpawnEnergyGlobeAnimation(energyGlobeObject: EnergyGlobeObject) extends SimulatorEvent
-private[codecraft] case class RemoveEnergyGlobeAnimation(energyGlobeObject: EnergyGlobeObject) extends SimulatorEvent
 

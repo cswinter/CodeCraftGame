@@ -1,5 +1,4 @@
-package cwinter.codecraft.core
-
+package cwinter.codecraft.core.game
 
 /** Aggregates various display settings.
   *

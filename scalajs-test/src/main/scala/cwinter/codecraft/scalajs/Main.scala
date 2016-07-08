@@ -1,7 +1,8 @@
 package cwinter.codecraft.scalajs
 
 import cwinter.codecraft.core.api.{DroneControllerBase, TheGameMaster}
-import cwinter.codecraft.core.{DroneWorldSimulator, Settings}
+import cwinter.codecraft.core.game.DroneWorldSimulator
+import cwinter.codecraft.core.{game, Settings}
 import org.scalajs.dom
 import org.scalajs.dom.{document, html}
 
@@ -12,7 +13,7 @@ import scala.scalajs.js.annotation.JSExport
 object Main {
   @JSExport
   def webgl(canvas: html.Canvas): Unit = {
-    new Settings(recordReplays = false).setAsDefault()
+    new game.Settings(recordReplays = false).setAsDefault()
     TheGameMaster.canvas = canvas
     TheGameMaster.outputFPS = true
     run(TheGameMaster.replicatorAI(), TheGameMaster.replicatorAI())

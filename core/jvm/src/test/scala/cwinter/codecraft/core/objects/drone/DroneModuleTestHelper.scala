@@ -1,6 +1,6 @@
 package cwinter.codecraft.core.objects.drone
 
-import cwinter.codecraft.core.SimulatorEvent
+import cwinter.codecraft.core.game.SimulatorEvent
 import cwinter.codecraft.util.maths.Vector2
 
 object DroneModuleTestHelper {

@@ -1,6 +1,6 @@
 package cwinter.codecraft.core.api
 
-import cwinter.codecraft.core.DroneWorldSimulator
+import cwinter.codecraft.core.game.DroneWorldSimulator
 import cwinter.codecraft.core.multiplayer.{JSWebsocketClient, WebsocketClient}
 import cwinter.codecraft.graphics.engine.WebGLRenderer
 import cwinter.codecraft.util.maths.ColorRGBA

@@ -1,7 +1,7 @@
-package cwinter.codecraft.core
+package cwinter.codecraft.core.game
 
 import cwinter.codecraft.core.api.Player
-import cwinter.codecraft.core.multiplayer.{RemoteClient, RemoteServer}
+import cwinter.codecraft.core.multiplayer.{RemoteServer, RemoteClient}
 
 
 sealed trait MultiplayerConfig {
@@ -10,14 +10,11 @@ sealed trait MultiplayerConfig {
   def isLocalPlayer(player: Player): Boolean
 }
 
-private[core] case class AuthoritativeServerConfig(
-  localPlayers: Set[Player],
-  remotePlayers: Set[Player],
-  clients: Set[RemoteClient]
-) extends MultiplayerConfig {
-  def isMultiplayerGame = true
-  def isLocalPlayer(player: Player): Boolean = localPlayers.contains(player)
-  val commandRecorder = new CommandRecorder
+
+private[core] object SingleplayerConfig extends MultiplayerConfig {
+  def isMultiplayerGame = false
+  def commandRecorder = throw new Exception("Trying to call commandRecorder on SingleplayerConfig.")
+  def isLocalPlayer(player: Player): Boolean = true
 }
 
 private[core] case class MultiplayerClientConfig(
@@ -30,13 +27,12 @@ private[core] case class MultiplayerClientConfig(
   val commandRecorder = new CommandRecorder
 }
 
-private[core] object SingleplayerConfig extends MultiplayerConfig {
-  def isMultiplayerGame = false
-  def commandRecorder = throw new Exception("Trying to call commandRecorder on SingleplayerConfig.")
-  def isLocalPlayer(player: Player): Boolean = true
+private[core] case class AuthoritativeServerConfig(
+  localPlayers: Set[Player],
+  remotePlayers: Set[Player],
+  clients: Set[RemoteClient]
+) extends MultiplayerConfig {
+  def isMultiplayerGame = true
+  def isLocalPlayer(player: Player): Boolean = localPlayers.contains(player)
+  val commandRecorder = new CommandRecorder
 }
-
-
-
-
-

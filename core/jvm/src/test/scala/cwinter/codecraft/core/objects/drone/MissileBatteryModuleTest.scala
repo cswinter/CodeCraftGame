@@ -1,7 +1,7 @@
 package cwinter.codecraft.core.objects.drone
 
-import cwinter.codecraft.core.SpawnHomingMissile
 import cwinter.codecraft.core.api.DroneSpec
+import cwinter.codecraft.core.game.SpawnHomingMissile
 import cwinter.codecraft.util.maths.Vector2
 import org.scalatest.FlatSpec
 

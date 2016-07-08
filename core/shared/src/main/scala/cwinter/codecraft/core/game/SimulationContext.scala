@@ -1,4 +1,4 @@
-package cwinter.codecraft.core
+package cwinter.codecraft.core.game
 
 import cwinter.codecraft.core.objects.MineralCrystalImpl
 import cwinter.codecraft.core.objects.drone.DroneImpl

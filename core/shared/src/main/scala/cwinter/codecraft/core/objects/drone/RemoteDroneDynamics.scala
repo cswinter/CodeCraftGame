@@ -1,6 +1,6 @@
 package cwinter.codecraft.core.objects.drone
 
-import cwinter.codecraft.core.SimulationContext
+import cwinter.codecraft.core.game.SimulationContext
 import cwinter.codecraft.util.maths.Vector2
 
 

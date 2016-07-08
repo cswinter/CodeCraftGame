@@ -1,5 +1,6 @@
 package cwinter.codecraft.core
 
+import cwinter.codecraft.core.game.DroneWorldSimulator
 import cwinter.codecraft.core.graphics.DroneModel
 import cwinter.codecraft.graphics.engine.ModelDescriptor
 
@@ -13,23 +14,25 @@ object TestUtils {
   def runAndRecord(droneWorldSimulator: DroneWorldSimulator, timesteps: Int): GameRecord = {
     val snapshots = ArrayBuffer.empty[Set[ModelDescriptor[_]]]
 
-    for (i <- 0 to timesteps) {
-      droneWorldSimulator.run(1)
+    droneWorldSimulator.run(1)
+    for (i <- 0 to timesteps / droneWorldSimulator.TickPeriod) {
+      droneWorldSimulator.run(droneWorldSimulator.TickPeriod)
       snapshots.append(droneWorldSimulator.worldState.filter{
         case ModelDescriptor(pos, descriptor, params) => descriptor.isInstanceOf[DroneModel]
       }.toSet)
+      assert(droneWorldSimulator.timestep % droneWorldSimulator.TickPeriod == 0)
     }
 
     snapshots
   }
 
-  def assertEqual(run1: GameRecord, run2: GameRecord, debugInfo: String): Unit = {
+  def assertEqual(run1: GameRecord, run2: GameRecord, debugInfo: String, tickPeriod: Int = 1): Unit = {
     require(run1.size == run2.size)
     val timesteps = run1.size
     for (t <- 0 until timesteps) {
       if (run1(t) != run2(t)) {
         println(debugInfo)
-        println(s"Games diverged at t=$t\n")
+        println(s"Games diverged at t=${t * tickPeriod}\n")
         showMismatch(run1(t), run2(t))
       }
     }

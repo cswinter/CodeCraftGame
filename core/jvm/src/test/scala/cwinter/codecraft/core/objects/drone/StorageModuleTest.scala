@@ -1,7 +1,7 @@
 package cwinter.codecraft.core.objects.drone
 
-import cwinter.codecraft.core.MineralCrystalHarvested
 import cwinter.codecraft.core.api.DroneSpec
+import cwinter.codecraft.core.game.MineralCrystalHarvested
 import cwinter.codecraft.core.objects.MineralCrystalImpl
 import cwinter.codecraft.util.maths.Vector2
 import org.scalatest.{Matchers, FlatSpec}

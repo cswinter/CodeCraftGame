@@ -1,7 +1,7 @@
 package cwinter.codecraft.core.objects.drone
 
-import cwinter.codecraft.core.SimulatorEvent
 import cwinter.codecraft.core.api.GameConstants.{ShieldMaximumHitpoints, ShieldRegenerationInterval}
+import cwinter.codecraft.core.game.SimulatorEvent
 import cwinter.codecraft.core.graphics.{DroneModuleDescriptor, ShieldGeneratorDescriptor}
 import cwinter.codecraft.util.maths.Vector2
 
@@ -34,6 +34,7 @@ private[core] class ShieldGeneratorModule(positions: Seq[Int], owner: DroneImpl)
 
   /**
    * Reduces shield strength by some amount of damage.
+ *
    * @return Returns the amount of damage which couldn't be absorbed.
    */
   def absorbDamage(damage: Int): Int = {

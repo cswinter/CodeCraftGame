@@ -1,7 +1,7 @@
 package cwinter.codecraft.core.multiplayer
 
-import cwinter.codecraft.core.SimulationContext
 import cwinter.codecraft.core.api.Player
+import cwinter.codecraft.core.game.SimulationContext
 import cwinter.codecraft.core.objects.drone._
 
 import scala.concurrent.ExecutionContext.Implicits.global

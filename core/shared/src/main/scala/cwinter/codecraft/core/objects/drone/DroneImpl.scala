@@ -4,9 +4,11 @@ import java.nio.ByteBuffer
 
 import cwinter.codecraft.collisions.{ActiveVisionTracking, VisionTracking}
 import cwinter.codecraft.core._
+import cwinter.codecraft.core.ai.deterministic.DeterministicScout
 import cwinter.codecraft.core.api.GameConstants.HarvestingRange
 import cwinter.codecraft.core.api._
 import cwinter.codecraft.core.errors.Errors
+import cwinter.codecraft.core.game._
 import cwinter.codecraft.core.graphics.{DroneModelParameters, DroneModuleDescriptor, DroneModel, CollisionMarkerModel}
 import cwinter.codecraft.core.objects._
 import cwinter.codecraft.core.replay._

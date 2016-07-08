@@ -3,8 +3,8 @@ package cwinter.codecraft.core.multiplayer
 import akka.actor._
 import akka.io.IO
 import cwinter.codecraft.core.api.{BluePlayer, OrangePlayer, Player, TheGameMaster}
+import cwinter.codecraft.core.game.{AuthoritativeServerConfig, DroneWorldSimulator, WorldMap}
 import cwinter.codecraft.core.replay.DummyDroneController
-import cwinter.codecraft.core.{WorldMap, AuthoritativeServerConfig, DroneWorldSimulator}
 import spray.can.Http
 import spray.can.server.UHttp
 
@@ -21,7 +21,10 @@ object Server {
     system.awaitTermination()
   }
 
-  def spawnServerInstance2(seed: Int = scala.util.Random.nextInt, map: WorldMap = TheGameMaster.defaultMap): Unit = {
+  def spawnServerInstance2(
+    seed: Int = scala.util.Random.nextInt,
+    map: WorldMap = TheGameMaster.defaultMap
+  ): Unit = {
     implicit val system = ActorSystem()
     val server = system.actorOf(Props(classOf[TwoPlayerMultiplayerServer], seed, map), "websocket")
     IO(UHttp) ! Http.Bind(server, "0.0.0.0", 8080)

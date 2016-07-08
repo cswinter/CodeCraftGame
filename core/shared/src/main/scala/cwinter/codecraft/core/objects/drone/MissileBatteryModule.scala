@@ -1,8 +1,8 @@
 package cwinter.codecraft.core.objects.drone
 
 import cwinter.codecraft.core.api.GameConstants.{MissileCooldown, MissileLockOnRange}
-import cwinter.codecraft.core.graphics.{MissileBatteryDescriptor, DroneModuleDescriptor}
-import cwinter.codecraft.core.{SimulatorEvent, SpawnHomingMissile}
+import cwinter.codecraft.core.game.{SimulatorEvent, SpawnHomingMissile}
+import cwinter.codecraft.core.graphics.{DroneModuleDescriptor, MissileBatteryDescriptor}
 import cwinter.codecraft.util.maths.Vector2
 
 
