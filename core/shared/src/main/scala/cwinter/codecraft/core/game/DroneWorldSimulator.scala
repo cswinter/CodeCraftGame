@@ -36,7 +36,7 @@ class DroneWorldSimulator(
   multiplayerConfig: MultiplayerConfig = SingleplayerConfig,
   forceReplayRecorder: Option[ReplayRecorder] = None,
   val settings: Settings = Settings.default,
-  private var rngSeed: Int = Rng.seed
+  private var rngSeed: Int = GlobalRNG.seed
 ) extends Simulator {
   outer =>
   private final val MaxDroneRadius = 60
@@ -48,7 +48,7 @@ class DroneWorldSimulator(
     else NullReplayRecorder
 
   replayer.foreach { r =>
-    Rng.seed = r.seed
+    GlobalRNG.seed = r.seed
     rngSeed = r.seed
   }
 

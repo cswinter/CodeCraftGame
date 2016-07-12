@@ -141,7 +141,7 @@ trait DroneControllerBase extends Drone {
   def buildDrone(controller: DroneControllerBase, spec: DroneSpec): Unit = {
     def cap(value: Double, min: Double, max: Double): Double =
       math.min(math.max(value, min), max)
-    val pos = drone.position - 110 * Rng.vector2()
+    val pos = drone.position - 110 * GlobalRNG.vector2()
     val cappedPos = Vector2(
       cap(pos.x, worldSize.xMin, worldSize.xMax),
       cap(pos.y, worldSize.yMin, worldSize.yMax)
