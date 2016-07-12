@@ -1,7 +1,7 @@
 package cwinter.codecraft.core.errors
 
 import cwinter.codecraft.core.api.CodeCraftException
-import cwinter.codecraft.graphics.engine.{Debug, TextModel}
+import cwinter.codecraft.graphics.engine.Debug
 import cwinter.codecraft.util.maths.{ColorRGB, Vector2}
 
 private[codecraft] class Errors(debug: Debug) {
@@ -25,7 +25,6 @@ private[codecraft] class Errors(debug: Debug) {
   def addMessage(message: String, position: Vector2, errorLevel: ErrorLevel): Unit = {
     errorMessages ::= new ErrorMessageObject(message, errorLevel, position)
   }
-
 
   def updateMessages(): Unit = {
     errorMessages =

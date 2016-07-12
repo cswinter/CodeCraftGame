@@ -2,81 +2,38 @@ package cwinter.codecraft.core.objects.drone
 
 import java.nio.ByteBuffer
 
-import cwinter.codecraft.collisions.{ActiveVisionTracking, VisionTracking}
-import cwinter.codecraft.core._
-import cwinter.codecraft.core.ai.deterministic.DeterministicScout
+import boopickle.Default._
 import cwinter.codecraft.core.api.GameConstants.HarvestingRange
 import cwinter.codecraft.core.api._
-import cwinter.codecraft.core.errors.Errors
 import cwinter.codecraft.core.game._
-import cwinter.codecraft.core.graphics.{DroneModelParameters, DroneModuleDescriptor, DroneModel, CollisionMarkerModel}
 import cwinter.codecraft.core.objects._
 import cwinter.codecraft.core.replay._
-import cwinter.codecraft.graphics.engine.{TextModel, PositionDescriptor, ModelDescriptor}
 import cwinter.codecraft.util.maths._
-import boopickle.Default._
 
 
-private[core] class DroneImpl(
+private[core] final class DroneImpl(
   val spec: DroneSpec,
   val controller: DroneControllerBase,
   val context: DroneContext,
   initialPos: Vector2,
   time: Double,
-  startingResources: Int = 0
-) extends WorldObject with ActiveVisionTracking {
-  require(context.worldConfig != null)
+  protected val startingResources: Int = 0
+) extends WorldObject
+  with DroneVisionTracker
+  with DroneGraphicsHandler
+  with DroneMessageDisplay
+  with DroneMovementDetector
+  with DroneHull
+  with DroneEventQueue
+  with DroneModules {
 
-  def maxSpeed = spec.maxSpeed
+  require(context.worldConfig != null)
 
   val id = context.idGenerator.getAndIncrement()
   val priority = context.rng.int()
-
-  private[this] var _mineralsInSight = Set.empty[MineralCrystal]
-  private[this] var _dronesInSight = Set.empty[Drone]
-  private[this] var _enemiesInSight = Set.empty[Drone]
-  private[this] var _alliesInSight = Set.empty[Drone]
-
-  private[this] val eventQueue = collection.mutable.Queue[DroneEvent](Spawned)
-
-  // TODO: move all this state into submodules?
-  private[this] var hullState = List.fill[Byte](spec.sides - 1)(2)
-  private[this] var _hasDied: Boolean = false
-  private[this] var _oldPosition = Vector2.Null
-  private[this] var _oldOrientation = 0.0
-  private[this] var _hasMoved: Boolean = true
   private[this] var _constructionProgress: Option[Int] = None
-  def constructionProgress: Option[Int] = _constructionProgress
-  def constructionProgress_=(value: Option[Int]): Unit = {
-    _constructionProgress = value
-    mustUpdateModel()
-  }
-
   private[this] var handles = Map.empty[Player, EnemyDrone]
-
-  private[this] var _collisionMarkers = List.empty[(CollisionMarkerModel, Float)]
-  private[this] var debugMessage = Option.empty[String]
-  private[this] var debugTexts = List.empty[TextModel]
-
-  private[this] var cachedDescriptor: Option[DroneModel] = None
-
-  final val CollisionMarkerLifetime = 50f
-  final val MessageCooldown = 30
-  private[this] var messageCooldown = 0
-  private final val NJetPositions = 6
-  private[this] val oldPositions = collection.mutable.Queue.empty[(Float, Float, Float)]
-
-
-  // TODO: remove this once all logic is moved into modules
-  private[this] var simulatorEvents = List.empty[SimulatorEvent]
-
   val dynamics: DroneDynamics = spec.constructDynamics(this, initialPos, time)
-  private[this] val weapons = spec.constructMissilesBatteries(this)
-  private[core] val storage = spec.constructStorage(this, startingResources)
-  private[this] val manipulator = spec.constructManipulatorModules(this)
-  private[this] val shieldGenerators = spec.constructShieldGenerators(this)
-  private[this] val engines = spec.constructEngineModules(this)
-  val droneModules = Seq(weapons, storage, manipulator, shieldGenerators, engines)
 
 
   def initialise(time: Double): Unit = {
@@ -84,79 +41,15 @@ private[core] class DroneImpl(
     controller.initialise(this)
   }
 
-  var t = 0
-  def processEvents(): Unit = {
-    debugMessage = None
-    debugTexts = List.empty[TextModel]
-    controller.willProcessEvents()
-
-    t += 1
-    if (isDead) {
-      controller.onDeath()
-    } else {
-      // process events
-      eventQueue foreach {
-        case Destroyed => // this should never be executed
-        case MineralEntersSightRadius(mineral) =>
-          controller.onMineralEntersVision(mineral.getHandle(player))
-        case ArrivedAtPosition => controller.onArrivesAtPosition()
-        case ArrivedAtDrone(drone) =>
-          val droneHandle = if (drone.player == player) drone.controller else new EnemyDrone(drone, player)
-          controller.onArrivesAtDrone(droneHandle)
-        case ArrivedAtMineral(mineral) =>
-          controller.onArrivesAtMineral(new MineralCrystal(mineral, player))
-        case DroneEntersSightRadius(drone) => controller.onDroneEntersVision(
-          if (drone.player == player) drone.controller
-          else drone.wrapperFor(player)
-        )
-        case Spawned => /* this is handled by simulator to ensure onSpawn is called before any other events */
-        case event => throw new Exception(s"Unhandled event! $event")
-      }
-      eventQueue.clear()
-      controller.onTick()
-    }
-  }
-
   override def update(): Seq[SimulatorEvent] = {
-    _hasMoved = _oldPosition != position || _oldOrientation != dynamics.orientation
-    _oldPosition = position
-    _oldOrientation = dynamics.orientation
-
+    recomputeHasMoved()
     for ((_, wrapper) <- handles) wrapper.recordPosition()
-
-    _collisionMarkers = for (
-      (model, lifetime) <- _collisionMarkers
-      if lifetime > 0
-    ) yield (model, lifetime - 1)
-
-
-    for (Some(m) <- droneModules) {
-      val (events, resourceDepletions, resourceSpawns) = m.update(storedResources)
-      simulatorEvents :::= events.toList
-      for {
-        s <- storage
-        rd <- resourceDepletions
-        pos = s.withdrawEnergyGlobe()
-        if context.settings.allowEnergyGlobeAnimation
-      } simulatorEvents ::= SpawnEnergyGlobeAnimation(new EnergyGlobeObject(this, pos, 30, rd))
-      for (s <- storage; rs <- resourceSpawns) s.depositEnergyGlobe(rs)
-    }
-
+    val events = updateModules()
     dynamics.recomputeVelocity()
+    updateCollisionMarkers()
+    recordPosition()
+    displayMessages()
 
-    messageCooldown -= 1
-
-    oldPositions.enqueue((position.x, position.y, dynamics.orientation))
-    if (oldPositions.length > NJetPositions) oldPositions.dequeue()
-
-    for (text <- debugTexts) context.debug.drawText(text)
-    for (message <- debugMessage)
-      yield context.debug.drawText(
-        message, position.x, position.y, ColorRGBA(ColorRGB(1, 1, 1) - context.player.color, 1))
-
-
-    val events = simulatorEvents
-    simulatorEvents = List.empty[SimulatorEvent]
     events
   }
 
@@ -164,51 +57,9 @@ private[core] class DroneImpl(
     for (event <- dynamics.checkArrivalConditions())
       enqueueEvent(event)
 
-  def enqueueEvent(event: DroneEvent): Unit = eventQueue.enqueue(event)
-
-  // TODO: mb only record hits here and do all processing as part of update()
-  // NOTE: death state probable must be determined before (or at very start of) next update()
-  def missileHit(missile: HomingMissile): Unit = {
-    def damageHull(hull: List[Byte]): List[Byte] = hull match {
-      case h :: hs =>
-        if (h > 0) (h - 1).toByte :: hs
-        else h :: damageHull(hs)
-      case Nil => Nil
-    }
-
-
-    val incomingDamage = 1
-    val damage = shieldGenerators.map(_.absorbDamage(incomingDamage)).getOrElse(incomingDamage)
-
-    for (_ <- 0 until damage)
-      hullState = damageHull(hullState)
-
-    if (hitpoints == 0) {
-      dynamics.remove()
-      _hasDied = true
-      for (s <- storage) s.droneHasDied()
-    }
-
-    addCollisionMarker(missile.position)
-
-    mustUpdateModel()
-
-    if (context.isLocallyComputed && context.isMultiplayer) {
-      context.missileHits ::= MissileHit(id, missile.position, missile.id)
-    }
-  }
-
   def collidedWith(other: DroneImpl): Unit = addCollisionMarker(other.position)
 
-  private def addCollisionMarker(collisionPosition: Vector2): Unit =
-    if (context.settings.allowCollisionAnimation) {
-      val collisionAngle = (collisionPosition - position).orientation - dynamics.orientation
-      _collisionMarkers ::= ((
-        CollisionMarkerModel(radius, collisionAngle.toFloat),
-        CollisionMarkerLifetime))
-    }
-
-  @inline final def !(command: DroneCommand) = executeCommand(command)
+  @inline def !(command: DroneCommand) = executeCommand(command)
 
   def executeCommand(command: DroneCommand): Unit = {
     if (isDead) {
@@ -233,37 +84,6 @@ private[core] class DroneImpl(
   def applyState(state: DroneStateChangeMsg)(implicit context: SimulationContext): Unit = {
     assert(dynamics.isInstanceOf[RemoteDroneDynamics], "Trying to apply state to locally computed drone.")
     dynamics.asInstanceOf[RemoteDroneDynamics].synchronize(state)
-  }
-
-  override def objectEnteredVision(obj: VisionTracking): Unit = obj match {
-    case mineral: MineralCrystalImpl =>
-      _mineralsInSight += mineral.getHandle(player)
-      eventQueue.enqueue(MineralEntersSightRadius(mineral))
-    case drone: DroneImpl =>
-      val wrapped = drone.wrapperFor(player)
-      _dronesInSight += wrapped
-      if (wrapped.isEnemy) _enemiesInSight += wrapped
-      else _alliesInSight += wrapped
-      eventQueue.enqueue(DroneEntersSightRadius(drone))
-  }
-
-  override def objectLeftVision(obj: VisionTracking): Unit = obj match {
-    case mineral: MineralCrystalImpl =>
-      _mineralsInSight -= mineral.getHandle(player)
-    case drone: DroneImpl =>
-      val wrapped = drone.wrapperFor(player)
-      _dronesInSight -= wrapped
-      if (wrapped.isEnemy) _enemiesInSight -= wrapped
-      else _alliesInSight -= wrapped
-  }
-
-  override def objectRemoved(obj: VisionTracking): Unit = {
-    val wasVisible =
-      obj match {
-        case mineral: MineralCrystalImpl => _mineralsInSight.contains(mineral.getHandle(player))
-        case drone: DroneImpl => _dronesInSight.contains(drone.wrapperFor(player))
-      }
-    if (wasVisible) objectLeftVision(obj)
   }
 
   //+------------------------------+
@@ -320,10 +140,6 @@ private[core] class DroneImpl(
   //+------------------------------+
   override def position: Vector2 = dynamics.pos
   def missileCooldown: Int = weapons.map(_.cooldown).getOrElse(1)
-  def hitpoints: Int = hullState.map(_.toInt).sum + shieldGenerators.map(_.currHitpoints).getOrElse(0)
-  def dronesInSight: Set[Drone] = if (isDead) Set.empty else _dronesInSight
-  def enemiesInSight: Set[Drone] = if (isDead) Set.empty else _enemiesInSight
-  def alliesInSight: Set[Drone] = if (isDead) Set.empty else _alliesInSight
   def isConstructing: Boolean = manipulator.exists(_.isConstructing)
   def isHarvesting: Boolean = storage.exists(_.isHarvesting)
   def isMoving: Boolean = dynamics.isMoving
@@ -331,6 +147,12 @@ private[core] class DroneImpl(
   def sides = spec.sides
   def radius = spec.radius
   def player = context.player
+  def maxSpeed = spec.maxSpeed
+  def constructionProgress: Option[Int] = _constructionProgress
+  def constructionProgress_=(value: Option[Int]): Unit = {
+    _constructionProgress = value
+    invalidateModelCache()
+  }
 
   def availableStorage: Int = {
     for (s <- storage) yield s.predictedAvailableStorage
@@ -351,100 +173,6 @@ private[core] class DroneImpl(
     }
   }
 
-  private[drone] def mustUpdateModel(): Unit = {
-    cachedDescriptor = None
-  }
-
-  override def descriptor: Seq[ModelDescriptor[_]] = {
-    val positionDescr =
-      PositionDescriptor(
-        position.x,
-        position.y,
-        dynamics.orientation
-      )
-    val harvestBeams =
-      for {
-        s <- storage
-        d <- s.beamDescriptor
-      } yield ModelDescriptor(positionDescr, d)
-    val constructionBeams =
-      for {
-        m <- manipulator
-        d <- m.beamDescriptor
-      } yield ModelDescriptor(positionDescr, d)
-
-    Seq(
-      ModelDescriptor(
-        positionDescr,
-        cachedDescriptor.getOrElse(recreateDescriptor()),
-        modelParameters
-      )
-    ) ++ storage.toSeq.flatMap(_.energyGlobeAnimations) ++ harvestBeams.toSeq ++ constructionBeams.toSeq ++
-      _collisionMarkers.map(cm => ModelDescriptor(positionDescr, cm._1, cm._2 / CollisionMarkerLifetime))
-  }
-
-  private def recreateDescriptor(): DroneModel = {
-    val newDescriptor =
-      DroneModel(
-        spec.sides,
-        moduleDescriptors,
-        shieldGenerators.nonEmpty,
-        hullState,
-        constructionProgress.nonEmpty,
-        if (spec.engines > 0 && context.settings.allowModuleAnimation && constructionProgress.isEmpty)
-          context.simulator.timestep % 100
-        else 0,
-        player.color
-      )
-    cachedDescriptor = Some(newDescriptor)
-    newDescriptor
-  }
-
-  private def modelParameters = DroneModelParameters(
-    shieldGenerators.map(_.hitpointPercentage),
-    constructionProgress.map(p => Float0To1(p / spec.buildTime.toFloat))
-  )
-
-  private def moduleDescriptors: Seq[DroneModuleDescriptor] = {
-    for {
-      Some(m) <- droneModules
-      descr <- m.descriptors
-    } yield descr
-  }
-
-  def error(message: String): Unit = {
-    if (messageCooldown <= 0 && context.settings.allowMessages) {
-      messageCooldown = MessageCooldown
-      context.errors.addMessage(message, position, errors.Error)
-    }
-  }
-
-  def warn(message: String): Unit = {
-    if (messageCooldown <= 0 && context.settings.allowMessages) {
-      messageCooldown = MessageCooldown
-      context.errors.warn(message, position)
-    }
-  }
-
-  def inform(message: String): Unit = {
-    if (messageCooldown <= 0 && context.settings.allowMessages) {
-      messageCooldown = MessageCooldown
-      context.errors.inform(message, position)
-    }
-  }
-
-  def showText(message: String): Unit = {
-    debugMessage = Some(debugMessage match {
-      case Some(text) => s"$text;$message"
-      case None => message
-    })
-  }
-
-  def showText(message: String, xPos: Float, yPos: Float): Unit =
-      debugTexts ::= TextModel(message, xPos, yPos, ColorRGBA(context.player.color, 1f))
-
-  override def isDead = _hasDied
-
   private[core] def deathEvents: Seq[SimulatorEvent] =
     if (isDead) {
       var events = List[SimulatorEvent](DroneKilled(this))
@@ -454,10 +182,6 @@ private[core] class DroneImpl(
       } events ::= DroneConstructionCancelled(d)
       events
     } else Seq.empty
-
-
-
-  def hasMoved = _hasMoved
 
   override def toString: String = id.toString
 }

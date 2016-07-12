@@ -1,8 +1,7 @@
 package cwinter.codecraft.core.objects.drone
 
-import cwinter.codecraft.core._
 import cwinter.codecraft.core.api.GameConstants.{HarvestingInterval, HarvestingRange}
-import cwinter.codecraft.core.game.{SimulatorEvent, MineralCrystalHarvested}
+import cwinter.codecraft.core.game.{MineralCrystalHarvested, SimulatorEvent}
 import cwinter.codecraft.core.graphics._
 import cwinter.codecraft.core.objects.MineralCrystalImpl
 import cwinter.codecraft.graphics.engine.{ModelDescriptor, PositionDescriptor}
@@ -40,7 +39,7 @@ private[core] class StorageModule(positions: Seq[Int], owner: DroneImpl, startin
 
     storedEnergyGlobes = storedEnergyGlobes.map{ x =>
       val updated = x.updated()
-      if (x ne updated) owner.mustUpdateModel()
+      if (x ne updated) owner.invalidateModelCache()
       updated
     }
 
@@ -90,7 +89,7 @@ private[core] class StorageModule(positions: Seq[Int], owner: DroneImpl, startin
   }
 
   def subtractFromResources(amount: Int): Unit = {
-    owner.mustUpdateModel()
+    owner.invalidateModelCache()
     if (amount > 0) {
       for (_ <- 0 until amount) storedEnergyGlobes.pop()
     } else if (amount < 0) {
@@ -115,13 +114,13 @@ private[core] class StorageModule(positions: Seq[Int], owner: DroneImpl, startin
       val newEnergyGlobe = new MovingEnergyGlobe(targetPosition, position, 40)
       storedEnergyGlobes.push(newEnergyGlobe)
     } else {
-      owner.mustUpdateModel()
+      owner.invalidateModelCache()
       storedEnergyGlobes.push(StaticEnergyGlobe)
     }
   }
 
   def withdrawEnergyGlobe(): Vector2 = {
-    owner.mustUpdateModel()
+    owner.invalidateModelCache()
     storedEnergyGlobes.pop() match {
       case StaticEnergyGlobe => calculateEnergyGlobePosition(storedResources)
       case meg: MovingEnergyGlobe => meg.position
