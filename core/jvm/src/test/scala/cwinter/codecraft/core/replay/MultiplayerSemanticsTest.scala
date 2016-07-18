@@ -18,13 +18,11 @@ class MultiplayerSemanticsTest extends FlatSpec {
   def ai() = new DeterministicMothership(seed)
 
   "A multiplayer game" should "yield the same output as an identical singleplayer game" in {
-    val singleplayerOutput = runSingleplayerGame()
-    val multiplayerOutput = runMultiplayerGame()
-
-    TestUtils.assertEqual(singleplayerOutput, multiplayerOutput, "", tickPeriod)
+    DroneWorldSimulator.enableDetailedLogging()
+    TestUtils.runAndCompare(singleplayerGame(), multiplayerGame(), timesteps)
   }
 
-  def runMultiplayerGame(): TestUtils.GameRecord = {
+  def multiplayerGame(): DroneWorldSimulator = {
     new Thread {
       override def run(): Unit = {
         Server.spawnServerInstance2(seed, TheGameMaster.level1Map)
@@ -39,17 +37,17 @@ class MultiplayerSemanticsTest extends FlatSpec {
     val client1 = connectClient()
     client1.framerateTarget = 1001
     client1.run()
-    TestUtils.runAndRecord(connectClient(), timesteps)
+    connectClient()
   }
 
-  def runSingleplayerGame(): TestUtils.GameRecord = {
+  def singleplayerGame(): DroneWorldSimulator = {
     val singleplayerGame = new DroneWorldSimulator(
       TheGameMaster.level1Map,
       Seq(ai(), ai()),
       t => Seq.empty,
       rngSeed = seed
     )
-    TestUtils.runAndRecord(singleplayerGame, timesteps)
+    singleplayerGame
   }
 }
 

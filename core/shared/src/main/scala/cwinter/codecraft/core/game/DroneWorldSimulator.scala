@@ -70,6 +70,8 @@ class DroneWorldSimulator(
   private val rng = new RNG(rngSeed)
   private final val debugMode = false
   private val errors = new Errors(debug)
+  private[codecraft] val debugLog =
+    if (DroneWorldSimulator.detailedLogging) Some(new DroneDebugLog) else None
 
   /** Returns the winning player. */
   def winner = _winner
@@ -90,8 +92,8 @@ class DroneWorldSimulator(
         player,
         worldConfig,
         TickPeriod,
-        if (shouldRecordCommands(player)) Some(multiplayerConfig.commandRecorder)
-        else None,
+        if (shouldRecordCommands(player)) Some(multiplayerConfig.commandRecorder) else None,
+        debugLog,
         new IDGenerator(player.id),
         rng,
         !multiplayerConfig.isInstanceOf[MultiplayerClientConfig],
@@ -586,6 +588,11 @@ class DroneWorldSimulator(
 
   private def isLivingEnemyMothership(player: Player)(drone: DroneImpl): Boolean =
     drone.player != player && !drone.isDead && drone.spec.constructors > 0
+}
+
+private[codecraft] object DroneWorldSimulator {
+  private var detailedLogging: Boolean = false
+  def enableDetailedLogging(): Unit = detailedLogging = true
 }
 
 

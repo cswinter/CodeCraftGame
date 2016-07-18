@@ -42,6 +42,7 @@ private[core] final class DroneImpl(
   }
 
   override def update(): Seq[SimulatorEvent] = {
+    log(Position(position, dynamics.orientation))
     recomputeHasMoved()
     for ((_, wrapper) <- handles) wrapper.recordPosition()
     val events = updateModules()
@@ -57,7 +58,10 @@ private[core] final class DroneImpl(
     for (event <- dynamics.checkArrivalConditions())
       enqueueEvent(event)
 
-  def collidedWith(other: DroneImpl): Unit = addCollisionMarker(other.position)
+  def collidedWith(other: DroneImpl): Unit = {
+    log(Collision(position, other.id))
+    addCollisionMarker(other.position)
+  }
 
   @inline def !(command: DroneCommand) = executeCommand(command)
 
@@ -79,6 +83,7 @@ private[core] final class DroneImpl(
       context.replayRecorder.record(id, command)
       context.commandRecorder.foreach(_.record(id, command))
     }
+    log(Command(command, redundant))
   }
 
   def applyState(state: DroneStateChangeMsg)(implicit context: SimulationContext): Unit = {
@@ -133,6 +138,9 @@ private[core] final class DroneImpl(
       for (s <- storage) s.depositResources(other.storage)
     }
   }
+
+  private def log(datum: DebugLogDatum): Unit =
+    for (log <- context.debugLog) log.record(context.simulator.timestep, id, datum)
 
 
   //+------------------------------+

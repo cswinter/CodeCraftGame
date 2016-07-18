@@ -14,6 +14,7 @@ private[core] case class DroneContext(
   worldConfig: WorldConfig,
   tickPeriod: Int,
   commandRecorder: Option[CommandRecorder],
+  debugLog: Option[DroneDebugLog],
   idGenerator: IDGenerator,
   rng: RNG,
   isLocallyComputed: Boolean,
