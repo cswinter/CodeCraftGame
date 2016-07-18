@@ -21,7 +21,7 @@ private[codecraft] trait Simulator {
   private[this] var _measuredFramerate: Int = 0
   private[this] var _nanoTimeLastMeasurement: Long = 0
   private var currentlyUpdating = false
-  protected var debug = new Debug
+  protected[codecraft] var debug = new Debug
 
   /** Runs the game until the program is terminated. */
   def run(): Unit = synchronized {

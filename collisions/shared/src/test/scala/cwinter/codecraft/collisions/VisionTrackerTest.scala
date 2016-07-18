@@ -50,7 +50,7 @@ class VisionTrackerTest extends FlatSpec {
     for (s <- untracked) visionTracker.insertPassive(s)
 
     for (t <- 0 to steps) {
-      visionTracker.updateAll()
+      visionTracker.updateAll(t)
 
       val actual = tracked.flatMap(_.popEvents()).toSet
       val expected = expectedEvents.getOrElse(t, Set.empty)

@@ -85,7 +85,7 @@ private[codecraft] class WebGLRenderer(
     Material.resetDrawCalls()
     Material.resetModelviewUploads()
 
-    for (Vector2(x, y) <- Debug.cameraOverride)
+    for (Vector2(x, y) <- gameWorld.debug.cameraOverride)
       camera.position = (x.toFloat, y.toFloat)
 
     val width = canvas.clientWidth
@@ -116,7 +116,7 @@ private[codecraft] class WebGLRenderer(
       val material = mcurr.head
       material.beforeDraw(projectionT)
 
-      var objcurr = worldObjects ++ Debug.debugObjects
+      var objcurr = worldObjects
       while (objcurr != Nil) {
         val modelDescriptor = objcurr.head
         if (modelDescriptor.intersects(onScreen)) {
@@ -134,10 +134,10 @@ private[codecraft] class WebGLRenderer(
     val textTestDiv = document.getElementById("text-test-container").asInstanceOf[HTMLDivElement]
     if (textDiv == null || textTestDiv == null) {
       println("Could not find div#text-container and div#text-test-container. Without this, text cannot be rendered.")
-    } else if (Debug.textModels.nonEmpty || textDiv.innerHTML != "") {
+    } else if (gameWorld.textModels.nonEmpty || textDiv.innerHTML != "") {
       textTestDiv.innerHTML = """<div id="large-text-dim-test"></div><div id="small-text-dim-test"></div>"""
       textDiv.innerHTML = ""
-      for (text <- Debug.textModels) renderText(textDiv, text, width, height)
+      for (text <- gameWorld.textModels) renderText(textDiv, text, width, height)
       for (text <- gameWorld.textModels) renderText(textDiv, text, width, height)
       if (gameWorld.isPaused) {
         renderText(

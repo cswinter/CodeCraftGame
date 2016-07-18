@@ -5,9 +5,8 @@ import javax.media.opengl.GL._
 import javax.media.opengl._
 
 import com.jogamp.opengl.util.awt.TextRenderer
-import cwinter.codecraft.graphics.engine
 import cwinter.codecraft.graphics.materials.Material
-import cwinter.codecraft.graphics.model.{TheCompositeModelBuilderCache, PrimitiveModelBuilder, TheModelCache, VBO}
+import cwinter.codecraft.graphics.model.{TheCompositeModelBuilderCache, TheModelCache, VBO}
 import cwinter.codecraft.util.maths.VertexXY
 import org.joda.time.DateTime
 
