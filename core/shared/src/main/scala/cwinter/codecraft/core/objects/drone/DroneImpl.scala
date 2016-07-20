@@ -139,7 +139,7 @@ private[core] final class DroneImpl(
     }
   }
 
-  private def log(datum: DebugLogDatum): Unit =
+  protected def log(datum: DebugLogDatum): Unit =
     for (log <- context.debugLog) log.record(context.simulator.timestep, id, datum)
 
 

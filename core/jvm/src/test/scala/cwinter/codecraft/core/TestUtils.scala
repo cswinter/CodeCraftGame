@@ -2,7 +2,7 @@ package cwinter.codecraft.core
 
 import cwinter.codecraft.core.game.DroneWorldSimulator
 import cwinter.codecraft.core.graphics.DroneModel
-import cwinter.codecraft.core.objects.drone.{Command, Position}
+import cwinter.codecraft.core.objects.drone.{DamageTaken, Command, Position}
 import cwinter.codecraft.graphics.engine.ModelDescriptor
 import cwinter.codecraft.util.maths.Vector2
 import org.scalatest.Matchers
@@ -38,7 +38,7 @@ object TestUtils extends Matchers {
       val snapshot2 = runSinglePeriod(simulator2)
       if (snapshot1 != snapshot2) {
         showMismatchAndLog(snapshot1, snapshot2, simulator1, simulator2, simulator1.timestep)
-        fail(s"Mismatch detected at time $simulator1.timestep")
+        fail(s"Mismatch detected at time ${simulator1.timestep}")
       }
     }
   }
@@ -81,6 +81,7 @@ object TestUtils extends Matchers {
                                  sim1: DroneWorldSimulator,
                                  sim2: DroneWorldSimulator,
                                  timestep: Int): Unit = {
+    println(s"Mismatch found at t=$timestep")
     val missing = ss1 -- ss2
     println("In expected but not in actual:")
     missing.foreach(println)
@@ -99,13 +100,14 @@ object TestUtils extends Matchers {
         log <- sim1.debugLog
         position = Vector2(model.position.x, model.position.y)
         droneID <- log.findDrone(timestep, position)
-      } yield log.retrieve(timestep - 50, timestep, droneID)
+      } yield log.retrieve(timestep - 150, timestep, droneID)
     log match {
       case Some(records) =>
         println(s"\nLog for $model")
         records.foreach {
           case (t, Position(pos, angle)) => //println(f"[$t] (${pos.x}%.3f, ${pos.y}%.3f), $angle")
           case (t, Command(c, redundant)) => println(s"[$t] ${if (redundant) s"($c)" else s"$c"}")
+          case (t, DamageTaken(damage, finalHealth)) => println(s"[$t] Health ${finalHealth+damage} -> $finalHealth")
           case (t, x) => println(s"[$t] $x")
         }
       case None =>

@@ -33,6 +33,8 @@ private[core] trait DroneHull { self: DroneImpl =>
     if (context.isLocallyComputed && context.isMultiplayer) {
       context.missileHits ::= MissileHit(id, missile.position, missile.id)
     }
+
+    log(DamageTaken(damage, hitpoints))
   }
 
 
