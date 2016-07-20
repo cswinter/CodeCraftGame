@@ -49,6 +49,9 @@ private[core] class StorageModule(positions: Seq[Int], owner: DroneImpl, startin
   private def harvest(mineral: MineralCrystalImpl): Option[SimulatorEvent] = {
     // need to check availableStorage in case another drone gave this one resources
     if (shouldCancelHarvesting(mineral)) {
+      val reasoning =
+        s"${mineral.harvested}, $availableStorage, ${owner.hasMoved}, ${owner.isInHarvestingRange(mineral)}"
+      owner.log(UnstructuredEvent(s"Cancelled harvesting ($reasoning)"))
       cancelHarvesting()
     } else {
       harvestCountdown -= positions.size

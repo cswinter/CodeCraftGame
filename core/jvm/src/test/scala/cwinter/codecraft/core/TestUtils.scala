@@ -2,7 +2,7 @@ package cwinter.codecraft.core
 
 import cwinter.codecraft.core.game.DroneWorldSimulator
 import cwinter.codecraft.core.graphics.DroneModel
-import cwinter.codecraft.core.objects.drone.{DamageTaken, Command, Position}
+import cwinter.codecraft.core.objects.drone.{UnstructuredEvent, DamageTaken, Command, Position}
 import cwinter.codecraft.graphics.engine.ModelDescriptor
 import cwinter.codecraft.util.maths.Vector2
 import org.scalatest.Matchers
@@ -108,6 +108,7 @@ object TestUtils extends Matchers {
           case (t, Position(pos, angle)) => //println(f"[$t] (${pos.x}%.3f, ${pos.y}%.3f), $angle")
           case (t, Command(c, redundant)) => println(s"[$t] ${if (redundant) s"($c)" else s"$c"}")
           case (t, DamageTaken(damage, finalHealth)) => println(s"[$t] Health ${finalHealth+damage} -> $finalHealth")
+          case (t, UnstructuredEvent(msg)) => println(s"[$t] $msg")
           case (t, x) => println(s"[$t] $x")
         }
       case None =>

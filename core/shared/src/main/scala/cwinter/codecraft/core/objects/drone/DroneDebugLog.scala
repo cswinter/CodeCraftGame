@@ -33,4 +33,5 @@ private[codecraft] case class Position(pos: Vector2, orientation: Float) extends
 private[codecraft] case class Command(droneCommand: DroneCommand, redundant: Boolean) extends DebugLogDatum
 private[codecraft] case class Collision(position: Vector2, otherDroneID: Int) extends DebugLogDatum
 private[codecraft] case class DamageTaken(damage: Int, finalHealth: Int) extends DebugLogDatum
+private[codecraft] case class UnstructuredEvent(message: String) extends DebugLogDatum
 
