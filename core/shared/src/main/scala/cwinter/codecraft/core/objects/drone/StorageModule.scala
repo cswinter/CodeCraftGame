@@ -13,8 +13,6 @@ import scala.collection.mutable
 
 private[core] class StorageModule(positions: Seq[Int], owner: DroneImpl, startingResources: Int = 0)
   extends DroneModule(positions, owner) {
-
-
   private[this] var storedEnergyGlobes =
     mutable.Stack[EnergyGlobe](Seq.fill(startingResources)(StaticEnergyGlobe): _*)
 
@@ -26,8 +24,7 @@ private[core] class StorageModule(positions: Seq[Int], owner: DroneImpl, startin
 
 
   override def update(availableResources: Int): (Seq[SimulatorEvent], Seq[Vector2], Seq[Vector2]) = {
-    if (isHarvesting && owner.hasMoved) updateBeamDescriptor()
-
+    if (harvesting.nonEmpty && owner.hasMoved) updateBeamDescriptor()
     var effects = List.empty[SimulatorEvent]
 
     resourceDepositee.foreach(performResourceDeposit)
@@ -46,20 +43,22 @@ private[core] class StorageModule(positions: Seq[Int], owner: DroneImpl, startin
     (effects, Seq.empty[Vector2], Seq.empty[Vector2])
   }
 
-  private def harvest(mineral: MineralCrystalImpl): Option[SimulatorEvent] = {
-    // need to check availableStorage in case another drone gave this one resources
-    if (shouldCancelHarvesting(mineral)) {
-      val reasoning =
-        s"${mineral.harvested}, $availableStorage, ${owner.hasMoved}, ${owner.isInHarvestingRange(mineral)}"
-      owner.log(UnstructuredEvent(s"Cancelled harvesting ($reasoning)"))
-      cancelHarvesting()
-    } else {
-      harvestCountdown -= positions.size
-      if (harvestCountdown <= 0) {
-        return performHarvest(mineral)
+  def distanceCheck(): Unit = {
+    for (mineral <- harvesting) {
+      if (shouldCancelHarvesting(mineral)) {
+        val reasoning =
+          s"${mineral.harvested}, $availableStorage, ${owner.hasMoved}, ${owner.isInHarvestingRange(mineral)}"
+        owner.log(UnstructuredEvent(s"Cancelled harvesting ($reasoning)"))
+        cancelHarvesting()
       }
     }
-    None
+  }
+
+  private def harvest(mineral: MineralCrystalImpl): Option[SimulatorEvent] = {
+    distanceCheck()
+    harvestCountdown -= positions.size
+    if (harvestCountdown <= 0) performHarvest(mineral)
+    else None
   }
 
   private def shouldCancelHarvesting(mineral: MineralCrystalImpl): Boolean =
@@ -174,7 +173,10 @@ private[core] class StorageModule(positions: Seq[Int], owner: DroneImpl, startin
 
   def predictedAvailableStorage: Int = positions.size * 7 - predictedStoredResources
 
-  def isHarvesting: Boolean = harvesting.nonEmpty
+  def isHarvesting: Boolean = {
+    distanceCheck()
+    harvesting.nonEmpty
+  }
 
   override def descriptors: Seq[DroneModuleDescriptor] = {
     val globeStorageIndices: Seq[Int] = positions

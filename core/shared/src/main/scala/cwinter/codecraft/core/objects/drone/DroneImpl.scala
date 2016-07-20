@@ -43,7 +43,6 @@ private[core] final class DroneImpl(
 
   override def update(): Seq[SimulatorEvent] = {
     log(Position(position, dynamics.orientation))
-    recomputeHasMoved()
     for ((_, wrapper) <- handles) wrapper.recordPosition()
     val events = updateModules()
     dynamics.recomputeVelocity()
@@ -54,9 +53,11 @@ private[core] final class DroneImpl(
     events
   }
 
-  def checkForArrival(): Unit =
+  def updatePositionDependentState(): Unit = {
+    recomputeHasMoved()
     for (event <- dynamics.checkArrivalConditions())
       enqueueEvent(event)
+  }
 
   def collidedWith(other: DroneImpl): Unit = {
     log(Collision(position, other.id))

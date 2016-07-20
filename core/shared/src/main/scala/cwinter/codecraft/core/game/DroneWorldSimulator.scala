@@ -137,7 +137,7 @@ class DroneWorldSimulator(
     (IfServer & BeforeTick) ? distributeWorldState <*>
     (IfClient & BeforeTick) ? (awaitWorldState <*> applyWorldState) <*>
     processDeathEvents <*>
-    BeforeTick ? updateDroneState <*>
+    BeforeTick ? updatePositionDependentState <*>
     checkWinConditions <*>
     updateTextModels
 
@@ -173,8 +173,8 @@ class DroneWorldSimulator(
     processSimulatorEvents(deathEvents ++ debugEvents)
   }
 
-  private def updateDroneState = Local('CompleteStateUpdate) {
-    for (drone <- drones) drone.checkForArrival()
+  private def updatePositionDependentState = Local('CompleteStateUpdate) {
+    for (drone <- drones) drone.updatePositionDependentState()
     visionTracker.updateAll(timestep)
   }
 
