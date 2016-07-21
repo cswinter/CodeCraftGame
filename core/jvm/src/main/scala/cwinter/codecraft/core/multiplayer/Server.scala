@@ -163,7 +163,7 @@ private[codecraft] class TwoPlayerMultiplayerServer(
     simulator.framerateTarget = 1001
     simulator.onException((e: Throwable) => {
       log.info(s"Terminating running multiplayer game because of uncaught exception.")
-      log.info(s"Exception message ${e.getMessage}")
+      log.info(s"Exception message:\n${e.getStackTrace.mkString("\n")}")
       stopGame(simulator)
     })
     context.system.scheduler.scheduleOnce(5 minutes, self, GameTimedOut(simulator))

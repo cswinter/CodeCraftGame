@@ -100,10 +100,10 @@ object TestUtils extends Matchers {
         log <- sim1.debugLog
         position = Vector2(model.position.x, model.position.y)
         droneID <- log.findDrone(timestep, position)
-      } yield log.retrieve(timestep - 150, timestep, droneID)
+      } yield (droneID, log.retrieve(timestep - 150, timestep, droneID))
     log match {
-      case Some(records) =>
-        println(s"\nLog for $model")
+      case Some((id, records)) =>
+        println(s"\nLog for $id")
         records.foreach {
           case (t, Position(pos, angle)) => //println(f"[$t] (${pos.x}%.3f, ${pos.y}%.3f), $angle")
           case (t, Command(c, redundant)) => println(s"[$t] ${if (redundant) s"($c)" else s"$c"}")

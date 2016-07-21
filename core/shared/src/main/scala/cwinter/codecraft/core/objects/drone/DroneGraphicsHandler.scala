@@ -82,6 +82,7 @@ private[codecraft] trait DroneGraphicsHandler { self: DroneImpl =>
       _collisionMarkers ::= ((
         CollisionMarkerModel(radius, collisionAngle.toFloat),
         CollisionMarkerLifetime))
+      invalidateModelCache()
     }
   }
 

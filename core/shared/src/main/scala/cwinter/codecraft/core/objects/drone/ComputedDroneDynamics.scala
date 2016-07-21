@@ -185,7 +185,9 @@ private[core] class ComputedDroneDynamics(
 private[core] case class MissileHit(
   droneID: Int,
   location: Vector2,
-  missileID: Int
+  missileID: Int,
+  shieldDamage: Int,
+  hullDamage: Int
 )
 
 private[core] sealed trait DroneStateChangeMsg {

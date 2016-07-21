@@ -284,9 +284,9 @@ class DroneWorldSimulator(
 
   private def applyWorldState = Local('ApplyWorldState) {
     val WorldStateMessage(missileHits, stateChanges) = remoteWorldState
-    for (MissileHit(droneID, position, missileID) <- missileHits) {
+    for (MissileHit(droneID, position, missileID, shieldDamage, hullDamage) <- missileHits) {
       val missile = missiles(missileID)
-      simulationContext.drone(droneID).missileHit(missile)
+      simulationContext.drone(droneID).missileHit(missile.position, shieldDamage, hullDamage)
       missile.dynamics.remove()
     }
     for (state <- stateChanges) simulationContext.drone(state.droneID).applyState(state)
