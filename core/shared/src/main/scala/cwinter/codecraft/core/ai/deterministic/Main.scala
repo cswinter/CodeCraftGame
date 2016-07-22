@@ -49,7 +49,7 @@ private[core] class DeterministicScout(val mothership: DeterministicMothership) 
   private var fleeing = false
 
   override def onMineralEntersVision(mineralCrystal: MineralCrystal): Unit = {
-    if (nextMineral.isEmpty && availableStorage > 0) {
+    if (nextMineral.forall(hasPriority(mineralCrystal, _)) && availableStorage > 0) {
       nextMineral = Some(mineralCrystal)
       moveTo(mineralCrystal)
     }
@@ -79,6 +79,12 @@ private[core] class DeterministicScout(val mothership: DeterministicMothership) 
   override def onArrivesAtDrone(drone: Drone): Unit = giveResourcesTo(drone)
 
   override def onDeath(): Unit = mothership.collectors -= 1
+
+  private def hasPriority(m1: MineralCrystal, m2: MineralCrystal): Boolean = {
+    val dist1 = (m1.position - position).lengthSquared
+    val dist2 = (m2.position - position).lengthSquared
+    dist1 < dist2 || (dist1 == dist2 && m1.mineralCrystal.id < m2.mineralCrystal.id)
+  }
 }
 
 private[core] class DeterministicSoldier(rng: RNG) extends DroneController {
