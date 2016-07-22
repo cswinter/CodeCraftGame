@@ -23,10 +23,11 @@ object Server {
 
   def spawnServerInstance2(
     seed: Int = scala.util.Random.nextInt,
-    map: WorldMap = TheGameMaster.defaultMap
+    map: WorldMap = TheGameMaster.defaultMap,
+    displayGame: Boolean = false
   ): Unit = {
     implicit val system = ActorSystem()
-    val server = system.actorOf(Props(classOf[TwoPlayerMultiplayerServer], seed, map), "websocket")
+    val server = system.actorOf(Props(classOf[TwoPlayerMultiplayerServer], seed, map, displayGame), "websocket")
     IO(UHttp) ! Http.Bind(server, "0.0.0.0", 8080)
     system.awaitTermination()
   }
@@ -89,7 +90,8 @@ private[codecraft] class MultiplayerServer(seed: Option[Int], displayGame: Boole
 
 private[codecraft] class TwoPlayerMultiplayerServer(
   private var nextRNGSeed: Int = scala.util.Random.nextInt,
-  val map: WorldMap = TheGameMaster.defaultMap
+  val map: WorldMap = TheGameMaster.defaultMap,
+  val displayGame: Boolean = false
 ) extends Actor with ActorLogging {
   import Server.{GetStatus, Status, Stop}
 
@@ -160,7 +162,7 @@ private[codecraft] class TwoPlayerMultiplayerServer(
       rngSeed = nextRNGSeed
     )
     nextRNGSeed = scala.util.Random.nextInt
-    simulator.framerateTarget = 1001
+    simulator.framerateTarget = if (displayGame) 60 else 1001
     simulator.onException((e: Throwable) => {
       log.info(s"Terminating running multiplayer game because of uncaught exception.")
       log.info(s"Exception message:\n${e.getStackTrace.mkString("\n")}")
@@ -168,7 +170,7 @@ private[codecraft] class TwoPlayerMultiplayerServer(
     })
     context.system.scheduler.scheduleOnce(5 minutes, self, GameTimedOut(simulator))
     runningGame = Some(simulator)
-    simulator.run()
+    if (displayGame) TheGameMaster.run(simulator) else simulator.run()
   }
 
   private def assignSlot(connection: Connection): Unit = {
