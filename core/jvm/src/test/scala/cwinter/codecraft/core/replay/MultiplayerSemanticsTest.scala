@@ -1,10 +1,11 @@
 package cwinter.codecraft.core.replay
 
+import cwinter.codecraft.core.TestUtils
 import cwinter.codecraft.core.ai.deterministic.DeterministicMothership
 import cwinter.codecraft.core.api.TheGameMaster
-import cwinter.codecraft.core.game.{Settings, DroneWorldSimulator}
+import cwinter.codecraft.core.game.DroneWorldSimulator
 import cwinter.codecraft.core.multiplayer.Server
-import cwinter.codecraft.core.TestUtils
+import cwinter.codecraft.util.maths.GlobalRNG
 import org.scalatest.FlatSpec
 
 import scala.concurrent.Await
@@ -15,9 +16,11 @@ class MultiplayerSemanticsTest extends FlatSpec {
   val timesteps = 7500
   val seed = 42
   val tickPeriod = 10
+  val mapSeed: Option[Int] = None
   def ai() = new DeterministicMothership(seed)
+  mapSeed.foreach(GlobalRNG.seed = _)
 
-  "A multiplayer game" should "yield the same output as an identical singleplayer game" in {
+  s"A multiplayer game (map ${GlobalRNG.seed})" should "yield the same output as an identical singleplayer game" in {
     DroneWorldSimulator.enableDetailedLogging()
     TestUtils.runAndCompare(singleplayerGame(), multiplayerGame(), timesteps)
   }
@@ -25,7 +28,7 @@ class MultiplayerSemanticsTest extends FlatSpec {
   def multiplayerGame(): DroneWorldSimulator = {
     new Thread {
       override def run(): Unit = {
-        Server.spawnServerInstance2(seed, TheGameMaster.level1Map)
+        Server.spawnServerInstance2(seed, TheGameMaster.level1Map, displayGame = false)
       }
     }.start()
     Thread.sleep(1000, 0)
