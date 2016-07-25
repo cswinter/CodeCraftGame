@@ -14,7 +14,7 @@ private[core] class RemoteDroneDynamics(initialPos: Vector2) extends DroneDynami
   override def remove(): Unit = _removed = true
   override def removed: Boolean = _removed
 
-  def synchronize(state: DroneStateChangeMsg)(implicit context: SimulationContext): Unit = state match {
+  def synchronize(state: DroneMovementMsg)(implicit context: SimulationContext): Unit = state match {
     case PositionAndOrientationChanged(newPosition, newOrientation, _) =>
       position = newPosition
       _orientation = newOrientation

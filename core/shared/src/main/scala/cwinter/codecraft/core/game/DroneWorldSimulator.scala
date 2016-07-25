@@ -258,7 +258,7 @@ class DroneWorldSimulator(
   }
 
   private def collectWorldState(drones: Iterable[DroneImpl]): WorldStateMessage = {
-    val stateChanges = ArrayBuffer.empty[DroneStateChangeMsg]
+    val stateChanges = ArrayBuffer.empty[DroneMovementMsg]
     val missileHits = ArrayBuffer.empty[MissileHit]
     for (
       drone <- drones;

@@ -87,7 +87,7 @@ private[core] final class DroneImpl(
     log(Command(command, redundant))
   }
 
-  def applyState(state: DroneStateChangeMsg)(implicit context: SimulationContext): Unit = {
+  def applyState(state: DroneMovementMsg)(implicit context: SimulationContext): Unit = {
     assert(dynamics.isInstanceOf[RemoteDroneDynamics], "Trying to apply state to locally computed drone.")
     dynamics.asInstanceOf[RemoteDroneDynamics].synchronize(state)
   }
@@ -292,7 +292,7 @@ private[core] case class CommandsMessage(
 
 private[core] case class WorldStateMessage(
   missileHits: Seq[MissileHit],
-  stateChanges: Seq[DroneStateChangeMsg]
+  stateChanges: Seq[DroneMovementMsg]
 ) extends MultiplayerMessage
 
 private[core] case class InitialSync(

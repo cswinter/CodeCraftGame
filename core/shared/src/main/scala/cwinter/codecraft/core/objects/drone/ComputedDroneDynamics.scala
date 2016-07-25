@@ -167,7 +167,7 @@ private[core] class ComputedDroneDynamics(
 
   override def toString: String = s"DroneDynamics(pos=$pos, velocity=$velocity)"
 
-  def syncMsg(): Option[DroneStateChangeMsg] = {
+  def syncMsg(): Option[DroneMovementMsg] = {
     val positionChanged = oldPos != pos
     val orientationChanged = oldOrientation != orientation
     oldPos = pos
@@ -190,28 +190,28 @@ private[core] case class MissileHit(
   hullDamage: Int
 )
 
-private[core] sealed trait DroneStateChangeMsg {
+private[core] sealed trait DroneMovementMsg {
   def droneID: Int
 }
 
 private[core] case class PositionChanged(
   newPosition: Vector2,
   droneID: Int
-) extends DroneStateChangeMsg
+) extends DroneMovementMsg
 
 private[core] case class OrientationChanged(
   newOrientation: Float,
   droneID: Int
-) extends DroneStateChangeMsg
+) extends DroneMovementMsg
 
 private[core] case class PositionAndOrientationChanged(
   newPosition: Vector2,
   newOrientation: Float,
   droneID: Int
-) extends DroneStateChangeMsg
+) extends DroneMovementMsg
 
 private[core] case class NewArrivalEvent(
   arrivalEvent: SerializableDroneEvent,
   droneID: Int
-) extends DroneStateChangeMsg
+) extends DroneMovementMsg
 

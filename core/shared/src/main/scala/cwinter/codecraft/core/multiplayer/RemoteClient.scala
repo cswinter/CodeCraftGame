@@ -2,7 +2,7 @@ package cwinter.codecraft.core.multiplayer
 
 import cwinter.codecraft.core.api.Player
 import cwinter.codecraft.core.game.SimulationContext
-import cwinter.codecraft.core.objects.drone.{WorldStateMessage, MissileHit, DroneCommand, DroneStateChangeMsg}
+import cwinter.codecraft.core.objects.drone.{WorldStateMessage, MissileHit, DroneCommand, DroneMovementMsg}
 
 import scala.concurrent.Future
 
