@@ -49,7 +49,7 @@ private[core] class RemoteWebsocketClient(
 
   private def handleMessage(msg: MultiplayerMessage): Unit = msg match {
     case CommandsMessage(commands) => clientCommands.success(commands)
-    case WorldStateMessage(_, _) => throw new Exception("Authoritative server received WorldStateMessage!")
+    case _: WorldStateMessage => throw new Exception("Authoritative server received WorldStateMessage!")
     case _: InitialSync => throw new Exception("Authoritative server received InitialSync!")
     case Register => send(syncMessage)
     case RTT(time, message) => if (debug) {

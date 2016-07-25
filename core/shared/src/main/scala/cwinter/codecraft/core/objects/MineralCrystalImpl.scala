@@ -37,7 +37,7 @@ private[core] class MineralCrystalImpl(
   private def createDescriptor: ModelDescriptor[Unit] =
     ModelDescriptor(
       NullPositionDescriptor,
-      MineralCrystalModel(size, position.x.toFloat, position.y.toFloat, orientation)
+      MineralCrystalModel(size, position.x, position.y, orientation)
     )
 
   override private[core] def descriptor: Seq[ModelDescriptor[Unit]] = _descriptor
@@ -55,6 +55,11 @@ private[core] class MineralCrystalImpl(
   }
 
   def asString: String = s"MineralCrystal($size, $position)"
+
+  private[objects] def claimedByOther(sm: StorageModule): Boolean = {
+    claimedBy.foreach(_.distanceCheck())
+    claimedBy.exists(_ != sm)
+  }
 }
 
 object MineralCrystalImpl {

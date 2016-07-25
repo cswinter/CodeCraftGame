@@ -87,9 +87,16 @@ private[core] final class DroneImpl(
     log(Command(command, redundant))
   }
 
-  def applyState(state: DroneMovementMsg)(implicit context: SimulationContext): Unit = {
-    assert(dynamics.isInstanceOf[RemoteDroneDynamics], "Trying to apply state to locally computed drone.")
-    dynamics.asInstanceOf[RemoteDroneDynamics].synchronize(state)
+  def applyState(state: DroneMovementMsg)(implicit context: SimulationContext): Unit = dynamics match {
+    case remote: RemoteDroneDynamics => remote.synchronize(state)
+    case _ => throw new AssertionError("Trying to apply state to locally computed drone.")
+  }
+
+  def applyHarvest(mineral: MineralCrystalImpl): Option[SimulatorEvent] = {
+    assert(context.isMultiplayer && !context.isLocallyComputed,
+      "Trying to apply harvest to locally computed drone.")
+    assert(storage.nonEmpty, "Trying to apply harvest to drone without storage module.")
+    storage.flatMap(_.performHarvest(mineral))
   }
 
   //+------------------------------+
@@ -142,6 +149,8 @@ private[core] final class DroneImpl(
 
   private[core] def log(datum: DebugLogDatum): Unit =
     for (log <- context.debugLog) log.record(context.simulator.timestep, id, datum)
+
+  private[core] def log(msg: => String): Unit = log(UnstructuredEvent(msg))
 
 
   //+------------------------------+
@@ -292,8 +301,11 @@ private[core] case class CommandsMessage(
 
 private[core] case class WorldStateMessage(
   missileHits: Seq[MissileHit],
-  stateChanges: Seq[DroneMovementMsg]
+  stateChanges: Seq[DroneMovementMsg],
+  mineralHarvests: Seq[MineralHarvest]
 ) extends MultiplayerMessage
+
+private[core] case class MineralHarvest(droneID: Int, mineralID: Int)
 
 private[core] case class InitialSync(
   worldSize: Rectangle,

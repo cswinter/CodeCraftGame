@@ -29,10 +29,14 @@ private[core] class StorageModule(positions: Seq[Int], owner: DroneImpl, startin
 
     resourceDepositee.foreach(performResourceDeposit)
 
-    for {
-      m <- harvesting
-      event <- harvest(m)
-    } effects ::= event
+    if (!owner.context.isMultiplayerClient) {
+      for {
+        m <- harvesting
+        event <- harvest(m)
+      } effects ::= event
+    } else {
+      for (_ <- harvesting) distanceCheck()
+    }
 
     storedEnergyGlobes = storedEnergyGlobes.map{ x =>
       val updated = x.updated()
@@ -66,10 +70,16 @@ private[core] class StorageModule(positions: Seq[Int], owner: DroneImpl, startin
     availableStorage == 0 ||
     (owner.hasMoved && !owner.isInHarvestingRange(mineral))
 
-  private def performHarvest(mineral: MineralCrystalImpl): Option[SimulatorEvent] = {
+  private[drone] def performHarvest(mineral: MineralCrystalImpl): Option[SimulatorEvent] = {
     subtractFromResources(-1)
     mineral.decreaseSize()
     harvestCountdown = HarvestingInterval
+
+    owner.log(s"Harvested ${mineral.id}, ${owner.context.isLocallyComputed}, ${owner.context.isMultiplayer}")
+    if (owner.context.isAuthoritativeServer) {
+      owner.context.mineralHarvests ::= MineralHarvest(owner.id, mineral.id)
+      owner.log(s"Created harvest msg")
+    }
 
     if (mineral.size == 0) Some(MineralCrystalHarvested(mineral))
     else None
@@ -140,7 +150,7 @@ private[core] class StorageModule(positions: Seq[Int], owner: DroneImpl, startin
       owner.warn("Trying to harvest mineral crystal that has already been harvested.")
     } else if (harvesting.contains(mineralCrystal)) {
       //owner.inform("This drone is already harvesting.")
-    } else if (mineralCrystal.claimedBy.exists(_ != this)) {
+    } else if (mineralCrystal.claimedByOther(this)) {
       owner.warn("Trying to harvest a mineral crystal that is already being harvested by another drone.")
     } else {
       harvestCountdown = HarvestingInterval
@@ -150,9 +160,7 @@ private[core] class StorageModule(positions: Seq[Int], owner: DroneImpl, startin
     }
   }
 
-  def droneHasDied(): Unit = {
-    cancelHarvesting()
-  }
+  def droneHasDied(): Unit = cancelHarvesting()
 
   def cancelHarvesting(): Unit = {
     harvesting.foreach(_.claimedBy = None)

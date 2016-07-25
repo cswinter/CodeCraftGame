@@ -25,7 +25,10 @@ private[core] case class DroneContext(
   errors: Errors
 ) {
   def settings = simulator.settings
+  def isAuthoritativeServer: Boolean = isMultiplayer && isLocallyComputed
+  def isMultiplayerClient: Boolean = isMultiplayer && !isLocallyComputed
 
   var missileHits = List.empty[MissileHit]
+  var mineralHarvests = List.empty[MineralHarvest]
 }
 

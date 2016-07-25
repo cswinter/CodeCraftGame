@@ -260,6 +260,7 @@ class DroneWorldSimulator(
   private def collectWorldState(drones: Iterable[DroneImpl]): WorldStateMessage = {
     val stateChanges = ArrayBuffer.empty[DroneMovementMsg]
     val missileHits = ArrayBuffer.empty[MissileHit]
+    val mineralHarvests = ArrayBuffer.empty[MineralHarvest]
     for (
       drone <- drones;
       dynamics = drone.dynamics.asInstanceOf[ComputedDroneDynamics]
@@ -270,10 +271,12 @@ class DroneWorldSimulator(
 
     for (context <- contextForPlayer.values) {
       missileHits.appendAll(context.missileHits)
+      mineralHarvests.appendAll(context.mineralHarvests)
       context.missileHits = List.empty
+      context.mineralHarvests = List.empty
     }
 
-    WorldStateMessage(missileHits, stateChanges)
+    WorldStateMessage(missileHits, stateChanges, mineralHarvests)
   }
 
   private var remoteWorldState: WorldStateMessage = null
@@ -283,12 +286,21 @@ class DroneWorldSimulator(
   }
 
   private def applyWorldState = Local('ApplyWorldState) {
-    val WorldStateMessage(missileHits, stateChanges) = remoteWorldState
+    val WorldStateMessage(missileHits, stateChanges, mineralHarvests) = remoteWorldState
+
+    for {
+      MineralHarvest(droneID, mineralID) <- mineralHarvests
+      drone = simulationContext.drone(droneID)
+      mineral = simulationContext.mineral(mineralID)
+      event <- drone.applyHarvest(mineral)
+    } processEvent(event)
+
     for (MissileHit(droneID, position, missileID, shieldDamage, hullDamage) <- missileHits) {
       val missile = missiles(missileID)
       simulationContext.drone(droneID).missileHit(missile.position, shieldDamage, hullDamage)
       missile.dynamics.remove()
     }
+
     for (state <- stateChanges) simulationContext.drone(state.droneID).applyState(state)
   }
 
