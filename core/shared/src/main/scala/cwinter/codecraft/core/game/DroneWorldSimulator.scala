@@ -65,6 +65,7 @@ class DroneWorldSimulator(
   private def drones = _drones.values
 
   private var deadDrones = List.empty[DroneImpl]
+  private var unsyncedDroneSpawns = List.empty[DroneImpl]
   private var newlySpawnedDrones = List.empty[DroneImpl]
   private var _winner = Option.empty[Player]
   private val rng = new RNG(rngSeed)
@@ -276,7 +277,10 @@ class DroneWorldSimulator(
       context.mineralHarvests = List.empty
     }
 
-    WorldStateMessage(missileHits, stateChanges, mineralHarvests)
+    val droneSpawns = unsyncedDroneSpawns.map(d => DroneSpawned(d.id))
+    unsyncedDroneSpawns = List.empty
+
+    WorldStateMessage(missileHits, stateChanges, mineralHarvests, droneSpawns)
   }
 
   private var remoteWorldState: WorldStateMessage = null
@@ -286,7 +290,12 @@ class DroneWorldSimulator(
   }
 
   private def applyWorldState = Local('ApplyWorldState) {
-    val WorldStateMessage(missileHits, stateChanges, mineralHarvests) = remoteWorldState
+    val WorldStateMessage(missileHits, stateChanges, mineralHarvests, droneSpawns) = remoteWorldState
+
+    for {
+      DroneSpawned(droneID) <- droneSpawns
+      drone <- unsyncedDroneSpawns.find(_.id == droneID)
+    } spawnDrone(drone)
 
     for {
       MineralHarvest(droneID, mineralID) <- mineralHarvests
@@ -405,7 +414,14 @@ class DroneWorldSimulator(
     case DroneKilled(drone) =>
       droneKilled(drone)
     case SpawnDrone(drone) =>
-      spawnDrone(drone)
+      multiplayerConfig match {
+        case _: MultiplayerClientConfig =>
+          unsyncedDroneSpawns ::= drone
+        case _: AuthoritativeServerConfig =>
+          unsyncedDroneSpawns ::= drone
+          spawnDrone(drone)
+        case _ => spawnDrone(drone)
+      }
     case SpawnEnergyGlobeAnimation(energyGlobeObject) =>
       visibleObjects.add(energyGlobeObject)
       dynamicObjects.add(energyGlobeObject)

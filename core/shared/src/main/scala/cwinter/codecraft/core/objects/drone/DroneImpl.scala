@@ -39,6 +39,7 @@ private[core] final class DroneImpl(
   def initialise(time: Double): Unit = {
     dynamics.setTime(time)
     controller.initialise(this)
+    invalidateModelCache()
   }
 
   override def update(): Seq[SimulatorEvent] = {
@@ -302,7 +303,8 @@ private[core] case class CommandsMessage(
 private[core] case class WorldStateMessage(
   missileHits: Seq[MissileHit],
   stateChanges: Seq[DroneMovementMsg],
-  mineralHarvests: Seq[MineralHarvest]
+  mineralHarvests: Seq[MineralHarvest],
+  dronwSpawns: Seq[DroneSpawned]
 ) extends MultiplayerMessage
 
 private[core] case class MineralHarvest(droneID: Int, mineralID: Int)

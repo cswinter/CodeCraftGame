@@ -190,6 +190,8 @@ private[core] case class MissileHit(
   hullDamage: Int
 )
 
+private[core] case class DroneSpawned(droneID: Int)
+
 private[core] sealed trait DroneMovementMsg {
   def droneID: Int
 }
