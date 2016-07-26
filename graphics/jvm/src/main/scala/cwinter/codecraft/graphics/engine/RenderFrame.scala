@@ -126,7 +126,7 @@ private[graphics] class RenderFrame(val gameWorld: Simulator)
 
     largeTextRenderer.beginRendering(width, height)
     for (text <- gameWorld.textModels if text.largeFont)
-      renderTextModel(textRenderer, text, width, height)
+      renderTextModel(largeTextRenderer, text, width, height)
     largeTextRenderer.endRendering()
   }
 
