@@ -17,7 +17,7 @@ import scala.async.Async._
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 import scala.language.postfixOps
 import scala.scalajs.js.annotation.JSExport
 
@@ -521,7 +521,7 @@ class DroneWorldSimulator(
       }
       new SimulationPhase {
         override def runAsync(): Future[Unit] = instrumentedCode
-        override def run(): Unit = Await.result(runAsync(), 30 seconds)
+        override def run(): Unit = CrossPlatformAwait.result(runAsync(), 30 seconds)
         override def isFullyLocal = false
       }
     }

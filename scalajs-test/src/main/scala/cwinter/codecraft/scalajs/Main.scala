@@ -1,8 +1,8 @@
 package cwinter.codecraft.scalajs
 
 import cwinter.codecraft.core.api.{DroneControllerBase, TheGameMaster}
+import cwinter.codecraft.core.game
 import cwinter.codecraft.core.game.DroneWorldSimulator
-import cwinter.codecraft.core.{game, Settings}
 import org.scalajs.dom
 import org.scalajs.dom.{document, html}
 
