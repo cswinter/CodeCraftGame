@@ -6,6 +6,8 @@ import cwinter.codecraft.util.maths.{ColorRGBA, Vector2}
 private[codecraft] class Debug {
   private[this] var objects = List.empty[ModelDescriptor[_]]
   private[this] var _textModels = List.empty[TextModel]
+  private[this] var activeObjects = List.empty[ModelDescriptor[_]]
+  private[this] var activeTextModels = List.empty[TextModel]
 
   def draw(worldObject: ModelDescriptor[_]): Unit = objects ::= worldObject
 
@@ -27,11 +29,13 @@ private[codecraft] class Debug {
 
   def cameraOverride: Option[Vector2] = _cameraOverride.map(_())
 
-  private[engine] def debugObjects = objects
+  private[engine] def debugObjects = activeObjects
 
-  private[engine] def textModels = _textModels
+  private[engine] def textModels = activeTextModels
 
-  private[codecraft] def clear(): Unit = {
+  private[codecraft] def swapBuffers(): Unit = {
+    activeObjects = objects
+    activeTextModels = _textModels
     objects = List.empty[ModelDescriptor[_]]
     _textModels = List.empty[TextModel]
   }

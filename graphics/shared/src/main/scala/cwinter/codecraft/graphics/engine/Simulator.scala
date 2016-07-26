@@ -45,7 +45,6 @@ private[codecraft] trait Simulator {
   }
 
   private def performUpdate(): Unit = {
-    debug.clear()
     savedWorldState = Seq(computeWorldState.toSeq: _*)
     t += 1
     try {
@@ -58,12 +57,12 @@ private[codecraft] trait Simulator {
         e.printStackTrace()
         paused = true
     }
+    debug.swapBuffers()
   }
 
   private[codecraft] def performAsyncUpdate(): Future[Unit] = {
     assert(!currentlyUpdating)
     currentlyUpdating = true
-    debug.clear()
     savedWorldState = Seq(computeWorldState.toSeq: _*)
     t += 1
     measureFPS()
@@ -73,13 +72,16 @@ private[codecraft] trait Simulator {
     if (result.isCompleted) currentlyUpdating = false
 
     result.onComplete {
-      case Success(_) => currentlyUpdating = false
+      case Success(_) =>
+        currentlyUpdating = false
+        debug.swapBuffers()
       case Failure(e) =>
         exceptionHandler.foreach(_(e))
         if (stopped) return Future.successful(Unit)
         e.printStackTrace()
         paused = true
         currentlyUpdating = false
+        debug.swapBuffers()
     }
     result
   }
