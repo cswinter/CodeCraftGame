@@ -205,7 +205,7 @@ private[codecraft] class WebGLRenderer(
   private def initGL(): GL = {
     val gl = canvas.getContext("experimental-webgl").asInstanceOf[GL]
     if (gl == null) {
-      dom.alert("Could not initialise WebGL. INSERT LINK TO FIX HERE.")
+      dom.window.alert("Could not initialise WebGL. Visit https://get.webgl.org for further info.")
     }
     gl.viewport(-1, 1, canvas.width, canvas.height)
     gl

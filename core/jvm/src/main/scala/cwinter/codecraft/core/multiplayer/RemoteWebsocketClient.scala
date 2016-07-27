@@ -38,7 +38,8 @@ private[core] class RemoteWebsocketClient(
   override def receiveBytes(message: ByteBuffer): Unit = {
     try {
       commandsReceivedSize.addMeasurement(message.remaining())
-      handleMessage(MultiplayerMessage.parseBytes(message))
+      val msg = MultiplayerMessage.parseBytes(message)
+      handleMessage(msg)
     } catch {
       case t: Throwable =>
         println(s"Failed to deserialize bytes '$message'")
@@ -106,3 +107,4 @@ private[core] class RemoteWebsocketClient(
     for ((id, command) <- commands)
       yield (id, DroneCommand(command))
 }
+

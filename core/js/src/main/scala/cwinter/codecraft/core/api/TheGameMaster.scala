@@ -37,7 +37,7 @@ object TheGameMaster extends GameMasterLike {
   private def run(context: RunContext): Unit = {
     import context._
     if (stopped) return
-    dom.requestAnimationFrame((d: Double) => run(context))
+    dom.window.requestAnimationFrame((d: Double) => run(context))
     if (simulator.isCurrentlyUpdating) { println(s"Skipped frame at ${simulator.timestep}"); return }
 
     if (!fps.shouldSkipFrame(simulator.framerateTarget)) {

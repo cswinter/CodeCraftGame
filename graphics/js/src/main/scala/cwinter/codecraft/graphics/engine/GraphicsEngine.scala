@@ -1,17 +1,20 @@
 package cwinter.codecraft.graphics.engine
 
-import org.scalajs.dom
 import org.scalajs.dom.{document, html}
+
+import scala.scalajs.js.timers.SetIntervalHandle
 
 
 private[codecraft] object GraphicsEngine {
+  private[this] var intervalID: Option[SetIntervalHandle] = None
+
   def run(simulator: Simulator): Unit = {
     val canvas = document.getElementById("webgl-canvas").asInstanceOf[html.Canvas]
     val renderer = new WebGLRenderer(canvas, simulator)
-    val intervalID = dom.setInterval(() => {
+    intervalID = Some(scala.scalajs.js.timers.setInterval(20.0) {
       renderer.render()
       simulator.run(1)
-    }, 20)
-    canvas.setAttribute("interval-id", intervalID.toString)
+    })
   }
 }
+

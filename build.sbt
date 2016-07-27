@@ -33,7 +33,7 @@ lazy val graphics = (crossProject in file("graphics")).
   ).jvmSettings(
     libraryDependencies ++= graphicsJVMDependencies
   ).jsSettings(
-    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.8.2",
+    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.9.0",
     // add resources of the current project into the build classpath
     unmanagedClasspath in Compile <++= unmanagedResources in Compile
   ).dependsOn(util)
@@ -95,7 +95,7 @@ val core = (crossProject in file("core")).
     resolvers += "Spray" at "http://repo.spray.io",
     libraryDependencies ++= coreJVMDependencies
   ).jsSettings(
-    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.8.2"
+    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.9.0"
   ).dependsOn(graphics, physics, collisions, util)
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js
@@ -107,7 +107,7 @@ lazy val scalajsTest = (project in file("scalajs-test")).
   settings(
     name := "codecraft-scalajs-test",
     libraryDependencies ++= commonDependencies,
-    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.8.2"
+    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.9.0"
   ).dependsOn(coreJS)
 
 
