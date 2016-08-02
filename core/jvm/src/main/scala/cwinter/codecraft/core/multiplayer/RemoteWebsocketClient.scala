@@ -66,7 +66,8 @@ private[core] class RemoteWebsocketClient(
       map.initialDrones.map(x => SerializableSpawn(x)),
       players.map(_.id),
       (Set(OrangePlayer, BluePlayer) -- players).map(_.id),
-      rngSeed
+      rngSeed,
+      map.winConditions
     ).toBinary
 
   override def waitForCommands()(implicit context: SimulationContext): Future[Seq[(Int, DroneCommand)]] = {

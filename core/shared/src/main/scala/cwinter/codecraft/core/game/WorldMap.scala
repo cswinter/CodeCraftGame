@@ -10,22 +10,24 @@ import cwinter.codecraft.util.maths.{GlobalRNG, Rectangle, Vector2}
   * @param minerals The initial set of mineral crystals.
   * @param size The world boundary.
   * @param initialDrones The initial set of drones.
-  * @param winCondition Win condition, if any.
+  * @param winConditions The win conditions.
   */
 case class WorldMap(
   minerals: Seq[MineralSpawn],
   size: Rectangle,
   initialDrones: Seq[Spawn],
-  winCondition: Option[WinCondition] = None
+  winConditions: Seq[WinCondition] = Nil
 ) {
   // use this to get around compiler limitation (cannot have multiple overloaded methods with default arguments)
-  private[codecraft] def withWinConditions(winCondition: WinCondition) = {
-    WorldMap(minerals, size, initialDrones, Some(winCondition))
+  private[codecraft] def withWinConditions(winConditions: WinCondition*) = {
+    WorldMap(minerals, size, initialDrones, winConditions)
   }
 
-  /** Creates a copy of this WorldMap with the win conditions set to destruction of the enemy mothership. */
+  /** Creates a copy of this WorldMap with the win conditions set to destruction of the enemy mothership,
+    * or having the largest fleet after 15 * 60 * 60 timesteps.
+    */
   def withDefaultWinConditions: WorldMap =
-    this.withWinConditions(DestroyEnemyMotherships)
+    this.withWinConditions(DestroyEnemyMotherships, LargestFleet(15 * 60 * 60))
 
   def instantiateMinerals(): Seq[MineralCrystalImpl] =
     for ((MineralSpawn(size, position), id) <- minerals.zipWithIndex)

@@ -182,7 +182,7 @@ class DroneWorldSimulator(
   private def checkWinConditions = Local('CheckWinConditions) {
     if (winner.isEmpty) {
       for (
-        wc <- map.winCondition;
+        wc <- map.winConditions.reverse;
         player <- players
         if playerHasWon(wc, player)
       ) _winner = Some(player)
@@ -630,6 +630,13 @@ class DroneWorldSimulator(
   private def playerHasWon(winCondition: WinCondition, player: Player): Boolean = {
     winCondition match {
       case DestroyEnemyMotherships => !drones.exists(isLivingEnemyMothership(player))
+      case LargestFleet(timeout: Int) =>
+        if (timestep >= timeout) {
+          val winner = drones.groupBy(_.player).maxBy { case (_, drones) =>
+            drones.map(_.spec.resourceCost).sum
+          }._1
+          winner == player
+        } else false
     }
   }
 

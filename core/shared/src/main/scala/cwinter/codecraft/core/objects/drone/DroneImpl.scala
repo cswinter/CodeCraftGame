@@ -304,7 +304,7 @@ private[core] case class WorldStateMessage(
   missileHits: Seq[MissileHit],
   stateChanges: Seq[DroneMovementMsg],
   mineralHarvests: Seq[MineralHarvest],
-  dronwSpawns: Seq[DroneSpawned]
+  droneSpawns: Seq[DroneSpawned]
 ) extends MultiplayerMessage
 
 private[core] case class MineralHarvest(droneID: Int, mineralID: Int)
@@ -315,13 +315,14 @@ private[core] case class InitialSync(
   initialDrones: Seq[SerializableSpawn],
   localPlayerIDs: Set[Int],
   remotePlayerIDs: Set[Int],
-  rngSeed: Int
+  rngSeed: Int,
+  winConditions: Seq[WinCondition]
 ) extends MultiplayerMessage {
   def worldMap: WorldMap = new WorldMap(
     minerals,
     worldSize,
     initialDrones.map(_.deserialize),
-    None
+    winConditions
   )
 
   def localPlayers: Set[Player] = localPlayerIDs.map(Player.fromID)
