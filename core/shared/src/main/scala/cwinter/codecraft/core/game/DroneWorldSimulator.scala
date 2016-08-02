@@ -311,6 +311,23 @@ class DroneWorldSimulator(
     }
 
     for (state <- stateChanges) simulationContext.drone(state.droneID).applyState(state)
+
+    if (multiplayerConfig.isInstanceOf[MultiplayerClientConfig] && TickPeriod > 1)
+      correctSpeculativePositions()
+  }
+
+  private def correctSpeculativePositions(): Unit = {
+    for (
+      drone <- drones
+      if !drone.isDead
+    ) drone.dynamics match {
+      case speculating: SpeculatingDroneDynamics =>
+        if (speculating.syncSpeculator()) {
+          physicsEngine.remove(speculating.speculative)
+          physicsEngine.addObject(speculating.speculative)
+        }
+      case _ =>
+    }
   }
 
 
@@ -345,8 +362,9 @@ class DroneWorldSimulator(
     dronesSorted.add(drone)
     _drones += drone.id -> drone
     visionTracker.insertActive(drone)
-    if (drone.dynamics.isInstanceOf[ComputedDroneDynamics]) {
-      physicsEngine.addObject(drone.dynamics.asInstanceOf[ComputedDroneDynamics])
+    drone.dynamics match {
+      case local: ComputedDroneDynamics => physicsEngine.addObject(local)
+      case speculating: SpeculatingDroneDynamics => physicsEngine.addObject(speculating.speculative)
     }
     drone.initialise(physicsEngine.time)
     newlySpawnedDrones ::= drone
@@ -357,8 +375,9 @@ class DroneWorldSimulator(
     dronesSorted.remove(drone)
     _drones -= drone.id
     visionTracker.removeActive(drone)
-    if (drone.dynamics.isInstanceOf[ComputedDroneDynamics]) {
-      physicsEngine.remove(drone.dynamics.asInstanceOf[ComputedDroneDynamics])
+    drone.dynamics match {
+      case local: ComputedDroneDynamics => physicsEngine.remove(local)
+      case speculating: SpeculatingDroneDynamics => physicsEngine.remove(speculating.speculative)
     }
 
     deadDrones ::= drone

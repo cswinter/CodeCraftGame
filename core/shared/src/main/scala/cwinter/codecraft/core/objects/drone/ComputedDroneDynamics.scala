@@ -18,11 +18,11 @@ private[core] class ComputedDroneDynamics(
   true,
   initialPosition,
   initialTime
-) with DroneDynamics {
+) with DroneDynamicsBasics {
 
   final val MaxTurnSpeed = 0.25f
   private var speed = maxSpeed
-  private var isStunned: Boolean = false
+  private[drone] var isStunned: Boolean = false
   private var oldPos = pos
   private var oldOrientation = orientation
 

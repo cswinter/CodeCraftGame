@@ -91,9 +91,15 @@ case class DroneSpec(
   /** Returns a copy of this object with `shieldGenerators` set to the specified value. */
   def withShieldGenerators(shieldGenerators: Int) = copy(shieldGenerators = shieldGenerators)
 
-  private[core] def constructDynamics(owner: DroneImpl, initialPos: Vector2, time: Double): DroneDynamics =
-    if (owner.context.isLocallyComputed) new ComputedDroneDynamics(owner, maxSpeed, weight, radius, initialPos, time)
-    else new RemoteDroneDynamics(initialPos)
+  private[core] def constructDynamics(owner: DroneImpl, initialPos: Vector2, time: Double): DroneDynamics = {
+    def computed = new ComputedDroneDynamics(owner, maxSpeed, weight, radius, initialPos, time)
+    def remote = new RemoteDroneDynamics(initialPos)
+    def speculative = new SpeculatingDroneDynamics(remote, computed)
+
+    if (owner.context.isLocallyComputed) computed
+    else if (owner.context.simulator.TickPeriod > 1) speculative
+    else remote
+  }
 
   private[core] def constructStorage(owner: DroneImpl, startingResources: Int = 0): Option[StorageModule] =
     if (storageModules > 0) Some(

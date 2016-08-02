@@ -89,7 +89,7 @@ private[core] final class DroneImpl(
   }
 
   def applyState(state: DroneMovementMsg)(implicit context: SimulationContext): Unit = dynamics match {
-    case remote: RemoteDroneDynamics => remote.synchronize(state)
+    case syncable: SyncableDroneDynamics => syncable.synchronize(state)
     case _ => throw new AssertionError("Trying to apply state to locally computed drone.")
   }
 

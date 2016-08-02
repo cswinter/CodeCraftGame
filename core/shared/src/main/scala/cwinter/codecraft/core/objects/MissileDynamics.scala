@@ -1,8 +1,7 @@
 package cwinter.codecraft.core.objects
 
-import cwinter.codecraft.core.objects.drone.{DroneDynamics, ComputedDroneDynamics}
+import cwinter.codecraft.core.objects.drone.{ComputedDroneDynamics, DroneDynamics}
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
-
 
 private[core] class MissileDynamics(
   val speed: Double,

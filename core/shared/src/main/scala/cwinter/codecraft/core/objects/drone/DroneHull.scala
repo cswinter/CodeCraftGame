@@ -3,14 +3,13 @@ package cwinter.codecraft.core.objects.drone
 import cwinter.codecraft.core.objects.HomingMissile
 import cwinter.codecraft.util.maths.Vector2
 
-
 private[core] trait DroneHull { self: DroneImpl =>
   private[this] var _hasDied: Boolean = false
   protected var hullState = List.fill[Byte](spec.sides - 1)(2)
 
-  // TODO: mb only record hits here and do all processing as part of update()
-  // NOTE: death state probable must be determined before (or at very start of) next update()
   def missileHit(missile: HomingMissile): Unit = {
+    if (context.isMultiplayerClient) return
+
     val incomingDamage = 1
     val damage = shieldGenerators.map(_.absorbDamage(incomingDamage)).getOrElse(incomingDamage)
     for (_ <- 0 until damage) hullState = damageHull(hullState)
@@ -31,7 +30,7 @@ private[core] trait DroneHull { self: DroneImpl =>
   }
 
   private def missileHit(position: Vector2, damage: Int): Unit = {
-    if (hitpoints == 0) {
+    if (hitpointsHull == 0) {
       dynamics.remove()
       _hasDied = true
       for (s <- storage) s.droneHasDied()
@@ -48,6 +47,7 @@ private[core] trait DroneHull { self: DroneImpl =>
   }
 
   override def isDead = _hasDied
-  def hitpoints: Int = hullState.map(_.toInt).sum + shieldGenerators.map(_.currHitpoints).getOrElse(0)
+  def hitpoints: Int = hitpointsHull + shieldGenerators.map(_.currHitpoints).getOrElse(0)
+  def hitpointsHull: Int = hullState.foldLeft[Int](0)(_ + _)
 }
 
