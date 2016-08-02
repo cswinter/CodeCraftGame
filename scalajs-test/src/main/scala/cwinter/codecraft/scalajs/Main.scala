@@ -13,10 +13,20 @@ import scala.scalajs.js.annotation.JSExport
 object Main {
   @JSExport
   def webgl(canvas: html.Canvas): Unit = {
+    val multiplayer = false
     new game.Settings(recordReplays = false).setAsDefault()
     TheGameMaster.canvas = canvas
     TheGameMaster.outputFPS = true
-    run(TheGameMaster.replicatorAI(), TheGameMaster.replicatorAI())
+
+    if (multiplayer) {
+      import scala.concurrent.ExecutionContext.Implicits.global
+      val simulator = TheGameMaster.prepareMultiplayerGame("localhost", TheGameMaster.replicatorAI())
+      simulator.onSuccess {
+        case s: DroneWorldSimulator => TheGameMaster.run(s)
+      }
+    } else {
+      run(TheGameMaster.replicatorAI(), TheGameMaster.replicatorAI())
+    }
 
     document.getElementById("btn-gameplay").asInstanceOf[html.Button].onclick = (e: dom.Event) => {
       TheGameMaster.stop()

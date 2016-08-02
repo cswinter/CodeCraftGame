@@ -16,7 +16,7 @@ import scala.language.postfixOps
 object Server {
   def spawnServerInstance(seed: Option[Int] = None, displayGame: Boolean = false): Unit = {
     implicit val system = ActorSystem()
-    val server = system.actorOf(MultiplayerServer.props(seed, displayGame), "websocket")
+    val server = system.actorOf(SinglePlayerMultiplayerServer.props(seed, displayGame), "websocket")
     IO(UHttp) ! Http.Bind(server, "0.0.0.0", 8080)
     system.awaitTermination()
   }
@@ -54,7 +54,7 @@ object Server {
 }
 
 
-private[codecraft] class MultiplayerServer(seed: Option[Int], displayGame: Boolean = false) extends Actor with ActorLogging {
+private[codecraft] class SinglePlayerMultiplayerServer(seed: Option[Int], displayGame: Boolean = false) extends Actor with ActorLogging {
   val map = TheGameMaster.defaultMap
   val clientPlayers = Set[Player](BluePlayer)
   val serverPlayers = Set[Player](OrangePlayer)
@@ -210,7 +210,7 @@ private[codecraft] class TwoPlayerMultiplayerServer(
 }
 
 
-private[codecraft] object MultiplayerServer {
-  def props(seed: Option[Int], displayGame: Boolean = false) = Props(classOf[MultiplayerServer], seed, displayGame)
+private[codecraft] object SinglePlayerMultiplayerServer {
+  def props(seed: Option[Int], displayGame: Boolean = false) = Props(classOf[SinglePlayerMultiplayerServer], seed, displayGame)
 }
 
