@@ -21,6 +21,7 @@ private[core] class WebsocketServerConnection(
 
   private[this] var serverCommands = Promise[Either[Seq[(Int, SerializableDroneCommand)], GameClosed.Reason]]
   private[this] var worldState = Promise[Either[WorldStateMessage, GameClosed.Reason]]
+  private[this] var nanoTimeLastResponse = System.nanoTime()
 
 
   connection.onMessage(handleMessage)
@@ -29,6 +30,7 @@ private[core] class WebsocketServerConnection(
 
   def handleMessage(client: WebsocketClient, message: ByteBuffer): Unit = synchronized {
     if (debug) println(message)
+    nanoTimeLastResponse = System.nanoTime()
     MultiplayerMessage.parseBytes(message) match {
       case CommandsMessage(commands) => serverCommands.success(Left(commands))
       case state: WorldStateMessage => worldState.success(Left(state))
@@ -85,5 +87,7 @@ private[core] class WebsocketServerConnection(
       yield (id, DroneCommand(command))
 
   def gameClosed = _gameClosed
+
+  override def msSinceLastResponse: Int = ((System.nanoTime() - nanoTimeLastResponse) / 1000000).toInt
 }
 

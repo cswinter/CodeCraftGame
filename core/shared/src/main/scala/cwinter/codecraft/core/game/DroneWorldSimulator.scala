@@ -506,11 +506,20 @@ class DroneWorldSimulator(
     }
   }
 
-  private[codecraft] override def additionalInfoText: String =
+  private[codecraft] override def additionalInfoText: String = {
+    val connectionIssue = multiplayerConfig match {
+      case MultiplayerClientConfig(_, _, connection) =>
+        val elapsed = connection.msSinceLastResponse
+        if (elapsed >= 1000)
+          Some(s"Connection issue. Seconds since last reply from server: ${connection.msSinceLastResponse / 1000}s")
+        else None
+      case _ => None
+    }
     s"""${if (settings.showSightRadius) "Hide" else "Show"} sight radius: 1
        |${if (settings.showMissileRadius) "Hide" else "Show"} missile range: 2
        |${replayRecorder.replayFilepath match { case Some(path) => "Replay path: " + path case _ => "" }}
-       """.stripMargin
+       |${connectionIssue.getOrElse("")}""".stripMargin
+  }
 
 
   private trait SimulationPhase {

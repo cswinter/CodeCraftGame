@@ -63,6 +63,8 @@ private[core] class LocalServerConnection(
   }
 
   override def gameClosed = None
+
+  override def msSinceLastResponse: Int = 0
 }
 
 

@@ -11,5 +11,6 @@ private[core] trait RemoteServer {
   def receiveWorldState(): Result[WorldStateMessage]
   def sendCommands(commands: Seq[(Int, DroneCommand)]): Unit
   def gameClosed: Option[GameClosed.Reason]
+  def msSinceLastResponse: Int
 }
 
