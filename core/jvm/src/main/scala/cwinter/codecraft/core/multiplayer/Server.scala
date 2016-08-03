@@ -163,6 +163,7 @@ private[codecraft] class TwoPlayerMultiplayerServer(
       AuthoritativeServerConfig(Set.empty, Set(OrangePlayer, BluePlayer), clients, updateCompleted),
       rngSeed = nextRNGSeed
     )
+    simulator.graphicsEnabled = displayGame
     nextRNGSeed = scala.util.Random.nextInt
     simulator.framerateTarget = if (displayGame) 60 else 1001
     simulator.onException((e: Throwable) => {

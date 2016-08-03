@@ -22,6 +22,7 @@ private[codecraft] trait Simulator {
   private[this] var _nanoTimeLastMeasurement: Long = 0
   private var currentlyUpdating = false
   protected[codecraft] var debug = new Debug
+  var graphicsEnabled: Boolean = true
 
   /** Runs the game until the program is terminated. */
   def run(): Unit = synchronized {
@@ -45,8 +46,7 @@ private[codecraft] trait Simulator {
   }
 
   private def performUpdate(): Unit = {
-    if (gameStatus == Running)
-      savedWorldState = Seq(computeWorldState.toSeq: _*)
+    recomputeGraphicsState()
     t += 1
     try {
       measureFPS()
@@ -64,8 +64,7 @@ private[codecraft] trait Simulator {
   private[codecraft] def performAsyncUpdate(): Future[Unit] = {
     assert(!currentlyUpdating)
     currentlyUpdating = true
-    if (gameStatus == Running)
-      savedWorldState = Seq(computeWorldState.toSeq: _*)
+    recomputeGraphicsState()
     t += 1
     measureFPS()
     val updateFuture = asyncUpdate()
@@ -103,6 +102,12 @@ private[codecraft] trait Simulator {
       val nanoTimeNow = System.nanoTime()
       _measuredFramerate = (60 * 1000 * 1000 * 1000L / (nanoTimeNow - _nanoTimeLastMeasurement)).toInt
       _nanoTimeLastMeasurement = nanoTimeNow
+    }
+  }
+
+  private def recomputeGraphicsState(): Unit = {
+    if (gameStatus == Running && graphicsEnabled) {
+      savedWorldState = Seq(computeWorldState.toSeq: _*)
     }
   }
 
