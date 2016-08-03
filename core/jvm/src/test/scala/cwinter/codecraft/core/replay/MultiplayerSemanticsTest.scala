@@ -28,7 +28,7 @@ class MultiplayerSemanticsTest extends FlatSpec {
   def multiplayerGame(): DroneWorldSimulator = {
     new Thread {
       override def run(): Unit = {
-        Server.spawnServerInstance2(seed, TheGameMaster.level1Map, displayGame = false)
+        Server.spawnServerInstance2(seed, TheGameMaster.level1Map.withWinConditions(), displayGame = false)
       }
     }.start()
     Thread.sleep(1000, 0)

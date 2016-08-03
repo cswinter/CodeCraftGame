@@ -30,7 +30,8 @@ private[core] case class MultiplayerClientConfig(
 private[core] case class AuthoritativeServerConfig(
   localPlayers: Set[Player],
   remotePlayers: Set[Player],
-  clients: Set[RemoteClient]
+  clients: Set[RemoteClient],
+  updateCompleted: DroneWorldSimulator => Unit
 ) extends MultiplayerConfig {
   def isMultiplayerGame = true
   def isLocalPlayer(player: Player): Boolean = localPlayers.contains(player)

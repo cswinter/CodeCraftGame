@@ -6,7 +6,7 @@ import akka.actor.{ActorRef, Props}
 import akka.util.ByteString
 import spray.can.websocket
 import spray.can.websocket.FrameCommandFailed
-import spray.can.websocket.frame.{BinaryFrame, TextFrame}
+import spray.can.websocket.frame.{CloseFrame, BinaryFrame, TextFrame}
 import spray.http.HttpRequest
 
 import scala.language.postfixOps
@@ -34,6 +34,8 @@ private[core] trait WebsocketWorker {
     case None => throw new Exception(
       "WebsocketWorker must be installed with a RemoteWebsocketClient before calling send.")
   }
+
+  def closeConnection(): Unit = websocketActor.foreach(_ ! WebsocketActor.Close)
 }
 
 
@@ -42,7 +44,7 @@ private[core] class WebsocketActor(
   val serverConnection: ActorRef,
   val websocketWorker: WebsocketWorker
 ) extends websocket.WebSocketServerWorker {
-  import WebsocketActor.Send
+  import WebsocketActor._
 
   websocketWorker.installActorRef(this.self)
 
@@ -56,6 +58,7 @@ private[core] class WebsocketActor(
       websocketWorker.receive(decoded)
     case Send(message) =>
       send(BinaryFrame(ByteString.fromByteBuffer(message)))
+    case Close => send(CloseFrame())
     case x: FrameCommandFailed =>
       log.error("frame command failed", x)
       throw new Exception(s"Frame command failed: $x")
@@ -70,5 +73,6 @@ private[core] object WebsocketActor {
     Props(classOf[WebsocketActor], serverConnection, worker)
 
   case class Send(message: ByteBuffer)
+  case object Close
 }
 

@@ -4,6 +4,7 @@ import java.nio.ByteBuffer
 
 import cwinter.codecraft.core.api.{BluePlayer, OrangePlayer, Player}
 import cwinter.codecraft.core.game.{SimulationContext, WorldMap}
+import cwinter.codecraft.core.objects.drone.GameClosed.Reason
 import cwinter.codecraft.core.objects.drone._
 import cwinter.codecraft.util.AggregateStatistics
 
@@ -11,7 +12,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, Promise}
 
 
-private[core] class RemoteWebsocketClient(
+private[core] class WebsocketClientConnection(
   override val players: Set[Player],
   val map: WorldMap,
   val rngSeed: Int,
@@ -50,13 +51,18 @@ private[core] class RemoteWebsocketClient(
 
   private def handleMessage(msg: MultiplayerMessage): Unit = msg match {
     case CommandsMessage(commands) => clientCommands.success(commands)
-    case _: WorldStateMessage => throw new Exception("Authoritative server received WorldStateMessage!")
-    case _: InitialSync => throw new Exception("Authoritative server received InitialSync!")
     case Register => send(syncMessage)
     case RTT(time, message) => if (debug) {
       val ms = (System.nanoTime - time) / 1000000.0
       println(f"RTT for $message: $ms%.2fms")
     }
+    case _: WorldStateMessage => protocolViolation("Authoritative server received WorldStateMessage!")
+    case _: InitialSync => protocolViolation("Authoritative server received InitialSync!")
+    case _: GameClosed => protocolViolation("Client attempted to close game.")
+  }
+
+  private def protocolViolation(message: String): Nothing = {
+    throw new Exception(message)
   }
 
   def syncMessage =
@@ -107,5 +113,11 @@ private[core] class RemoteWebsocketClient(
   ): Seq[(Int, DroneCommand)] =
     for ((id, command) <- commands)
       yield (id, DroneCommand(command))
+
+
+  override def close(reason: Reason): Unit = {
+    send(GameClosed(reason).toBinary)
+    closeConnection()
+  }
 }
 

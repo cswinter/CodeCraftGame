@@ -2,7 +2,7 @@ package cwinter.codecraft.core.multiplayer
 
 import cwinter.codecraft.core.api.Player
 import cwinter.codecraft.core.game.SimulationContext
-import cwinter.codecraft.core.objects.drone.{WorldStateMessage, MissileHit, DroneCommand, DroneMovementMsg}
+import cwinter.codecraft.core.objects.drone._
 
 import scala.concurrent.Future
 
@@ -12,5 +12,6 @@ private[core] trait RemoteClient {
   def sendCommands(commands: Seq[(Int, DroneCommand)]): Unit
   def sendWorldState(worldStateMessage: WorldStateMessage): Unit
   def players: Set[Player]
+  def close(reason: GameClosed.Reason): Unit
 }
 

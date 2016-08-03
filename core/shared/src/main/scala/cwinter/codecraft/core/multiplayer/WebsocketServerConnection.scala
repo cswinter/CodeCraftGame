@@ -15,42 +15,56 @@ private[core] class WebsocketServerConnection(
   val debug: Boolean = false
 ) extends RemoteServer {
 
+  private var _gameClosed = Option.empty[GameClosed.Reason]
+
   val initialWorldState = Promise[InitialSync]
 
-  private[this] var serverCommands = Promise[Seq[(Int, SerializableDroneCommand)]]
-  private[this] var worldState = Promise[WorldStateMessage]
+  private[this] var serverCommands = Promise[Either[Seq[(Int, SerializableDroneCommand)], GameClosed.Reason]]
+  private[this] var worldState = Promise[Either[WorldStateMessage, GameClosed.Reason]]
 
 
   connection.onMessage(handleMessage)
   connection.sendMessage(Register.toBinary)
 
 
-  def handleMessage(client: WebsocketClient, message: ByteBuffer): Unit = {
+  def handleMessage(client: WebsocketClient, message: ByteBuffer): Unit = synchronized {
     if (debug) println(message)
     MultiplayerMessage.parseBytes(message) match {
-      case CommandsMessage(commands) => serverCommands.success(commands)
-      case state: WorldStateMessage => worldState.success(state)
+      case CommandsMessage(commands) => serverCommands.success(Left(commands))
+      case state: WorldStateMessage => worldState.success(Left(state))
       case start: InitialSync => initialWorldState.success(start)
       case Register =>
       case rtt: RTT => connection.sendMessage(rtt.toBinary)
+      case GameClosed(reason) =>
+        _gameClosed = Some(reason)
+        synchronized {
+          if (!serverCommands.isCompleted) serverCommands.success(Right(reason))
+          if (!worldState.isCompleted) worldState.success(Right(reason))
+          serverCommands = Promise.successful(Right(reason))
+          worldState = Promise.successful(Right(reason))
+        }
     }
   }
 
   def receiveInitialWorldState(): Future[InitialSync] =
     initialWorldState.future
 
-  override def receiveCommands()(implicit context: SimulationContext): Future[Seq[(Int, DroneCommand)]] = {
+  override def receiveCommands()(implicit context: SimulationContext): Result[Seq[(Int, DroneCommand)]] = synchronized {
     if (debug) println(s"[t=${context.timestep}] Waiting for commands...")
-    for (commands <- serverCommands.future) yield {
-      if (debug) println("Commands received.")
-      serverCommands = Promise[Seq[(Int, SerializableDroneCommand)]]
-      deserialize(commands)
+    for (reply <- serverCommands.future) yield {
+      reply match {
+        case Left(commands) =>
+          if (debug) println ("Commands received.")
+          serverCommands = Promise[Either[Seq[(Int, SerializableDroneCommand)], GameClosed.Reason]]
+          Left(deserialize(commands))
+        case Right(reason) => Right(reason)
+      }
     }
   }
 
-  override def receiveWorldState(): Future[WorldStateMessage] = {
+  override def receiveWorldState(): Result[WorldStateMessage] = synchronized {
     for (state <- worldState.future) yield {
-      worldState = Promise[WorldStateMessage]
+      worldState = Promise[Either[WorldStateMessage, GameClosed.Reason]]
       state
     }
   }
@@ -64,11 +78,12 @@ private[core] class WebsocketServerConnection(
     if (debug) println(s"sendCommands($commands)")
   }
 
-
   def deserialize(commands: Seq[(Int, SerializableDroneCommand)])(
     implicit context: SimulationContext
   ): Seq[(Int, DroneCommand)] =
     for ((id, command) <- commands)
       yield (id, DroneCommand(command))
+
+  def gameClosed = _gameClosed
 }
 

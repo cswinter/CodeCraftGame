@@ -4,6 +4,7 @@ import akka.actor._
 import akka.io.IO
 import cwinter.codecraft.core.api.{BluePlayer, OrangePlayer, Player, TheGameMaster}
 import cwinter.codecraft.core.game.{AuthoritativeServerConfig, DroneWorldSimulator, WorldMap}
+import cwinter.codecraft.core.objects.drone.GameClosed
 import cwinter.codecraft.core.replay.DummyDroneController
 import spray.can.Http
 import spray.can.server.UHttp
@@ -65,7 +66,7 @@ private[codecraft] class SinglePlayerMultiplayerServer(seed: Option[Int], displa
     case Http.Connected(remoteAddress, localAddress) =>
       val serverConnection = sender()
       val rngSeed = this.seed.getOrElse(scala.util.Random.nextInt)
-      val worker = new RemoteWebsocketClient(clientPlayers, map, rngSeed)
+      val worker = new WebsocketClientConnection(clientPlayers, map, rngSeed)
       val conn = context.actorOf(WebsocketActor.props(serverConnection, worker))
 
       val server = new DroneWorldSimulator(
@@ -73,7 +74,7 @@ private[codecraft] class SinglePlayerMultiplayerServer(seed: Option[Int], displa
         Seq(new DummyDroneController, TheGameMaster.destroyerAI()),
         t => Seq.empty,
         None,
-        AuthoritativeServerConfig(serverPlayers, clientPlayers, Set(worker)),
+        AuthoritativeServerConfig(serverPlayers, clientPlayers, Set(worker), s => ()),
         rngSeed = rngSeed
       )
       server.framerateTarget = 1001
@@ -103,7 +104,7 @@ private[codecraft] class TwoPlayerMultiplayerServer(
   case class Connection(
     rawConnection: ActorRef,
     websocketActor: ActorRef,
-    worker: RemoteWebsocketClient,
+    worker: WebsocketClientConnection,
     assignedSlot: MultiplayerSlot
   )
 
@@ -124,24 +125,25 @@ private[codecraft] class TwoPlayerMultiplayerServer(
       log.info(s"Child $child has been terminated.")
       log.info(s"Corresponding slot: ${slotAssignments.get(child)}")
       unassignSlot(child)
-      for (simulator <- runningGame)
-        stopGame(simulator)
+      for (simulator <- runningGame) {
+        val disconnectedPlayer = slotAssignments.get(child).map(_.worker.players.head.id).getOrElse(-1)
+        stopGame(simulator, GameClosed.PlayerDisconnected(disconnectedPlayer))
+      }
     case GameTimedOut(simulator) =>
-      for (
-        currentSimulator <- runningGame
-        if currentSimulator == simulator
-      ) stopGame(simulator)
+      if (runningGame.contains(simulator)) {
+        stopGame(simulator, GameClosed.Timeout)
+      }
     case GetStatus =>
       sender() ! Status(clients.size, runningGame.size, freeSlots.size)
     case Stop =>
       for (simulator <- runningGame)
-        stopGame(simulator)
+        stopGame(simulator, GameClosed.ServerStopped)
       context.stop(self)
   }
 
   private def acceptConnection(rawConnection: ActorRef): Connection = {
     val slot = popSlot()
-    val worker = new RemoteWebsocketClient(slot.players, map, nextRNGSeed)
+    val worker = new WebsocketClientConnection(slot.players, map, nextRNGSeed)
     val websocketActor = context.actorOf(WebsocketActor.props(rawConnection, worker))
     rawConnection ! Http.Register(websocketActor)
     clients += worker
@@ -158,7 +160,7 @@ private[codecraft] class TwoPlayerMultiplayerServer(
       Seq(new DummyDroneController, new DummyDroneController),
       t => Seq.empty,
       None,
-      AuthoritativeServerConfig(Set.empty, Set(OrangePlayer, BluePlayer), clients),
+      AuthoritativeServerConfig(Set.empty, Set(OrangePlayer, BluePlayer), clients, updateCompleted),
       rngSeed = nextRNGSeed
     )
     nextRNGSeed = scala.util.Random.nextInt
@@ -166,11 +168,19 @@ private[codecraft] class TwoPlayerMultiplayerServer(
     simulator.onException((e: Throwable) => {
       log.info(s"Terminating running multiplayer game because of uncaught exception.")
       log.info(s"Exception message:\n${e.getStackTrace.mkString("\n")}")
-      stopGame(simulator)
+      stopGame(simulator, GameClosed.Crash(e.getMessage + "\n" + e.getStackTrace.mkString("\n")))
     })
-    context.system.scheduler.scheduleOnce(5 minutes, self, GameTimedOut(simulator))
+    context.system.scheduler.scheduleOnce(20 minutes, self, GameTimedOut(simulator))
     runningGame = Some(simulator)
     if (displayGame) TheGameMaster.run(simulator) else simulator.run()
+  }
+
+  private def updateCompleted(simulator: DroneWorldSimulator): Unit = {
+    if (runningGame.contains(simulator)) {
+      for (winner <- simulator.winner) {
+        stopGame(simulator, GameClosed.PlayerWon(winner.id))
+      }
+    }
   }
 
   private def assignSlot(connection: Connection): Unit = {
@@ -184,12 +194,15 @@ private[codecraft] class TwoPlayerMultiplayerServer(
     slotAssignments -= connection
   }
 
-  private def stopGame(simulator: DroneWorldSimulator): Unit = {
+  private def stopGame(simulator: DroneWorldSimulator, reason: GameClosed.Reason): Unit = {
     simulator.terminate()
     if (runningGame.contains(simulator)) runningGame = None
     for ((websocketActor, connection) <- slotAssignments) {
       context.unwatch(websocketActor)
-      context.stop(connection.rawConnection)
+      connection.worker.close(reason)
+      context.system.scheduler.scheduleOnce(15 seconds, new Runnable {
+        override def run(): Unit =  context.stop(connection.rawConnection)
+      })
       unassignSlot(websocketActor)
     }
   }

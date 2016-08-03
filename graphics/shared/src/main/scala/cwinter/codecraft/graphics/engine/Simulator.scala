@@ -28,7 +28,7 @@ private[codecraft] trait Simulator {
     require(!running, "Simulator.run() must only be called once.")
     running = true
     Future {
-      while (!stopped) {
+      while (!stopped && gameStatus == Running) {
         if (!paused) {
           performUpdate()
         }
@@ -45,7 +45,8 @@ private[codecraft] trait Simulator {
   }
 
   private def performUpdate(): Unit = {
-    savedWorldState = Seq(computeWorldState.toSeq: _*)
+    if (gameStatus == Running)
+      savedWorldState = Seq(computeWorldState.toSeq: _*)
     t += 1
     try {
       measureFPS()
@@ -63,15 +64,16 @@ private[codecraft] trait Simulator {
   private[codecraft] def performAsyncUpdate(): Future[Unit] = {
     assert(!currentlyUpdating)
     currentlyUpdating = true
-    savedWorldState = Seq(computeWorldState.toSeq: _*)
+    if (gameStatus == Running)
+      savedWorldState = Seq(computeWorldState.toSeq: _*)
     t += 1
     measureFPS()
-    val result = asyncUpdate()
+    val updateFuture = asyncUpdate()
 
     // optimization that prevents JavaScript from sometimes skipping an animation frame (in single player)
-    if (result.isCompleted) currentlyUpdating = false
+    if (updateFuture.isCompleted) currentlyUpdating = false
 
-    result.onComplete {
+    updateFuture.onComplete {
       case Success(_) =>
         currentlyUpdating = false
         debug.swapBuffers()
@@ -83,7 +85,7 @@ private[codecraft] trait Simulator {
         currentlyUpdating = false
         debug.swapBuffers()
     }
-    result
+    updateFuture
   }
 
   /** Will run the game for `steps` timesteps. */
@@ -91,7 +93,7 @@ private[codecraft] trait Simulator {
     for (i <- 0 until steps) {
       if (!paused) {
         performUpdate()
-        if (stopped) return
+        if (stopped || gameStatus != Running) return
       }
     }
   }
@@ -111,6 +113,10 @@ private[codecraft] trait Simulator {
     * Returns a future which completes once all changes have taken effect.
     */
   protected def asyncUpdate(): Future[Unit]
+
+  /** Returns the game's status
+    */
+  protected def gameStatus: Status
 
   /** Returns the current timestep. */
   def timestep: Int = t
@@ -153,5 +159,11 @@ private[codecraft] trait Simulator {
   private[codecraft] def handleKeypress(keychar: Char): Unit = ()
   private[codecraft] def additionalInfoText: String = ""
   private[codecraft] def textModels: Iterable[TextModel] = debug.textModels
+
+
+  protected sealed trait Status
+  protected case object Running extends Status
+  protected case class Stopped(reason: String) extends Status
+  protected case class Crashed(exception: Throwable) extends Status
 }
 

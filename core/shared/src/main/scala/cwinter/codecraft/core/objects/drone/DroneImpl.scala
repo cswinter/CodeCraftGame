@@ -333,6 +333,18 @@ private[core] case object Register extends MultiplayerMessage
 
 private[core] case class RTT(sent: Long, msg: String) extends MultiplayerMessage
 
+private[core] case class GameClosed(reason: GameClosed.Reason) extends MultiplayerMessage
+
+private[core] object GameClosed {
+  sealed trait Reason
+  case class PlayerWon(winnerID: Int) extends Reason
+  case class PlayerDisconnected(playerID: Int) extends Reason
+  case class ProtocolViolation(playerID: Int) extends Reason
+  case object Timeout extends Reason
+  case object ServerStopped extends Reason
+  case class Crash(exceptionMsg: String) extends Reason
+}
+
 
 private[core] object MultiplayerMessage {
   def parse(json: String): MultiplayerMessage = read[MultiplayerMessage](json)

@@ -2,6 +2,7 @@ package cwinter.codecraft.core.multiplayer
 
 import cwinter.codecraft.core.api.Player
 import cwinter.codecraft.core.game.SimulationContext
+import cwinter.codecraft.core.objects.drone.GameClosed.Reason
 import cwinter.codecraft.core.objects.drone._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -41,23 +42,27 @@ private[core] class LocalClientConnection(
     connection.resetCommandsFromClients()
     connection.putCommandsForClient(clientID, commands)
   }
+
+  override def close(reason: Reason): Unit = ()
 }
 
 private[core] class LocalServerConnection(
   clientID: Int,
   connection: LocalConnection
 ) extends RemoteServer {
-  override def receiveCommands()(implicit context: SimulationContext): Future[Seq[(Int, DroneCommand)]] = {
-    connection.getCommandsForClient(clientID)
+  override def receiveCommands()(implicit context: SimulationContext): Result[Seq[(Int, DroneCommand)]] = {
+    connection.getCommandsForClient(clientID).map(c => Left(c))
   }
 
-  override def receiveWorldState(): Future[WorldStateMessage] = {
-    connection.getWorldState()
+  override def receiveWorldState(): Result[WorldStateMessage] = {
+    connection.getWorldState.map(ws => Left(ws))
   }
 
   override def sendCommands(commands: Seq[(Int, DroneCommand)]): Unit = {
     connection.putClientCommands(clientID, commands)
   }
+
+  override def gameClosed = None
 }
 
 
@@ -108,7 +113,7 @@ private[core] class LocalConnection(
     promisedCommandsForClient(clientID).future.map(deserialize)
   }
 
-  def getWorldState(): Future[WorldStateMessage] = state.future
+  def getWorldState: Future[WorldStateMessage] = state.future
 
   def serialize(commands: Commands): SerializedCommands =
     for ((id, command) <- commands) yield (id, command.toSerializable)

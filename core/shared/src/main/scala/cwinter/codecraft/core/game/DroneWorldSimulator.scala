@@ -18,7 +18,7 @@ import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.Future
-import scala.language.postfixOps
+import scala.language.{implicitConversions, postfixOps}
 import scala.scalajs.js.annotation.JSExport
 
 /** Aggregates all datastructures required to run a game and implements the game loop.
@@ -140,7 +140,8 @@ class DroneWorldSimulator(
     processDeathEvents <*>
     BeforeTick ? updatePositionDependentState <*>
     checkWinConditions <*>
-    updateTextModels
+    updateTextModels <*>
+    IfServer ? serverCallback
 
   private def printDebugInfo = Local('PrintDebugInfo) {
     if (timestep > 0 && (timestep == 1 || timestep % 1000 == 0)) {
@@ -189,17 +190,6 @@ class DroneWorldSimulator(
     }
   }
 
-  //noinspection MutatorLikeMethodIsParameterless
-  private def updateTextModels = Local('UpdateTextModels) {
-    errors.updateMessages()
-    for (winner <- winner)
-      debug.drawText(
-        s"${winner.name} has won!",
-        0, 0,
-        ColorRGBA(winner.color, 0.6f),
-        absolutePosition = true, centered = true, largeFont = true)
-  }
-
   private def clientSyncDroneCommands =
     sendCommandsToServer <*> awaitRemoteCommands <*> executeRemoteCommands
 
@@ -217,11 +207,14 @@ class DroneWorldSimulator(
 
   private def awaitRemoteCommands = Async('AwaitRemoteCommands) {
     val MultiplayerClientConfig(_, _, server) = multiplayerConfig.asInstanceOf[MultiplayerClientConfig]
-    server.receiveCommands().map(remoteCommands = _)
+    server.receiveCommands().map {
+      case Left(commands) => remoteCommands = commands
+      case Right(gameClosedReason) => gameStatus = Stopped(gameClosedReason.toString)
+    }
   }
 
   private def awaitClientCommands = Async('AwaitClientCommands) {
-    val AuthoritativeServerConfig(_, _, clients) = multiplayerConfig.asInstanceOf[AuthoritativeServerConfig]
+    val AuthoritativeServerConfig(_, _, clients, _) = multiplayerConfig
     val commandFutures = for (
       client <- clients.toSeq
     ) yield client.waitForCommands()
@@ -237,7 +230,7 @@ class DroneWorldSimulator(
   }
 
   private def distributeCommandsToClients = Local('DistributeCommandsToClients) {
-    val AuthoritativeServerConfig(_, _, clients) = multiplayerConfig.asInstanceOf[AuthoritativeServerConfig]
+    val AuthoritativeServerConfig(_, _, clients, _) = multiplayerConfig
     val allCommands = multiplayerConfig.commandRecorder.popAll() ++ remoteCommands
     for (
       client <- clients;
@@ -253,7 +246,7 @@ class DroneWorldSimulator(
   }
 
   private def distributeWorldState = Local('DistributeWorldState) {
-    val AuthoritativeServerConfig(_, _, clients) = multiplayerConfig.asInstanceOf[AuthoritativeServerConfig]
+    val AuthoritativeServerConfig(_, _, clients, _) = multiplayerConfig
     val worldState = collectWorldState(drones)
     for (client <- clients) client.sendWorldState(worldState)
   }
@@ -286,7 +279,10 @@ class DroneWorldSimulator(
   private var remoteWorldState: WorldStateMessage = null
   private def awaitWorldState = Async('AwaitWorldState) {
     val MultiplayerClientConfig(_, _, server) = multiplayerConfig.asInstanceOf[MultiplayerClientConfig]
-    server.receiveWorldState().map(remoteWorldState = _)
+    server.receiveWorldState().map {
+      case Left(worldState) => remoteWorldState = worldState
+      case Right(gameClosedReason) => gameStatus = Stopped(gameClosedReason.toString)
+    }
   }
 
   private def applyWorldState = Local('ApplyWorldState) {
@@ -330,6 +326,21 @@ class DroneWorldSimulator(
     }
   }
 
+  //noinspection MutatorLikeMethodIsParameterless
+  private def updateTextModels = Local('UpdateTextModels) {
+    errors.updateMessages()
+    for (winner <- winner)
+      debug.drawText(
+        s"${winner.name} has won!",
+        0, 0,
+        ColorRGBA(winner.color, 0.6f),
+        absolutePosition = true, centered = true, largeFont = true)
+  }
+
+  private def serverCallback = Local('ServerCallback) {
+    val AuthoritativeServerConfig(_, _, _, callback) = multiplayerConfig
+    callback(this)
+  }
 
   @JSExport
   val namedDrones = (
@@ -519,6 +530,12 @@ class DroneWorldSimulator(
       case (_, SimulationPhaseSeq(seq)) => SimulationPhaseSeq(phase1 +: seq)
       case _ => SimulationPhaseSeq(Seq(phase1, phase2))
     }
+
+    sealed trait Result
+    case object Success extends Result
+    case object Abort extends Result
+    case class Failure(exception: Throwable) extends Result
+    implicit def unitIsSuccess(unit: Unit): Result = Success
   }
 
   private object Local {
@@ -553,20 +570,26 @@ class DroneWorldSimulator(
   }
 
   private case class SimulationPhaseSeq(subphases: Seq[SimulationPhase]) extends SimulationPhase {
-    override def run(): Unit = subphases.foreach(_.run())
+    override def run(): Unit = subphases.foreach { phase =>
+      if (gameStatus == Running) phase.run()
+    }
 
     override def runAsync(): Future[Unit] = runAsync(subphases)
 
-    private def runAsync(remaining: Seq[SimulationPhase]): Future[Unit] = remaining match {
-      case Seq(last) => last.runAsync()
-      case Seq(head, tail@_*) =>
-        if (head.isFullyLocal) {
-          head.run()
-          runAsync(tail)
-        } else {
-          head.runAsync().flatMap(_ => runAsync(tail))
+    private def runAsync(remaining: Seq[SimulationPhase]): Future[Unit] =
+      if (gameStatus == Running) {
+        remaining match {
+          case Seq(last) =>
+            last.runAsync()
+          case Seq(head, tail@_*) =>
+            if (head.isFullyLocal) {
+              head.run()
+              runAsync(tail)
+            } else {
+              head.runAsync().flatMap(_ => runAsync(tail))
+            }
         }
-    }
+      } else Future.successful(Unit)
 
     override def isFullyLocal = subphases.forall(_.isFullyLocal)
   }
@@ -642,6 +665,17 @@ class DroneWorldSimulator(
 
   private def isLivingEnemyMothership(player: Player)(drone: DroneImpl): Boolean =
     drone.player != player && !drone.isDead && drone.spec.constructors > 0
+
+
+  private[this] var _gameStatus: Status = Running
+  protected def gameStatus_=(value: Status) = {
+    value match {
+      case Stopped(msg) => println(s"Game has ended: $msg")
+      case _ =>
+    }
+    _gameStatus = value
+  }
+  override protected def gameStatus = _gameStatus
 }
 
 private[codecraft] object DroneWorldSimulator {
