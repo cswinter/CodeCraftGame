@@ -74,7 +74,7 @@ private[codecraft] class SinglePlayerMultiplayerServer(seed: Option[Int], displa
         Seq(new DummyDroneController, TheGameMaster.destroyerAI()),
         t => Seq.empty,
         None,
-        AuthoritativeServerConfig(serverPlayers, clientPlayers, Set(worker), s => ()),
+        AuthoritativeServerConfig(serverPlayers, clientPlayers, Set(worker), s => (), s => ()),
         rngSeed = rngSeed
       )
       server.framerateTarget = 1001
@@ -160,7 +160,7 @@ private[codecraft] class TwoPlayerMultiplayerServer(
       Seq(new DummyDroneController, new DummyDroneController),
       t => Seq.empty,
       None,
-      AuthoritativeServerConfig(Set.empty, Set(OrangePlayer, BluePlayer), clients, updateCompleted),
+      AuthoritativeServerConfig(Set.empty, Set(OrangePlayer, BluePlayer), clients, updateCompleted, onTimeout),
       rngSeed = nextRNGSeed
     )
     simulator.graphicsEnabled = displayGame
@@ -181,6 +181,12 @@ private[codecraft] class TwoPlayerMultiplayerServer(
       for (winner <- simulator.winner) {
         stopGame(simulator, GameClosed.PlayerWon(winner.id))
       }
+    }
+  }
+
+  private def onTimeout(simulator: DroneWorldSimulator): Unit = {
+    if (runningGame.contains(simulator)) {
+      stopGame(simulator, GameClosed.PlayerTimedOut)
     }
   }
 

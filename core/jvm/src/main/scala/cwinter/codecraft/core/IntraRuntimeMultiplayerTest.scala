@@ -19,7 +19,7 @@ private[codecraft] object IntraRuntimeMultiplayerTest {
       Seq(new DummyDroneController, TheGameMaster.level1AI()),
       t => Seq.empty,
       None,
-      AuthoritativeServerConfig(serverPlayers, clientPlayers, Set(clientConnection0), s => ())
+      AuthoritativeServerConfig(serverPlayers, clientPlayers, Set(clientConnection0), s => (), s => ())
     )
     val client = new DroneWorldSimulator(
       map,

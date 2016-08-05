@@ -339,6 +339,7 @@ private[core] object GameClosed {
   sealed trait Reason
   case class PlayerWon(winnerID: Int) extends Reason
   case class PlayerDisconnected(playerID: Int) extends Reason
+  case object PlayerTimedOut extends Reason
   case class ProtocolViolation(playerID: Int) extends Reason
   case object Timeout extends Reason
   case object ServerStopped extends Reason

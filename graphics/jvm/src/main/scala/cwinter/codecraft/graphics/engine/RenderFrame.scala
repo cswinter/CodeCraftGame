@@ -139,7 +139,7 @@ private[graphics] class RenderFrame(val gameWorld: Simulator)
       if (centered) VertexXY(-bounds.getWidth.toFloat / 2, bounds.getHeight.toFloat / 2)
       else VertexXY(0, 0)
     val cameraPos =
-      if (absolutePos) VertexXY(xPos, yPos)
+      if (absolutePos) VertexXY(xPos * width / 2, yPos * height / 2)
       else (1 / camera.zoomFactor) * (worldPos - VertexXY(camera.x, camera.y))
     val position = cameraPos + center + VertexXY(width / 2, height / 2)
     renderer.draw(text, position.x.toInt, position.y.toInt)

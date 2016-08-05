@@ -1,5 +1,7 @@
 package cwinter.codecraft.core.game
 
+import java.util.concurrent.TimeoutException
+
 import cwinter.codecraft.collisions.{VisionTracker, VisionTracking}
 import cwinter.codecraft.core.{PerformanceMonitor, PerformanceMonitorFactory}
 import cwinter.codecraft.core.api._
@@ -7,7 +9,7 @@ import cwinter.codecraft.core.errors.Errors
 import cwinter.codecraft.core.objects._
 import cwinter.codecraft.core.objects.drone._
 import cwinter.codecraft.core.replay.{NullReplayRecorder, ReplayRecorder, Replayer, ReplayFactory}
-import cwinter.codecraft.graphics.engine.{ModelDescriptor, NullPositionDescriptor, PositionDescriptor, Simulator}
+import cwinter.codecraft.graphics.engine._
 import cwinter.codecraft.graphics.models.{CircleOutlineModelBuilder, RectangleModelBuilder}
 import cwinter.codecraft.physics.PhysicsEngine
 import cwinter.codecraft.util.maths._
@@ -214,7 +216,7 @@ class DroneWorldSimulator(
   }
 
   private def awaitClientCommands = Async('AwaitClientCommands) {
-    val AuthoritativeServerConfig(_, _, clients, _) = multiplayerConfig
+    val clients = multiplayerConfig.asInstanceOf[AuthoritativeServerConfig].clients
     val commandFutures = for (
       client <- clients.toSeq
     ) yield client.waitForCommands()
@@ -230,7 +232,7 @@ class DroneWorldSimulator(
   }
 
   private def distributeCommandsToClients = Local('DistributeCommandsToClients) {
-    val AuthoritativeServerConfig(_, _, clients, _) = multiplayerConfig
+    val clients = multiplayerConfig.asInstanceOf[AuthoritativeServerConfig].clients
     val allCommands = multiplayerConfig.commandRecorder.popAll() ++ remoteCommands
     for (
       client <- clients;
@@ -246,7 +248,7 @@ class DroneWorldSimulator(
   }
 
   private def distributeWorldState = Local('DistributeWorldState) {
-    val AuthoritativeServerConfig(_, _, clients, _) = multiplayerConfig
+    val clients = multiplayerConfig.asInstanceOf[AuthoritativeServerConfig].clients
     val worldState = collectWorldState(drones)
     for (client <- clients) client.sendWorldState(worldState)
   }
@@ -338,8 +340,7 @@ class DroneWorldSimulator(
   }
 
   private def serverCallback = Local('ServerCallback) {
-    val AuthoritativeServerConfig(_, _, _, callback) = multiplayerConfig
-    callback(this)
+    multiplayerConfig.asInstanceOf[AuthoritativeServerConfig].updateCompleted(this)
   }
 
   @JSExport
@@ -507,20 +508,38 @@ class DroneWorldSimulator(
   }
 
   private[codecraft] override def additionalInfoText: String = {
-    val connectionIssue = multiplayerConfig match {
-      case MultiplayerClientConfig(_, _, connection) =>
-        val elapsed = connection.msSinceLastResponse
-        if (elapsed >= 1000)
-          Some(s"Connection issue. Seconds since last reply from server: ${connection.msSinceLastResponse / 1000}s")
-        else None
-      case _ => None
-    }
     s"""${if (settings.showSightRadius) "Hide" else "Show"} sight radius: 1
        |${if (settings.showMissileRadius) "Hide" else "Show"} missile range: 2
        |${replayRecorder.replayFilepath match { case Some(path) => "Replay path: " + path case _ => "" }}
-       |${connectionIssue.getOrElse("")}""".stripMargin
+       |""".stripMargin
   }
 
+  private[codecraft] override def textModels: Iterable[TextModel] = {
+    val extraText = gameStatus match {
+      case Crashed(exception) => Some(s"Game has crashed: ${exception.getMessage}")
+      case Stopped(msg) => Some(s"Game has been stopped: $msg")
+      case _ => multiplayerConfig match {
+        case MultiplayerClientConfig(_, _, connection) =>
+          val elapsed = connection.msSinceLastResponse
+          if (elapsed >= 1000)
+            Some(s"Connection issue. Seconds since last reply from server: ${connection.msSinceLastResponse / 1000}s")
+          else None
+        case _ => None
+      }
+    }
+
+    extraText match {
+      case None => super.textModels
+      case Some(msg) => super.textModels ++
+        List(TextModel(
+          msg,
+          0f,
+          0.9f,
+          ColorRGBA(0.5f, 1f, 0, 1),
+          absolutePos = true,
+          centered = true))
+    }
+  }
 
   private trait SimulationPhase {
     def run(): Unit
@@ -566,7 +585,19 @@ class DroneWorldSimulator(
       }
       new SimulationPhase {
         override def runAsync(): Future[Unit] = instrumentedCode
-        override def run(): Unit = CrossPlatformAwait.result(runAsync(), 30 seconds)
+        override def run(): Unit = {
+          try {
+            CrossPlatformAwait.result(runAsync(), 30 seconds)
+          } catch {
+            case _: TimeoutException =>
+              gameStatus = Stopped("Connection timed out.")
+              multiplayerConfig match {
+                case a: AuthoritativeServerConfig => a.onTimeout(outer)
+                case _ =>
+              }
+          }
+        }
+
         override def isFullyLocal = false
       }
     }
