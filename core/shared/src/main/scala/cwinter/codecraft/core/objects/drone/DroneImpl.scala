@@ -292,21 +292,27 @@ private[core] object SerializableSpawn {
     SerializableSpawn(spawn.droneSpec, spawn.position, spawn.player.id, spawn.resources, spawn.name)
 }
 
-private[core] sealed trait MultiplayerMessage {
-  def toBinary: ByteBuffer = MultiplayerMessage.serializeBinary(this)
-}
+
+private[core] sealed trait MultiplayerMessage
+
+private[core] sealed trait ServerMessage extends MultiplayerMessage
+private[core] sealed trait ClientMessage extends MultiplayerMessage
+
+
+private[core] case object Register extends ClientMessage
+
+private[core] case class RTT(sent: Long, msg: String) extends ServerMessage with ClientMessage
 
 private[core] case class CommandsMessage(
   commands: Seq[(Int, SerializableDroneCommand)]
-) extends MultiplayerMessage
+) extends ServerMessage with ClientMessage
 
 private[core] case class WorldStateMessage(
   missileHits: Seq[MissileHit],
   stateChanges: Seq[DroneMovementMsg],
   mineralHarvests: Seq[MineralHarvest],
   droneSpawns: Seq[DroneSpawned]
-) extends MultiplayerMessage
-
+) extends ServerMessage
 private[core] case class MineralHarvest(droneID: Int, mineralID: Int)
 
 private[core] case class InitialSync(
@@ -317,7 +323,7 @@ private[core] case class InitialSync(
   remotePlayerIDs: Set[Int],
   rngSeed: Int,
   winConditions: Seq[WinCondition]
-) extends MultiplayerMessage {
+) extends ServerMessage {
   def worldMap: WorldMap = new WorldMap(
     minerals,
     worldSize,
@@ -329,11 +335,7 @@ private[core] case class InitialSync(
   def remotePlayers: Set[Player] = remotePlayerIDs.map(Player.fromID)
 }
 
-private[core] case object Register extends MultiplayerMessage
-
-private[core] case class RTT(sent: Long, msg: String) extends MultiplayerMessage
-
-private[core] case class GameClosed(reason: GameClosed.Reason) extends MultiplayerMessage
+private[core] case class GameClosed(reason: GameClosed.Reason) extends ServerMessage
 
 private[core] object GameClosed {
   sealed trait Reason
@@ -347,10 +349,16 @@ private[core] object GameClosed {
 }
 
 
-private[core] object MultiplayerMessage {
-  def parse(json: String): MultiplayerMessage = read[MultiplayerMessage](json)
-  def parseBytes(bytes: ByteBuffer): MultiplayerMessage = Unpickle[MultiplayerMessage].fromBytes(bytes)
-  def serializeBinary(msg: MultiplayerMessage): ByteBuffer = Pickle.intoBytes(msg)
+private[core] object ServerMessage {
+  def parse(json: String): ServerMessage = read[ServerMessage](json)
+  def parseBytes(bytes: ByteBuffer): ServerMessage = Unpickle[ServerMessage].fromBytes(bytes)
+  def serializeBinary(msg: ServerMessage): ByteBuffer = Pickle.intoBytes(msg)
+}
+
+private[core] object ClientMessage {
+  def parse(json: String): ClientMessage = read[ClientMessage](json)
+  def parseBytes(bytes: ByteBuffer): ClientMessage = Unpickle[ClientMessage].fromBytes(bytes)
+  def serializeBinary(msg: ClientMessage): ByteBuffer = Pickle.intoBytes(msg)
 }
 
 private[core] object DroneOrdering extends Ordering[DroneImpl] {

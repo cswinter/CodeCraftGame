@@ -25,18 +25,17 @@ private[core] class WebsocketServerConnection(
 
 
   connection.onMessage(handleMessage)
-  connection.sendMessage(Register.toBinary)
+  sendMessage(Register)
 
 
   def handleMessage(client: WebsocketClient, message: ByteBuffer): Unit = synchronized {
     if (debug) println(message)
     nanoTimeLastResponse = System.nanoTime()
-    MultiplayerMessage.parseBytes(message) match {
+    ServerMessage.parseBytes(message) match {
       case CommandsMessage(commands) => serverCommands.success(Left(commands))
       case state: WorldStateMessage => worldState.success(Left(state))
       case start: InitialSync => initialWorldState.success(start)
-      case Register =>
-      case rtt: RTT => connection.sendMessage(rtt.toBinary)
+      case rtt: RTT => sendMessage(rtt)
       case GameClosed(reason) =>
         _gameClosed = Some(reason)
         synchronized {
@@ -75,8 +74,7 @@ private[core] class WebsocketServerConnection(
     val serializable =
       for ((id, command) <- commands)
         yield (id, command.toSerializable)
-    val message = CommandsMessage(serializable).toBinary
-    connection.sendMessage(message)
+    sendMessage(CommandsMessage(serializable))
     if (debug) println(s"sendCommands($commands)")
   }
 
@@ -85,6 +83,8 @@ private[core] class WebsocketServerConnection(
   ): Seq[(Int, DroneCommand)] =
     for ((id, command) <- commands)
       yield (id, DroneCommand(command))
+
+  def sendMessage(m: ClientMessage): Unit = connection.sendMessage(ClientMessage.serializeBinary(m))
 
   def gameClosed = _gameClosed
 

@@ -28,7 +28,7 @@ private[core] class WebsocketClientConnection(
   override def receive(message: String): Unit = {
     if (debug) println(message)
     try {
-      handleMessage(MultiplayerMessage.parse(message))
+      handleMessage(ClientMessage.parse(message))
     } catch {
       case t: Throwable =>
         println(s"Failed to deserialize string '$message'")
@@ -39,7 +39,7 @@ private[core] class WebsocketClientConnection(
   override def receiveBytes(message: ByteBuffer): Unit = {
     try {
       commandsReceivedSize.addMeasurement(message.remaining())
-      val msg = MultiplayerMessage.parseBytes(message)
+      val msg = ClientMessage.parseBytes(message)
       handleMessage(msg)
     } catch {
       case t: Throwable =>
@@ -49,20 +49,13 @@ private[core] class WebsocketClientConnection(
     }
   }
 
-  private def handleMessage(msg: MultiplayerMessage): Unit = msg match {
+  private def handleMessage(msg: ClientMessage): Unit = msg match {
     case CommandsMessage(commands) => clientCommands.success(commands)
-    case Register => send(syncMessage)
+    case Register => sendMessage(syncMessage)
     case RTT(time, message) => if (debug) {
       val ms = (System.nanoTime - time) / 1000000.0
       println(f"RTT for $message: $ms%.2fms")
     }
-    case _: WorldStateMessage => protocolViolation("Authoritative server received WorldStateMessage!")
-    case _: InitialSync => protocolViolation("Authoritative server received InitialSync!")
-    case _: GameClosed => protocolViolation("Client attempted to close game.")
-  }
-
-  private def protocolViolation(message: String): Nothing = {
-    throw new Exception(message)
   }
 
   def syncMessage =
@@ -73,8 +66,7 @@ private[core] class WebsocketClientConnection(
       players.map(_.id),
       (Set(OrangePlayer, BluePlayer) -- players).map(_.id),
       rngSeed,
-      map.winConditions
-    ).toBinary
+      map.winConditions)
 
   override def waitForCommands()(implicit context: SimulationContext): Future[Seq[(Int, DroneCommand)]] = {
     if (debug) println(s"[t=${context.timestep}] Waiting for commands...")
@@ -86,9 +78,8 @@ private[core] class WebsocketClientConnection(
   }
 
   override def sendWorldState(worldState: WorldStateMessage): Unit = {
-    val serialized = MultiplayerMessage.serializeBinary(worldState)
-    positionsSentSize.addMeasurement(serialized.remaining)
-    send(serialized)
+    val messageSize = sendMessage(worldState)
+    positionsSentSize.addMeasurement(messageSize)
     if (info && positionsSentSize.count > 0 && positionsSentSize.count % 1000 == 0) {
       println(s"Positions Message Size: ${positionsSentSize.display}")
       println(s"Commands Sent Message Size: ${commandsSentSize.display}")
@@ -100,12 +91,11 @@ private[core] class WebsocketClientConnection(
   }
 
   def sendCommands(commands: Seq[(Int, DroneCommand)]): Unit = {
-    val serializable =
+    val serializableCommands =
       for ((id, command) <- commands)
         yield (id, command.toSerializable)
-    val serialized = CommandsMessage(serializable).toBinary
-    commandsSentSize.addMeasurement(serialized.remaining)
-    send(serialized)
+    val messageSize = sendMessage(CommandsMessage(serializableCommands))
+    commandsSentSize.addMeasurement(messageSize)
   }
 
   def deserialize(commands: Seq[(Int, SerializableDroneCommand)])(
@@ -116,8 +106,15 @@ private[core] class WebsocketClientConnection(
 
 
   override def close(reason: Reason): Unit = {
-    send(GameClosed(reason).toBinary)
+    sendMessage(GameClosed(reason))
     closeConnection()
+  }
+
+  def sendMessage(m: ServerMessage): Int = {
+    val serialized = ServerMessage.serializeBinary(m)
+    val messageSize = serialized.remaining
+    send(serialized)
+    messageSize
   }
 }
 
