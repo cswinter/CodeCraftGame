@@ -170,5 +170,7 @@ private[codecraft] trait Simulator {
   protected case object Running extends Status
   protected case class Stopped(reason: String) extends Status
   protected case class Crashed(exception: Throwable) extends Status
+
+  def forceGL2: Boolean = false
 }
 

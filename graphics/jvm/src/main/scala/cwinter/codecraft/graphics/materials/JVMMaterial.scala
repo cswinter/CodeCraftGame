@@ -1,8 +1,8 @@
 package cwinter.codecraft.graphics.materials
 
-import javax.media.opengl.GL._
-import javax.media.opengl.GL2ES2._
-import javax.media.opengl._
+import com.jogamp.opengl.GL._
+import com.jogamp.opengl.GL2ES2._
+import com.jogamp.opengl._
 
 import com.jogamp.common.nio.Buffers
 import cwinter.codecraft.util.maths.matrices.Matrix4x4
