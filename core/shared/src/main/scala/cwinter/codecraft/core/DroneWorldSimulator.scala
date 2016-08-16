@@ -480,9 +480,6 @@ class DroneWorldSimulator(
        |${if (settings.showMissileRadius) "Hide" else "Show"} missile range: 2
        |${replayRecorder.replayFilepath match{ case Some(path) => "Replay path: " + path case _ => ""}}
      """.stripMargin
-
-
-  override def forceGL2: Boolean = Settings.default.forceGL2
 }
 
 
