@@ -19,8 +19,8 @@ private[codecraft] class Guard(
   def missionInstructions = Circle(friend.position, 450)
   def hasExpired = maxRequired == 0 || friend.isDead
   override def update(): Unit = {
-    timeout -= 1
-    if (timeout == 0) {
+    timeout -= friend.tickPeriod
+    if (timeout <= 0) {
       minRequired -= 1
       reduceAssignedToMax()
       resetTimeout()

@@ -1,7 +1,7 @@
 package cwinter.codecraft.core.objects.drone
 
-import cwinter.codecraft.core._
 import cwinter.codecraft.core.api.GameConstants.{HarvestingInterval, HarvestingRange}
+import cwinter.codecraft.core.game.{MineralCrystalHarvested, SimulatorEvent}
 import cwinter.codecraft.core.graphics._
 import cwinter.codecraft.core.objects.MineralCrystalImpl
 import cwinter.codecraft.graphics.engine.{ModelDescriptor, PositionDescriptor}
@@ -13,8 +13,6 @@ import scala.collection.mutable
 
 private[core] class StorageModule(positions: Seq[Int], owner: DroneImpl, startingResources: Int = 0)
   extends DroneModule(positions, owner) {
-
-
   private[this] var storedEnergyGlobes =
     mutable.Stack[EnergyGlobe](Seq.fill(startingResources)(StaticEnergyGlobe): _*)
 
@@ -26,37 +24,45 @@ private[core] class StorageModule(positions: Seq[Int], owner: DroneImpl, startin
 
 
   override def update(availableResources: Int): (Seq[SimulatorEvent], Seq[Vector2], Seq[Vector2]) = {
-    if (isHarvesting && owner.hasMoved) updateBeamDescriptor()
-
+    if (harvesting.nonEmpty && owner.hasMoved) updateBeamDescriptor()
     var effects = List.empty[SimulatorEvent]
 
     resourceDepositee.foreach(performResourceDeposit)
 
-    for {
-      m <- harvesting
-      event <- harvest(m)
-    } effects ::= event
+    if (!owner.context.isMultiplayerClient) {
+      for {
+        m <- harvesting
+        event <- harvest(m)
+      } effects ::= event
+    } else {
+      for (_ <- harvesting) distanceCheck()
+    }
 
     storedEnergyGlobes = storedEnergyGlobes.map{ x =>
       val updated = x.updated()
-      if (x ne updated) owner.mustUpdateModel()
+      if (x ne updated) owner.invalidateModelCache()
       updated
     }
 
     (effects, Seq.empty[Vector2], Seq.empty[Vector2])
   }
 
-  private def harvest(mineral: MineralCrystalImpl): Option[SimulatorEvent] = {
-    // need to check availableStorage in case another drone gave this one resources
-    if (shouldCancelHarvesting(mineral)) {
-      cancelHarvesting()
-    } else {
-      harvestCountdown -= positions.size
-      if (harvestCountdown <= 0) {
-        return performHarvest(mineral)
+  def distanceCheck(): Unit = {
+    for (mineral <- harvesting) {
+      if (shouldCancelHarvesting(mineral)) {
+        val reasoning =
+          s"${mineral.harvested}, $availableStorage, ${owner.hasMoved}, ${owner.isInHarvestingRange(mineral)}"
+        owner.log(UnstructuredEvent(s"Cancelled harvesting ($reasoning)"))
+        cancelHarvesting()
       }
     }
-    None
+  }
+
+  private def harvest(mineral: MineralCrystalImpl): Option[SimulatorEvent] = {
+    distanceCheck()
+    harvestCountdown -= positions.size
+    if (harvestCountdown <= 0) performHarvest(mineral)
+    else None
   }
 
   private def shouldCancelHarvesting(mineral: MineralCrystalImpl): Boolean =
@@ -64,10 +70,16 @@ private[core] class StorageModule(positions: Seq[Int], owner: DroneImpl, startin
     availableStorage == 0 ||
     (owner.hasMoved && !owner.isInHarvestingRange(mineral))
 
-  private def performHarvest(mineral: MineralCrystalImpl): Option[SimulatorEvent] = {
+  private[drone] def performHarvest(mineral: MineralCrystalImpl): Option[SimulatorEvent] = {
     subtractFromResources(-1)
     mineral.decreaseSize()
     harvestCountdown = HarvestingInterval
+
+    owner.log(s"Harvested ${mineral.id}, ${owner.context.isLocallyComputed}, ${owner.context.isMultiplayer}")
+    if (owner.context.isAuthoritativeServer) {
+      owner.context.mineralHarvests ::= MineralHarvest(owner.id, mineral.id)
+      owner.log(s"Created harvest msg")
+    }
 
     if (mineral.size == 0) Some(MineralCrystalHarvested(mineral))
     else None
@@ -89,7 +101,7 @@ private[core] class StorageModule(positions: Seq[Int], owner: DroneImpl, startin
   }
 
   def subtractFromResources(amount: Int): Unit = {
-    owner.mustUpdateModel()
+    owner.invalidateModelCache()
     if (amount > 0) {
       for (_ <- 0 until amount) storedEnergyGlobes.pop()
     } else if (amount < 0) {
@@ -114,13 +126,13 @@ private[core] class StorageModule(positions: Seq[Int], owner: DroneImpl, startin
       val newEnergyGlobe = new MovingEnergyGlobe(targetPosition, position, 40)
       storedEnergyGlobes.push(newEnergyGlobe)
     } else {
-      owner.mustUpdateModel()
+      owner.invalidateModelCache()
       storedEnergyGlobes.push(StaticEnergyGlobe)
     }
   }
 
   def withdrawEnergyGlobe(): Vector2 = {
-    owner.mustUpdateModel()
+    owner.invalidateModelCache()
     storedEnergyGlobes.pop() match {
       case StaticEnergyGlobe => calculateEnergyGlobePosition(storedResources)
       case meg: MovingEnergyGlobe => meg.position
@@ -138,7 +150,7 @@ private[core] class StorageModule(positions: Seq[Int], owner: DroneImpl, startin
       owner.warn("Trying to harvest mineral crystal that has already been harvested.")
     } else if (harvesting.contains(mineralCrystal)) {
       //owner.inform("This drone is already harvesting.")
-    } else if (mineralCrystal.claimedBy.exists(_ != this)) {
+    } else if (mineralCrystal.claimedByOther(this)) {
       owner.warn("Trying to harvest a mineral crystal that is already being harvested by another drone.")
     } else {
       harvestCountdown = HarvestingInterval
@@ -148,9 +160,7 @@ private[core] class StorageModule(positions: Seq[Int], owner: DroneImpl, startin
     }
   }
 
-  def droneHasDied(): Unit = {
-    cancelHarvesting()
-  }
+  def droneHasDied(): Unit = cancelHarvesting()
 
   def cancelHarvesting(): Unit = {
     harvesting.foreach(_.claimedBy = None)
@@ -171,7 +181,10 @@ private[core] class StorageModule(positions: Seq[Int], owner: DroneImpl, startin
 
   def predictedAvailableStorage: Int = positions.size * 7 - predictedStoredResources
 
-  def isHarvesting: Boolean = harvesting.nonEmpty
+  def isHarvesting: Boolean = {
+    distanceCheck()
+    harvesting.nonEmpty
+  }
 
   override def descriptors: Seq[DroneModuleDescriptor] = {
     val globeStorageIndices: Seq[Int] = positions

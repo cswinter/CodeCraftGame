@@ -69,7 +69,7 @@ with MissionExecutor[DestroyerCommand] {
     if (minerals.isEmpty) return
 
     val totalSize = minerals.foldLeft(0)(_ + _.size)
-    val rand = context.rng.nextInt(totalSize)
+    val rand = context.rng.int(totalSize)
 
     var cumulative = 0
     val randMineral = minerals.find { m =>

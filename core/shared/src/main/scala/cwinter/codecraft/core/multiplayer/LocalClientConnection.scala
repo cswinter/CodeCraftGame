@@ -1,7 +1,8 @@
 package cwinter.codecraft.core.multiplayer
 
-import cwinter.codecraft.core.SimulationContext
 import cwinter.codecraft.core.api.Player
+import cwinter.codecraft.core.game.SimulationContext
+import cwinter.codecraft.core.objects.drone.GameClosed.Reason
 import cwinter.codecraft.core.objects.drone._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -32,7 +33,7 @@ private[core] class LocalClientConnection(
     }
   }
 
-  override def sendWorldState(worldState: Iterable[DroneStateMessage]): Unit = {
+  override def sendWorldState(worldState: WorldStateMessage): Unit = {
     connection.resetCommandsForClients()
     connection.putWorldState(worldState)
   }
@@ -41,23 +42,29 @@ private[core] class LocalClientConnection(
     connection.resetCommandsFromClients()
     connection.putCommandsForClient(clientID, commands)
   }
+
+  override def close(reason: Reason): Unit = ()
 }
 
 private[core] class LocalServerConnection(
   clientID: Int,
   connection: LocalConnection
 ) extends RemoteServer {
-  override def receiveCommands()(implicit context: SimulationContext): Future[Seq[(Int, DroneCommand)]] = {
-    connection.getCommandsForClient(clientID)
+  override def receiveCommands()(implicit context: SimulationContext): Result[Seq[(Int, DroneCommand)]] = {
+    connection.getCommandsForClient(clientID).map(c => Left(c))
   }
 
-  override def receiveWorldState(): Future[Iterable[DroneStateMessage]] = {
-    connection.getWorldState()
+  override def receiveWorldState(): Result[WorldStateMessage] = {
+    connection.getWorldState.map(ws => Left(ws))
   }
 
   override def sendCommands(commands: Seq[(Int, DroneCommand)]): Unit = {
     connection.putClientCommands(clientID, commands)
   }
+
+  override def gameClosed = None
+
+  override def msSinceLastResponse: Int = 0
 }
 
 
@@ -68,7 +75,7 @@ private[core] class LocalConnection(
   type SerializedCommands = Seq[(Int, SerializableDroneCommand)]
   var promisedCommandsForClient = Map.empty[Int, Promise[SerializedCommands]]
   var promisedCommandsFromClients = Map.empty[Int, Promise[SerializedCommands]]
-  var state = Promise[Iterable[DroneStateMessage]]
+  var state = Promise[WorldStateMessage]
   resetCommandsForClients()
   resetCommandsFromClients()
 
@@ -80,7 +87,7 @@ private[core] class LocalConnection(
     for (id <- clientIDs) yield (id, Promise[SerializedCommands])
   }.toMap
 
-  def resetState(): Unit = state = Promise[Iterable[DroneStateMessage]]
+  def resetState(): Unit = state = Promise[WorldStateMessage]
 
   def putClientCommands(clientID: Int, commands: Commands): Unit = this.synchronized {
     promisedCommandsFromClients(clientID).success(serialize(commands))
@@ -92,7 +99,7 @@ private[core] class LocalConnection(
     promisedCommandsFromClients(clientID).future.map(deserialize)
   }
 
-  def putWorldState(state: Iterable[DroneStateMessage]): Unit = this.synchronized {
+  def putWorldState(state: WorldStateMessage): Unit = this.synchronized {
     if (!this.state.isCompleted) {
       this.state.success(state)
     }
@@ -108,7 +115,7 @@ private[core] class LocalConnection(
     promisedCommandsForClient(clientID).future.map(deserialize)
   }
 
-  def getWorldState(): Future[Iterable[DroneStateMessage]] = state.future
+  def getWorldState: Future[WorldStateMessage] = state.future
 
   def serialize(commands: Commands): SerializedCommands =
     for ((id, command) <- commands) yield (id, command.toSerializable)

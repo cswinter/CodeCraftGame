@@ -20,7 +20,7 @@ lazy val util = (crossProject in file("util")).
   settings(
     name := "codecraft-util",
     libraryDependencies ++= commonDependencies,
-    libraryDependencies += "org.scala-lang" % "scala-reflect" % "2.11.7"
+    libraryDependencies += "org.scala-lang" % "scala-reflect" % "2.11.8"
   )
 lazy val utilJVM = util.jvm
 lazy val utilJS = util.js
@@ -33,7 +33,7 @@ lazy val graphics = (crossProject in file("graphics")).
   ).jvmSettings(
     libraryDependencies ++= graphicsJVMDependencies
   ).jsSettings(
-    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.8.2",
+    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.9.0",
     // add resources of the current project into the build classpath
     unmanagedClasspath in Compile <++= unmanagedResources in Compile
   ).dependsOn(util)
@@ -62,7 +62,8 @@ lazy val testai = (project in file("testai")).
   settings(Commons.settings: _*).
   settings(
     name := "codecraft-testai",
-    libraryDependencies ++= commonDependencies
+    libraryDependencies ++= commonDependencies,
+    libraryDependencies += jetm
   ).dependsOn(coreJVM)
 
 val demos = (crossProject in file("demos")).
@@ -81,7 +82,8 @@ val core = (crossProject in file("core")).
     name := "codecraft",
     libraryDependencies ++= commonDependencies,
     libraryDependencies +=  "org.scala-lang.modules" % "scala-async_2.11" % "0.9.5",
-    libraryDependencies += "com.lihaoyi" %%% "upickle" % "0.3.6"
+    libraryDependencies += "me.chrons" %%% "boopickle" % "1.2.4",
+    libraryDependencies += "com.lihaoyi" %%% "upickle" % "0.4.1"
   ).jvmSettings(
     assemblyMergeStrategy in assembly := {
       case x if x.endsWith(".so") || x.endsWith(".dll") || x.endsWith(".jnilib") =>
@@ -93,7 +95,7 @@ val core = (crossProject in file("core")).
     resolvers += "Spray" at "http://repo.spray.io",
     libraryDependencies ++= coreJVMDependencies
   ).jsSettings(
-    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.8.2"
+    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.9.0"
   ).dependsOn(graphics, physics, collisions, util)
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js
@@ -105,7 +107,7 @@ lazy val scalajsTest = (project in file("scalajs-test")).
   settings(
     name := "codecraft-scalajs-test",
     libraryDependencies ++= commonDependencies,
-    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.8.2"
+    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.9.0"
   ).dependsOn(coreJS)
 
 
@@ -123,11 +125,12 @@ lazy val docs = (project in file("docs"))
     scalacOptions in (Compile, doc) ++= Seq("-doc-root-content", baseDirectory.value + "/root-doc.txt"),
     libraryDependencies ++= commonDependencies,
     libraryDependencies ++= graphicsJVMDependencies,
-    libraryDependencies += "org.scala-lang" % "scala-reflect" % "2.11.7"
+    libraryDependencies += "org.scala-lang" % "scala-reflect" % "2.11.8"
   )
   .settings(
     libraryDependencies +=  "org.scala-lang.modules" % "scala-async_2.11" % "0.9.5",
-    libraryDependencies += "com.lihaoyi" %%% "upickle" % "0.3.6",
+    libraryDependencies += "me.chrons" %%% "boopickle" % "1.1.3",
+    libraryDependencies += "com.lihaoyi" %%% "upickle" % "0.4.1",
     libraryDependencies ++= coreJVMDependencies,
     unmanagedSourceDirectories in Compile <<=
       (projects map (unmanagedSourceDirectories in _ in Compile)).join.apply{(s) => s.flatten},

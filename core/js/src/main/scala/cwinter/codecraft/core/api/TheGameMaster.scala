@@ -1,8 +1,8 @@
 package cwinter.codecraft.core.api
 
-import cwinter.codecraft.core.DroneWorldSimulator
+import cwinter.codecraft.core.game.DroneWorldSimulator
 import cwinter.codecraft.core.multiplayer.{JSWebsocketClient, WebsocketClient}
-import cwinter.codecraft.graphics.engine.{Debug, WebGLRenderer}
+import cwinter.codecraft.graphics.engine.WebGLRenderer
 import cwinter.codecraft.util.maths.ColorRGBA
 import org.scalajs.dom
 import org.scalajs.dom.html
@@ -37,7 +37,8 @@ object TheGameMaster extends GameMasterLike {
   private def run(context: RunContext): Unit = {
     import context._
     if (stopped) return
-    dom.requestAnimationFrame((d: Double) => run(context))
+    dom.window.requestAnimationFrame((d: Double) => run(context))
+    if (simulator.isCurrentlyUpdating) { println(s"Skipped frame at ${simulator.timestep}"); return }
 
     if (!fps.shouldSkipFrame(simulator.framerateTarget)) {
       fps.startedFrame(simulator.framerateTarget)
@@ -96,7 +97,7 @@ class FPSMeter(context: RunContext) {
 
 
   def drawFPS(): Unit = {
-    Debug.drawText(fpsString, -1, 1, ColorRGBA(1, 1, 1, 1), true, false, false)
+    context.simulator.debug.drawText(fpsString, -1, 1, ColorRGBA(1, 1, 1, 1), true, false, false)
   }
 
   def printFPS(): Unit = println(fpsString)

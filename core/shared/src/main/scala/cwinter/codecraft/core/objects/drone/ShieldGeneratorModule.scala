@@ -1,7 +1,7 @@
 package cwinter.codecraft.core.objects.drone
 
-import cwinter.codecraft.core.SimulatorEvent
 import cwinter.codecraft.core.api.GameConstants.{ShieldMaximumHitpoints, ShieldRegenerationInterval}
+import cwinter.codecraft.core.game.SimulatorEvent
 import cwinter.codecraft.core.graphics.{DroneModuleDescriptor, ShieldGeneratorDescriptor}
 import cwinter.codecraft.util.maths.Vector2
 
@@ -20,7 +20,7 @@ private[core] class ShieldGeneratorModule(positions: Seq[Int], owner: DroneImpl)
     if (_currHitpoints < maxHitpoints) {
       regenCooldown = regenCooldown - 1
       if (regenCooldown == 0) {
-        if (_currHitpoints != maxHitpoints) owner.mustUpdateModel()
+        if (_currHitpoints != maxHitpoints) owner.invalidateModelCache()
         _currHitpoints = math.min(maxHitpoints, _currHitpoints + nShieldGenerators)
         regenCooldown = ShieldRegenerationInterval
       }
@@ -34,10 +34,11 @@ private[core] class ShieldGeneratorModule(positions: Seq[Int], owner: DroneImpl)
 
   /**
    * Reduces shield strength by some amount of damage.
+ *
    * @return Returns the amount of damage which couldn't be absorbed.
    */
   def absorbDamage(damage: Int): Int = {
-    owner.mustUpdateModel()
+    owner.invalidateModelCache()
     val absorbed = math.min(damage, _currHitpoints)
     _currHitpoints -= absorbed
     damage - absorbed

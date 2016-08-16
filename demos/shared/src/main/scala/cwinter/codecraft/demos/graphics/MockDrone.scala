@@ -1,8 +1,7 @@
 package cwinter.codecraft.demos.graphics
 
-import cwinter.codecraft.graphics.engine.{PositionDescriptor, ModelDescriptor}
-import cwinter.codecraft.graphics.worldstate._
-import cwinter.codecraft.util.maths.{Float0To1, ColorRGB}
+import cwinter.codecraft.graphics.engine.{ModelDescriptor, PositionDescriptor}
+import cwinter.codecraft.util.maths.{ColorRGB, Float0To1}
 
 import scala.collection.mutable
 import scala.util.Random

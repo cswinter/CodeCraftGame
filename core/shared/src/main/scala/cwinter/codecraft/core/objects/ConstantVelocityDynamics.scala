@@ -10,10 +10,9 @@ abstract private[core] class ConstantVelocityDynamics(
   initialPosition: Vector2,
   initialTime: Double
 ) extends DynamicObject[ConstantVelocityDynamics](initialPosition, initialTime) {
-  protected var velocity: Vector2 = Vector2.Null
+  protected[objects] var velocity: Vector2 = Vector2.Null
 
 
-  def update(): Unit
   // inherited form DynamicObject:
   // def handleObjectCollision(other: ConstantVelocityDynamics): Unit
   // def handleWallCollision(area: Rectangle): Unit
@@ -51,12 +50,12 @@ abstract private[core] class ConstantVelocityDynamics(
         else (t, dir)
     }
 
-    if (result.map(_._1 < 0) == Some(true)) {
+    if (result.exists(_._1 < 0)) {
       println(s"velocity=$velocity\nareaBounds=$areaBounds\ntimeDelta=$timeDelta\nctX=$ctX\nctY=$ctY\nresult=$result\npos=$pos")
     }
 
     result
-  } ensuring(x => x.map(_._1 < 0) != Some(true))
+  } ensuring(x => x.forall(_._1 >= 0))
 
   override protected def computeCollisionTime(
     other: ConstantVelocityDynamics,

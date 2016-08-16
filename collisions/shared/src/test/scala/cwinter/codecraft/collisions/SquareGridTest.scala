@@ -15,10 +15,10 @@ class SquareGridTest extends FlatSpec {
       assert(bounds.contains(point))
     }
 
-    checkCell(new Vector2(0, 0))
-    checkCell(new Vector2(0, -123))
-    checkCell(new Vector2(-2000, 1000))
-    checkCell(new Vector2(0.9999999, -1))
-    checkCell(new Vector2(1.0000001, 999.999999))
+    checkCell(Vector2(0, 0))
+    checkCell(Vector2(0, -123))
+    checkCell(Vector2(-2000, 1000))
+    checkCell(Vector2(0.9999999, -1))
+    checkCell(Vector2(1.0000001, 999.999999))
   }
 }

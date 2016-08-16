@@ -1,9 +1,7 @@
 package cwinter.codecraft.core.api
 
-import cwinter.codecraft.core.errors.Errors
 import cwinter.codecraft.core.objects.drone.DroneImpl
-import cwinter.codecraft.graphics.engine.Debug
-import cwinter.codecraft.util.maths.{ColorRGB, ColorRGBA, Vector2}
+import cwinter.codecraft.util.maths.Vector2
 
 import scala.scalajs.js.annotation.JSExportAll
 
@@ -67,7 +65,7 @@ trait Drone {
   /** Draws the specified text at the position of the drone on this timestep. */
   def showText(text: String): Unit =
     if (drone.context.settings.allowMessages)
-      Debug.drawText(text, position.x, position.y, ColorRGBA(ColorRGB(1, 1, 1) - drone.player.color, 1))
+      drone.showText(text)
 
   /** Returns an object that specifies how many copies of each module the drone has. */
   @inline
@@ -89,7 +87,7 @@ trait Drone {
 
   private def ensureVisible[T](property: => T, message: String = ""): T = {
     if (isVisible) property
-    else Errors.error(
+    else drone.context.errors.error(
       new ObjectNotVisibleException(
         s"Trying to access state of an enemy drone that is not inside the sight radius of any of your drones.$message"),
       drone.position

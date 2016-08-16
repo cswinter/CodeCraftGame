@@ -2,12 +2,12 @@ import sbt._
 import Keys._
 
 object Commons {
-  val appVersion = "0.3.0.3-SNAPSHOT"
+  val appVersion = "0.4.0.0-SNAPSHOT"
 
   val settings: Seq[Def.Setting[_]] = Seq(
     organization := "org.codecraftgame",
     version := appVersion,
-    scalaVersion := "2.11.7",
+    scalaVersion := "2.11.8",
     scalacOptions := Seq(
       "-Xlint",
       "-deprecation",

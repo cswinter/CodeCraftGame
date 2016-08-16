@@ -1,13 +1,13 @@
 package cwinter.codecraft.core.ai.basicplus
 
-import cwinter.codecraft.util.maths.{Rng, Vector2}
+import cwinter.codecraft.util.maths.{GlobalRNG, RNG, Vector2}
 
 private[core] class Destroyer(val mothership: Mothership) extends BasicPlusController('Destroyer) {
   var attack = false
   var defend = false
 
   override def onSpawn(): Unit = {
-    moveInDirection(Vector2(Rng.double(0, 100)))
+    moveInDirection(Vector2(GlobalRNG.double(0, 100)))
   }
 
   override def onTick(): Unit = {
@@ -33,13 +33,13 @@ private[core] class Destroyer(val mothership: Mothership) extends BasicPlusContr
       }
     } else if (defend) {
       if ((position - mothership.position).lengthSquared > 350 * 350) {
-        moveTo(Rng.double(250, 350) * Rng.vector2() + mothership.position)
+        moveTo(GlobalRNG.double(250, 350) * GlobalRNG.vector2() + mothership.position)
       }
     } else if (attack && mothership.lastCapitalShipSighting.isDefined) {
       for (p <- mothership.lastCapitalShipSighting)
         moveTo(p)
-    } else if (Rng.bernoulli(0.005)) {
-      moveTo(Rng.double(600, 900) * Rng.vector2() + mothership.position)
+    } else if (GlobalRNG.bernoulli(0.005)) {
+      moveTo(GlobalRNG.double(600, 900) * GlobalRNG.vector2() + mothership.position)
     }
   }
 

@@ -1,12 +1,15 @@
 package cwinter.codecraft.core.errors
 
 import cwinter.codecraft.core.api.CodeCraftException
+import cwinter.codecraft.graphics.engine.Debug
 import cwinter.codecraft.util.maths.{ColorRGB, Vector2}
 
-private[codecraft] object Errors {
+private[codecraft] class Errors(debug: Debug) {
   private[this] var errorMessages = List.empty[ErrorMessageObject]
 
   def error(exception: CodeCraftException, position: Vector2): Nothing = {
+    println(exception)
+    exception.printStackTrace()
     addMessage(exception.getMessage, position, Error)
     throw exception
   }
@@ -23,13 +26,16 @@ private[codecraft] object Errors {
     errorMessages ::= new ErrorMessageObject(message, errorLevel, position)
   }
 
-
   def updateMessages(): Unit = {
     errorMessages =
       for (
         m <- errorMessages
         if !m.hasFaded
-      ) yield { m.update(); m }
+      ) yield {
+        m.update()
+        debug.drawText(m.model)
+        m
+      }
   }
 }
 

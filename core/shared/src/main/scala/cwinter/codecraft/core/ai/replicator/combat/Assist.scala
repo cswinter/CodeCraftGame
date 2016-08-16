@@ -22,7 +22,7 @@ private[codecraft] class Assist(
     else friend.position
   )
   def  hasExpired = friend.isDead || timeout <= 0
-  override def update(): Unit = timeout -= 1
+  override def update(): Unit = timeout -= friend.tickPeriod
   override def candidateFilter(drone: Drone): Boolean =
     drone != friend &&
     (drone.position - friend.position).lengthSquared <= radius2

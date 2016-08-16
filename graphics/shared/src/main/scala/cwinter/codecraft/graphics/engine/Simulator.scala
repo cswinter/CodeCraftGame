@@ -4,6 +4,7 @@ import cwinter.codecraft.util.maths.Vector2
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
 
 private[codecraft] trait Simulator {
@@ -19,13 +20,16 @@ private[codecraft] trait Simulator {
   private[this] var exceptionHandler: Option[Throwable => _] = None
   private[this] var _measuredFramerate: Int = 0
   private[this] var _nanoTimeLastMeasurement: Long = 0
+  private var currentlyUpdating = false
+  protected[codecraft] var debug = new Debug
+  var graphicsEnabled: Boolean = true
 
   /** Runs the game until the program is terminated. */
   def run(): Unit = synchronized {
     require(!running, "Simulator.run() must only be called once.")
     running = true
     Future {
-      while (!stopped) {
+      while (!stopped && gameStatus == Running) {
         if (!paused) {
           performUpdate()
         }
@@ -42,8 +46,7 @@ private[codecraft] trait Simulator {
   }
 
   private def performUpdate(): Unit = {
-    Debug.clear()
-    savedWorldState = Seq(computeWorldState.toSeq: _*)
+    recomputeGraphicsState()
     t += 1
     try {
       measureFPS()
@@ -55,22 +58,33 @@ private[codecraft] trait Simulator {
         e.printStackTrace()
         paused = true
     }
+    debug.swapBuffers()
   }
 
   private[codecraft] def performAsyncUpdate(): Future[Unit] = {
-    Debug.clear()
-    savedWorldState = Seq(computeWorldState.toSeq: _*)
+    assert(!currentlyUpdating)
+    currentlyUpdating = true
+    recomputeGraphicsState()
     t += 1
     measureFPS()
-    val result = asyncUpdate()
-    result.onFailure{
-      case e: Throwable =>
+    val updateFuture = asyncUpdate()
+
+    // optimization that prevents JavaScript from sometimes skipping an animation frame (in single player)
+    if (updateFuture.isCompleted) currentlyUpdating = false
+
+    updateFuture.onComplete {
+      case Success(_) =>
+        currentlyUpdating = false
+        debug.swapBuffers()
+      case Failure(e) =>
         exceptionHandler.foreach(_(e))
         if (stopped) return Future.successful(Unit)
         e.printStackTrace()
         paused = true
+        currentlyUpdating = false
+        debug.swapBuffers()
     }
-    result
+    updateFuture
   }
 
   /** Will run the game for `steps` timesteps. */
@@ -78,7 +92,7 @@ private[codecraft] trait Simulator {
     for (i <- 0 until steps) {
       if (!paused) {
         performUpdate()
-        if (stopped) return
+        if (stopped || gameStatus != Running) return
       }
     }
   }
@@ -91,6 +105,12 @@ private[codecraft] trait Simulator {
     }
   }
 
+  private def recomputeGraphicsState(): Unit = {
+    if (gameStatus == Running && graphicsEnabled) {
+      savedWorldState = Seq(computeWorldState.toSeq: _*)
+    }
+  }
+
   /** Performs one timestep. */
   protected def update(): Unit
 
@@ -99,6 +119,10 @@ private[codecraft] trait Simulator {
     */
   protected def asyncUpdate(): Future[Unit]
 
+  /** Returns the game's status
+    */
+  protected def gameStatus: Status
+
   /** Returns the current timestep. */
   def timestep: Int = t
 
@@ -106,6 +130,7 @@ private[codecraft] trait Simulator {
   def togglePause(): Unit = paused = !paused
 
   /** Sets the target framerate to the given value.
+    *
     * @param value The new framerate target.
     */
   def framerateTarget_=(value: Int): Unit = {
@@ -126,18 +151,25 @@ private[codecraft] trait Simulator {
   def initialCameraPos: Vector2 = Vector2.Null
 
   /** Terminates any running game loops. */
-  def terminate(): Unit = {
-    stopped = true
-  }
+  def terminate(): Unit = stopped = true
+
+  private[codecraft] def isCurrentlyUpdating: Boolean = currentlyUpdating
 
   private[codecraft] def onException(callback: Throwable => _): Unit = {
     exceptionHandler = Some(callback)
   }
 
-  private[codecraft] def worldState: Seq[ModelDescriptor[_]] = savedWorldState
+  private[codecraft] def worldState: Seq[ModelDescriptor[_]] = debug.debugObjects ++ savedWorldState
   private[codecraft] def computeWorldState: Iterable[ModelDescriptor[_]]
   private[codecraft] def handleKeypress(keychar: Char): Unit = ()
   private[codecraft] def additionalInfoText: String = ""
+  private[codecraft] def textModels: Iterable[TextModel] = debug.textModels
+
+
+  protected sealed trait Status
+  protected case object Running extends Status
+  protected case class Stopped(reason: String) extends Status
+  protected case class Crashed(exception: Throwable) extends Status
 
   def forceGL2: Boolean = false
 }

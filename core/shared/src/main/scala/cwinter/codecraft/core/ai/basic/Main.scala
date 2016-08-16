@@ -1,7 +1,7 @@
 package cwinter.codecraft.core.ai.basic
 
 import cwinter.codecraft.core.api.{Drone, DroneController, DroneSpec, MineralCrystal}
-import cwinter.codecraft.util.maths.{Rng, Vector2}
+import cwinter.codecraft.util.maths.{GlobalRNG, RNG, Vector2}
 
 
 private[core] class Mothership extends DroneController {
@@ -20,7 +20,7 @@ private[core] class Mothership extends DroneController {
   override def onTick(): Unit = {
     if (!isConstructing) {
       if (collectors < 2) {
-        buildDrone(new ScoutingDroneController(this), if (Rng.bernoulli(0.9f)) collectorDroneSpec else fastCollectorDroneSpec)
+        buildDrone(new ScoutingDroneController(this), if (GlobalRNG.bernoulli(0.9f)) collectorDroneSpec else fastCollectorDroneSpec)
         collectors += 1
       } else {
         buildDrone(new AttackDroneController(), attackDroneSpec)
@@ -58,7 +58,7 @@ private[core] class ScoutingDroneController(val mothership: Mothership) extends 
     if (nextMineral.exists(_.harvested)) nextMineral = None
     if (!isMoving && !isHarvesting) {
       if (availableStorage == 0) { moveTo(mothership); nextMineral = None }
-      else moveTo(position + Rng.vector2(500))
+      else moveTo(position + GlobalRNG.vector2(500))
     }
   }
 
@@ -82,8 +82,8 @@ private[core] class AttackDroneController extends DroneController {
         fireMissilesAt(enemy)
       }
       moveInDirection(enemy.position - position)
-    } else if (Rng.bernoulli(0.01)) {
-      moveInDirection(Vector2(Rng.double(0, 100)))
+    } else if (GlobalRNG.bernoulli(0.01)) {
+      moveInDirection(Vector2(GlobalRNG.double(0, 100)))
     }
   }
 

@@ -1,12 +1,12 @@
 package cwinter.codecraft.core.objects
 
 import cwinter.codecraft.collisions.PassiveVisionTracking
-import cwinter.codecraft.core.SimulatorEvent
 import cwinter.codecraft.core.api.{MineralCrystal, Player}
+import cwinter.codecraft.core.game.SimulatorEvent
 import cwinter.codecraft.core.graphics.MineralCrystalModel
 import cwinter.codecraft.core.objects.drone.StorageModule
 import cwinter.codecraft.graphics.engine.{ModelDescriptor, NullPositionDescriptor}
-import cwinter.codecraft.util.maths.{Rng, Vector2}
+import cwinter.codecraft.util.maths.{GlobalRNG, RNG, Vector2}
 
 
 private[core] class MineralCrystalImpl(
@@ -17,7 +17,7 @@ private[core] class MineralCrystalImpl(
 ) extends WorldObject with PassiveVisionTracking {
   def maxSpeed = 0
 
-  private[this] val orientation = (2 * math.Pi * Rng.double()).toFloat
+  private[this] val orientation = (2 * math.Pi * GlobalRNG.double()).toFloat
   private[this] var _descriptor = Seq(createDescriptor)
   private var handles = Map.empty[Player, MineralCrystal]
   private[objects] var claimedBy: Option[StorageModule] = None
@@ -37,7 +37,7 @@ private[core] class MineralCrystalImpl(
   private def createDescriptor: ModelDescriptor[Unit] =
     ModelDescriptor(
       NullPositionDescriptor,
-      MineralCrystalModel(size, position.x.toFloat, position.y.toFloat, orientation)
+      MineralCrystalModel(size, position.x, position.y, orientation)
     )
 
   override private[core] def descriptor: Seq[ModelDescriptor[Unit]] = _descriptor
@@ -55,6 +55,11 @@ private[core] class MineralCrystalImpl(
   }
 
   def asString: String = s"MineralCrystal($size, $position)"
+
+  private[objects] def claimedByOther(sm: StorageModule): Boolean = {
+    claimedBy.foreach(_.distanceCheck())
+    claimedBy.exists(_ != sm)
+  }
 }
 
 object MineralCrystalImpl {

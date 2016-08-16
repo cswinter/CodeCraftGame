@@ -1,8 +1,8 @@
 package cwinter.codecraft.core.objects
 
+import cwinter.codecraft.core.game.{RemoveEnergyGlobeAnimation, SimulatorEvent}
 import cwinter.codecraft.core.graphics.{EnergyGlobeModel, PlainEnergyGlobeModel}
 import cwinter.codecraft.core.objects.drone.DroneImpl
-import cwinter.codecraft.core.{RemoveEnergyGlobeAnimation, SimulatorEvent}
 import cwinter.codecraft.graphics.engine.{ModelDescriptor, PositionDescriptor}
 import cwinter.codecraft.util.maths.Vector2
 

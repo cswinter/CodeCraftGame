@@ -95,7 +95,6 @@ private[codecraft] class PhysicsEngine[T <: DynamicObject[T]](val worldBoundarie
    * Advance simulation by one timestep.
    */
   def update(): Unit = {
-
     discreteTime += 1
     nextTime = discreteTime
 

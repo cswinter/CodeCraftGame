@@ -2,12 +2,9 @@ package cwinter.codecraft.core.api
 
 import java.io.File
 
-import cwinter.codecraft.core.multiplayer.{WebsocketClient, JavaXWebsocketClient, WebsocketServerConnection}
-import cwinter.codecraft.core.{DroneWorldSimulator, MultiplayerClientConfig, MultiplayerConfig, WorldMap}
+import cwinter.codecraft.core.game.DroneWorldSimulator
+import cwinter.codecraft.core.multiplayer.{JavaXWebsocketClient, WebsocketClient}
 import cwinter.codecraft.graphics.application.DrawingCanvas
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 
 /** Main entry point to start the game. */

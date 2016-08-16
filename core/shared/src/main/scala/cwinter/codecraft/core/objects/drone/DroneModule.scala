@@ -1,6 +1,6 @@
 package cwinter.codecraft.core.objects.drone
 
-import cwinter.codecraft.core.SimulatorEvent
+import cwinter.codecraft.core.game.SimulatorEvent
 import cwinter.codecraft.core.graphics.DroneModuleDescriptor
 import cwinter.codecraft.util.maths.Vector2
 import cwinter.codecraft.util.modules.ModulePosition
@@ -13,6 +13,7 @@ private[core] abstract class DroneModule(
   /**
    * Perform all module actions.
    * Method is called on every tick.
+ *
    * @param availableResources The amount of resources available to the module.
    * @return Returns all simulator events, the amount of resources consumed and a list of positions that have produced a resource.
    */

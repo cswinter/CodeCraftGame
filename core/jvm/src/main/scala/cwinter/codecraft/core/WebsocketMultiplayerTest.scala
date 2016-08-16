@@ -9,17 +9,22 @@ private[core] object WebsocketMultiplayerTest {
   def main(args: Array[String]): Unit = {
     new Thread {
       override def run(): Unit = {
-        multiplayer.Server.spawnServerInstance()
+        multiplayer.Server.spawnServerInstance2()
       }
     }.start()
 
     Thread.sleep(2000, 0)
 
     async {
-      val client = await {
-        TheGameMaster.prepareMultiplayerGame("localhost", TheGameMaster.level2AI())
+      val client1 = await {
+        TheGameMaster.prepareMultiplayerGame("localhost", TheGameMaster.replicatorAI())
       }
-      TheGameMaster.run(client)
+      val client2 = await {
+        TheGameMaster.prepareMultiplayerGame("localhost", TheGameMaster.replicatorAI())
+      }
+      client2.framerateTarget = 1001
+      client2.run()
+      TheGameMaster.run(client1)
     }
   }
 }

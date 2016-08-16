@@ -5,9 +5,8 @@ import com.jogamp.opengl.GL._
 import com.jogamp.opengl._
 
 import com.jogamp.opengl.util.awt.TextRenderer
-import cwinter.codecraft.graphics.engine
 import cwinter.codecraft.graphics.materials.Material
-import cwinter.codecraft.graphics.model.{TheCompositeModelBuilderCache, PrimitiveModelBuilder, TheModelCache, VBO}
+import cwinter.codecraft.graphics.model.{TheCompositeModelBuilderCache, TheModelCache, VBO}
 import cwinter.codecraft.util.maths.VertexXY
 import org.joda.time.DateTime
 
@@ -68,7 +67,7 @@ private[graphics] class RenderFrame(val gameWorld: Simulator)
     for (material <- renderStack.materials) {
       material.beforeDraw(projection)
 
-      for (worldObject <- worldObjects ++ engine.Debug.debugObjects) {
+      for (worldObject <- worldObjects) {
         try {
           worldObject.closedModel(gameWorld.timestep, context).draw(material)
         } catch {
@@ -102,6 +101,7 @@ private[graphics] class RenderFrame(val gameWorld: Simulator)
       f"Modelview uploads: ${Material.modelviewUploads}   " +
       f"Cached models: ${modelCache.CachedModelCount}   " +
       f"Allocated VBOs: ${VBO.count}   " +
+      f"Timestep: ${gameWorld.timestep}   " +
       f"Last cached model: ${modelCache.lastCachedModel}"
     )
 
@@ -117,7 +117,7 @@ private[graphics] class RenderFrame(val gameWorld: Simulator)
 
     textRenderer.beginRendering(width, height)
 
-    for (text <- Debug.textModels if !text.largeFont)
+    for (text <- gameWorld.textModels if !text.largeFont)
       renderTextModel(textRenderer, text, width, height)
 
     textRenderer.setColor(1, 1, 1, 0.7f)
@@ -131,7 +131,7 @@ private[graphics] class RenderFrame(val gameWorld: Simulator)
     textRenderer.endRendering()
 
     largeTextRenderer.beginRendering(width, height)
-    for (text <- Debug.textModels if text.largeFont)
+    for (text <- gameWorld.textModels if text.largeFont)
       renderTextModel(largeTextRenderer, text, width, height)
     largeTextRenderer.endRendering()
   }
@@ -145,7 +145,7 @@ private[graphics] class RenderFrame(val gameWorld: Simulator)
       if (centered) VertexXY(-bounds.getWidth.toFloat / 2, bounds.getHeight.toFloat / 2)
       else VertexXY(0, 0)
     val cameraPos =
-      if (absolutePos) VertexXY(xPos, yPos)
+      if (absolutePos) VertexXY(xPos * width / 2, yPos * height / 2)
       else (1 / camera.zoomFactor) * (worldPos - VertexXY(camera.x, camera.y))
     val position = cameraPos + center + VertexXY(width / 2, height / 2)
     renderer.draw(text, position.x.toInt, position.y.toInt)

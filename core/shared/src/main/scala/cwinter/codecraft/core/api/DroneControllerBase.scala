@@ -66,7 +66,10 @@ trait DroneControllerBase extends Drone {
   }
 
   /** Order the drone to keep moving in the direction of `direction`. */
-  def moveInDirection(direction: Double): Unit = drone ! MoveInDirection(direction)
+  def moveInDirection(direction: Double): Unit = drone ! MoveInDirection(direction.toFloat)
+
+  /** Order the drone to keep moving in the direction of `direction`. */
+  def moveInDirection(direction: Float): Unit = drone ! MoveInDirection(direction)
 
   /** Order the drone to move towards `otherDrone`, until it is within 10 units distance of colliding. */
   def moveTo(otherDrone: Drone): Unit = {
@@ -138,12 +141,12 @@ trait DroneControllerBase extends Drone {
   def buildDrone(controller: DroneControllerBase, spec: DroneSpec): Unit = {
     def cap(value: Double, min: Double, max: Double): Double =
       math.min(math.max(value, min), max)
-    val pos = drone.position - 110 * Rng.vector2()
+    val pos = drone.position - 110 * GlobalRNG.vector2()
     val cappedPos = Vector2(
       cap(pos.x, worldSize.xMin, worldSize.xMax),
       cap(pos.y, worldSize.yMin, worldSize.yMax)
     )
-    drone ! ConstructDrone(spec, controller, drone.position - 110 * Rng.vector2())
+    drone ! ConstructDrone(spec, controller, drone.position - 110 * Vector2(_drone.dynamics.orientation))
   }
 
   /** Order the drone to start the construction of a new drone.
@@ -203,6 +206,19 @@ trait DroneControllerBase extends Drone {
 
   /** Returns the confines of the game world. */
   def worldSize: Rectangle = drone.context.worldConfig.size
+
+  /** Indicates how many simulation steps pass in between calls to event methods.
+    *
+    * E.g. if `tickDuration` == 1, then event methods will be called on every simulation step.
+    * This is the default setting for singleplayer games.
+    * If `tickDuration` == 10, event methods will only be called on every 10th simulation step.
+    */
+  def tickPeriod: Int = drone.context.tickPeriod
+
+  /** Draws the specified text at the specified position on this timestep. */
+  def showText(text: String, position: Vector2): Unit =
+    if (drone.context.settings.allowMessages)
+      drone.showText(text, position.x, position.y)
 
   private[core] def willProcessEvents(): Unit = {}
 

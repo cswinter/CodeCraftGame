@@ -1,8 +1,8 @@
 package cwinter.codecraft.core.objects.drone
 
-import cwinter.codecraft.core._
 import cwinter.codecraft.core.api.GameConstants.DroneConstructionTime
-import cwinter.codecraft.core.graphics.{ManipulatorDescriptor, DroneModuleDescriptor, ConstructionBeamsModel}
+import cwinter.codecraft.core.game.{DroneConstructionStarted, SimulatorEvent, SpawnDrone}
+import cwinter.codecraft.core.graphics.{ConstructionBeamsModel, DroneModuleDescriptor, ManipulatorDescriptor}
 import cwinter.codecraft.util.maths.Vector2
 import cwinter.codecraft.util.modules.ModulePosition
 

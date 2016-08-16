@@ -7,9 +7,9 @@ import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 
 private[core] class ComputedDroneDynamics(
   val drone: DroneImpl,
-  val maxSpeed: Double,
-  val weight: Double,
-  radius: Double,
+  val maxSpeed: Float,
+  val weight: Float,
+  radius: Float,
   initialPosition: Vector2,
   initialTime: Double
 ) extends ConstantVelocityDynamics(
@@ -18,45 +18,30 @@ private[core] class ComputedDroneDynamics(
   true,
   initialPosition,
   initialTime
-) with DroneDynamics {
+) with DroneDynamicsBasics {
 
-  final val MaxTurnSpeed = 0.25
-  private var _orientation: Double = 0
+  final val MaxTurnSpeed = 0.25f
   private var speed = maxSpeed
-  private var isStunned: Boolean = false
-  private[this] var _movementCommand: MovementCommand = HoldPosition
+  private[drone] var isStunned: Boolean = false
+  private var oldPos = pos
+  private var oldOrientation = orientation
 
-
-  def setMovementCommand(value: MovementCommand): Boolean = {
-    value match {
-      case MoveToPosition(p) if p ~ pos => return true
-      case _ =>
-    }
-    val redundant = value == _movementCommand
-    _movementCommand = value
-    redundant
-  }
-
-  def orientation_=(value: Double): Unit = _orientation = value
-  def orientation: Double = _orientation
 
   def setPosition(value: Vector2): Unit = pos = value
 
 
-  def limitSpeed(limit: Double): Unit = {
+  def limitSpeed(limit: Float): Unit = {
     require(limit <= maxSpeed)
     speed = limit
   }
 
-  private def halt(): Unit = {
-    if (!isStunned) {
-      velocity = Vector2.Null
-    }
+  protected def halt(): Unit = {
+    if (!isStunned) velocity = Vector2.Null
     _movementCommand = HoldPosition
   }
 
 
-  def adjustOrientation(target: Double): Unit = {
+  def adjustOrientation(target: Float): Unit = {
     if (target == orientation) return
 
     val orientation2 =
@@ -65,26 +50,16 @@ private[core] class ComputedDroneDynamics(
 
     val diff = orientation2 - target
 
-    if (diff <= MaxTurnSpeed || diff >= 2 * math.Pi - MaxTurnSpeed) {
-      orientation = target
-    } else if (diff > math.Pi) {
-      orientation += MaxTurnSpeed
-    } else {
-      orientation -= MaxTurnSpeed
-    }
+    _orientation =
+      if (diff <= MaxTurnSpeed || diff >= 2 * math.Pi - MaxTurnSpeed) target
+      else if (diff > math.Pi) orientation + MaxTurnSpeed
+      else orientation - MaxTurnSpeed
 
-    if (orientation < 0) orientation += 2 * math.Pi
-    if (orientation > 2 * math.Pi) orientation -= 2 * math.Pi
+    if (orientation < 0) _orientation += (2 * math.Pi).toFloat
+    if (orientation > 2 * math.Pi) _orientation -= (2 * math.Pi).toFloat
   }
 
-  def checkArrivalConditions(): Option[DroneEvent] = {
-    val event = arrivalEvent
-    val hasArrived = event.nonEmpty
-    if (hasArrived) halt()
-    event
-  }
-
-  def arrivalEvent: Option[DroneEvent] = _movementCommand match {
+  override def arrivalEvent: Option[DroneEvent] = _movementCommand match {
     case MoveToPosition(position) if position ~ this.pos =>
       Some(ArrivedAtPosition)
       // TODO: create a rigorous method to get within radius of some position, unify with moveToDrone
@@ -109,7 +84,7 @@ private[core] class ComputedDroneDynamics(
       val targetOrientation = dist.orientation
       adjustOrientation(targetOrientation)
       if (targetOrientation == orientation) {
-        if ((dist dot dist) > maxSpeed * maxSpeed) maxSpeed * dist.normalized
+        if (dist.lengthSquared > maxSpeed * maxSpeed) maxSpeed * dist.normalized
         else dist
       } else {
         Vector2.Null
@@ -117,7 +92,7 @@ private[core] class ComputedDroneDynamics(
     }
   }
 
-  override def update(): Unit = {
+  def recomputeVelocity(): Unit = {
     velocity =
       if (isStunned) {
         if (velocity.length <= maxSpeed * 0.10f) {
@@ -145,7 +120,7 @@ private[core] class ComputedDroneDynamics(
       }
   }
 
-  def moveInDirection(direction: Double): Vector2 = {
+  def moveInDirection(direction: Float): Vector2 = {
     val targetOrientation = direction
     adjustOrientation(targetOrientation)
 
@@ -190,28 +165,55 @@ private[core] class ComputedDroneDynamics(
     }
   }
 
-  def isMoving = _movementCommand != HoldPosition
-
   override def toString: String = s"DroneDynamics(pos=$pos, velocity=$velocity)"
-  
-  
-  def state: DroneDynamicsState = DroneDynamicsState(pos, orientation, arrivalEvent.map(_.toSerializable), drone.id)
+
+  def syncMsg(): Option[DroneMovementMsg] = {
+    val positionChanged = oldPos != pos
+    val orientationChanged = oldOrientation != orientation
+    oldPos = pos
+    oldOrientation = orientation
+    if (positionChanged && orientationChanged) Some(PositionAndOrientationChanged(pos, orientation, drone.id))
+    else if (positionChanged) Some(PositionChanged(pos, drone.id))
+    else if (orientationChanged) Some(OrientationChanged(orientation, drone.id))
+    else None
+  }
+
+  def arrivalMsg: Option[NewArrivalEvent] =
+    arrivalEvent.map(event => NewArrivalEvent(event.toSerializable, drone.id))
 }
 
-
-import upickle.default.key
-private[core] sealed trait DroneStateMessage
-
-@key("Hit") private[core] case class MissileHit(
+private[core] case class MissileHit(
   droneID: Int,
   location: Vector2,
-  missileID: Int
-) extends DroneStateMessage
+  missileID: Int,
+  shieldDamage: Int,
+  hullDamage: Int
+)
 
-@key("State") private[core] case class DroneDynamicsState(
-  position: Vector2,
-  orientation: Double,
-  arrivalEvent: Option[SerializableDroneEvent],
-  droneId: Int
-) extends DroneStateMessage
+private[core] case class DroneSpawned(droneID: Int)
+
+private[core] sealed trait DroneMovementMsg {
+  def droneID: Int
+}
+
+private[core] case class PositionChanged(
+  newPosition: Vector2,
+  droneID: Int
+) extends DroneMovementMsg
+
+private[core] case class OrientationChanged(
+  newOrientation: Float,
+  droneID: Int
+) extends DroneMovementMsg
+
+private[core] case class PositionAndOrientationChanged(
+  newPosition: Vector2,
+  newOrientation: Float,
+  droneID: Int
+) extends DroneMovementMsg
+
+private[core] case class NewArrivalEvent(
+  arrivalEvent: SerializableDroneEvent,
+  droneID: Int
+) extends DroneMovementMsg
 

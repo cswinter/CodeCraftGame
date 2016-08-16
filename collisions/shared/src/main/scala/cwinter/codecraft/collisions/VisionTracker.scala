@@ -146,7 +146,8 @@ private[codecraft] final class VisionTracker[T <: VisionTracking](
     obj.removed = true
   }
 
-  def updateAll() = {
+  def updateAll(currTime: Int) = {
+    this.time = currTime
     checkForCellTransfers()
     checkForCollisions()
   }

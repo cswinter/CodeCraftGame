@@ -1,7 +1,7 @@
 package cwinter.codecraft.core.objects
 
 import cwinter.codecraft.collisions.Positionable
-import cwinter.codecraft.core.SimulatorEvent
+import cwinter.codecraft.core.game.SimulatorEvent
 import cwinter.codecraft.graphics.engine.ModelDescriptor
 import cwinter.codecraft.util.maths.Vector2
 

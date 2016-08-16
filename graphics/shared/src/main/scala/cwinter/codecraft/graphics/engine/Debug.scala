@@ -3,15 +3,17 @@ package cwinter.codecraft.graphics.engine
 import cwinter.codecraft.util.maths.{ColorRGBA, Vector2}
 
 
-object Debug {
+private[codecraft] class Debug {
   private[this] var objects = List.empty[ModelDescriptor[_]]
   private[this] var _textModels = List.empty[TextModel]
+  private[this] var activeObjects = List.empty[ModelDescriptor[_]]
+  private[this] var activeTextModels = List.empty[TextModel]
 
-  private[codecraft] def draw(worldObject: ModelDescriptor[_]): Unit = {
-    objects ::= worldObject
-  }
+  def draw(worldObject: ModelDescriptor[_]): Unit = objects ::= worldObject
 
-  private[codecraft] def drawText(
+  def drawText(text: TextModel): Unit = _textModels ::= text
+
+  def drawText(
     text: String, xPos: Double, yPos: Double, color: ColorRGBA,
     absolutePosition: Boolean, centered: Boolean, largeFont: Boolean
   ): Unit = _textModels ::= TextModel(text, xPos.toFloat, yPos.toFloat, color, absolutePosition, centered, largeFont)
@@ -27,13 +29,13 @@ object Debug {
 
   def cameraOverride: Option[Vector2] = _cameraOverride.map(_())
 
-  private[engine] def debugObjects = {
-    objects
-  }
+  private[engine] def debugObjects = activeObjects
 
-  private[engine] def textModels = _textModels
+  private[engine] def textModels = activeTextModels
 
-  private[codecraft] def clear(): Unit = {
+  private[codecraft] def swapBuffers(): Unit = {
+    activeObjects = objects
+    activeTextModels = _textModels
     objects = List.empty[ModelDescriptor[_]]
     _textModels = List.empty[TextModel]
   }

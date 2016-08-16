@@ -136,7 +136,6 @@ class JSDroneController(
 }
 
 
-@JSExport
 object JSDroneController {
   private var buildDroneDeprWarnShown = false
 }

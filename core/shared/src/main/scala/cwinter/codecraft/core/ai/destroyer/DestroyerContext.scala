@@ -1,21 +1,16 @@
 package cwinter.codecraft.core.ai.destroyer
 
-import cwinter.codecraft.core.ai.shared.{Mission, BattleCoordinator, BasicHarvestCoordinator, SharedContext}
+import cwinter.codecraft.core.ai.shared.{BasicHarvestCoordinator, BattleCoordinator, Mission, SharedContext}
 import cwinter.codecraft.core.api.Drone
-import cwinter.codecraft.util.maths.{Vector2, Rectangle}
+import cwinter.codecraft.util.maths.Vector2
 
 
 private[codecraft] class DestroyerContext extends SharedContext[DestroyerCommand] {
+  val mothership: Mothership = new Mothership(this)
   val harvestCoordinator = new BasicHarvestCoordinator
-  override val battleCoordinator = new DestroyerBattleCoordinator(this)
+  val battleCoordinator = new DestroyerBattleCoordinator(this)
 
-  private var _mothership: Mothership = null
-  def mothership: Mothership = _mothership
-
-
-  def initialise(worldSize: Rectangle, mothership: Mothership): Unit = {
-    initialise(worldSize)
-    _mothership = mothership
+  override def init(): Unit = {
     battleCoordinator.addMission(new ProtectMothership(mothership))
   }
 }
@@ -151,7 +146,7 @@ private[codecraft] class ProtectHarvesters(
   var timeout = 1500
   def hasExpired: Boolean = timeout < 0 || harvesters.isEmpty
 
-  override def update(): Unit = timeout -= 1
+  override def update(): Unit = timeout -= mothership.tickPeriod
 
   def refresh() = timeout = 1500
 
@@ -199,7 +194,7 @@ private[codecraft] class ProtectMothership(
 
   var timeout = 3000
   override def update(): Unit = {
-    timeout -= 1
+    timeout -= mothership.tickPeriod
     if (timeout == 0) {
       maxRequired -= 1
       reduceAssignedToMax()

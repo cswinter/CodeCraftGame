@@ -22,9 +22,9 @@ import scala.scalajs.js.annotation.JSExport
  * @param _y The y coordinate.
  */
 @JSExport
-final case class Vector2(_x: Double, _y: Double) {
+final case class Vector2(_x: Float, _y: Float) {
 
-  def this(angle: Double) = this(math.cos(angle), math.sin(angle))
+  def this(angle: Double) = this(math.cos(angle).toFloat, math.sin(angle).toFloat)
 
   import Vector2._
   assert(isValid)
@@ -75,8 +75,8 @@ final case class Vector2(_x: Double, _y: Double) {
   @JSExport def orientation = {
     assert(x != 0 || y != 0, s"x=$x, y=$y")
     val atan = math.atan2(y, x)
-    if (atan > 0) atan else atan + 2 * math.Pi
-  }
+    if (atan >= 0) atan else atan + 2 * math.Pi
+  }.toFloat
 
   /** Returns true if none of the components of the vectors are +-infinity or NaN, otherwise false. */
   @JSExport def isValid: Boolean = {
@@ -84,16 +84,15 @@ final case class Vector2(_x: Double, _y: Double) {
   }
 
   private[codecraft] def ~(rhs: Vector2): Boolean =
-    math.abs(x - rhs.x) < epsilon && math.abs(y - rhs.y) < epsilon
-  private[codecraft] def !~(rhs: Vector2): Boolean =
-    math.abs(x - rhs.x) >= epsilon || math.abs(y - rhs.y) >= epsilon
+    math.abs(x - rhs.x) <= epsilon && math.abs(y - rhs.y) <= epsilon
+  private[codecraft] def !~(rhs: Vector2): Boolean = !(this ~ rhs)
 
   /** Returns the additive inverse of the vector. */
   @JSExport def unary_- = Vector2(-x, -y)
 }
 
 object Vector2 {
-  final val epsilon: Double = 0.00000000001
+  final val epsilon: Double = 0.0001
 
   implicit class ScalarD(val d: Double) extends AnyVal {
     def *(rhs: Vector2): Vector2 = rhs * d
@@ -107,8 +106,9 @@ object Vector2 {
     def *(rhs: Vector2): Vector2 = rhs * i
   }
 
-  def apply(angle: Double): Vector2 =
-    Vector2(math.cos(angle), math.sin(angle))
+  def apply(angle: Double): Vector2 = Vector2(math.cos(angle), math.sin(angle))
+
+  def apply(x: Double, y: Double): Vector2 = Vector2(x.toFloat, y.toFloat)
 
   private[codecraft] def apply(string: String): Vector2 = {
     string match {

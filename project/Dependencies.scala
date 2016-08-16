@@ -12,6 +12,7 @@ object Dependencies {
   val akka = "com.typesafe.akka" %% "akka-actor" % "2.3.13"
   val javaxWebsocket = "javax.websocket" % "javax.websocket-client-api" % "1.1"
   val javaxWebsocketImpl = "org.glassfish.tyrus" % "tyrus-container-grizzly-client" % "1.12"
+  val jetm = "fm.void.jetm" % "jetm" % "1.2.3"
 
 
   val commonDependencies: Seq[ModuleID] = Seq(
@@ -22,7 +23,8 @@ object Dependencies {
     sprayWebsocket,
     akka,
     javaxWebsocket,
-    javaxWebsocketImpl
+    javaxWebsocketImpl,
+    jetm
   )
 
   val graphicsJVMDependencies: Seq[ModuleID] = Seq(
