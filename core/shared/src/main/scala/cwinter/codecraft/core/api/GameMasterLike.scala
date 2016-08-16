@@ -64,7 +64,7 @@ private[codecraft] trait GameMasterLike {
   /** Runs the `simulator`. */
   def run(simulator: DroneWorldSimulator): DroneWorldSimulator
 
-  /** Creates a new [[DroneWorldSimulator]] for a singleplayer game with the specified settings. */
+  /** Creates a new [[cwinter.codecraft.core.game.DroneWorldSimulator]] for a singleplayer game with the specified settings. */
   def createSimulator(
     mothership1: DroneControllerBase,
     mothership2: DroneControllerBase,
@@ -79,7 +79,7 @@ private[codecraft] trait GameMasterLike {
     new DroneWorldSimulator(map, controllers, devEvents)
   }
 
-  /** Creates a new [[DroneWorldSimulator]] for a singleplayer game with the specified settings. */
+  /** Creates a new [[cwinter.codecraft.core.game.DroneWorldSimulator]] for a singleplayer game with the specified settings. */
   def createSimulator(
     mothership1: DroneControllerBase,
     mothership2: DroneControllerBase,
@@ -146,35 +146,35 @@ private[codecraft] trait GameMasterLike {
   /** Returns a drone controller for the Destroyer AI. */
   def destroyerAI(): DroneControllerBase = new ai.destroyer.DestroyerContext().mothership
 
-  /** The default [[WorldMap]]. */
+  /** The default [[cwinter.codecraft.core.game.WorldMap]]. */
   val defaultMap: WorldMap = {
     val spawns = constructSpawns(Vector2(2500, 500), Vector2(-2500, -500))
     WorldMap(DefaultWorldSize, DefaultResourceDistribution, spawns).withDefaultWinConditions
   }
 
-  /** A small [[WorldMap]]. */
+  /** A small [[cwinter.codecraft.core.game.WorldMap]]. */
   val smallMap: WorldMap = {
     val spawns = constructSpawns(Vector2(1650, 500), Vector2(-1650, -500))
     WorldMap(SmallWorldSize, SmallResourceDistribution, spawns).withDefaultWinConditions
   }
 
-  /** A large [[WorldMap]]. */
+  /** A large [[cwinter.codecraft.core.game.WorldMap]]. */
   val largeMap: WorldMap = {
     val spawns = constructSpawns(Vector2(3800, 1000), Vector2(-3800, -1000))
     WorldMap(LargeWorldSize, LargeResourceDistribution, spawns).withDefaultWinConditions
   }
 
-  /** The [[WorldMap]] for the first level. */
+  /** The [[cwinter.codecraft.core.game.WorldMap]] for the first level. */
   val level1Map: WorldMap = {
     val worldSize = Rectangle(-2000, 2000, -1000, 1000)
     val spawns = constructSpawns(Vector2(1000, 200), Vector2(-1000, -200))
     WorldMap(worldSize, Seq.fill(8)((2, 40)), spawns).withDefaultWinConditions
   }
 
-  /** The [[WorldMap]] for the second level. */
+  /** The [[cwinter.codecraft.core.game.WorldMap]] for the second level. */
   val level2Map: WorldMap = defaultMap
 
-  /** The [[WorldMap]] for the bonus level. */
+  /** The [[cwinter.codecraft.core.game.WorldMap]] for the bonus level. */
   val bonusLevelMap: WorldMap = defaultMap
 
   /** Runs the first level.
