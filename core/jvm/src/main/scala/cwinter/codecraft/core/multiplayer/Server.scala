@@ -28,16 +28,18 @@ object Server {
     displayGame: Boolean = false,
     maxGames: Int = 10
   ): Unit = {
-    implicit val system = ActorSystem()
-    val server = system.actorOf(
-      Props(classOf[MultiplayerServer], seed, map, displayGame, maxGames), "websocket")
-    IO(UHttp) ! Http.Bind(server, "0.0.0.0", 8080)
-    system.awaitTermination()
+    start(seed, map, displayGame, maxGames)
+    ActorSystem().awaitTermination()
   }
 
-  def start(): ActorRef = {
+  def start(
+    seed: Int = scala.util.Random.nextInt,
+    map: WorldMap = TheGameMaster.defaultMap,
+    displayGame: Boolean = false,
+    maxGames: Int = 10
+  ): ActorRef = {
     implicit val system = ActorSystem()
-    val server = system.actorOf(Props(classOf[MultiplayerServer]), "websocket")
+    val server = system.actorOf(Props(classOf[MultiplayerServer], seed, map, displayGame, maxGames), "websocket")
     IO(UHttp) ! Http.Bind(server, "0.0.0.0", 8080)
     server
   }
