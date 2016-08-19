@@ -26,7 +26,7 @@ object TheGameMaster extends GameMasterLike {
     require(canvas != null, "Must first set TheGameMaster.canvas variable to the webgl canvas element.")
     require(runContext.isEmpty, "Can only run one CodeCraft game at a time.")
 
-    val renderer = new WebGLRenderer(canvas, simulator, simulator.map.initialDrones.head.position)
+    val renderer = new WebGLRenderer(canvas, simulator)
     val context = new RunContext(simulator, renderer, 16)
     runContext = Some(context)
     run(context)
@@ -38,7 +38,6 @@ object TheGameMaster extends GameMasterLike {
     import context._
     if (stopped) return
     dom.window.requestAnimationFrame((d: Double) => run(context))
-    if (simulator.isCurrentlyUpdating) { println(s"Skipped frame at ${simulator.timestep}"); return }
 
     if (!fps.shouldSkipFrame(simulator.framerateTarget)) {
       fps.startedFrame(simulator.framerateTarget)
@@ -50,7 +49,7 @@ object TheGameMaster extends GameMasterLike {
       }
 
       renderer.render()
-      if (!simulator.isPaused) simulator.performAsyncUpdate()
+      if (!simulator.isPaused && !simulator.isCurrentlyUpdating) simulator.performAsyncUpdate()
     }
   }
 

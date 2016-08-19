@@ -130,8 +130,8 @@ private[core] class ComputedDroneDynamics(
 
   override def handleWallCollision(areaBounds: Rectangle): Unit = {
     // find closest wall
-    val dx = math.min(math.abs(pos.x + areaBounds.xMax), math.abs(pos.x + areaBounds.xMin))
-    val dy = math.min(math.abs(pos.y + areaBounds.yMax), math.abs(pos.y + areaBounds.yMin))
+    val dx = math.min(math.abs(pos.x - areaBounds.xMax), math.abs(pos.x - areaBounds.xMin))
+    val dy = math.min(math.abs(pos.y - areaBounds.yMax), math.abs(pos.y - areaBounds.yMin))
     if (dx < dy) {
       velocity = velocity.copy(_x = -velocity.x)
       //orientation = orientation.copy(x = -orientation.x)

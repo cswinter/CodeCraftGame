@@ -12,8 +12,7 @@ import scala.scalajs.js
 
 private[codecraft] class WebGLRenderer(
   canvas: html.Canvas,
-  gameWorld: Simulator,
-  initialCameraPos: Vector2 = Vector2(0, 0)
+  gameWorld: Simulator
 ) extends Renderer {
   implicit val gl = initGL()
   implicit val renderStack = new JSRenderStack()
@@ -21,7 +20,7 @@ private[codecraft] class WebGLRenderer(
   val modelCache = new TheModelCache
   val compositeModelBuilderCache = new TheCompositeModelBuilderCache
   lazy val context = new GraphicsContext(renderStack, true, modelCache, compositeModelBuilderCache)
-  camera.position = (initialCameraPos.x.toFloat, initialCameraPos.y.toFloat)
+  camera.position = (gameWorld.initialCameraPos.x, gameWorld.initialCameraPos.y)
   camera.screenDims = (canvas.width, canvas.height)
 
   private[this] val keyEventHandler = new KeyEventHandler(gameWorld, camera)

@@ -100,9 +100,9 @@ private[codecraft] class MultiplayerServer(
 ) extends Actor with ActorLogging {
   import Server.{GetStatus, Status, Stop}
 
-  private var waitingClient = Option.empty[RemoteClient]
+  private var waitingClient = Option.empty[Connection]
   private var connectionInfo = Map.empty[ActorRef, Connection]
-  private var runningGames = Set.empty[DroneWorldSimulator]
+  private var runningGames = Map.empty[DroneWorldSimulator, Seq[Connection]]
 
   case class Connection(
     rawConnection: ActorRef,
@@ -123,9 +123,9 @@ private[codecraft] class MultiplayerServer(
         connectionInfo += connection.websocketActor -> connection
         waitingClient match {
           case None =>
-            waitingClient = Some(connection.worker)
+            waitingClient = Some(connection)
           case Some(c) =>
-            startGame(connection.worker, c)
+            startGame(connection, c)
             waitingClient = None
         }
       } else {
@@ -140,6 +140,7 @@ private[codecraft] class MultiplayerServer(
         game <- connection.assignedGame
         disconnectedPlayer = connection.worker.players.head.id
       } stopGame(game, GameClosed.PlayerDisconnected(disconnectedPlayer))
+      if (connectionOpt == waitingClient) waitingClient = None
 
       log.info(s"Child $websocketActor has been terminated.")
       log.info(s"Corresponding connection: $connectionOpt")
@@ -147,9 +148,9 @@ private[codecraft] class MultiplayerServer(
       if (runningGames.contains(simulator))
         stopGame(simulator, GameClosed.Timeout)
     case GetStatus =>
-      sender() ! Status(waitingClient.isEmpty, runningGames.size)
+      sender() ! Status(waitingClient.nonEmpty, runningGames.size)
     case Stop =>
-      for (simulator <- runningGames)
+      for (simulator <- runningGames.keys)
         stopGame(simulator, GameClosed.ServerStopped)
       context.stop(self)
   }
@@ -164,14 +165,14 @@ private[codecraft] class MultiplayerServer(
 
   private def nextPlayer: Set[Player] = if (waitingClient.isEmpty) Set(BluePlayer) else Set(OrangePlayer)
 
-  private def startGame(clients: RemoteClient*): Unit = {
+  private def startGame(connections: Connection*): Unit = {
+    val clients = connections.map(_.worker.asInstanceOf[RemoteClient]).toSet
     val simulator = new DroneWorldSimulator(
       map,
       Seq(new DummyDroneController, new DummyDroneController),
       t => Seq.empty,
       None,
-      AuthoritativeServerConfig(
-        Set.empty, clients.flatMap(_.players).toSet, clients.toSet, updateCompleted, onTimeout),
+      AuthoritativeServerConfig(Set.empty, clients.flatMap(_.players), clients, updateCompleted, onTimeout),
       rngSeed = nextRNGSeed
     )
     simulator.graphicsEnabled = displayGame
@@ -183,7 +184,8 @@ private[codecraft] class MultiplayerServer(
       stopGame(simulator, GameClosed.Crash(e.getMessage + "\n" + e.getStackTrace.mkString("\n")))
     })
     context.system.scheduler.scheduleOnce(20 minutes, self, GameTimedOut(simulator))
-    runningGames += simulator
+    runningGames += simulator -> connections
+    for (c <- connections) c.assignedGame = Some(simulator)
     if (displayGame) TheGameMaster.run(simulator) else simulator.run()
   }
 
@@ -198,13 +200,17 @@ private[codecraft] class MultiplayerServer(
 
   private def stopGame(simulator: DroneWorldSimulator, reason: GameClosed.Reason): Unit = {
     simulator.terminate()
-    if (runningGames.contains(simulator)) runningGames -= simulator
-    for ((websocketActor, connection) <- connectionInfo) {
-      context.unwatch(websocketActor)
-      connection.worker.close(reason)
-      context.system.scheduler.scheduleOnce(15 seconds, new Runnable {
-        override def run(): Unit =  context.stop(connection.rawConnection)
-      })
+    runningGames.get(simulator) match {
+      case Some(clients) =>
+        runningGames -= simulator
+        for (Connection(rawConnection, websocketActor, worker) <- clients) {
+          context.unwatch(websocketActor)
+          worker.close(reason)
+          context.system.scheduler.scheduleOnce(15 seconds, new Runnable {
+            override def run(): Unit =  context.stop(rawConnection)
+          })
+        }
+      case None =>
     }
   }
 }

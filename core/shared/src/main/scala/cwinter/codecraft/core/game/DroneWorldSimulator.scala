@@ -497,7 +497,11 @@ class DroneWorldSimulator(
 
   def replayString: Option[String] = replayRecorder.replayString
 
-  override def initialCameraPos: Vector2 = map.initialDrones.head.position
+  override def initialCameraPos: Vector2 =
+    map.initialDrones
+      .find(d => multiplayerConfig.isLocalPlayer(d.player))
+      .map(_.position)
+      .getOrElse(Vector2.Null)
 
   private[codecraft] override def handleKeypress(keyChar: Char): Unit = {
     keyChar match {
@@ -716,6 +720,11 @@ class DroneWorldSimulator(
     _gameStatus = value
   }
   override protected def gameStatus = _gameStatus
+
+  override def togglePause(): Unit = multiplayerConfig match {
+    case SingleplayerConfig => super.togglePause()
+    case _ =>
+  }
 }
 
 private[codecraft] object DroneWorldSimulator {

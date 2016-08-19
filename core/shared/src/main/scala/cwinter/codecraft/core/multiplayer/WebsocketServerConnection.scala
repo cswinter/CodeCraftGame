@@ -38,12 +38,10 @@ private[core] class WebsocketServerConnection(
       case rtt: RTT => sendMessage(rtt)
       case GameClosed(reason) =>
         _gameClosed = Some(reason)
-        synchronized {
-          if (!serverCommands.isCompleted) serverCommands.success(Right(reason))
-          if (!worldState.isCompleted) worldState.success(Right(reason))
-          serverCommands = Promise.successful(Right(reason))
-          worldState = Promise.successful(Right(reason))
-        }
+        if (!serverCommands.isCompleted) serverCommands.success(Right(reason))
+        if (!worldState.isCompleted) worldState.success(Right(reason))
+        serverCommands = Promise.successful(Right(reason))
+        worldState = Promise.successful(Right(reason))
     }
   }
 

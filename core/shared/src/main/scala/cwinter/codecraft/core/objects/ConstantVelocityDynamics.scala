@@ -27,9 +27,9 @@ abstract private[core] class ConstantVelocityDynamics(
     areaBounds: Rectangle, timeDelta: Double
   ): Option[(Double, Direction)] = {
     val ctX =
-    if (velocity.x > 0) Some(((areaBounds.xMax - pos.x) / velocity.x, East))
-    else if (velocity.x < 0) Some(((areaBounds.xMin - pos.x) / velocity.x, West))
-    else None
+      if (velocity.x > 0) Some(((areaBounds.xMax - pos.x) / velocity.x, East))
+      else if (velocity.x < 0) Some(((areaBounds.xMin - pos.x) / velocity.x, West))
+      else None
 
     val ctY =
       if (velocity.y > 0) Some(((areaBounds.yMax - pos.y) / velocity.y, North))
