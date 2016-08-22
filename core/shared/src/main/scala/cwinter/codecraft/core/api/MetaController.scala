@@ -1,5 +1,6 @@
 package cwinter.codecraft.core.api
 
+import cwinter.codecraft.core.game.SimulationContext
 import cwinter.codecraft.util.maths.Rectangle
 
 /** In addition to your [[DroneController]]s you can have one [[MetaController]], which has a method
@@ -10,14 +11,18 @@ import cwinter.codecraft.util.maths.Rectangle
 trait MetaController {
   private[core] var _worldSize: Rectangle = null
   private[core] var _tickPeriod: Int = -1
-
+  private[core] implicit var _simulationContext: SimulationContext = null
 
   def onTick(): Unit
   def init(): Unit = ()
 
+  private[codecraft] def onTick(simulationContext: SimulationContext): Unit = {
+    _simulationContext = simulationContext
+    onTick()
+  }
 
   def worldSize: Rectangle = {
-    require(_worldSize != null, cantAccessYet("worldSize"));
+    require(_worldSize != null, cantAccessYet("worldSize"))
     _worldSize
   }
 

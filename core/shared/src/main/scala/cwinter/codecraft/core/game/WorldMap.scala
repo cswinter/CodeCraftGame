@@ -1,37 +1,38 @@
 package cwinter.codecraft.core.game
 
 import cwinter.codecraft.core.api._
-import cwinter.codecraft.core.objects.MineralCrystalImpl
 import cwinter.codecraft.util.maths.{GlobalRNG, Rectangle, Vector2}
-
 
 /** Defines the initial world state for a game.
   *
   * @param minerals The initial set of mineral crystals.
   * @param size The world boundary.
   * @param initialDrones The initial set of drones.
-  * @param winConditions The win conditions.
   */
 case class WorldMap(
   minerals: Seq[MineralSpawn],
   size: Rectangle,
-  initialDrones: Seq[Spawn],
-  winConditions: Seq[WinCondition] = Nil
+  initialDrones: Seq[Spawn]
 ) {
   // use this to get around compiler limitation (cannot have multiple overloaded methods with default arguments)
-  private[codecraft] def withWinConditions(winConditions: WinCondition*) = {
+  /*private[codecraft] def withWinConditions(winConditions: WinCondition*) = {
     WorldMap(minerals, size, initialDrones, winConditions)
-  }
+  }*/
 
-  /** Creates a copy of this WorldMap with the win conditions set to destruction of the enemy mothership,
-    * or having the largest fleet after 15 * 60 * 60 timesteps.
-    */
-  def withDefaultWinConditions: WorldMap =
-    this.withWinConditions(DestroyEnemyMotherships, LargestFleet(15 * 60 * 60))
+  def createGameConfig(droneControllers: Seq[DroneControllerBase],
+                       winConditions: Seq[WinCondition] = defaultWinConditions,
+                       tickPeriod: Int = 1,
+                       rngSeed: Int = GlobalRNG.seed) =
+    GameConfig(
+      worldSize = size,
+      minerals = minerals,
+      drones = initialDrones zip droneControllers,
+      winConditions = winConditions,
+      tickPeriod = tickPeriod,
+      rngSeed = rngSeed
+    )
 
-  def instantiateMinerals(): Seq[MineralCrystalImpl] =
-    for ((MineralSpawn(size, position), id) <- minerals.zipWithIndex)
-      yield new MineralCrystalImpl(size, id, position)
+  private def defaultWinConditions = WinCondition.default
 }
 
 /** Describes the initial position and state of a drone.
@@ -50,7 +51,6 @@ case class Spawn(
   name: Option[String] = None
 )
 
-
 object WorldMap {
   def apply(
     size: Rectangle,
@@ -59,8 +59,7 @@ object WorldMap {
     initialDrones: Seq[Spawn]
   ): WorldMap = {
     val minerals =
-      for ((pos, size) <- resources) yield
-        new MineralSpawn(size, pos)
+      for ((pos, size) <- resources) yield new MineralSpawn(size, pos)
 
     WorldMap(minerals, size, initialDrones)
   }
@@ -72,14 +71,14 @@ object WorldMap {
   ): WorldMap = {
     val minerals =
       for (i <- 0 to resourceCount)
-        yield new MineralSpawn(
-          GlobalRNG.int(1, 2),
-          Vector2(GlobalRNG.double(size.xMin, size.xMax), GlobalRNG.double(size.yMin, size.yMax))
-        )
+        yield
+          new MineralSpawn(
+            GlobalRNG.int(1, 2),
+            Vector2(GlobalRNG.double(size.xMin, size.xMax), GlobalRNG.double(size.yMin, size.yMax))
+          )
 
     WorldMap(minerals, size, initialDrones)
   }
-
 
   def apply(
     size: Rectangle,
@@ -112,8 +111,11 @@ object WorldMap {
     WorldMap(minerals, size, initialDrones)
   }
 
-
-  private def generateResourceCluster(midpoint: Vector2, minDist: Double, spread: Double, amount: Int, maxSize: Int): Seq[MineralSpawn] = {
+  private def generateResourceCluster(midpoint: Vector2,
+                                      minDist: Double,
+                                      spread: Double,
+                                      amount: Int,
+                                      maxSize: Int): Seq[MineralSpawn] = {
     var minerals = Seq.empty[MineralSpawn]
 
     while (minerals.size < amount) {
@@ -135,4 +137,3 @@ case class MineralSpawn(
   size: Int,
   position: Vector2
 )
-

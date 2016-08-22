@@ -3,7 +3,7 @@ package cwinter.codecraft.core.multiplayer
 import java.nio.ByteBuffer
 
 import cwinter.codecraft.core.api.{BluePlayer, OrangePlayer, Player}
-import cwinter.codecraft.core.game.{SimulationContext, WorldMap}
+import cwinter.codecraft.core.game.{SimulationContext, WinCondition, WorldMap}
 import cwinter.codecraft.core.objects.drone.GameClosed.Reason
 import cwinter.codecraft.core.objects.drone._
 import cwinter.codecraft.util.AggregateStatistics
@@ -11,19 +11,20 @@ import cwinter.codecraft.util.AggregateStatistics
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, Promise}
 
-
 private[core] class WebsocketClientConnection(
   override val players: Set[Player],
   val map: WorldMap,
   val rngSeed: Int,
+  val tickPeriod: Int,
+  val winConditions: Seq[WinCondition],
   val debug: Boolean = false,
   val info: Boolean = false
-) extends RemoteClient with WebsocketWorker {
+) extends RemoteClient
+    with WebsocketWorker {
   private var clientCommands = Promise[Seq[(Int, SerializableDroneCommand)]]
   private val commandsSentSize = new AggregateStatistics
   private val commandsReceivedSize = new AggregateStatistics
   private val positionsSentSize = new AggregateStatistics
-
 
   override def receive(message: String): Unit = {
     if (debug) println(message)
@@ -52,21 +53,22 @@ private[core] class WebsocketClientConnection(
   private def handleMessage(msg: ClientMessage): Unit = msg match {
     case CommandsMessage(commands) => clientCommands.success(commands)
     case Register => sendMessage(syncMessage)
-    case RTT(time, message) => if (debug) {
-      val ms = (System.nanoTime - time) / 1000000.0
-      println(f"RTT for $message: $ms%.2fms")
-    }
+    case RTT(time, message) =>
+      if (debug) {
+        val ms = (System.nanoTime - time) / 1000000.0
+        println(f"RTT for $message: $ms%.2fms")
+      }
   }
 
   def syncMessage =
-    InitialSync(
-      map.size,
-      map.minerals,
-      map.initialDrones.map(x => SerializableSpawn(x)),
-      players.map(_.id),
-      (Set(OrangePlayer, BluePlayer) -- players).map(_.id),
-      rngSeed,
-      map.winConditions)
+    InitialSync(map.size,
+                map.minerals,
+                map.initialDrones.map(x => SerializableSpawn(x)),
+                players.map(_.id),
+                (Set(OrangePlayer, BluePlayer) -- players).map(_.id),
+                tickPeriod,
+                rngSeed,
+                winConditions)
 
   override def waitForCommands()(implicit context: SimulationContext): Future[Seq[(Int, DroneCommand)]] = {
     if (debug) println(s"[t=${context.timestep}] Waiting for commands...")
@@ -104,7 +106,6 @@ private[core] class WebsocketClientConnection(
     for ((id, command) <- commands)
       yield (id, DroneCommand(command))
 
-
   override def close(reason: Reason): Unit = {
     sendMessage(GameClosed(reason))
     closeConnection()
@@ -117,4 +118,3 @@ private[core] class WebsocketClientConnection(
     messageSize
   }
 }
-

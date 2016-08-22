@@ -3,7 +3,7 @@ package cwinter.codecraft.core.multiplayer
 import akka.actor._
 import akka.io.IO
 import cwinter.codecraft.core.api.{BluePlayer, OrangePlayer, Player, TheGameMaster}
-import cwinter.codecraft.core.game.{AuthoritativeServerConfig, DroneWorldSimulator, WorldMap}
+import cwinter.codecraft.core.game.{WinCondition, AuthoritativeServerConfig, DroneWorldSimulator, WorldMap}
 import cwinter.codecraft.core.objects.drone.GameClosed
 import cwinter.codecraft.core.replay.DummyDroneController
 import spray.can.Http
@@ -69,16 +69,12 @@ private[codecraft] class SinglePlayerMultiplayerServer(seed: Option[Int], displa
     case Http.Connected(remoteAddress, localAddress) =>
       val serverConnection = sender()
       val rngSeed = this.seed.getOrElse(scala.util.Random.nextInt)
-      val worker = new WebsocketClientConnection(clientPlayers, map, rngSeed)
+      val worker = new WebsocketClientConnection(clientPlayers, map, rngSeed, 10, WinCondition.default)
       val conn = context.actorOf(WebsocketActor.props(serverConnection, worker))
 
       val server = new DroneWorldSimulator(
-        map,
-        Seq(new DummyDroneController, TheGameMaster.destroyerAI()),
-        t => Seq.empty,
-        None,
-        AuthoritativeServerConfig(serverPlayers, clientPlayers, Set(worker), s => (), s => ()),
-        rngSeed = rngSeed
+        map.createGameConfig(Seq(new DummyDroneController, TheGameMaster.destroyerAI()), rngSeed = rngSeed),
+        multiplayerConfig = AuthoritativeServerConfig(serverPlayers, clientPlayers, Set(worker), s => (), s => ())
       )
       server.framerateTarget = 1001
 
@@ -99,6 +95,7 @@ private[codecraft] class MultiplayerServer(
   val maxGames: Int = 10
 ) extends Actor with ActorLogging {
   import Server.{GetStatus, Status, Stop}
+  val tickPeriod = 10
 
   private var waitingClient = Option.empty[Connection]
   private var connectionInfo = Map.empty[ActorRef, Connection]
@@ -156,7 +153,7 @@ private[codecraft] class MultiplayerServer(
   }
 
   private def acceptConnection(rawConnection: ActorRef): Connection = {
-    val worker = new WebsocketClientConnection(nextPlayer, map, nextRNGSeed)
+    val worker = new WebsocketClientConnection(nextPlayer, map, nextRNGSeed, tickPeriod, WinCondition.default)
     val websocketActor = context.actorOf(WebsocketActor.props(rawConnection, worker))
     rawConnection ! Http.Register(websocketActor)
     context.watch(websocketActor)
@@ -168,12 +165,13 @@ private[codecraft] class MultiplayerServer(
   private def startGame(connections: Connection*): Unit = {
     val clients = connections.map(_.worker.asInstanceOf[RemoteClient]).toSet
     val simulator = new DroneWorldSimulator(
-      map,
-      Seq(new DummyDroneController, new DummyDroneController),
-      t => Seq.empty,
-      None,
-      AuthoritativeServerConfig(Set.empty, clients.flatMap(_.players), clients, updateCompleted, onTimeout),
-      rngSeed = nextRNGSeed
+      map.createGameConfig(
+        Seq(new DummyDroneController, new DummyDroneController),
+        tickPeriod = tickPeriod,
+        rngSeed = nextRNGSeed
+      ),
+      multiplayerConfig =
+        AuthoritativeServerConfig(Set.empty, clients.flatMap(_.players), clients, updateCompleted, onTimeout)
     )
     simulator.graphicsEnabled = displayGame
     nextRNGSeed = scala.util.Random.nextInt

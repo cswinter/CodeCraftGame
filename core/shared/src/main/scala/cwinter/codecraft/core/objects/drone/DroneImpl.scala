@@ -27,8 +27,6 @@ private[core] final class DroneImpl(
   with DroneEventQueue
   with DroneModules {
 
-  require(context.worldConfig != null)
-
   val id = context.idGenerator.getAndIncrement()
   val priority = context.rng.int()
   private[this] var _constructionProgress: Option[Int] = None
@@ -321,15 +319,24 @@ private[core] case class InitialSync(
   initialDrones: Seq[SerializableSpawn],
   localPlayerIDs: Set[Int],
   remotePlayerIDs: Set[Int],
+  tickPeriod: Int,
   rngSeed: Int,
   winConditions: Seq[WinCondition]
 ) extends ServerMessage {
-  def worldMap: WorldMap = new WorldMap(
-    minerals,
-    worldSize,
-    initialDrones.map(_.deserialize),
-    winConditions
-  )
+  def gameConfig(droneControllers: Seq[DroneControllerBase]): GameConfig = {
+    val controllersIter = droneControllers.iterator
+    GameConfig(
+      worldSize,
+      minerals,
+      initialDrones.map { spawn =>
+        if (localPlayerIDs.contains(spawn.playerID)) (spawn.deserialize, controllersIter.next())
+        else (spawn.deserialize, new DummyDroneController)
+      },
+      winConditions,
+      tickPeriod,
+      rngSeed
+    )
+  }
 
   def localPlayers: Set[Player] = localPlayerIDs.map(Player.fromID)
   def remotePlayers: Set[Player] = remotePlayerIDs.map(Player.fromID)

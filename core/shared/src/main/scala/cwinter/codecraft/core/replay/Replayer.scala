@@ -1,7 +1,7 @@
 package cwinter.codecraft.core.replay
 
-import cwinter.codecraft.core.api.Player
-import cwinter.codecraft.core.game.{MineralSpawn, SimulationContext, Spawn, WorldMap}
+import cwinter.codecraft.core.api.{MetaController, DroneControllerBase, DroneController, Player}
+import cwinter.codecraft.core.game._
 import cwinter.codecraft.core.objects.drone.DroneCommand
 import upickle.default._
 
@@ -24,7 +24,6 @@ class Replayer(lines: Iterator[String]) {
     currRecord
   }
 
-
   // read version
   val ReplayVersion(version) = read[ReplayVersion](nextLine())
   require(version == Replay.CurrentVersion, "Incorrect replay version.")
@@ -40,19 +39,17 @@ class Replayer(lines: Iterator[String]) {
   var spawns = Seq.empty[Spawn]
   var mineralCount = 0
   nextRecord()
-  while (
-    currRecord match {
-      case SpawnRecord(spec, position, playerID, resources, name) =>
-        spawns :+= Spawn(spec, position, Player.fromID(playerID), resources, name)
-        true
-      case MineralRecord(size, position) =>
-        _startingMinerals.append(MineralSpawn(size, position))
-        mineralCount += 1
-        true
-      case _ =>
-        false
-    }
-  ) {
+  while (currRecord match {
+           case SpawnRecord(spec, position, playerID, resources, name) =>
+             spawns :+= Spawn(spec, position, Player.fromID(playerID), resources, name)
+             true
+           case MineralRecord(size, position) =>
+             _startingMinerals.append(MineralSpawn(size, position))
+             mineralCount += 1
+             true
+           case _ =>
+             false
+         }) {
     nextRecord()
   }
   val startingMinerals = _startingMinerals.toList
@@ -61,27 +58,41 @@ class Replayer(lines: Iterator[String]) {
 
   val map = WorldMap(startingMinerals, worldSize, spawns)
 
-
   private[this] var currTime: Long = 0
-  private[core] def run(timestep: Long)(
-    implicit context: SimulationContext): Unit = {
-
+  private[core] def run(timestep: Long)(implicit context: SimulationContext): Unit = {
     while (currTime <= timestep && lines.hasNext) {
       nextRecord()
       currRecord match {
         case Timestep(t) =>
           currTime = t
-        case c@Command(droneID, d) =>
+        case c @ Command(droneID, d) =>
           if (!context.droneRegistry.contains(droneID)) {
             println(s"[t=$currTime] Trying to execute $c, but drone doe not exist!")
           }
           context.drone(droneID).executeCommand(DroneCommand(d))
-        case t => throw new Exception(s"""Error while parsing replay. Expected a "Timestep" or "Command" on line $lineNumber, instead: $currLine""")
+        case t =>
+          throw new Exception(
+            s"""Error while parsing replay. Expected a "Timestep" or "Command" on line $lineNumber, instead: $currLine""")
       }
     }
   }
 
-
   def finished = !lines.hasNext
-}
 
+  def gameConfig = map.createGameConfig(
+    droneControllers = map.initialDrones.map(_ => replayDroneController()),
+    rngSeed = seed
+  )
+
+  private var metaControllerExists = false
+  private def replayDroneController() =
+    if (metaControllerExists) new DummyDroneController
+    else {
+      metaControllerExists = true
+      new DroneControllerBase { override def metaController = Some(ReplayMetaController) }
+    }
+
+  private object ReplayMetaController extends MetaController {
+    override def onTick(): Unit = run(_simulationContext.timestep)
+  }
+}

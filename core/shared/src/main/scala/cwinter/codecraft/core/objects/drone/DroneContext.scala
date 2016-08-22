@@ -2,16 +2,16 @@ package cwinter.codecraft.core.objects.drone
 
 import cwinter.codecraft.core.api.Player
 import cwinter.codecraft.core.errors.Errors
-import cwinter.codecraft.core.game.{CommandRecorder, DroneWorldSimulator, WorldConfig}
+import cwinter.codecraft.core.game.{CommandRecorder, DroneWorldSimulator, GameConfig}
 import cwinter.codecraft.core.objects.IDGenerator
 import cwinter.codecraft.core.replay.{NullReplayRecorder, ReplayRecorder}
 import cwinter.codecraft.graphics.engine.Debug
-import cwinter.codecraft.util.maths.RNG
+import cwinter.codecraft.util.maths.{Rectangle, RNG}
 
 
 private[core] case class DroneContext(
   player: Player,
-  worldConfig: WorldConfig,
+  worldSize: Rectangle,
   tickPeriod: Int,
   commandRecorder: Option[CommandRecorder],
   debugLog: Option[DroneDebugLog],

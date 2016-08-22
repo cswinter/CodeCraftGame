@@ -5,15 +5,15 @@ import cwinter.codecraft.core.ai.basicplus
 import cwinter.codecraft.core.ai.cheese.Mothership
 import cwinter.codecraft.core.game._
 import cwinter.codecraft.core.multiplayer.{WebsocketClient, WebsocketServerConnection}
-import cwinter.codecraft.core.replay.{DummyDroneController, Replayer}
+import cwinter.codecraft.core.replay.Replayer
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 
 import scala.async.Async.{async, await}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-
 private[codecraft] trait GameMasterLike {
+
   /** Default dimensions for the size of the game world. */
   final val DefaultWorldSize = Rectangle(-3000, 3000, -2000, 2000)
 
@@ -29,13 +29,19 @@ private[codecraft] trait GameMasterLike {
   final val JavascriptAPIVersion = "0.2"
 
   private final val DefaultResourceDistribution = Seq(
-      (10, 4), (10, 4),
-      (10, 6), (10, 6),
-      (10, 8), (10, 8),
-      (10, 10), (10, 10),
-      (7, 20), (7, 20),
-      (5, 30), (5, 30)
-    )
+    (10, 4),
+    (10, 4),
+    (10, 6),
+    (10, 6),
+    (10, 8),
+    (10, 8),
+    (10, 10),
+    (10, 10),
+    (7, 20),
+    (7, 20),
+    (5, 30),
+    (5, 30)
+  )
 
   private final val SmallResourceDistribution =
     for (group <- DefaultResourceDistribution.grouped(2).toSeq)
@@ -53,13 +59,11 @@ private[codecraft] trait GameMasterLike {
     shieldGenerators = 1
   )
 
-
   private def constructSpawns(pos1: Vector2, pos2: Vector2): Seq[Spawn] = {
     val spawn1 = Spawn(DefaultMothership, pos1, BluePlayer, 21)
     val spawn2 = Spawn(DefaultMothership, pos2, OrangePlayer, 21)
     Seq(spawn1, spawn2)
   }
-
 
   /** Runs the `simulator`. */
   def run(simulator: DroneWorldSimulator): DroneWorldSimulator
@@ -74,9 +78,9 @@ private[codecraft] trait GameMasterLike {
     spawn2: Vector2
   ): DroneWorldSimulator = {
     val spawns = constructSpawns(spawn1, spawn2)
-    val map = WorldMap(worldSize, resourceClusters, spawns).withDefaultWinConditions
-    val controllers = Seq(mothership1, mothership2)
-    new DroneWorldSimulator(map, controllers, devEvents)
+    val map = WorldMap(worldSize, resourceClusters, spawns)
+    val gameConfig = map.createGameConfig(Seq(mothership1, mothership2))
+    new DroneWorldSimulator(gameConfig)
   }
 
   /** Creates a new [[cwinter.codecraft.core.game.DroneWorldSimulator]] for a singleplayer game with the specified settings. */
@@ -84,39 +88,35 @@ private[codecraft] trait GameMasterLike {
     mothership1: DroneControllerBase,
     mothership2: DroneControllerBase,
     map: WorldMap
-  ): DroneWorldSimulator = {
-    val controllers = Seq(mothership1, mothership2)
-    new DroneWorldSimulator(map, controllers, devEvents)
-  }
+  ): DroneWorldSimulator = new DroneWorldSimulator(map.createGameConfig(Seq(mothership1, mothership2)))
 
   /** Creates a new drone world simulator from a replay string. */
   def createReplaySimulator(replayText: String): DroneWorldSimulator = {
     val replayer = new Replayer(replayText.lines)
-    new DroneWorldSimulator(replayer.map, replayer.controllers, devEvents, Some(replayer))
+    new DroneWorldSimulator(replayer.gameConfig)
   }
 
-
   /** Starts a new game with two players.
- *
+    *
     * @param mothership1 The controller for the initial mothership of player 1.
     * @param mothership2 The controller for the initial mothership of player 2.
     */
-  @deprecated("This method has been renamed to `runGame` and will be removed in a future version.", "0.2.4.3")
+  @deprecated("This method has been renamed to `runGame` and will be removed in a future version.",
+              "0.2.4.3")
   def startGame(mothership1: DroneControllerBase, mothership2: DroneControllerBase): DroneWorldSimulator =
     runGame(mothership1, mothership2)
 
   /** Runs a game with default settings.
- *
+    *
     * @param mothership1 The drone controller for player 1.
     * @param mothership2 The drone controller for player 2.
     */
   def runGame(mothership1: DroneControllerBase, mothership2: DroneControllerBase): DroneWorldSimulator = {
     val controllers = Seq(mothership1, mothership2)
-    val simulator = new DroneWorldSimulator(defaultMap, controllers, devEvents)
+    val simulator = new DroneWorldSimulator(defaultMap.createGameConfig(controllers))
     run(simulator)
     simulator
   }
-
 
   /** Returns a drone controller for the level 1 AI. */
   def level1AI(): DroneControllerBase = new ai.basic.Mothership
@@ -140,7 +140,9 @@ private[codecraft] trait GameMasterLike {
   def level7AI(): DroneControllerBase = replicatorAI()
 
   /** Returns a drone controller for the Replicator AI. */
-  def replicatorAI(greedy: Boolean = false, confident: Boolean = false, aggressive: Boolean = false): DroneControllerBase =
+  def replicatorAI(greedy: Boolean = false,
+                   confident: Boolean = false,
+                   aggressive: Boolean = false): DroneControllerBase =
     new ai.replicator.Replicator(greedy, confident, aggressive)
 
   /** Returns a drone controller for the Destroyer AI. */
@@ -149,26 +151,26 @@ private[codecraft] trait GameMasterLike {
   /** The default [[cwinter.codecraft.core.game.WorldMap]]. */
   val defaultMap: WorldMap = {
     val spawns = constructSpawns(Vector2(2500, 500), Vector2(-2500, -500))
-    WorldMap(DefaultWorldSize, DefaultResourceDistribution, spawns).withDefaultWinConditions
+    WorldMap(DefaultWorldSize, DefaultResourceDistribution, spawns)
   }
 
   /** A small [[cwinter.codecraft.core.game.WorldMap]]. */
   val smallMap: WorldMap = {
     val spawns = constructSpawns(Vector2(1650, 500), Vector2(-1650, -500))
-    WorldMap(SmallWorldSize, SmallResourceDistribution, spawns).withDefaultWinConditions
+    WorldMap(SmallWorldSize, SmallResourceDistribution, spawns)
   }
 
   /** A large [[cwinter.codecraft.core.game.WorldMap]]. */
   val largeMap: WorldMap = {
     val spawns = constructSpawns(Vector2(3800, 1000), Vector2(-3800, -1000))
-    WorldMap(LargeWorldSize, LargeResourceDistribution, spawns).withDefaultWinConditions
+    WorldMap(LargeWorldSize, LargeResourceDistribution, spawns)
   }
 
   /** The [[cwinter.codecraft.core.game.WorldMap]] for the first level. */
   val level1Map: WorldMap = {
     val worldSize = Rectangle(-2000, 2000, -1000, 1000)
     val spawns = constructSpawns(Vector2(1000, 200), Vector2(-1000, -200))
-    WorldMap(worldSize, Seq.fill(8)((2, 40)), spawns).withDefaultWinConditions
+    WorldMap(worldSize, Seq.fill(8)((2, 40)), spawns)
   }
 
   /** The [[cwinter.codecraft.core.game.WorldMap]] for the second level. */
@@ -178,103 +180,79 @@ private[codecraft] trait GameMasterLike {
   val bonusLevelMap: WorldMap = defaultMap
 
   /** Runs the first level.
- *
+    *
     * @param mothership1 The controller for your mothership.
     */
   def runLevel1(mothership1: DroneControllerBase): DroneWorldSimulator = {
     val map = level1Map
     val controllers = Seq(mothership1, level1AI())
-    val simulator = new DroneWorldSimulator(map, controllers, devEvents)
+    val simulator = new DroneWorldSimulator(map.createGameConfig(controllers))
     run(simulator)
     simulator
   }
 
   /** Runs the second level.
- *
+    *
     * @param mothership The controller for your mothership.
     */
   def runLevel2(mothership: DroneControllerBase) = runGame(mothership, level2AI())
 
   /** Runs the third level.
- *
+    *
     * @param mothership The controller for your mothership.
     */
   def runLevel3(mothership: DroneControllerBase) = runGame(mothership, bonusLevelAI())
 
   /** Runs the fourth level.
- *
+    *
     * @param mothership The controller for your mothership.
     */
   def runLevel4(mothership: DroneControllerBase) = runGame(mothership, level4AI())
 
   /** Runs the fifth level.
- *
+    *
     * @param mothership The controller for your mothership.
     */
   def runLevel5(mothership: DroneControllerBase) = runGame(mothership, level5AI())
 
   /** Runs the sixth level.
- *
+    *
     * @param mothership The controller for your mothership.
     */
   def runLevel6(mothership: DroneControllerBase) = runGame(mothership, level6AI())
 
   /** Runs the seventh level.
- *
+    *
     * @param mothership The controller for your mothership.
     */
   def runLevel7(mothership: DroneControllerBase) = runGame(mothership, level7AI())
 
   /** Runs a game with the level 1 AI versus the level 2 AI. */
-  def runL1vL2(): DroneWorldSimulator = {
-    runGame(new ai.basic.Mothership, new Mothership)
-  }
+  def runL1vL2(): DroneWorldSimulator = runGame(new ai.basic.Mothership, new Mothership)
 
   /** Runs a game with the level 3 AI versus the level 3 AI. */
-  def runL3vL3(): DroneWorldSimulator = {
-    runGame(new ai.basicplus.Mothership, new ai.basicplus.Mothership)
-  }
+  def runL3vL3(): DroneWorldSimulator = runGame(new ai.basicplus.Mothership, new ai.basicplus.Mothership)
 
   /** Sets up a multiplayer game with the specified server. */
   def prepareMultiplayerGame(
     serverAddress: String,
     controller: DroneControllerBase
-  ): Future[DroneWorldSimulator] =  async {
-    val (map, connection) = await { prepareMultiplayerGame(serverAddress) }
-
-    assert(map.initialDrones.count(d => connection.isLocalPlayer(d.player)) == 1,
-      "Must have one drone owned by local player.")
-
-    new DroneWorldSimulator(
-      map,
-      map.initialDrones.map(drone =>
-        if (connection.isLocalPlayer(drone.player)) controller
-        else new DummyDroneController
-      ),
-      t => Seq.empty,
-      None,
-      connection
-    )
-  }
-
-  /** Sets up a multiplayer game. */
-  def prepareMultiplayerGame(serverAddress: String): Future[(WorldMap, MultiplayerConfig)] = async {
+  ): Future[DroneWorldSimulator] = async {
     val websocketClient = connectToWebsocket(s"ws://$serverAddress:8080")
     val serverConnection = new WebsocketServerConnection(websocketClient)
     val sync = await { serverConnection.receiveInitialWorldState() }
 
     val clientPlayers = sync.localPlayers
     val serverPlayers = sync.remotePlayers
-    val map = sync.worldMap
+    val gameConfig = sync.gameConfig(Seq(controller))
     val connection = MultiplayerClientConfig(clientPlayers, serverPlayers, serverConnection)
-    (map, connection)
+    assert(gameConfig.drones.count { case (d, _) => connection.isLocalPlayer(d.player) } == 1,
+           "Must have one drone owned by local player.")
+    new DroneWorldSimulator(
+      config = gameConfig,
+      multiplayerConfig = connection
+    )
   }
 
   protected def connectToWebsocket(connectionString: String): WebsocketClient
-
-  protected var devEvents: Int => Seq[SimulatorEvent] = t => Seq()
-  protected[codecraft] def setDevEvents(generator: Int => Seq[SimulatorEvent]): Unit = {
-    devEvents = generator
-  }
 }
-

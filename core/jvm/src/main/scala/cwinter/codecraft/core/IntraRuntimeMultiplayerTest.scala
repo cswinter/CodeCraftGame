@@ -5,27 +5,27 @@ import cwinter.codecraft.core.game.{MultiplayerClientConfig, AuthoritativeServer
 import cwinter.codecraft.core.multiplayer.{LocalServerConnection, LocalClientConnection, LocalConnection}
 import cwinter.codecraft.core.replay.DummyDroneController
 
-
 private[codecraft] object IntraRuntimeMultiplayerTest {
   def main(args: Array[String]): Unit = {
     val clientPlayers = Set[Player](BluePlayer)
     val serverPlayers = Set[Player](OrangePlayer)
-    val map = TheGameMaster.defaultMap
     val connection = new LocalConnection(Set(0))
     val clientConnection0 = new LocalClientConnection(0, connection, clientPlayers)
     val serverConnection = new LocalServerConnection(0, connection)
     val server = new DroneWorldSimulator(
-      map,
-      Seq(new DummyDroneController, TheGameMaster.level1AI()),
+      TheGameMaster.defaultMap.createGameConfig(
+        droneControllers = Seq(new DummyDroneController, TheGameMaster.level1AI()),
+        tickPeriod = 10
+      ),
       t => Seq.empty,
-      None,
       AuthoritativeServerConfig(serverPlayers, clientPlayers, Set(clientConnection0), s => (), s => ())
     )
     val client = new DroneWorldSimulator(
-      map,
-      Seq(TheGameMaster.level2AI(), new DummyDroneController),
+      TheGameMaster.defaultMap.createGameConfig(
+        droneControllers = Seq(TheGameMaster.level2AI(), new DummyDroneController),
+        tickPeriod = 10
+      ),
       t => Seq.empty,
-      None,
       MultiplayerClientConfig(clientPlayers, serverPlayers, serverConnection)
     )
     val displayClient = true
@@ -38,4 +38,3 @@ private[codecraft] object IntraRuntimeMultiplayerTest {
     }
   }
 }
-

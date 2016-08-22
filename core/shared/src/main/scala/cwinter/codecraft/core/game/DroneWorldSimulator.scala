@@ -25,39 +25,29 @@ import scala.scalajs.js.annotation.JSExport
 
 /** Aggregates all datastructures required to run a game and implements the game loop.
   *
-  * @param map Describes the initial state of the game world.
-  * @param controllers The controllers for the initial drones.
+  * @param config Describes the initial state of the game world.
   * @param eventGenerator Allows for triggering custom events.
-  * @param replayer If set to `Some(r)`, the Simulator will replay the events recorded by `r`.
+  * @param multiplayerConfig Additional configuration for multiplayer games.
+  * @param forceReplayRecorder If set to `Some(r)`, the Simulator will replay the events recorded by `r`.
+  * @param settings Additional settings that don't affect gameplay.
   */
 class DroneWorldSimulator(
-  val map: WorldMap,
-  controllers: Seq[DroneControllerBase],
-  eventGenerator: Int => Seq[SimulatorEvent],
-  replayer: Option[Replayer] = None,
+  config: GameConfig,
+  eventGenerator: Int => Seq[SimulatorEvent] = t => Seq.empty,
   multiplayerConfig: MultiplayerConfig = SingleplayerConfig,
   forceReplayRecorder: Option[ReplayRecorder] = None,
-  val settings: Settings = Settings.default,
-  private var rngSeed: Int = GlobalRNG.seed
+  val settings: Settings = Settings.default
 ) extends Simulator {
   outer =>
   private final val MaxDroneRadius = 60
-  final val TickPeriod = 10
 
   private val replayRecorder: ReplayRecorder =
     if (forceReplayRecorder.nonEmpty) forceReplayRecorder.get
-    else if (replayer.isEmpty && settings.recordReplays) ReplayFactory.replayRecorder
+    else if (settings.recordReplays) ReplayFactory.replayRecorder
     else NullReplayRecorder
 
-  replayer.foreach { r =>
-    GlobalRNG.seed = r.seed
-    rngSeed = r.seed
-  }
-
   val monitor: PerformanceMonitor = PerformanceMonitorFactory.performanceMonitor
-  private val metaControllers =
-    for (c <- controllers; mc <- c.metaController) yield mc
-  private val worldConfig = WorldConfig(map.size)
+  private val metaControllers = for ((_, c) <- config.drones; mc <- c.metaController) yield mc
   private val visibleObjects = collection.mutable.Set.empty[WorldObject]
   private val dynamicObjects = collection.mutable.Set.empty[WorldObject]
   private val dronesSorted = collection.mutable.TreeSet.empty[DroneImpl](DroneOrdering)
@@ -70,7 +60,7 @@ class DroneWorldSimulator(
   private var unsyncedDroneSpawns = List.empty[DroneImpl]
   private var newlySpawnedDrones = List.empty[DroneImpl]
   private var _winner = Option.empty[Player]
-  private val rng = new RNG(rngSeed)
+  private val rng = new RNG(config.rngSeed)
   private final val debugMode = false
   private val errors = new Errors(debug)
   private[codecraft] val debugLog =
@@ -80,21 +70,21 @@ class DroneWorldSimulator(
   def winner = _winner
 
   private val visionTracker = new VisionTracker[WorldObject with VisionTracking](
-    map.size.xMin.toInt, map.size.xMax.toInt,
-    map.size.yMin.toInt, map.size.yMax.toInt,
+    config.worldSize.xMin.toInt, config.worldSize.xMax.toInt,
+    config.worldSize.yMin.toInt, config.worldSize.yMax.toInt,
     GameConstants.DroneVisionRange
   )
 
   private val physicsEngine = new PhysicsEngine[ConstantVelocityDynamics](
-    map.size, MaxDroneRadius
+    config.worldSize, MaxDroneRadius
   )
 
   private val contextForPlayer: Map[Player, DroneContext] = {
     for (player <- players)
       yield player -> DroneContext(
         player,
-        worldConfig,
-        TickPeriod,
+        config.worldSize,
+        config.tickPeriod,
         if (shouldRecordCommands(player)) Some(multiplayerConfig.commandRecorder) else None,
         debugLog,
         new IDGenerator(player.id),
@@ -108,22 +98,23 @@ class DroneWorldSimulator(
       )
   }.toMap
 
-  val worldBoundaries = ModelDescriptor(NullPositionDescriptor, RectangleModelBuilder(map.size))
+  val worldBoundaries = ModelDescriptor(NullPositionDescriptor, RectangleModelBuilder(config.worldSize))
 
 
-  replayRecorder.recordInitialWorldState(map, rngSeed)
+  replayRecorder.recordInitialWorldState(config)
 
-  private[codecraft] val minerals = map.instantiateMinerals()
+  private[codecraft] val minerals = config.instantiateMinerals()
   implicit private val mineralRegistry = minerals.map(m => (m.id, m)).toMap
   minerals.foreach(spawnMineral)
   for {
-    (Spawn(spec, position, player, resources, name), controller) <- map.initialDrones zip controllers
+    (Spawn(spec, position, player, resources, name), controller) <- config.drones
     drone = createDrone(spec, controller, player, position, resources)
   } spawnDrone(drone)
 
   for (mc <- metaControllers) {
-    mc._tickPeriod = TickPeriod
-    mc._worldSize = map.size
+    mc._tickPeriod = config.tickPeriod
+    mc._worldSize = config.worldSize
+    mc._simulationContext = simulationContext
     mc.init()
   }
 
@@ -153,8 +144,7 @@ class DroneWorldSimulator(
 
   private def runDroneControllers = Local('RunDroneControllers) {
     replayRecorder.newTimestep(timestep)
-    for (r <- replayer) r.run(timestep)
-    for (mc <- metaControllers) mc.onTick()
+    for (mc <- metaControllers) mc.onTick(simulationContext)
     for (drone <- deadDrones) drone.processEvents()
     for (drone <- newlySpawnedDrones) drone.controller.onSpawn()
     for (drone <- drones) drone.processEvents()
@@ -185,7 +175,7 @@ class DroneWorldSimulator(
   private def checkWinConditions = Local('CheckWinConditions) {
     if (winner.isEmpty) {
       for (
-        wc <- map.winConditions.reverse;
+        wc <- config.winConditions.reverse;
         player <- players
         if playerHasWon(wc, player)
       ) _winner = Some(player)
@@ -310,7 +300,7 @@ class DroneWorldSimulator(
 
     for (state <- stateChanges) simulationContext.drone(state.droneID).applyState(state)
 
-    if (multiplayerConfig.isInstanceOf[MultiplayerClientConfig] && TickPeriod > 1)
+    if (multiplayerConfig.isInstanceOf[MultiplayerClientConfig] && config.tickPeriod > 1)
       correctSpeculativePositions()
   }
 
@@ -345,7 +335,7 @@ class DroneWorldSimulator(
 
   @JSExport
   val namedDrones = (
-    for ((Spawn(_, _, player, _, Some(name)), controller) <- map.initialDrones zip controllers)
+    for ((Spawn(_, _, player, _, Some(name)), controller) <- config.drones)
       yield (
         name,
         if (player == BluePlayer) controller
@@ -429,7 +419,7 @@ class DroneWorldSimulator(
       drone.controller.onConstructionCancelled()
     case SpawnHomingMissile(player, position, missileID, target) =>
       // TODO: remove this check once boundary collisions are done properly
-      if (map.size.contains(position)) {
+      if (config.worldSize.contains(position)) {
         val newMissile = new HomingMissile(player, position, missileID, physicsEngine.time, target)
         spawnMissile(newMissile)
       }
@@ -461,7 +451,7 @@ class DroneWorldSimulator(
       dynamicObjects.remove(energyGlobeObject)
   }
 
-  private def players = map.initialDrones.map(_.player)
+  private def players = config.drones.map(_._1.player)
 
 
   private[codecraft] override def computeWorldState: Iterable[ModelDescriptor[_]] = {
@@ -498,7 +488,8 @@ class DroneWorldSimulator(
   def replayString: Option[String] = replayRecorder.replayString
 
   override def initialCameraPos: Vector2 =
-    map.initialDrones
+    config.drones
+      .map(_._1)
       .find(d => multiplayerConfig.isLocalPlayer(d.player))
       .map(_.position)
       .getOrElse(Vector2.Null)
@@ -658,11 +649,11 @@ class DroneWorldSimulator(
   }
 
   private object OnTick extends RunOnCondition {
-    override def shouldRun: Boolean = timestep % TickPeriod == 0
+    override def shouldRun: Boolean = timestep % config.tickPeriod == 0
   }
 
   private object BeforeTick extends RunOnCondition {
-    override def shouldRun: Boolean = timestep % TickPeriod == TickPeriod - 1
+    override def shouldRun: Boolean = (timestep + 1) % config.tickPeriod == 0
   }
 
 
@@ -725,6 +716,8 @@ class DroneWorldSimulator(
     case SingleplayerConfig => super.togglePause()
     case _ =>
   }
+
+  def tickPeriod = config.tickPeriod
 }
 
 private[codecraft] object DroneWorldSimulator {

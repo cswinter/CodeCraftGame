@@ -11,7 +11,7 @@ object Dependencies {
   val sprayWebsocket = "com.wandoulabs.akka" %% "spray-websocket" % "0.1.4"
   val akka = "com.typesafe.akka" %% "akka-actor" % "2.3.13"
   val javaxWebsocket = "javax.websocket" % "javax.websocket-client-api" % "1.1"
-  val javaxWebsocketImpl = "org.glassfish.tyrus" % "tyrus-container-grizzly-client" % "1.12"
+  val javaxWebsocketImpl = "org.glassfish.tyrus" % "tyrus-container-grizzly-client" % "1.13"
   val jetm = "fm.void.jetm" % "jetm" % "1.2.3"
 
 

@@ -205,7 +205,7 @@ trait DroneControllerBase extends Drone {
   @inline private[core] final def enemiesInSightScala: Set[Drone] = drone.enemiesInSight
 
   /** Returns the confines of the game world. */
-  def worldSize: Rectangle = drone.context.worldConfig.size
+  def worldSize: Rectangle = drone.context.worldSize
 
   /** Indicates how many simulation steps pass in between calls to event methods.
     *

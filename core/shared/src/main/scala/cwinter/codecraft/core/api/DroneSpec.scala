@@ -97,7 +97,7 @@ case class DroneSpec(
     def speculative = new SpeculatingDroneDynamics(remote, computed)
 
     if (owner.context.isLocallyComputed) computed
-    else if (owner.context.simulator.TickPeriod > 1) speculative
+    else if (owner.context.tickPeriod > 1) speculative
     else remote
   }
 

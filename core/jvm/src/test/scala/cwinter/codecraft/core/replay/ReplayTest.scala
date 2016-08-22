@@ -5,15 +5,13 @@ import cwinter.codecraft.core.api.TheGameMaster
 import cwinter.codecraft.core.game.DroneWorldSimulator
 import org.scalatest.FlatSpec
 
-
 class ReplayTest extends FlatSpec {
   "A replayer" should "work" in {
     val timesteps = 5000
     val recorder = new StringReplayRecorder
     val simulator = new DroneWorldSimulator(
-      TheGameMaster.defaultMap,
-      Seq(TheGameMaster.replicatorAI(), TheGameMaster.destroyerAI()),
-      t => Seq.empty,
+      TheGameMaster.defaultMap.createGameConfig(
+        Seq(TheGameMaster.replicatorAI(), TheGameMaster.destroyerAI())),
       forceReplayRecorder = Some(recorder)
     )
     val canonical = TestUtils.runAndRecord(simulator, timesteps)
@@ -24,4 +22,3 @@ class ReplayTest extends FlatSpec {
     TestUtils.assertEqual(canonical, fromReplay, recorder.replayString.get)
   }
 }
-

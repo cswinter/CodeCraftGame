@@ -15,12 +15,12 @@ object TestUtils extends Matchers {
   type GameRecord = IndexedSeq[Snapshot]
 
 
-  def runAndRecord(droneWorldSimulator: DroneWorldSimulator, timesteps: Int): GameRecord = {
+  def runAndRecord(simulator: DroneWorldSimulator, timesteps: Int): GameRecord = {
     val snapshots = ArrayBuffer.empty[Set[ModelDescriptor[_]]]
 
-    droneWorldSimulator.run(1)
-    for (i <- 0 to timesteps / droneWorldSimulator.TickPeriod) {
-      val snapshot = runSinglePeriod(droneWorldSimulator)
+    simulator.run(1)
+    for (i <- 0 to timesteps / simulator.tickPeriod) {
+      val snapshot = runSinglePeriod(simulator)
       snapshots.append(snapshot)
     }
 
@@ -30,10 +30,10 @@ object TestUtils extends Matchers {
   def runAndCompare(simulator1: DroneWorldSimulator,
                     simulator2: DroneWorldSimulator,
                     timesteps: Int): Unit = {
-    assert(simulator1.TickPeriod === simulator2.TickPeriod)
+    assert(simulator1.tickPeriod === simulator2.tickPeriod)
     simulator1.run(1)
     simulator2.run(1)
-    for (t <- 0 to timesteps / simulator1.TickPeriod) {
+    for (t <- 0 to timesteps / simulator1.tickPeriod) {
       val snapshot1 = runSinglePeriod(simulator1)
       val snapshot2 = runSinglePeriod(simulator2)
       if (snapshot1 != snapshot2) {
@@ -44,8 +44,8 @@ object TestUtils extends Matchers {
   }
 
   private def runSinglePeriod(simulator: DroneWorldSimulator): Snapshot = {
-    simulator.run(simulator.TickPeriod)
-    assert(simulator.timestep % simulator.TickPeriod === 0)
+    simulator.run(simulator.tickPeriod)
+    assert(simulator.timestep % simulator.tickPeriod === 0)
     simulator.worldState.filter(_.objectDescriptor.isInstanceOf[DroneModel]).toSet
   }
 
