@@ -51,10 +51,7 @@ object Server {
 
   object Stop
   object GetStatus
-  case class Status(
-    clientWaiting: Boolean,
-    runningGames: Int
-  )
+  object GetDetailedStatus
 }
 
 
@@ -94,12 +91,13 @@ private[codecraft] class MultiplayerServer(
   val displayGame: Boolean = false,
   val maxGames: Int = 10
 ) extends Actor with ActorLogging {
-  import Server.{GetStatus, Status, Stop}
+  import Server._
   val tickPeriod = 10
 
   private var waitingClient = Option.empty[Connection]
   private var connectionInfo = Map.empty[ActorRef, Connection]
   private var runningGames = Map.empty[DroneWorldSimulator, Seq[Connection]]
+  private var completedGames = List.empty[GameStatus]
 
   case class Connection(
     rawConnection: ActorRef,
@@ -146,6 +144,11 @@ private[codecraft] class MultiplayerServer(
         stopGame(simulator, GameClosed.Timeout)
     case GetStatus =>
       sender() ! Status(waitingClient.nonEmpty, runningGames.size)
+    case GetDetailedStatus =>
+      val gameDetails =
+        for ((sim, clients) <- runningGames)
+          yield GameStatus(None, sim.measuredFramerate, sim.timestep)
+      sender() ! DetailedStatus(waitingClient.nonEmpty, gameDetails.toSeq ++ completedGames)
     case Stop =>
       for (simulator <- runningGames.keys)
         stopGame(simulator, GameClosed.ServerStopped)
@@ -198,6 +201,7 @@ private[codecraft] class MultiplayerServer(
 
   private def stopGame(simulator: DroneWorldSimulator, reason: GameClosed.Reason): Unit = {
     simulator.terminate()
+    completedGames ::= GameStatus(Some(reason.toString), simulator.measuredFramerate, simulator.timestep)
     runningGames.get(simulator) match {
       case Some(clients) =>
         runningGames -= simulator

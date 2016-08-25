@@ -237,21 +237,28 @@ private[codecraft] trait GameMasterLike {
   def prepareMultiplayerGame(
     serverAddress: String,
     controller: DroneControllerBase
-  ): Future[DroneWorldSimulator] = async {
+  ): Future[DroneWorldSimulator] = prepareMultiplayerGame(serverAddress).map(_(controller))
+
+  /** Sets up a multiplayer game with the specified server. */
+  def prepareMultiplayerGame(
+    serverAddress: String
+  ): Future[DroneControllerBase => DroneWorldSimulator] = async {
     val websocketClient = connectToWebsocket(s"ws://$serverAddress:8080")
     val serverConnection = new WebsocketServerConnection(websocketClient)
     val sync = await { serverConnection.receiveInitialWorldState() }
 
-    val clientPlayers = sync.localPlayers
-    val serverPlayers = sync.remotePlayers
-    val gameConfig = sync.gameConfig(Seq(controller))
-    val connection = MultiplayerClientConfig(clientPlayers, serverPlayers, serverConnection)
-    assert(gameConfig.drones.count { case (d, _) => connection.isLocalPlayer(d.player) } == 1,
-           "Must have one drone owned by local player.")
-    new DroneWorldSimulator(
-      config = gameConfig,
-      multiplayerConfig = connection
-    )
+    (controller: DroneControllerBase) => {
+      val clientPlayers = sync.localPlayers
+      val serverPlayers = sync.remotePlayers
+      val gameConfig = sync.gameConfig(Seq(controller))
+      val connection = MultiplayerClientConfig(clientPlayers, serverPlayers, serverConnection)
+      assert(gameConfig.drones.count { case (d, _) => connection.isLocalPlayer(d.player) } == 1,
+        "Must have one drone owned by local player.")
+      new DroneWorldSimulator(
+        config = gameConfig,
+        multiplayerConfig = connection
+      )
+    }
   }
 
   protected def connectToWebsocket(connectionString: String): WebsocketClient
