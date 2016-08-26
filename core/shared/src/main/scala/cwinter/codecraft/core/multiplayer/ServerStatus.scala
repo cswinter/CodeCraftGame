@@ -8,6 +8,7 @@ case class Status(
 
 case class DetailedStatus(
   clientWaiting: Boolean,
+  connections: Int,
   games: Seq[GameStatus]
 )
 

@@ -13,15 +13,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-
 object Server {
-  def spawnServerInstance(seed: Option[Int] = None, displayGame: Boolean = false): Unit = {
-    implicit val system = ActorSystem()
-    val server = system.actorOf(SinglePlayerMultiplayerServer.props(seed, displayGame), "websocket")
-    IO(UHttp) ! Http.Bind(server, "0.0.0.0", 8080)
-    system.awaitTermination()
-  }
-
   def spawnServerInstance2(
     seed: Int = scala.util.Random.nextInt,
     map: WorldMap = TheGameMaster.defaultMap,
@@ -39,50 +31,20 @@ object Server {
     maxGames: Int = 10
   ): ActorRef = {
     implicit val system = ActorSystem()
-    val server = system.actorOf(Props(classOf[MultiplayerServer], seed, map, displayGame, maxGames), "websocket")
+    val server =
+      system.actorOf(Props(classOf[MultiplayerServer], seed, map, displayGame, maxGames), "websocket")
     IO(UHttp) ! Http.Bind(server, "0.0.0.0", 8080)
     server
   }
 
   def main(args: Array[String]): Unit = {
-    spawnServerInstance(displayGame = false)
+    spawnServerInstance2(displayGame = false)
   }
-
 
   object Stop
   object GetStatus
   object GetDetailedStatus
-}
-
-
-private[codecraft] class SinglePlayerMultiplayerServer(seed: Option[Int], displayGame: Boolean = false) extends Actor with ActorLogging {
-  val map = TheGameMaster.defaultMap
-  val clientPlayers = Set[Player](BluePlayer)
-  val serverPlayers = Set[Player](OrangePlayer)
-
-
-  def receive = {
-    // when a new connection comes in we register a WebSocketConnection actor as the per connection handler
-    case Http.Connected(remoteAddress, localAddress) =>
-      val serverConnection = sender()
-      val rngSeed = this.seed.getOrElse(scala.util.Random.nextInt)
-      val worker = new WebsocketClientConnection(clientPlayers, map, rngSeed, 10, WinCondition.default)
-      val conn = context.actorOf(WebsocketActor.props(serverConnection, worker))
-
-      val server = new DroneWorldSimulator(
-        map.createGameConfig(Seq(new DummyDroneController, TheGameMaster.destroyerAI()), rngSeed = rngSeed),
-        multiplayerConfig = AuthoritativeServerConfig(serverPlayers, clientPlayers, Set(worker), s => (), s => ())
-      )
-      server.framerateTarget = 1001
-
-      serverConnection ! Http.Register(conn)
-
-      if (displayGame) {
-        TheGameMaster.run(server)
-      } else {
-        server.run()
-      }
-  }
+  case class MatchmakingRequest(client: WebsocketClientConnection)
 }
 
 private[codecraft] class MultiplayerServer(
@@ -90,7 +52,8 @@ private[codecraft] class MultiplayerServer(
   val map: WorldMap = TheGameMaster.defaultMap,
   val displayGame: Boolean = false,
   val maxGames: Int = 10
-) extends Actor with ActorLogging {
+) extends Actor
+    with ActorLogging {
   import Server._
   val tickPeriod = 10
 
@@ -109,20 +72,12 @@ private[codecraft] class MultiplayerServer(
 
   case class GameTimedOut(simulator: DroneWorldSimulator)
 
-
   def receive = {
-    case m@Http.Connected(remoteAddress, localAddress) =>
+    case m @ Http.Connected(remoteAddress, localAddress) =>
       val serverConnection = sender()
       if (runningGames.size < maxGames) {
         val connection = acceptConnection(serverConnection)
         connectionInfo += connection.websocketActor -> connection
-        waitingClient match {
-          case None =>
-            waitingClient = Some(connection)
-          case Some(c) =>
-            startGame(connection, c)
-            waitingClient = None
-        }
       } else {
         // FIXME: Connection is automatically closed after 1 second since we don't register it.
         // Instead, we should give something like a "ServerFull" reply and then close the connection immediately.
@@ -148,24 +103,35 @@ private[codecraft] class MultiplayerServer(
       val gameDetails =
         for ((sim, clients) <- runningGames)
           yield GameStatus(None, sim.measuredFramerate, sim.timestep)
-      sender() ! DetailedStatus(waitingClient.nonEmpty, gameDetails.toSeq ++ completedGames)
+      sender() ! DetailedStatus(waitingClient.nonEmpty,
+                                connectionInfo.size,
+                                gameDetails.toSeq ++ completedGames)
     case Stop =>
       for (simulator <- runningGames.keys)
         stopGame(simulator, GameClosed.ServerStopped)
       context.stop(self)
+    case MatchmakingRequest(client) =>
+      val connection = connectionInfo.valuesIterator.find(_.worker == client).get
+      waitingClient match {
+        case None => waitingClient = Some(connection)
+        case Some(c) =>
+          startGame(connection, c)
+          waitingClient = None
+      }
   }
 
   private def acceptConnection(rawConnection: ActorRef): Connection = {
-    val worker = new WebsocketClientConnection(nextPlayer, map, nextRNGSeed, tickPeriod, WinCondition.default)
+    val worker = new WebsocketClientConnection(self)
     val websocketActor = context.actorOf(WebsocketActor.props(rawConnection, worker))
     rawConnection ! Http.Register(websocketActor)
     context.watch(websocketActor)
     Connection(rawConnection, websocketActor, worker)
   }
 
-  private def nextPlayer: Set[Player] = if (waitingClient.isEmpty) Set(BluePlayer) else Set(OrangePlayer)
-
   private def startGame(connections: Connection*): Unit = {
+    connections.zip(Seq(BluePlayer, OrangePlayer)).foreach { case (connection, player) =>
+      connection.worker.initialise(Set(player), map, nextRNGSeed, tickPeriod, WinCondition.default)
+    }
     val clients = connections.map(_.worker.asInstanceOf[RemoteClient]).toSet
     val simulator = new DroneWorldSimulator(
       map.createGameConfig(
@@ -206,19 +172,14 @@ private[codecraft] class MultiplayerServer(
       case Some(clients) =>
         runningGames -= simulator
         for (Connection(rawConnection, websocketActor, worker) <- clients) {
+          connectionInfo -= websocketActor
           context.unwatch(websocketActor)
           worker.close(reason)
           context.system.scheduler.scheduleOnce(15 seconds, new Runnable {
-            override def run(): Unit =  context.stop(rawConnection)
+            override def run(): Unit = context.stop(rawConnection)
           })
         }
       case None =>
     }
   }
 }
-
-
-private[codecraft] object SinglePlayerMultiplayerServer {
-  def props(seed: Option[Int], displayGame: Boolean = false) = Props(classOf[SinglePlayerMultiplayerServer], seed, displayGame)
-}
-

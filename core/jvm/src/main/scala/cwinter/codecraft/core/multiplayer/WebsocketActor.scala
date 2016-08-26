@@ -11,7 +11,6 @@ import spray.http.HttpRequest
 
 import scala.language.postfixOps
 
-
 private[core] trait WebsocketWorker {
   private[this] var websocketActor: Option[ActorRef] = None
 
@@ -23,22 +22,15 @@ private[core] trait WebsocketWorker {
     websocketActor = Some(actorRef)
   }
 
-  /*def send(message: String): Unit = websocketActor match {
-    case Some(actor) => actor ! WebsocketActor.Send(message)
-    case None => throw new Exception(
-      "WebsocketWorker must be installed with a RemoteWebsocketClient before calling send.")
-  }*/
-
   def send(message: ByteBuffer): Unit = websocketActor match {
     case Some(actor) => actor ! WebsocketActor.Send(message)
-    case None => throw new Exception(
-      "WebsocketWorker must be installed with a RemoteWebsocketClient before calling send.")
+    case None =>
+      throw new Exception(
+        "WebsocketWorker must be installed with a RemoteWebsocketClient before calling send.")
   }
 
   def closeConnection(): Unit = websocketActor.foreach(_ ! WebsocketActor.Close)
 }
-
-
 
 private[core] class WebsocketActor(
   val serverConnection: ActorRef,
@@ -75,4 +67,3 @@ private[core] object WebsocketActor {
   case class Send(message: ByteBuffer)
   case object Close
 }
-
