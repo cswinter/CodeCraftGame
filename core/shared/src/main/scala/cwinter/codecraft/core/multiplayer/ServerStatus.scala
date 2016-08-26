@@ -9,12 +9,14 @@ case class Status(
 case class DetailedStatus(
   clientWaiting: Boolean,
   connections: Int,
-  games: Seq[GameStatus]
+  games: Seq[GameStatus],
+  timestamp: Long
 )
 
 case class GameStatus(
   closeReason: Option[String],
   fps: Int,
-  timestep: Long
+  timestep: Long,
+  startTimestamp: Long
 )
 

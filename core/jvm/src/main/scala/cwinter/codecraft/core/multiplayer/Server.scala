@@ -6,6 +6,7 @@ import cwinter.codecraft.core.api.{BluePlayer, OrangePlayer, Player, TheGameMast
 import cwinter.codecraft.core.game.{WinCondition, AuthoritativeServerConfig, DroneWorldSimulator, WorldMap}
 import cwinter.codecraft.core.objects.drone.GameClosed
 import cwinter.codecraft.core.replay.DummyDroneController
+import org.joda.time.DateTime
 import spray.can.Http
 import spray.can.server.UHttp
 
@@ -59,7 +60,7 @@ private[codecraft] class MultiplayerServer(
 
   private var waitingClient = Option.empty[Connection]
   private var connectionInfo = Map.empty[ActorRef, Connection]
-  private var runningGames = Map.empty[DroneWorldSimulator, Seq[Connection]]
+  private var runningGames = Map.empty[DroneWorldSimulator, GameInfo]
   private var completedGames = List.empty[GameStatus]
 
   case class Connection(
@@ -69,6 +70,11 @@ private[codecraft] class MultiplayerServer(
   ) {
     var assignedGame: Option[DroneWorldSimulator] = None
   }
+
+  case class GameInfo(
+    val connections: Seq[Connection],
+    val startTimestamp: Long
+  )
 
   case class GameTimedOut(simulator: DroneWorldSimulator)
 
@@ -101,11 +107,12 @@ private[codecraft] class MultiplayerServer(
       sender() ! Status(waitingClient.nonEmpty, runningGames.size)
     case GetDetailedStatus =>
       val gameDetails =
-        for ((sim, clients) <- runningGames)
-          yield GameStatus(None, sim.measuredFramerate, sim.timestep)
+        for ((sim, info) <- runningGames)
+          yield GameStatus(None, sim.measuredFramerate, sim.timestep, info.startTimestamp)
       sender() ! DetailedStatus(waitingClient.nonEmpty,
                                 connectionInfo.size,
-                                gameDetails.toSeq ++ completedGames)
+                                gameDetails.toSeq ++ completedGames,
+                                new DateTime().getMillis)
     case Stop =>
       for (simulator <- runningGames.keys)
         stopGame(simulator, GameClosed.ServerStopped)
@@ -129,8 +136,9 @@ private[codecraft] class MultiplayerServer(
   }
 
   private def startGame(connections: Connection*): Unit = {
-    connections.zip(Seq(BluePlayer, OrangePlayer)).foreach { case (connection, player) =>
-      connection.worker.initialise(Set(player), map, nextRNGSeed, tickPeriod, WinCondition.default)
+    connections.zip(Seq(BluePlayer, OrangePlayer)).foreach {
+      case (connection, player) =>
+        connection.worker.initialise(Set(player), map, nextRNGSeed, tickPeriod, WinCondition.default)
     }
     val clients = connections.map(_.worker.asInstanceOf[RemoteClient]).toSet
     val simulator = new DroneWorldSimulator(
@@ -151,7 +159,7 @@ private[codecraft] class MultiplayerServer(
       stopGame(simulator, GameClosed.Crash(e.getMessage + "\n" + e.getStackTrace.mkString("\n")))
     })
     context.system.scheduler.scheduleOnce(20 minutes, self, GameTimedOut(simulator))
-    runningGames += simulator -> connections
+    runningGames += simulator -> GameInfo(connections, new DateTime().getMillis)
     for (c <- connections) c.assignedGame = Some(simulator)
     if (displayGame) TheGameMaster.run(simulator) else simulator.run()
   }
@@ -165,13 +173,17 @@ private[codecraft] class MultiplayerServer(
     if (runningGames.contains(simulator))
       stopGame(simulator, GameClosed.PlayerTimedOut)
 
-  private def stopGame(simulator: DroneWorldSimulator, reason: GameClosed.Reason): Unit = {
-    simulator.terminate()
-    completedGames ::= GameStatus(Some(reason.toString), simulator.measuredFramerate, simulator.timestep)
+  private def stopGame(simulator: DroneWorldSimulator, reason: GameClosed.Reason) = synchronized {
     runningGames.get(simulator) match {
-      case Some(clients) =>
+      case Some(info) =>
+        simulator.terminate()
+        completedGames ::=
+          GameStatus(Some(reason.toString),
+            simulator.measuredFramerate,
+            simulator.timestep,
+            info.startTimestamp)
         runningGames -= simulator
-        for (Connection(rawConnection, websocketActor, worker) <- clients) {
+        for (Connection(rawConnection, websocketActor, worker) <- info.connections) {
           connectionInfo -= websocketActor
           context.unwatch(websocketActor)
           worker.close(reason)
