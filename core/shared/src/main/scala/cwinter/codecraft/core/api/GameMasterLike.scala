@@ -4,13 +4,13 @@ import cwinter.codecraft.core._
 import cwinter.codecraft.core.ai.basicplus
 import cwinter.codecraft.core.ai.cheese.Mothership
 import cwinter.codecraft.core.game._
-import cwinter.codecraft.core.multiplayer.{WebsocketClient, WebsocketServerConnection}
+import cwinter.codecraft.core.multiplayer.{Error, FoundGame, ServerConnection, WebsocketClient}
 import cwinter.codecraft.core.replay.Replayer
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 
-import scala.async.Async.{async, await}
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{Future, Promise}
+import scala.util.{Failure, Success}
 
 private[codecraft] trait GameMasterLike {
 
@@ -242,24 +242,17 @@ private[codecraft] trait GameMasterLike {
   /** Sets up a multiplayer game with the specified server. */
   def prepareMultiplayerGame(
     serverAddress: String
-  ): Future[DroneControllerBase => DroneWorldSimulator] = async {
-    val websocketClient = connectToWebsocket(s"ws://$serverAddress:8080")
-    val serverConnection = new WebsocketServerConnection(websocketClient)
-    val sync = await { serverConnection.receiveInitialWorldState() }
-
-    (controller: DroneControllerBase) => {
-      val clientPlayers = sync.localPlayers
-      val serverPlayers = sync.remotePlayers
-      val gameConfig = sync.gameConfig(Seq(controller))
-      val connection = MultiplayerClientConfig(clientPlayers, serverPlayers, serverConnection)
-      assert(gameConfig.drones.count { case (d, _) => connection.isLocalPlayer(d.player) } == 1,
-        "Must have one drone owned by local player.")
-      new DroneWorldSimulator(
-        config = gameConfig,
-        multiplayerConfig = connection
-      )
-    }
+  ): Future[DroneControllerBase => DroneWorldSimulator] = {
+    val resultPromise = Promise[DroneControllerBase => DroneWorldSimulator]
+    val serverConnection = new ServerConnection(
+      serverAddress,
+      onStateTransition = {
+        case FoundGame(conn) => resultPromise.complete(Success(conn))
+        case Error(x) => resultPromise.complete(Failure(x))
+        case _ =>
+      }
+    )
+    serverConnection.connect()
+    resultPromise.future
   }
-
-  protected def connectToWebsocket(connectionString: String): WebsocketClient
 }

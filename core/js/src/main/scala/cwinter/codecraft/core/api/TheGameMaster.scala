@@ -58,10 +58,6 @@ object TheGameMaster extends GameMasterLike {
     runContext = None
   }
 
-  override def connectToWebsocket(connectionString: String): WebsocketClient =
-    new JSWebsocketClient(connectionString)
-
-
   def currentFPS: Option[Int] = runContext.map(_.fps.fps)
 }
 

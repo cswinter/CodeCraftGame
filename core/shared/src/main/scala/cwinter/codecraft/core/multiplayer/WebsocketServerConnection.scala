@@ -24,7 +24,7 @@ private[core] class WebsocketServerConnection(
   private[this] var nanoTimeLastResponse = System.nanoTime()
 
 
-  connection.onMessage(handleMessage)
+  connection.registerOnMessage(handleMessage)
   sendMessage(Register)
 
 

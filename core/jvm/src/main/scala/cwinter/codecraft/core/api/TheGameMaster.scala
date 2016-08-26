@@ -26,8 +26,5 @@ object TheGameMaster extends GameMasterLike {
     val latest = dir.listFiles().maxBy(_.lastModified())
     runReplayFromFile(latest.getPath)
   }
-
-  override def connectToWebsocket(connectionString: String): WebsocketClient =
-    new JavaXWebsocketClient(connectionString)
 }
 

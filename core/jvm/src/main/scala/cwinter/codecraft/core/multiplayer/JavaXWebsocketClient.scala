@@ -4,7 +4,6 @@ import java.net.URI
 import java.nio.ByteBuffer
 import javax.websocket._
 
-
 // The implementation of the websocket API appears to make use of reflection in a very brittle fashion.
 // Things that may cause a crash:
 // - this class has any abstract member functions
@@ -13,30 +12,29 @@ import javax.websocket._
 private[core] class JavaXWebsocketClient(uri: String) extends WebsocketClient {
   private[this] var _closed = false
   def isClosed: Boolean = _closed
-  private[this] var userSession: Session = null
-  private[this] var messageHandler: (WebsocketClient, ByteBuffer) => Unit = null
+  private[this] var userSession = Option.empty[Session]
   private[this] var parts: List[Array[Byte]] = List.empty
 
-
-  def onMessage(handler: (WebsocketClient, ByteBuffer) => Unit): WebsocketClient = {
+  def connect(): Unit = {
     val container = ContainerProvider.getWebSocketContainer
     container.connectToServer(this, new URI(uri))
-    messageHandler = handler
-    this
   }
 
-  def sendMessage(message: ByteBuffer): Unit = {
-    assert(messageHandler != null, "You must assign a message handler using `onMessage` before calling sendMessage.")
-    this.userSession.getAsyncRemote.sendBinary(message)
+  def sendMessage(message: ByteBuffer): Unit = userSession match {
+    case None =>
+      throw new IllegalStateException(
+        "Trying to send message on websocket that has not established a connection yet.")
+    case Some(us) => us.getAsyncRemote.sendBinary(message)
   }
 
   @OnOpen
-  def onOpen(userSession: Session): Unit =
-    this.userSession = userSession
+  def onOpen(userSession: Session): Unit = {
+    this.userSession = Some(userSession)
+    runOnOpenCallbacks()
+  }
 
   @OnClose
-  def onClose(userSession: Session, reason: CloseReason): Unit =
-    this.userSession = null
+  def onClose(userSession: Session, reason: CloseReason): Unit = this.userSession = null
 
   @OnMessage
   def _onMessage(message: String): Unit =
@@ -46,7 +44,7 @@ private[core] class JavaXWebsocketClient(uri: String) extends WebsocketClient {
   def _onMessage(message: Array[Byte], last: Boolean, session: Session): Unit = {
     parts ::= message
     if (last) {
-      messageHandler(this, combineParts(parts))
+      runOnMessageCallbacks(combineParts(parts))
       parts = List.empty
     }
   }
@@ -61,10 +59,8 @@ private[core] class JavaXWebsocketClient(uri: String) extends WebsocketClient {
       buffer
   }
 
-
   def close(): Unit = {
-    userSession.close()
+    userSession.foreach(_.close())
     _closed = true
   }
 }
-
