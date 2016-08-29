@@ -24,6 +24,7 @@ private[core] class WebsocketClientConnection(
   private val commandsReceivedSize = new AggregateStatistics
   private val positionsSentSize = new AggregateStatistics
   private[this] var _players = Option.empty[Set[Player]]
+  private[this] var nanoTimeLastResponse = System.nanoTime()
 
   override def receive(message: String): Unit = {
     if (debug) println(message)
@@ -49,14 +50,17 @@ private[core] class WebsocketClientConnection(
     }
   }
 
-  private def handleMessage(msg: ClientMessage): Unit = msg match {
-    case CommandsMessage(commands) => clientCommands.success(commands)
-    case Register => mpServerActorRef ! MatchmakingRequest(this)
-    case RTT(time, message) =>
-      if (debug) {
-        val ms = (System.nanoTime - time) / 1000000.0
-        println(f"RTT for $message: $ms%.2fms")
-      }
+  private def handleMessage(msg: ClientMessage): Unit = {
+    nanoTimeLastResponse = System.nanoTime()
+    msg match {
+      case CommandsMessage(commands) => clientCommands.success(commands)
+      case Register => mpServerActorRef ! MatchmakingRequest(this)
+      case RTT(time, message) =>
+        if (debug) {
+          val ms = (System.nanoTime - time) / 1000000.0
+          println(f"RTT for $message: $ms%.2fms")
+        }
+    }
   }
 
   def initialise(
@@ -66,15 +70,15 @@ private[core] class WebsocketClientConnection(
     tickPeriod: Int,
     winConditions: Seq[WinCondition]
   ): Unit = {
-   sendMessage(
-     InitialSync(map.size,
-       map.minerals,
-       map.initialDrones.map(x => SerializableSpawn(x)),
-       players.map(_.id),
-       (Set(OrangePlayer, BluePlayer) -- players).map(_.id),
-       tickPeriod,
-       rngSeed,
-       winConditions))
+    sendMessage(
+      InitialSync(map.size,
+                  map.minerals,
+                  map.initialDrones.map(x => SerializableSpawn(x)),
+                  players.map(_.id),
+                  (Set(OrangePlayer, BluePlayer) -- players).map(_.id),
+                  tickPeriod,
+                  rngSeed,
+                  winConditions))
     _players = Some(players)
   }
 
@@ -127,4 +131,6 @@ private[core] class WebsocketClientConnection(
   }
 
   override def players: Set[Player] = _players.get
+
+  override def msSinceLastResponse: Int = ((System.nanoTime() - nanoTimeLastResponse) / 1000000).toInt
 }

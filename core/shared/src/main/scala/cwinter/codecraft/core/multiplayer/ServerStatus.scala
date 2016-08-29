@@ -16,7 +16,10 @@ case class DetailedStatus(
 case class GameStatus(
   closeReason: Option[String],
   fps: Int,
+  averageFPS: Int,
   timestep: Long,
-  startTimestamp: Long
+  startTimestamp: Long,
+  endTimestamp: Option[Long],
+  msSinceLastResponse: Int
 )
 

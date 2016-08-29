@@ -44,6 +44,8 @@ private[core] class LocalClientConnection(
   }
 
   override def close(reason: Reason): Unit = ()
+
+  override def msSinceLastResponse: Int = 0
 }
 
 private[core] class LocalServerConnection(

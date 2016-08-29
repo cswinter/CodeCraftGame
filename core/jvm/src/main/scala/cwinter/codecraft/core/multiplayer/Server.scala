@@ -72,8 +72,8 @@ private[codecraft] class MultiplayerServer(
   }
 
   case class GameInfo(
-    val connections: Seq[Connection],
-    val startTimestamp: Long
+    connections: Seq[Connection],
+    startTimestamp: Long
   )
 
   case class GameTimedOut(simulator: DroneWorldSimulator)
@@ -106,9 +106,10 @@ private[codecraft] class MultiplayerServer(
     case GetStatus =>
       sender() ! Status(waitingClient.nonEmpty, runningGames.size)
     case GetDetailedStatus =>
+      val nowMS = new DateTime().getMillis
       val gameDetails =
         for ((sim, info) <- runningGames)
-          yield GameStatus(None, sim.measuredFramerate, sim.timestep, info.startTimestamp)
+          yield gameStatus(sim, info)
       sender() ! DetailedStatus(waitingClient.nonEmpty,
                                 connectionInfo.size,
                                 gameDetails.toSeq ++ completedGames,
@@ -177,11 +178,7 @@ private[codecraft] class MultiplayerServer(
     runningGames.get(simulator) match {
       case Some(info) =>
         simulator.terminate()
-        completedGames ::=
-          GameStatus(Some(reason.toString),
-            simulator.measuredFramerate,
-            simulator.timestep,
-            info.startTimestamp)
+        completedGames ::= gameStatus(simulator, info, Some(reason.toString))
         runningGames -= simulator
         for (Connection(rawConnection, websocketActor, worker) <- info.connections) {
           connectionInfo -= websocketActor
@@ -193,5 +190,18 @@ private[codecraft] class MultiplayerServer(
         }
       case None =>
     }
+  }
+
+  private def gameStatus(sim: DroneWorldSimulator,
+                         info: GameInfo,
+                         closeReason: Option[String] = None) = {
+    val nowMS = new DateTime().getMillis
+    GameStatus(closeReason,
+               sim.measuredFramerate,
+               (1000 * sim.timestep / (nowMS - info.startTimestamp)).toInt,
+               sim.timestep,
+               info.startTimestamp,
+               closeReason.map(_ => nowMS),
+               info.connections.map(_.worker.msSinceLastResponse).max)
   }
 }

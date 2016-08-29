@@ -13,5 +13,6 @@ private[core] trait RemoteClient {
   def sendWorldState(worldStateMessage: WorldStateMessage): Unit
   def players: Set[Player]
   def close(reason: GameClosed.Reason): Unit
+  def msSinceLastResponse: Int
 }
 
