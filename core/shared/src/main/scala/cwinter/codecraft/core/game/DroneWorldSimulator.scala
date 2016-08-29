@@ -695,6 +695,8 @@ class DroneWorldSimulator(
           }._1
           winner == player
         } else false
+      case DestroyAllEnemies => drones.forall(_.player == player)
+      case DroneCount(c) => drones.count(_.player == player) >= c
     }
   }
 
