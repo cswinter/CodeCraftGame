@@ -57,6 +57,7 @@ private[codecraft] class MultiplayerServer(
     with ActorLogging {
   import Server._
   val tickPeriod = 10
+  val startTimestamp = new DateTime().getMillis
 
   private var waitingClient = Option.empty[Connection]
   private var connectionInfo = Map.empty[ActorRef, Connection]
@@ -113,7 +114,8 @@ private[codecraft] class MultiplayerServer(
       sender() ! DetailedStatus(waitingClient.nonEmpty,
                                 connectionInfo.size,
                                 gameDetails.toSeq ++ completedGames,
-                                new DateTime().getMillis)
+                                new DateTime().getMillis,
+                                startTimestamp)
     case Stop =>
       for (simulator <- runningGames.keys)
         stopGame(simulator, GameClosed.ServerStopped)
@@ -192,9 +194,7 @@ private[codecraft] class MultiplayerServer(
     }
   }
 
-  private def gameStatus(sim: DroneWorldSimulator,
-                         info: GameInfo,
-                         closeReason: Option[String] = None) = {
+  private def gameStatus(sim: DroneWorldSimulator, info: GameInfo, closeReason: Option[String] = None) = {
     val nowMS = new DateTime().getMillis
     GameStatus(closeReason,
                sim.measuredFramerate,

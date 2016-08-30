@@ -10,7 +10,8 @@ case class DetailedStatus(
   clientWaiting: Boolean,
   connections: Int,
   games: Seq[GameStatus],
-  timestamp: Long
+  timestamp: Long,
+  startTimestamp: Long
 )
 
 case class GameStatus(
