@@ -198,7 +198,7 @@ private[codecraft] class MultiplayerServer(
     val nowMS = new DateTime().getMillis
     GameStatus(closeReason,
                sim.measuredFramerate,
-               (1000 * sim.timestep / (nowMS - info.startTimestamp)).toInt,
+               (1000 * sim.timestep / math.max(1, nowMS - info.startTimestamp)).toInt,
                sim.timestep,
                info.startTimestamp,
                closeReason.map(_ => nowMS),
