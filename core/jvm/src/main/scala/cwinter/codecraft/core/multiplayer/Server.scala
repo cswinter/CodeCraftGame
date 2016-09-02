@@ -88,6 +88,7 @@ private[codecraft] class MultiplayerServer(
       } else {
         // FIXME: Connection is automatically closed after 1 second since we don't register it.
         // Instead, we should give something like a "ServerFull" reply and then close the connection immediately.
+        serverConnection ! Http.Close
       }
     case Terminated(websocketActor) =>
       val connectionOpt = connectionInfo.get(websocketActor)

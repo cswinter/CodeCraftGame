@@ -45,8 +45,7 @@ private[core] class WebsocketServerConnection(
     }
   }
 
-  def receiveInitialWorldState(): Future[InitialSync] =
-    initialWorldState.future
+  def receiveInitialWorldState(): Future[InitialSync] = initialWorldState.future
 
   override def receiveCommands()(implicit context: SimulationContext): Result[Seq[(Int, DroneCommand)]] = synchronized {
     if (debug) println(s"[t=${context.timestep}] Waiting for commands...")

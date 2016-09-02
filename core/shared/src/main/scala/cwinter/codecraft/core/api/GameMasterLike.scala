@@ -4,7 +4,7 @@ import cwinter.codecraft.core._
 import cwinter.codecraft.core.ai.basicplus
 import cwinter.codecraft.core.ai.cheese.Mothership
 import cwinter.codecraft.core.game._
-import cwinter.codecraft.core.multiplayer.{Error, FoundGame, ServerConnection, WebsocketClient}
+import cwinter.codecraft.core.multiplayer.{Error, FoundGame, ServerConnection}
 import cwinter.codecraft.core.replay.Replayer
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 

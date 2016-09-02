@@ -42,6 +42,7 @@ private[codecraft] trait Simulator {
         }
         tFrameCompleted = System.nanoTime()
       }
+      println("GAME EXITED")
     }
   }
 

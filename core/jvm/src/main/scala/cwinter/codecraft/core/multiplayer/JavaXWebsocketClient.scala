@@ -23,7 +23,8 @@ private[core] class JavaXWebsocketClient(uri: String) extends WebsocketClient {
   def sendMessage(message: ByteBuffer): Unit = userSession match {
     case None =>
       throw new IllegalStateException(
-        "Trying to send message on websocket that has not established a connection yet.")
+        if (_closed) s"Trying to send message on websocket that has been closed."
+        else s"Trying to send message on websocket that has not established a connection.")
     case Some(us) => us.getAsyncRemote.sendBinary(message)
   }
 
@@ -34,7 +35,10 @@ private[core] class JavaXWebsocketClient(uri: String) extends WebsocketClient {
   }
 
   @OnClose
-  def onClose(userSession: Session, reason: CloseReason): Unit = this.userSession = null
+  def onClose(userSession: Session, reason: CloseReason): Unit = {
+    this.userSession = None
+    _closed = true
+  }
 
   @OnMessage
   def _onMessage(message: String): Unit =
