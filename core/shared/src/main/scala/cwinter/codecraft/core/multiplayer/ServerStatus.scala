@@ -3,7 +3,9 @@ package cwinter.codecraft.core.multiplayer
 
 case class Status(
   clientWaiting: Boolean,
-  runningGames: Int
+  runningGames: Int,
+  connections: Int,
+  maxConnections: Int
 )
 
 case class DetailedStatus(

@@ -113,7 +113,8 @@ private[codecraft] class MultiplayerServer(
       case Some(simulator) => if (runningGames.contains(simulator)) stopGame(simulator, GameClosed.Timeout)
       case None =>
     }
-    case GetStatus => sender() ! Status(waitingClient.nonEmpty, runningGames.size)
+    case GetStatus =>
+      sender() ! Status(waitingClient.nonEmpty, runningGames.size, connectionInfo.size, maxGames * 2)
     case GetDetailedStatus =>
       val gameDetails =
         for ((sim, info) <- runningGames)
