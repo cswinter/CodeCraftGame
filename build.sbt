@@ -81,7 +81,7 @@ val core = (crossProject in file("core")).
   settings(
     name := "codecraft",
     libraryDependencies ++= commonDependencies,
-    libraryDependencies +=  "org.scala-lang.modules" % "scala-async_2.11" % "0.9.5",
+    libraryDependencies += async,
     libraryDependencies += "me.chrons" %%% "boopickle" % "1.2.4",
     libraryDependencies += "com.lihaoyi" %%% "upickle" % "0.4.1"
   ).jvmSettings(

@@ -5,6 +5,7 @@ import java.nio.ByteBuffer
 private[core] trait WebsocketClient {
   protected var onOpenCallbacks = Vector.empty[WebsocketClient => Unit]
   protected var onMessageCallbacks = Vector.empty[(WebsocketClient, ByteBuffer) => Unit]
+  protected var onCloseCallbacks = Vector.empty[WebsocketClient => Unit]
 
   def connect(): Unit
 
@@ -18,9 +19,13 @@ private[core] trait WebsocketClient {
     onMessageCallbacks :+= callback
   }
 
-  protected def runOnMessageCallbacks(msg: ByteBuffer): Unit =
-    onMessageCallbacks.foreach(_(this, msg))
+  def registerOnClose(callback: WebsocketClient => Unit): Unit = synchronized {
+    onCloseCallbacks :+= callback
+  }
 
-  protected def runOnOpenCallbacks(): Unit =
-    onOpenCallbacks.foreach(_(this))
+  protected def runOnMessageCallbacks(msg: ByteBuffer): Unit = onMessageCallbacks.foreach(_(this, msg))
+
+  protected def runOnOpenCallbacks(): Unit = onOpenCallbacks.foreach(_(this))
+
+  protected def runOnCloseCallbacks(): Unit = onCloseCallbacks.foreach(_(this))
 }

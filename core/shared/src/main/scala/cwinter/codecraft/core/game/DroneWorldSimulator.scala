@@ -17,9 +17,8 @@ import cwinter.codecraft.util.modules.ModulePosition
 
 import scala.async.Async._
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.language.{implicitConversions, postfixOps}
 import scala.scalajs.js.annotation.JSExport
 
@@ -65,6 +64,8 @@ class DroneWorldSimulator(
   private val errors = new Errors(debug)
   private[codecraft] val debugLog =
     if (DroneWorldSimulator.detailedLogging) Some(new DroneDebugLog) else None
+
+  private[this] var _currentPhase: Symbol = 'NotStarted
 
   /** Returns the winning player. */
   def winner = _winner
@@ -120,7 +121,7 @@ class DroneWorldSimulator(
 
   override def update(): Unit = gameLoop.run()
 
-  override protected def asyncUpdate(): Future[Unit] = gameLoop.runAsync()
+  override protected def asyncUpdate()(implicit ec: ExecutionContext): Future[Unit] = gameLoop.runAsync()
 
   private val gameLoop: SimulationPhase =
     IfDebug ? printDebugInfo <*>
@@ -197,7 +198,7 @@ class DroneWorldSimulator(
 
   private var remoteCommands = Seq.empty[(Int, DroneCommand)]
 
-  private def awaitRemoteCommands = Async('AwaitRemoteCommands) {
+  private def awaitRemoteCommands = Async('AwaitRemoteCommands) { implicit ec =>
     val MultiplayerClientConfig(_, _, server) = multiplayerConfig.asInstanceOf[MultiplayerClientConfig]
     server.receiveCommands().map {
       case Left(commands) => remoteCommands = commands
@@ -205,7 +206,7 @@ class DroneWorldSimulator(
     }
   }
 
-  private def awaitClientCommands = Async('AwaitClientCommands) {
+  private def awaitClientCommands = Async('AwaitClientCommands) { implicit ec =>
     val clients = multiplayerConfig.asInstanceOf[AuthoritativeServerConfig].clients
     val commandFutures = for (
       client <- clients.toSeq
@@ -269,7 +270,7 @@ class DroneWorldSimulator(
   }
 
   private var remoteWorldState: WorldStateMessage = null
-  private def awaitWorldState = Async('AwaitWorldState) {
+  private def awaitWorldState = Async('AwaitWorldState) { implicit ec =>
     val MultiplayerClientConfig(_, _, server) = multiplayerConfig.asInstanceOf[MultiplayerClientConfig]
     server.receiveWorldState().map {
       case Left(worldState) => remoteWorldState = worldState
@@ -538,7 +539,7 @@ class DroneWorldSimulator(
 
   private trait SimulationPhase {
     def run(): Unit
-    def runAsync(): Future[Unit]
+    def runAsync()(implicit ec: ExecutionContext): Future[Unit]
     def <*>[Out2](next: SimulationPhase): SimulationPhase = sequence(next)
     final def sequence(next: SimulationPhase): SimulationPhase = SimulationPhase.sequence(this, next)
     def isFullyLocal: Boolean
@@ -563,8 +564,11 @@ class DroneWorldSimulator(
 
   private object Local {
     def apply(label: Symbol)(code: => Unit) = new SimulationPhase {
-      override def run(): Unit = monitor.measure(label)(code)
-      override def runAsync(): Future[Unit] = {
+      override def run(): Unit = {
+        _currentPhase = label
+        monitor.measure(label)(code)
+      }
+      override def runAsync()(implicit ec: ExecutionContext): Future[Unit] = {
         run()
         Future.successful(Unit)
       }
@@ -573,16 +577,17 @@ class DroneWorldSimulator(
   }
 
   private object Async {
-    def apply(label: Symbol)(code: => Future[Unit]) = {
-      def instrumentedCode = {
+    def apply(label: Symbol)(code: ExecutionContext => Future[Unit]) = {
+      def instrumentedCode(implicit ec: ExecutionContext) = {
+        _currentPhase = label
         monitor.beginMeasurement(label)
-        code.map(_ => monitor.endMeasurement(label))
+        code(ec).map(_ => monitor.endMeasurement(label))
       }
       new SimulationPhase {
-        override def runAsync(): Future[Unit] = instrumentedCode
+        override def runAsync()(implicit ec: ExecutionContext): Future[Unit] = instrumentedCode
         override def run(): Unit = {
           try {
-            CrossPlatformAwait.result(runAsync(), 30 seconds)
+            CrossPlatformAwait.result(runAsync()(scala.concurrent.ExecutionContext.Implicits.global), 30 seconds)
           } catch {
             case _: TimeoutException =>
               gameStatus = Stopped("Connection timed out.")
@@ -600,7 +605,7 @@ class DroneWorldSimulator(
 
   private object NoopSimulationPhase extends SimulationPhase {
     override def run(): Unit = ()
-    override def runAsync(): Future[Unit] = Future.successful(Unit)
+    override def runAsync()(implicit ec: ExecutionContext): Future[Unit] = Future.successful(Unit)
     override def isFullyLocal = true
   }
 
@@ -609,9 +614,9 @@ class DroneWorldSimulator(
       if (gameStatus == Running) phase.run()
     }
 
-    override def runAsync(): Future[Unit] = runAsync(subphases)
+    override def runAsync()(implicit ec: ExecutionContext): Future[Unit] = runAsync(subphases)
 
-    private def runAsync(remaining: Seq[SimulationPhase]): Future[Unit] =
+    private def runAsync(remaining: Seq[SimulationPhase])(implicit ec: ExecutionContext): Future[Unit] =
       if (gameStatus == Running) {
         remaining match {
           case Seq(last) =>
@@ -635,7 +640,7 @@ class DroneWorldSimulator(
 
     override def run(): Unit = if (shouldRun) phase.run()
     override def isFullyLocal: Boolean = phase.isFullyLocal || !shouldRun
-    override def runAsync(): Future[Unit] =
+    override def runAsync()(implicit ec: ExecutionContext): Future[Unit] =
       if (shouldRun) phase.runAsync() else Future.successful(Unit)
   }
 
@@ -718,6 +723,8 @@ class DroneWorldSimulator(
     case SingleplayerConfig => super.togglePause()
     case _ =>
   }
+
+  def currentPhase = _currentPhase
 
   def tickPeriod = config.tickPeriod
 }

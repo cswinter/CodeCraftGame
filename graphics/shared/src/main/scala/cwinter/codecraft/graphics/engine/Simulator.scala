@@ -1,48 +1,47 @@
 package cwinter.codecraft.graphics.engine
 
+import java.util.concurrent.{TimeUnit, ScheduledThreadPoolExecutor}
+
 import cwinter.codecraft.util.maths.Vector2
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 
 private[codecraft] trait Simulator {
   @volatile private[this] var savedWorldState = Seq.empty[ModelDescriptor[_]]
-
   @volatile private[this] var running = false
   private[this] var paused = false
-  private[this] var tFrameCompleted = System.nanoTime()
+  protected var tFrameCompleted = System.nanoTime()
   private[this] var targetFPS = 60
   @volatile private[this] var t = -1
-  private[this] def frameMillis = 1000.0 / targetFPS
-  private[this] var stopped = false
-  private[this] var exceptionHandler: Option[Throwable => _] = None
-  private[this] var _measuredFramerate: Int = 0
-  private[this] var _nanoTimeLastMeasurement: Long = 0
-  private var currentlyUpdating = false
+  protected def frameMillis = 1000.0 / targetFPS
+  protected var stopped = false
+  protected var exceptionHandler: Option[Throwable => _] = None
+  protected var _measuredFramerate: Int = 0
+  protected var _nanoTimeLastMeasurement: Long = 0
+  @volatile private var currentlyUpdating = false
   protected[codecraft] var debug = new Debug
   var graphicsEnabled: Boolean = true
 
   /** Runs the game until the program is terminated. */
-  def run(): Unit = synchronized {
+  def run(): Unit = synchronized { runInContext() }
+
+  private[codecraft] def runInContext()(implicit ec: ExecutionContext): Unit = {
     require(!running, "Simulator.run() must only be called once.")
     running = true
     Future {
       while (!stopped && gameStatus == Running) {
-        if (!paused) {
-          performUpdate()
-        }
+        if (!paused) performUpdate()
 
         val nanos = System.nanoTime()
         val dt = nanos - tFrameCompleted
         val sleepMillis = frameMillis - dt / 1000000
-        if (sleepMillis > 0) {
-          Thread.sleep(sleepMillis.toInt)
-        }
+        if (sleepMillis > 0) Thread.sleep(sleepMillis.toInt)
         tFrameCompleted = System.nanoTime()
       }
-    }
+    }(ec)
   }
 
   private def performUpdate(): Unit = {
@@ -61,7 +60,7 @@ private[codecraft] trait Simulator {
     debug.swapBuffers()
   }
 
-  private[codecraft] def performAsyncUpdate(): Future[Unit] = {
+  private[codecraft] def performAsyncUpdate()(implicit ec: ExecutionContext): Future[Unit] = {
     assert(!currentlyUpdating)
     currentlyUpdating = true
     recomputeGraphicsState()
@@ -72,7 +71,7 @@ private[codecraft] trait Simulator {
     // optimization that prevents JavaScript from sometimes skipping an animation frame (in single player)
     if (updateFuture.isCompleted) currentlyUpdating = false
 
-    updateFuture.onComplete {
+    updateFuture.andThen {
       case Success(_) =>
         currentlyUpdating = false
         debug.swapBuffers()
@@ -84,7 +83,6 @@ private[codecraft] trait Simulator {
         currentlyUpdating = false
         debug.swapBuffers()
     }
-    updateFuture
   }
 
   /** Will run the game for `steps` timesteps. */
@@ -117,7 +115,7 @@ private[codecraft] trait Simulator {
   /** Asynchronously performs one timestep.
     * Returns a future which completes once all changes have taken effect.
     */
-  protected def asyncUpdate(): Future[Unit]
+  protected def asyncUpdate()(implicit ec: ExecutionContext): Future[Unit]
 
   /** Returns the game's status
     */

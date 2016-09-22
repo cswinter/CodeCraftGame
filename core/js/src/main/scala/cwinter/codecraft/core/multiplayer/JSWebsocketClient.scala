@@ -30,6 +30,10 @@ private[core] class JSWebsocketClient(connectionString: String) extends Websocke
     ws.onopen = (event: Event) => {
       runOnOpenCallbacks()
     }
+
+    ws.onclose = (event: Event) => {
+      runOnCloseCallbacks()
+    }
   }
 
   def sendMessage(message: ByteBuffer): Unit = ws match {

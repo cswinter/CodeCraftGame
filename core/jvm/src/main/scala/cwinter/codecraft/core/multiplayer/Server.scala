@@ -1,11 +1,14 @@
 package cwinter.codecraft.core.multiplayer
 
+import java.nio.ByteBuffer
+
 import akka.actor._
 import akka.io.IO
-import cwinter.codecraft.core.api.{BluePlayer, OrangePlayer, Player, TheGameMaster}
-import cwinter.codecraft.core.game.{WinCondition, AuthoritativeServerConfig, DroneWorldSimulator, WorldMap}
-import cwinter.codecraft.core.objects.drone.GameClosed
+import cwinter.codecraft.core.api.{BluePlayer, OrangePlayer, TheGameMaster}
+import cwinter.codecraft.core.game._
+import cwinter.codecraft.core.objects.drone.{GameClosed, ServerBusy, ServerMessage}
 import cwinter.codecraft.core.replay.DummyDroneController
+import cwinter.codecraft.graphics.engine.JVMAsyncRunner
 import org.joda.time.DateTime
 import spray.can.Http
 import spray.can.server.UHttp
@@ -13,27 +16,32 @@ import spray.can.server.UHttp
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.language.postfixOps
+import scala.ref.WeakReference
 
 object Server {
+  implicit val system = ActorSystem()
+
   def spawnServerInstance2(
     seed: Int = scala.util.Random.nextInt,
-    map: WorldMap = TheGameMaster.defaultMap,
+    mapGenerator: => WorldMap = TheGameMaster.defaultMap,
     displayGame: Boolean = false,
+    recordReplaysToFile: Boolean = false,
     maxGames: Int = 10
   ): Unit = {
-    start(seed, map, displayGame, maxGames)
-    ActorSystem().awaitTermination()
+    start(seed, mapGenerator, displayGame, recordReplaysToFile, maxGames)
+    system.awaitTermination()
   }
 
   def start(
     seed: Int = scala.util.Random.nextInt,
-    map: WorldMap = TheGameMaster.defaultMap,
+    mapGenerator: => WorldMap = TheGameMaster.defaultMap,
     displayGame: Boolean = false,
+    recordReplayesToFile: Boolean = false,
     maxGames: Int = 10
   ): ActorRef = {
-    implicit val system = ActorSystem()
-    val server =
-      system.actorOf(Props(classOf[MultiplayerServer], seed, map, displayGame, maxGames), "websocket")
+    val server = system.actorOf(
+      Props(classOf[MultiplayerServer], seed, () => mapGenerator, displayGame, recordReplayesToFile, maxGames),
+      "websocket")
     IO(UHttp) ! Http.Bind(server, "0.0.0.0", 8080)
     server
   }
@@ -50,8 +58,9 @@ object Server {
 
 private[codecraft] class MultiplayerServer(
   private var nextRNGSeed: Int = scala.util.Random.nextInt,
-  val map: WorldMap = TheGameMaster.defaultMap,
+  val mapGenerator: () => WorldMap = () => TheGameMaster.defaultMap,
   val displayGame: Boolean = false,
+  val recordReplaysToFile: Boolean = false,
   val maxGames: Int = 10
 ) extends Actor
     with ActorLogging {
@@ -77,17 +86,16 @@ private[codecraft] class MultiplayerServer(
     startTimestamp: Long
   )
 
-  case class GameTimedOut(simulator: DroneWorldSimulator)
+  case class GameTimedOut(simulatorRef: WeakReference[DroneWorldSimulator])
 
   def receive = {
     case m @ Http.Connected(remoteAddress, localAddress) =>
-      val serverConnection = sender()
-      if (runningGames.size < maxGames) {
-        val connection = acceptConnection(serverConnection)
+      val rawConnection = sender()
+      if (connectionInfo.size < 2 * maxGames) {
+        val connection = acceptConnection(rawConnection)
         connectionInfo += connection.websocketActor -> connection
       } else {
-        // FIXME: Connection is automatically closed after 1 second since we don't register it.
-        // Instead, we should give something like a "ServerFull" reply and then close the connection immediately.
+        rejectConnection(rawConnection)
       }
     case Terminated(websocketActor) =>
       val connectionOpt = connectionInfo.get(websocketActor)
@@ -101,13 +109,12 @@ private[codecraft] class MultiplayerServer(
 
       log.info(s"Child $websocketActor has been terminated.")
       log.info(s"Corresponding connection: $connectionOpt")
-    case GameTimedOut(simulator) =>
-      if (runningGames.contains(simulator))
-        stopGame(simulator, GameClosed.Timeout)
-    case GetStatus =>
-      sender() ! Status(waitingClient.nonEmpty, runningGames.size)
+    case GameTimedOut(simulatorRef) => simulatorRef.get match {
+      case Some(simulator) => if (runningGames.contains(simulator)) stopGame(simulator, GameClosed.Timeout)
+      case None =>
+    }
+    case GetStatus => sender() ! Status(waitingClient.nonEmpty, runningGames.size)
     case GetDetailedStatus =>
-      val nowMS = new DateTime().getMillis
       val gameDetails =
         for ((sim, info) <- runningGames)
           yield gameStatus(sim, info)
@@ -138,7 +145,33 @@ private[codecraft] class MultiplayerServer(
     Connection(rawConnection, websocketActor, worker)
   }
 
+  private def rejectConnection(rawConnection: ActorRef): Unit = {
+    class RejectConnection extends WebsocketWorker {
+      var closed = false
+      override def receiveBytes(bytes: ByteBuffer): Unit = close()
+      override def receive(message: String): Unit = close()
+      def close(): Unit = if (!closed) {
+        send(ServerMessage.serializeBinary(ServerBusy))
+        closeConnection()
+        closed = true
+      }
+    }
+    val worker = new RejectConnection
+    val websocketActor = context.actorOf(WebsocketActor.props(rawConnection, worker))
+    rawConnection ! Http.Register(websocketActor)
+    context.system.scheduler.scheduleOnce(5 seconds, new Runnable {
+      override def run(): Unit = worker.close()
+    })
+    context.system.scheduler.scheduleOnce(10 seconds, new Runnable {
+      override def run(): Unit = {
+        context.stop(rawConnection)
+        context.stop(websocketActor)
+      }
+    })
+  }
+
   private def startGame(connections: Connection*): Unit = {
+    val map = mapGenerator()
     connections.zip(Seq(BluePlayer, OrangePlayer)).foreach {
       case (connection, player) =>
         connection.worker.initialise(Set(player), map, nextRNGSeed, tickPeriod, WinCondition.default)
@@ -151,8 +184,9 @@ private[codecraft] class MultiplayerServer(
         rngSeed = nextRNGSeed
       ),
       multiplayerConfig =
-        AuthoritativeServerConfig(Set.empty, clients.flatMap(_.players), clients, updateCompleted, onTimeout)
-    )
+        AuthoritativeServerConfig(Set.empty, clients.flatMap(_.players), clients, updateCompleted, onTimeout),
+      settings = Settings.default.copy(recordReplays = false)
+    ) with JVMAsyncRunner
     simulator.graphicsEnabled = displayGame
     nextRNGSeed = scala.util.Random.nextInt
     simulator.framerateTarget = if (displayGame) 60 else 1001
@@ -161,10 +195,10 @@ private[codecraft] class MultiplayerServer(
       log.info(s"Exception message:\n${e.getStackTrace.mkString("\n")}")
       stopGame(simulator, GameClosed.Crash(e.getMessage + "\n" + e.getStackTrace.mkString("\n")))
     })
-    context.system.scheduler.scheduleOnce(20 minutes, self, GameTimedOut(simulator))
+    context.system.scheduler.scheduleOnce(20 minutes, self, GameTimedOut(WeakReference(simulator)))
     runningGames += simulator -> GameInfo(connections, new DateTime().getMillis)
     for (c <- connections) c.assignedGame = Some(simulator)
-    if (displayGame) TheGameMaster.run(simulator) else simulator.run()
+    if (displayGame) TheGameMaster.run(simulator) else simulator.runAsync()
   }
 
   private def updateCompleted(simulator: DroneWorldSimulator): Unit =
@@ -187,7 +221,10 @@ private[codecraft] class MultiplayerServer(
           context.unwatch(websocketActor)
           worker.close(reason)
           context.system.scheduler.scheduleOnce(15 seconds, new Runnable {
-            override def run(): Unit = context.stop(rawConnection)
+            override def run(): Unit = {
+              context.stop(rawConnection)
+              context.stop(websocketActor)
+            }
           })
         }
       case None =>
@@ -202,6 +239,7 @@ private[codecraft] class MultiplayerServer(
                sim.timestep,
                info.startTimestamp,
                closeReason.map(_ => nowMS),
-               info.connections.map(_.worker.msSinceLastResponse).max)
+               info.connections.map(_.worker.msSinceLastResponse).max,
+               sim.currentPhase.toString)
   }
 }

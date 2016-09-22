@@ -10,7 +10,7 @@ package cwinter.codecraft.core.game
   * @param allowModuleAnimation Animate modules such as engines.
   * @param recordReplays If set to false, replays are not recorded.
   */
-final class Settings(
+final case class Settings(
   var allowMessages: Boolean = true,
   var showSightRadius: Boolean = false,
   var showMissileRadius: Boolean = false,

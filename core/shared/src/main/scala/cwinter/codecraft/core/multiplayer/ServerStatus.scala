@@ -21,6 +21,7 @@ case class GameStatus(
   timestep: Long,
   startTimestamp: Long,
   endTimestamp: Option[Long],
-  msSinceLastResponse: Int
+  msSinceLastResponse: Int,
+  currentPhase: String
 )
 

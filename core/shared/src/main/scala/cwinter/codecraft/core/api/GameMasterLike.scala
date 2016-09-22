@@ -4,7 +4,7 @@ import cwinter.codecraft.core._
 import cwinter.codecraft.core.ai.basicplus
 import cwinter.codecraft.core.ai.cheese.Mothership
 import cwinter.codecraft.core.game._
-import cwinter.codecraft.core.multiplayer.{Error, FoundGame, ServerConnection, WebsocketClient}
+import cwinter.codecraft.core.multiplayer.{Error, FoundGame, ServerConnection}
 import cwinter.codecraft.core.replay.Replayer
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 
@@ -149,35 +149,35 @@ private[codecraft] trait GameMasterLike {
   def destroyerAI(): DroneControllerBase = new ai.destroyer.DestroyerContext().mothership
 
   /** The default [[cwinter.codecraft.core.game.WorldMap]]. */
-  val defaultMap: WorldMap = {
+  def defaultMap: WorldMap = {
     val spawns = constructSpawns(Vector2(2500, 500), Vector2(-2500, -500))
     WorldMap(DefaultWorldSize, DefaultResourceDistribution, spawns)
   }
 
   /** A small [[cwinter.codecraft.core.game.WorldMap]]. */
-  val smallMap: WorldMap = {
+  def smallMap: WorldMap = {
     val spawns = constructSpawns(Vector2(1650, 500), Vector2(-1650, -500))
     WorldMap(SmallWorldSize, SmallResourceDistribution, spawns)
   }
 
   /** A large [[cwinter.codecraft.core.game.WorldMap]]. */
-  val largeMap: WorldMap = {
+  def largeMap: WorldMap = {
     val spawns = constructSpawns(Vector2(3800, 1000), Vector2(-3800, -1000))
     WorldMap(LargeWorldSize, LargeResourceDistribution, spawns)
   }
 
   /** The [[cwinter.codecraft.core.game.WorldMap]] for the first level. */
-  val level1Map: WorldMap = {
+  def level1Map: WorldMap = {
     val worldSize = Rectangle(-2000, 2000, -1000, 1000)
     val spawns = constructSpawns(Vector2(1000, 200), Vector2(-1000, -200))
     WorldMap(worldSize, Seq.fill(8)((2, 40)), spawns)
   }
 
   /** The [[cwinter.codecraft.core.game.WorldMap]] for the second level. */
-  val level2Map: WorldMap = defaultMap
+  def level2Map: WorldMap = defaultMap
 
   /** The [[cwinter.codecraft.core.game.WorldMap]] for the bonus level. */
-  val bonusLevelMap: WorldMap = defaultMap
+  def bonusLevelMap: WorldMap = defaultMap
 
   /** Runs the first level.
     *
@@ -248,7 +248,12 @@ private[codecraft] trait GameMasterLike {
       serverAddress,
       onStateTransition = {
         case FoundGame(conn) => resultPromise.complete(Success(conn))
-        case Error(x) => resultPromise.complete(Failure(x))
+        case Error(x) =>
+          if (!resultPromise.isCompleted) resultPromise.complete(Failure(x))
+          else {
+            println(s"Additional failure: $x")
+            x.printStackTrace()
+          }
         case _ =>
       }
     )

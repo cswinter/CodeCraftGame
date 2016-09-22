@@ -1,8 +1,10 @@
 package cwinter.codecraft.core.multiplayer
 
+import java.util.UUID
+
 import cwinter.codecraft.core.api.DroneControllerBase
 import cwinter.codecraft.core.game.{DroneWorldSimulator, MultiplayerClientConfig}
-import cwinter.codecraft.core.objects.drone.InitialSync
+import cwinter.codecraft.core.objects.drone.{ServerBusy, InitialSync}
 
 import scala.async.Async._
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -13,10 +15,13 @@ class ServerConnection(
   val onStateTransition: ConnectionState => Unit = _ => Unit
 ) {
   private[this] var _state: ConnectionState = Connecting
+  private[this] var messageHandler = Option.empty[WebsocketServerConnection]
+  val uuid = UUID.randomUUID()
 
   def connect(): Unit =
     try {
       val websocket: WebsocketClient = CrossPlatformWebsocket.create(s"ws://$serverAddress:8080")
+      messageHandler = Some(new WebsocketServerConnection(websocket))
       websocket.registerOnOpen(upgrade)
       websocket.connect()
     } catch {
@@ -26,10 +31,14 @@ class ServerConnection(
   private def upgrade(ws: WebsocketClient): Unit = {
     state = WaitingForPlayer
     async[DroneControllerBase => DroneWorldSimulator] {
-      val serverConnection = new WebsocketServerConnection(ws)
-      val sync = await { serverConnection.receiveInitialWorldState() }
+      messageHandler.get.register()
+      val sync = await { messageHandler.get.receiveInitialWorldState() }
 
-      createGame(sync, serverConnection)
+      sync match {
+        case sync: InitialSync => createGame(sync, messageHandler.get)
+        case ServerBusy =>
+          throw new Exception("The server is not accepting additional connections right now. Try again later.")
+      }
     }.onComplete {
       case Success(connection) => state = FoundGame(connection)
       case Failure(x) => state = Error(x)

@@ -313,6 +313,11 @@ private[core] case class WorldStateMessage(
 ) extends ServerMessage
 private[core] case class MineralHarvest(droneID: Int, mineralID: Int)
 
+
+private[core] sealed trait InitialServerResponse extends ServerMessage
+
+private[core] case object ServerBusy extends InitialServerResponse
+
 private[core] case class InitialSync(
   worldSize: Rectangle,
   minerals: Seq[MineralSpawn],
@@ -322,7 +327,7 @@ private[core] case class InitialSync(
   tickPeriod: Int,
   rngSeed: Int,
   winConditions: Seq[WinCondition]
-) extends ServerMessage {
+) extends InitialServerResponse {
   def gameConfig(droneControllers: Seq[DroneControllerBase]): GameConfig = {
     val controllersIter = droneControllers.iterator
     GameConfig(
