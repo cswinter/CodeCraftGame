@@ -26,7 +26,8 @@ object Server {
     mapGenerator: => WorldMap = TheGameMaster.defaultMap,
     displayGame: Boolean = false,
     recordReplaysToFile: Boolean = false,
-    maxGames: Int = 10
+    maxGames: Int = 10,
+    winConditions: Seq[WinCondition] = WinCondition.default
   ): Unit = {
     start(seed, mapGenerator, displayGame, recordReplaysToFile, maxGames)
     system.awaitTermination()
@@ -37,14 +38,16 @@ object Server {
     mapGenerator: => WorldMap = TheGameMaster.defaultMap,
     displayGame: Boolean = false,
     recordReplayesToFile: Boolean = false,
-    maxGames: Int = 10
+    maxGames: Int = 10,
+    winConditions: Seq[WinCondition] = WinCondition.default
   ): ActorRef = {
     val server = system.actorOf(Props(classOf[MultiplayerServer],
                                       seed,
                                       () => mapGenerator,
                                       displayGame,
                                       recordReplayesToFile,
-                                      maxGames),
+                                      maxGames,
+                                      winConditions),
                                 "websocket")
     IO(UHttp) ! Http.Bind(server, "0.0.0.0", 8080)
     server
@@ -65,7 +68,8 @@ private[codecraft] class MultiplayerServer(
   val mapGenerator: () => WorldMap = () => TheGameMaster.defaultMap,
   val displayGame: Boolean = false,
   val recordReplaysToFile: Boolean = false,
-  val maxGames: Int = 10
+  val maxGames: Int = 10,
+  val winConditions: Seq[WinCondition] = WinCondition.default
 ) extends Actor
     with ActorLogging {
   import Server._
@@ -187,7 +191,8 @@ private[codecraft] class MultiplayerServer(
       map.createGameConfig(
         Seq(new DummyDroneController, new DummyDroneController),
         tickPeriod = tickPeriod,
-        rngSeed = nextRNGSeed
+        rngSeed = nextRNGSeed,
+        winConditions = winConditions
       ),
       multiplayerConfig = AuthoritativeServerConfig(Set.empty,
                                                     clients.flatMap(_.players),

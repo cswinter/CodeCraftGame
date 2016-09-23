@@ -35,7 +35,7 @@ class MultiplayerSemanticsTest extends FlatSpec {
   def multiplayerGame(): DroneWorldSimulator = {
     new Thread {
       override def run(): Unit = {
-        serverRef = Some(Server.start(seed, map, displayGame = false))
+        serverRef = Some(Server.start(seed, map, displayGame = false, winConditions = Seq.empty))
         ActorSystem().awaitTermination()
       }
     }.start()
@@ -54,7 +54,7 @@ class MultiplayerSemanticsTest extends FlatSpec {
   }
 
   def singleplayerGame(): DroneWorldSimulator = {
-    val config = map.createGameConfig(Seq(ai(), ai()), rngSeed = seed, tickPeriod = 10)
+    val config = map.createGameConfig(Seq(ai(), ai()), rngSeed = seed, tickPeriod = tickPeriod)
     new DroneWorldSimulator(config)
   }
 }
