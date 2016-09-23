@@ -2,7 +2,7 @@ import sbt._
 import Keys._
 
 object Commons {
-  val appVersion = "0.5.6"
+  val appVersion = "0.5.7"
 
   val settings: Seq[Def.Setting[_]] = Seq(
     organization := "org.codecraftgame",

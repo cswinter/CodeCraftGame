@@ -19,6 +19,7 @@ class AggregateStatistics {
   def count = _count
   def ema = _ema
   def last = _last
+  def total = _total
 
   def display: String = f"Last: $last%.4g  Average: $average%.4g  EMA: $ema%.4g  Count: $count"
 }

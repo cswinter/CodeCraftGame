@@ -24,6 +24,8 @@ case class GameStatus(
   startTimestamp: Long,
   endTimestamp: Option[Long],
   msSinceLastResponse: Int,
-  currentPhase: String
+  currentPhase: String,
+  bandwidthUp: Double,
+  bandwidthDown: Double
 )
 

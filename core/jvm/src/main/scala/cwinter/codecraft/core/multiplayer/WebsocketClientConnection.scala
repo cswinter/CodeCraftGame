@@ -133,4 +133,10 @@ private[core] class WebsocketClientConnection(
   override def players: Set[Player] = _players.get
 
   override def msSinceLastResponse: Int = ((System.nanoTime() - nanoTimeLastResponse) / 1000000).toInt
+
+  def outKbps(framerate: Double): Double = (commandsSentSize.ema + positionsSentSize.ema) * 8 * framerate / 1000
+  def inKbps(framerate: Double): Double = commandsReceivedSize.ema * 8 * framerate / 1000
+  def totalBytesOut: Double = commandsSentSize.total + positionsSentSize.total
+  def totalBytesIn: Double = commandsReceivedSize.total
 }
+

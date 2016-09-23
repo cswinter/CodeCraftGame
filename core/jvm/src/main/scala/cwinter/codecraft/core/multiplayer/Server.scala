@@ -39,9 +39,13 @@ object Server {
     recordReplayesToFile: Boolean = false,
     maxGames: Int = 10
   ): ActorRef = {
-    val server = system.actorOf(
-      Props(classOf[MultiplayerServer], seed, () => mapGenerator, displayGame, recordReplayesToFile, maxGames),
-      "websocket")
+    val server = system.actorOf(Props(classOf[MultiplayerServer],
+                                      seed,
+                                      () => mapGenerator,
+                                      displayGame,
+                                      recordReplayesToFile,
+                                      maxGames),
+                                "websocket")
     IO(UHttp) ! Http.Bind(server, "0.0.0.0", 8080)
     server
   }
@@ -109,10 +113,11 @@ private[codecraft] class MultiplayerServer(
 
       log.info(s"Child $websocketActor has been terminated.")
       log.info(s"Corresponding connection: $connectionOpt")
-    case GameTimedOut(simulatorRef) => simulatorRef.get match {
-      case Some(simulator) => if (runningGames.contains(simulator)) stopGame(simulator, GameClosed.Timeout)
-      case None =>
-    }
+    case GameTimedOut(simulatorRef) =>
+      simulatorRef.get match {
+        case Some(simulator) => if (runningGames.contains(simulator)) stopGame(simulator, GameClosed.Timeout)
+        case None =>
+      }
     case GetStatus =>
       sender() ! Status(waitingClient.nonEmpty, runningGames.size, connectionInfo.size, maxGames * 2)
     case GetDetailedStatus =>
@@ -184,8 +189,11 @@ private[codecraft] class MultiplayerServer(
         tickPeriod = tickPeriod,
         rngSeed = nextRNGSeed
       ),
-      multiplayerConfig =
-        AuthoritativeServerConfig(Set.empty, clients.flatMap(_.players), clients, updateCompleted, onTimeout),
+      multiplayerConfig = AuthoritativeServerConfig(Set.empty,
+                                                    clients.flatMap(_.players),
+                                                    clients,
+                                                    updateCompleted,
+                                                    onTimeout),
       settings = Settings.default.copy(recordReplays = false)
     ) with JVMAsyncRunner
     simulator.graphicsEnabled = displayGame
@@ -234,6 +242,18 @@ private[codecraft] class MultiplayerServer(
 
   private def gameStatus(sim: DroneWorldSimulator, info: GameInfo, closeReason: Option[String] = None) = {
     val nowMS = new DateTime().getMillis
+    val outBandwidth =
+      info.connections.foldLeft(0.0) {
+        case (sum, c) =>
+          if (closeReason.isEmpty) sum + c.worker.outKbps(sim.measuredFramerate / tickPeriod.toDouble)
+          else sum + c.worker.totalBytesOut
+      }
+    val inBandwidth =
+      info.connections.foldLeft(0.0) {
+        case (sum, c) =>
+          if (closeReason.isEmpty) sum + c.worker.inKbps(sim.measuredFramerate / tickPeriod.toDouble)
+          else sum + c.worker.totalBytesIn
+      }
     GameStatus(closeReason,
                sim.measuredFramerate,
                (1000 * sim.timestep / math.max(1, nowMS - info.startTimestamp)).toInt,
@@ -241,6 +261,8 @@ private[codecraft] class MultiplayerServer(
                info.startTimestamp,
                closeReason.map(_ => nowMS),
                info.connections.map(_.worker.msSinceLastResponse).max,
-               sim.currentPhase.toString)
+               sim.currentPhase.toString,
+               outBandwidth,
+               inBandwidth)
   }
 }
