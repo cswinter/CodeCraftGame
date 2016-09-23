@@ -100,7 +100,7 @@ private[codecraft] class WebGLRenderer(
     gl.clearColor(0.02, 0.02, 0.02, 1)
     gl.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT)
 
-    val worldObjects = gameWorld.worldState
+    val worldObjects = gameWorld.dequeueFrame()
     val projectionT = camera.projection.transposed
     val onScreen =
       Rectangle(

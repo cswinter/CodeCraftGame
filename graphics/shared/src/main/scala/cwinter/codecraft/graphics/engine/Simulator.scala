@@ -1,16 +1,15 @@
 package cwinter.codecraft.graphics.engine
 
-import java.util.concurrent.{TimeUnit, ScheduledThreadPoolExecutor}
-
 import cwinter.codecraft.util.maths.Vector2
 
+import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 
 private[codecraft] trait Simulator {
-  @volatile private[this] var savedWorldState = Seq.empty[ModelDescriptor[_]]
+  private[this] val framequeue = mutable.Queue.empty[Seq[ModelDescriptor[_]]]
   @volatile private[this] var running = false
   private[this] var paused = false
   protected var tFrameCompleted = System.nanoTime()
@@ -34,14 +33,17 @@ private[codecraft] trait Simulator {
     Future {
       while (!stopped && gameStatus == Running) {
         if (!paused) performUpdate()
-
-        val nanos = System.nanoTime()
-        val dt = nanos - tFrameCompleted
-        val sleepMillis = frameMillis - dt / 1000000
-        if (sleepMillis > 0) Thread.sleep(sleepMillis.toInt)
-        tFrameCompleted = System.nanoTime()
+        if (t % framelimitPeriod == 1 || framelimitPeriod == 1) limitFramerate()
       }
     }(ec)
+  }
+
+  private def limitFramerate(): Unit = {
+    val nanos = System.nanoTime()
+    val dt = nanos - tFrameCompleted
+    val sleepMillis = framelimitPeriod * frameMillis - dt / 1000000
+    if (sleepMillis > 0) Thread.sleep(sleepMillis.toInt)
+    tFrameCompleted = System.nanoTime()
   }
 
   private def performUpdate(): Unit = {
@@ -103,9 +105,10 @@ private[codecraft] trait Simulator {
     }
   }
 
-  private def recomputeGraphicsState(): Unit = {
+  private def recomputeGraphicsState(): Unit = framequeue.synchronized {
     if (gameStatus == Running && graphicsEnabled) {
-      savedWorldState = Seq(computeWorldState.toSeq: _*)
+      framequeue.enqueue(debug.debugObjects ++ computeWorldState)
+      if (framequeue.size > maxFrameQueueSize) framequeue.dequeue()
     }
   }
 
@@ -157,12 +160,19 @@ private[codecraft] trait Simulator {
     exceptionHandler = Some(callback)
   }
 
-  private[codecraft] def worldState: Seq[ModelDescriptor[_]] = debug.debugObjects ++ savedWorldState
-  private[codecraft] def computeWorldState: Iterable[ModelDescriptor[_]]
+  private[codecraft] def dequeueFrame(): Seq[ModelDescriptor[_]] = framequeue.synchronized {
+    if (framequeue.size > frameQueueThreshold) framequeue.dequeue()
+    if (framequeue.size > 1) framequeue.dequeue()
+    if (framequeue.isEmpty) Seq.empty else framequeue.front
+  }
+  private[codecraft] def computeWorldState: Seq[ModelDescriptor[_]]
   private[codecraft] def handleKeypress(keychar: Char): Unit = ()
   private[codecraft] def additionalInfoText: String = ""
   private[codecraft] def textModels: Iterable[TextModel] = debug.textModels
 
+  private[codecraft] def frameQueueThreshold: Int
+  private[codecraft] def maxFrameQueueSize: Int
+  private[codecraft] def framelimitPeriod: Int
 
   protected sealed trait Status
   protected case object Running extends Status

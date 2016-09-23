@@ -455,7 +455,7 @@ class DroneWorldSimulator(
   private def players = config.drones.map(_._1.player)
 
 
-  private[codecraft] override def computeWorldState: Iterable[ModelDescriptor[_]] = {
+  private[codecraft] override def computeWorldState: Seq[ModelDescriptor[_]] = {
     val result = ListBuffer.empty[ModelDescriptor[_]]
     result.append(worldBoundaries)
     for (obj <- visibleObjects) result.appendAll(obj.descriptor)
@@ -727,6 +727,13 @@ class DroneWorldSimulator(
   def currentPhase = _currentPhase
 
   def tickPeriod = config.tickPeriod
+
+  private[codecraft] override def frameQueueThreshold: Int =
+    if (multiplayerConfig.isInstanceOf[MultiplayerClientConfig]) tickPeriod + 1 else 2
+  private[codecraft] override def maxFrameQueueSize: Int =
+    if (multiplayerConfig.isInstanceOf[MultiplayerClientConfig]) 2 * tickPeriod else 2
+  private[codecraft] override def framelimitPeriod: Int =
+    if (multiplayerConfig.isInstanceOf[MultiplayerClientConfig]) tickPeriod else 1
 }
 
 private[codecraft] object DroneWorldSimulator {
