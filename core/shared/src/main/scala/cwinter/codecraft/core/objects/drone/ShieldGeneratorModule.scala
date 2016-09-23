@@ -5,9 +5,8 @@ import cwinter.codecraft.core.game.SimulatorEvent
 import cwinter.codecraft.core.graphics.{DroneModuleDescriptor, ShieldGeneratorDescriptor}
 import cwinter.codecraft.util.maths.Vector2
 
-
 private[core] class ShieldGeneratorModule(positions: Seq[Int], owner: DroneImpl)
-  extends DroneModule(positions, owner) {
+    extends DroneModule(positions, owner) {
 
   val nShieldGenerators: Int = positions.size
   val maxHitpoints: Int = nShieldGenerators * ShieldMaximumHitpoints
@@ -29,14 +28,12 @@ private[core] class ShieldGeneratorModule(positions: Seq[Int], owner: DroneImpl)
     NoEffects
   }
 
-
   def hitpointPercentage: Float = _currHitpoints.toFloat / maxHitpoints
 
-  /**
-   * Reduces shield strength by some amount of damage.
- *
-   * @return Returns the amount of damage which couldn't be absorbed.
-   */
+  /** Reduces shield strength by some amount of damage.
+    *
+    * @return Returns the amount of damage which couldn't be absorbed.
+    */
   def absorbDamage(damage: Int): Int = {
     owner.invalidateModelCache()
     val absorbed = math.min(damage, _currHitpoints)
@@ -46,4 +43,3 @@ private[core] class ShieldGeneratorModule(positions: Seq[Int], owner: DroneImpl)
 
   override def descriptors: Seq[DroneModuleDescriptor] = positions.map(ShieldGeneratorDescriptor)
 }
-

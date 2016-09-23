@@ -11,7 +11,7 @@ private[core] trait DroneHull { self: DroneImpl =>
     if (context.isMultiplayerClient) return
 
     val incomingDamage = 1
-    val damage = shieldGenerators.map(_.absorbDamage(incomingDamage)).getOrElse(incomingDamage)
+    val damage = shieldGenerators.fold(incomingDamage)(_.absorbDamage(incomingDamage))
     for (_ <- 0 until damage) hullState = damageHull(hullState)
 
     if (context.isLocallyComputed && context.isMultiplayer) {
@@ -22,8 +22,8 @@ private[core] trait DroneHull { self: DroneImpl =>
   }
 
   def missileHit(position: Vector2, shieldDamage: Int, hullDamage: Int): Unit = {
-    val absorbed = shieldGenerators.map(_.absorbDamage(shieldDamage)).getOrElse(shieldDamage)
-    assert(absorbed == 0, s"$hullDamage, $shieldDamage, $absorbed, $shieldGenerators")
+    val remainingDamage = shieldGenerators.fold(shieldDamage)(_.absorbDamage(shieldDamage))
+    assert(remainingDamage == 0, s"$hullDamage, $shieldDamage, $remainingDamage, $shieldGenerators")
     for (_ <- 0 until hullDamage) hullState = damageHull(hullState)
 
     missileHit(position, shieldDamage + hullDamage)
@@ -47,7 +47,7 @@ private[core] trait DroneHull { self: DroneImpl =>
   }
 
   override def isDead = _hasDied
-  def hitpoints: Int = hitpointsHull + shieldGenerators.map(_.currHitpoints).getOrElse(0)
-  def hitpointsHull: Int = hullState.foldLeft[Int](0)(_ + _)
+  def hitpoints: Int = hitpointsHull + shieldGenerators.fold(0)(_.currHitpoints)
+  def hitpointsHull: Int = hullState.sum
 }
 
