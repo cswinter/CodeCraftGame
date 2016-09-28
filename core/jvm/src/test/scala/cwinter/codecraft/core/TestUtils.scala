@@ -46,7 +46,7 @@ object TestUtils extends Matchers {
   private def runSinglePeriod(simulator: DroneWorldSimulator): Snapshot = {
     simulator.run(simulator.tickPeriod)
     assert(simulator.timestep % simulator.tickPeriod === 0)
-    simulator.dequeueFrame.filter(_.objectDescriptor.isInstanceOf[DroneModel]).toSet
+    simulator.dequeueFrame()._1.filter(_.objectDescriptor.isInstanceOf[DroneModel]).toSet
   }
 
   def assertEqual(run1: GameRecord, run2: GameRecord, debugInfo: String, tickPeriod: Int = 1): Unit = {

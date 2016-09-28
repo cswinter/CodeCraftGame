@@ -9,7 +9,7 @@ import scala.util.{Failure, Success}
 
 
 private[codecraft] trait Simulator {
-  private[this] val framequeue = mutable.Queue.empty[Seq[ModelDescriptor[_]]]
+  private[this] val framequeue = mutable.Queue.empty[(Seq[ModelDescriptor[_]], Iterable[TextModel])]
   @volatile private[this] var running = false
   private[this] var paused = false
   protected var tFrameCompleted = System.nanoTime()
@@ -107,7 +107,7 @@ private[codecraft] trait Simulator {
 
   private def recomputeGraphicsState(): Unit = framequeue.synchronized {
     if (gameStatus == Running && graphicsEnabled) {
-      framequeue.enqueue(debug.debugObjects ++ computeWorldState)
+      framequeue.enqueue((debug.debugObjects ++ computeWorldState, textModels))
       if (framequeue.size > maxFrameQueueSize) framequeue.dequeue()
     }
   }
@@ -160,15 +160,15 @@ private[codecraft] trait Simulator {
     exceptionHandler = Some(callback)
   }
 
-  private[codecraft] def dequeueFrame(): Seq[ModelDescriptor[_]] = framequeue.synchronized {
+  private[codecraft] def dequeueFrame(): (Seq[ModelDescriptor[_]], Iterable[TextModel]) = framequeue.synchronized {
     if (framequeue.size > frameQueueThreshold) framequeue.dequeue()
     if (framequeue.size > 1) framequeue.dequeue()
-    if (framequeue.isEmpty) Seq.empty else framequeue.front
+    if (framequeue.isEmpty) (Seq.empty, Seq.empty) else framequeue.front
   }
   private[codecraft] def computeWorldState: Seq[ModelDescriptor[_]]
   private[codecraft] def handleKeypress(keychar: Char): Unit = ()
   private[codecraft] def additionalInfoText: String = ""
-  private[codecraft] def textModels: Iterable[TextModel] = debug.textModels
+  protected def textModels: Iterable[TextModel] = debug.textModels
 
   private[codecraft] def frameQueueThreshold: Int
   private[codecraft] def maxFrameQueueSize: Int

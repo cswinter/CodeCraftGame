@@ -100,7 +100,7 @@ private[codecraft] class WebGLRenderer(
     gl.clearColor(0.02, 0.02, 0.02, 1)
     gl.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT)
 
-    val worldObjects = gameWorld.dequeueFrame()
+    val (worldObjects, textModels) = gameWorld.dequeueFrame()
     val projectionT = camera.projection.transposed
     val onScreen =
       Rectangle(
@@ -133,11 +133,10 @@ private[codecraft] class WebGLRenderer(
     val textTestDiv = document.getElementById("text-test-container").asInstanceOf[HTMLDivElement]
     if (textDiv == null || textTestDiv == null) {
       println("Could not find div#text-container and div#text-test-container. Without this, text cannot be rendered.")
-    } else if (gameWorld.textModels.nonEmpty || textDiv.innerHTML != "") {
+    } else if (textModels.nonEmpty || textDiv.innerHTML != "") {
       textTestDiv.innerHTML = """<div id="large-text-dim-test"></div><div id="small-text-dim-test"></div>"""
       textDiv.innerHTML = ""
-      for (text <- gameWorld.textModels) renderText(textDiv, text, width, height)
-      for (text <- gameWorld.textModels) renderText(textDiv, text, width, height)
+      for (text <- textModels) renderText(textDiv, text, width, height)
       if (gameWorld.isPaused) {
         renderText(
           textDiv,

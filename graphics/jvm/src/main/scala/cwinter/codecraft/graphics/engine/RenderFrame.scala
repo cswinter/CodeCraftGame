@@ -61,7 +61,7 @@ private[graphics] class RenderFrame(val gameWorld: Simulator)
     else glClearColor(0.1f, 0, 0.0f, 0.0f)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-    val worldObjects = gameWorld.dequeueFrame()
+    val (worldObjects, textModels) = gameWorld.dequeueFrame()
     val projection = camera.projection
 
     for (material <- renderStack.materials) {
@@ -84,7 +84,7 @@ private[graphics] class RenderFrame(val gameWorld: Simulator)
     // draw from texture to screen
     renderStack.postDraw(camera)
 
-    renderText(drawable)
+    renderText(drawable, textModels)
 
     // dispose one-time VBOs
     context.freeTempVBOs(gl)
@@ -108,7 +108,7 @@ private[graphics] class RenderFrame(val gameWorld: Simulator)
     rendering = false
   }
 
-  private def renderText(drawable: GLAutoDrawable): Unit = {
+  private def renderText(drawable: GLAutoDrawable, textModels: Iterable[TextModel]): Unit = {
     val gl = drawable.getGL
     val width = drawable.getSurfaceWidth
     val height = drawable.getSurfaceHeight
@@ -117,7 +117,7 @@ private[graphics] class RenderFrame(val gameWorld: Simulator)
 
     textRenderer.beginRendering(width, height)
 
-    for (text <- gameWorld.textModels if !text.largeFont)
+    for (text <- textModels if !text.largeFont)
       renderTextModel(textRenderer, text, width, height)
 
     textRenderer.setColor(1, 1, 1, 0.7f)
@@ -131,7 +131,7 @@ private[graphics] class RenderFrame(val gameWorld: Simulator)
     textRenderer.endRendering()
 
     largeTextRenderer.beginRendering(width, height)
-    for (text <- gameWorld.textModels if text.largeFont)
+    for (text <- textModels if text.largeFont)
       renderTextModel(largeTextRenderer, text, width, height)
     largeTextRenderer.endRendering()
   }

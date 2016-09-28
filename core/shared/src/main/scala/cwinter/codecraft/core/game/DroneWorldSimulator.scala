@@ -510,7 +510,7 @@ class DroneWorldSimulator(
        |""".stripMargin
   }
 
-  private[codecraft] override def textModels: Iterable[TextModel] = {
+  protected override def textModels: Iterable[TextModel] = {
     val extraText = gameStatus match {
       case Crashed(exception) => Some(s"Game has crashed: ${exception.getMessage}")
       case Stopped(msg) => Some(s"Game has been stopped: $msg")
