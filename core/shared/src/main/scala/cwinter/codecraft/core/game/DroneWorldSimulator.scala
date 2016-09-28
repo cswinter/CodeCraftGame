@@ -717,7 +717,7 @@ class DroneWorldSimulator(
     }
     _gameStatus = value
   }
-  override protected def gameStatus = _gameStatus
+  override protected[codecraft] def gameStatus = _gameStatus
 
   override def togglePause(): Unit = multiplayerConfig match {
     case SingleplayerConfig => super.togglePause()
@@ -731,7 +731,7 @@ class DroneWorldSimulator(
   private[codecraft] override def frameQueueThreshold: Int = if (precomputeFrames) tickPeriod + 1 else 2
   private[codecraft] override def maxFrameQueueSize: Int = if (precomputeFrames) 2 * tickPeriod else 2
   private[codecraft] override def framelimitPeriod: Int = if (precomputeFrames) tickPeriod else 1
-  private def precomputeFrames: Boolean =
+  private[codecraft] def precomputeFrames: Boolean =
     multiplayerConfig.isInstanceOf[MultiplayerClientConfig] && settings.allowFramePrecomputation
 }
 

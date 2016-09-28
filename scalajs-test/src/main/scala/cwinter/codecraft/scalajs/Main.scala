@@ -8,12 +8,11 @@ import org.scalajs.dom.{document, html}
 
 import scala.scalajs.js.annotation.JSExport
 
-
 @JSExport
 object Main {
   @JSExport
   def webgl(canvas: html.Canvas): Unit = {
-    val multiplayer = false
+    val multiplayer = true
     new game.Settings(recordReplays = false).setAsDefault()
     TheGameMaster.canvas = canvas
     TheGameMaster.outputFPS = true
@@ -31,7 +30,7 @@ object Main {
     document.getElementById("btn-gameplay").asInstanceOf[html.Button].onclick = (e: dom.Event) => {
       TheGameMaster.stop()
       run(TheGameMaster.replicatorAI(), TheGameMaster.replicatorAI())
-    }/*
+    } /*
     document.getElementById("btn-physics").asInstanceOf[html.Button].onclick = (e: dom.Event) => {
       reset()
       TheObjectManager.main(Array())
@@ -44,11 +43,7 @@ object Main {
 
   def run(m1: DroneControllerBase, m2: DroneControllerBase): Unit = {
     val simulator = new DroneWorldSimulator(
-      TheGameMaster.defaultMap,
-      Seq(m1, m2),
-      t => Seq.empty
-    )
+      TheGameMaster.defaultMap.createGameConfig(Seq(m1, m2), tickPeriod = 1))
     TheGameMaster.run(simulator)
   }
 }
-

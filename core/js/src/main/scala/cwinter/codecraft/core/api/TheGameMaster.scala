@@ -6,9 +6,11 @@ import cwinter.codecraft.util.maths.ColorRGBA
 import org.scalajs.dom
 import org.scalajs.dom.html
 
+import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.scalajs.js
 import scala.scalajs.js.annotation.{JSExport, JSExportAll}
+import scala.util.{Failure, Success}
 
 /**
  * Main entry point to start the game.
@@ -25,20 +27,22 @@ object TheGameMaster extends GameMasterLike {
     require(canvas != null, "Must first set TheGameMaster.canvas variable to the webgl canvas element.")
     require(runContext.isEmpty, "Can only run one CodeCraft game at a time.")
 
+    val lockstepGraphics = !simulator.precomputeFrames
     val renderer = new WebGLRenderer(canvas, simulator)
-    val context = new RunContext(simulator, renderer, 16)
+    val context = new RunContext(simulator, renderer, 16, lockstepGraphics)
     runContext = Some(context)
-    run(context)
+    runGraphics(context)
+    if (!lockstepGraphics) runGame(context)
     simulator
   }
 
 
-  private def run(context: RunContext): Unit = {
+  private def runGraphics(context: RunContext): Unit = {
     import context._
     if (stopped) return
-    dom.window.requestAnimationFrame((d: Double) => run(context))
+    dom.window.requestAnimationFrame((d: Double) => runGraphics(context))
 
-    if (!fps.shouldSkipFrame(simulator.framerateTarget)) {
+    if (!lockstepGraphics || !fps.shouldSkipFrame(simulator.framerateTarget)) {
       fps.startedFrame(simulator.framerateTarget)
 
       fps.updateSmoothedFPS()
@@ -46,9 +50,37 @@ object TheGameMaster extends GameMasterLike {
         fps.drawFPS()
         if (simulator.timestep % 100 == 0) fps.printFPS()
       }
-
       renderer.render()
-      if (!simulator.isPaused && !simulator.isCurrentlyUpdating) simulator.performAsyncUpdate()
+    }
+
+    if (lockstepGraphics && !simulator.isPaused && !simulator.isCurrentlyUpdating)
+      simulator.performAsyncUpdate()
+  }
+
+  private[codecraft] def runGame(context: RunContext): Unit = {
+    import context._
+    if (simulator.stopped || simulator.gameStatus != simulator.Running) return
+
+    if (simulator.isPaused) scala.scalajs.js.timers.setTimeout(20.0)(runGame(context))
+    else {
+      if (outputFPS && !simulator.isPaused) {
+        fps.drawFPS()
+        if (simulator.timestep % 100 == 0) fps.printFPS()
+      }
+      simulator.performAsyncUpdate().onComplete {
+        case Success(_) =>
+          simulator.excessMillis match {
+            case (Some(time), _) =>
+              scala.scalajs.js.timers.setTimeout(time) {
+                simulator.tFrameCompleted = System.nanoTime()
+                runGame(context)
+              }
+            case (None, resetTime) =>
+              if (resetTime) simulator.tFrameCompleted = System.nanoTime()
+              runGame(context)
+          }
+        case Failure(x) => x.printStackTrace()
+      }
     }
   }
 
@@ -64,6 +96,7 @@ class RunContext(
   val simulator: DroneWorldSimulator,
   val renderer: WebGLRenderer,
   val targetMillisPerFrame: Int,
+  val lockstepGraphics: Boolean,
   var lastCompletionTime: Double = js.Date.now()
 ) {
   val fps = new FPSMeter(this)
@@ -100,7 +133,7 @@ class FPSMeter(context: RunContext) {
     val elapsedSeconds = (js.Date.now() - startTime) / 1000
     s"T=${context.simulator.timestep}," +
       s" Average FPS: ${(context.simulator.timestep / elapsedSeconds).toInt}, " +
-      s"FPS: $fps"
+      s"FPS: ${context.simulator.measuredFramerate}"
   }
 
   def shouldSkipFrame(targetFPS: Int): Boolean = {

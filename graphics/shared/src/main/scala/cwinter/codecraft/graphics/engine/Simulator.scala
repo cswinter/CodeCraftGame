@@ -12,11 +12,11 @@ private[codecraft] trait Simulator {
   private[this] val framequeue = mutable.Queue.empty[(Seq[ModelDescriptor[_]], Iterable[TextModel])]
   @volatile private[this] var running = false
   private[this] var paused = false
-  protected var tFrameCompleted = System.nanoTime()
+  protected[codecraft] var tFrameCompleted = System.nanoTime()
   private[this] var targetFPS = 60
   @volatile private[this] var t = -1
   protected def frameMillis = 1000.0 / targetFPS
-  protected var stopped = false
+  protected[codecraft] var stopped = false
   protected var exceptionHandler: Option[Throwable => _] = None
   protected var _measuredFramerate: Int = 0
   protected var _nanoTimeLastMeasurement: Long = 0
@@ -33,17 +33,24 @@ private[codecraft] trait Simulator {
     Future {
       while (!stopped && gameStatus == Running) {
         if (!paused) performUpdate()
-        if (t % framelimitPeriod == 1 || framelimitPeriod == 1) limitFramerate()
+        limitFramerate()
       }
     }(ec)
   }
 
   private def limitFramerate(): Unit = {
+    val (sleepTime, resetTime) = excessMillis
+    sleepTime.foreach(ms => Thread.sleep(ms))
+    if (resetTime) tFrameCompleted = System.nanoTime()
+  }
+
+  protected[codecraft] def excessMillis: (Option[Int], Boolean) = {
+    val isSleepFrame =  t % framelimitPeriod == 1 || framelimitPeriod == 1
     val nanos = System.nanoTime()
     val dt = nanos - tFrameCompleted
     val sleepMillis = framelimitPeriod * frameMillis - dt / 1000000
-    if (sleepMillis > 0) Thread.sleep(sleepMillis.toInt)
-    tFrameCompleted = System.nanoTime()
+    if (sleepMillis > 0 && isSleepFrame) (Some(sleepMillis.toInt), true)
+    else (None, isSleepFrame)
   }
 
   private def performUpdate(): Unit = {
@@ -174,10 +181,10 @@ private[codecraft] trait Simulator {
   private[codecraft] def maxFrameQueueSize: Int
   private[codecraft] def framelimitPeriod: Int
 
-  protected sealed trait Status
-  protected case object Running extends Status
-  protected case class Stopped(reason: String) extends Status
-  protected case class Crashed(exception: Throwable) extends Status
+  protected[codecraft] sealed trait Status
+  protected[codecraft] case object Running extends Status
+  protected[codecraft] case class Stopped(reason: String) extends Status
+  protected[codecraft] case class Crashed(exception: Throwable) extends Status
 
   def forceGL2: Boolean = false
 }
