@@ -132,13 +132,11 @@ private[core] class ComputedDroneDynamics(
     // find closest wall
     val dx = math.min(math.abs(pos.x - areaBounds.xMax), math.abs(pos.x - areaBounds.xMin))
     val dy = math.min(math.abs(pos.y - areaBounds.yMax), math.abs(pos.y - areaBounds.yMin))
-    if (dx < dy) {
-      velocity = velocity.copy(_x = -velocity.x)
-      //orientation = orientation.copy(x = -orientation.x)
-    } else {
-      velocity = velocity.copy(_y = -velocity.y)
-      //orientation = orientation.copy(y = -orientation.y)
-    }
+    val xCollisionPossible =
+      if (math.abs(pos.x - areaBounds.xMax) < math.abs(pos.x - areaBounds.xMin)) velocity.x > 0
+      else velocity.x < 0
+    if (dx <= dy && xCollisionPossible) velocity = velocity.copy(_x = -velocity.x)
+    else velocity = velocity.copy(_y = -velocity.y)
     isStunned = true
   }
 
