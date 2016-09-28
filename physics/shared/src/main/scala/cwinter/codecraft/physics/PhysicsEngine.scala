@@ -84,7 +84,7 @@ private[codecraft] class PhysicsEngine[T <: DynamicObject[T]](val worldBoundarie
     if (recordMap.contains(obj)) {
       val record = recordMap(obj)
       grid.remove(record, (record.cellX, record.cellY))
-      objects -= record // TODO: O(n). just remove list and use recordMap.values
+      objects -= record // TODO: O(n). just remove list and use recordMap.values (NOTE: that breaks determinism, need more careful fix)
       recordMap -= obj
       record.nextCollision = None
       record.nextTransfer = None
@@ -175,16 +175,14 @@ private[codecraft] class PhysicsEngine[T <: DynamicObject[T]](val worldBoundarie
     val collisions = computeCollisions(obj, nearbyObjects, pathUnchanged)
     if (collisions.nonEmpty) {
       val nextCol = collisions.minBy(_.time)
-      if (obj.nextCollision.map(_.time <= nextCol.time) == Some(true)) return
+      if (obj.nextCollision.exists(_.time <= nextCol.time)) return
 
       val nextColOpt = Some(nextCol)
       obj.nextCollision = nextColOpt
       events.enqueue(nextCol)
       nextCol match {
         case ObjectObjectCollision(_, obj2, t) =>
-          if (obj2.nextCollision.map(_.time >= t) != Some(false)) {
-            obj2.nextCollision = nextColOpt
-          }
+          if (obj2.nextCollision.forall(_.time >= t)) obj2.nextCollision = nextColOpt
         case owc: ObjectWallCollision =>
         case _ => throw new Exception("this shouldn't happen...")
       }
