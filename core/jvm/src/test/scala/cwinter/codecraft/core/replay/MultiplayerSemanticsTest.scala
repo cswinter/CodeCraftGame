@@ -4,7 +4,7 @@ import akka.actor.{ActorRef, ActorSystem}
 import cwinter.codecraft.core.TestUtils
 import cwinter.codecraft.core.ai.deterministic.DeterministicMothership
 import cwinter.codecraft.core.api.TheGameMaster
-import cwinter.codecraft.core.game.DroneWorldSimulator
+import cwinter.codecraft.core.game.{Settings, DroneWorldSimulator}
 import cwinter.codecraft.core.multiplayer.Server
 import cwinter.codecraft.util.maths.GlobalRNG
 import org.scalatest.FlatSpec
@@ -24,6 +24,7 @@ class MultiplayerSemanticsTest extends FlatSpec {
   val map = TheGameMaster.level1Map
 
   s"A multiplayer game (map ${GlobalRNG.seed})" should "yield the same output as an identical singleplayer game" in {
+    Settings(allowFramePrecomputation = false).setAsDefault()
     DroneWorldSimulator.enableDetailedLogging()
     try {
       TestUtils.runAndCompare(singleplayerGame(), multiplayerGame(), timesteps)

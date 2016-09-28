@@ -728,12 +728,11 @@ class DroneWorldSimulator(
 
   def tickPeriod = config.tickPeriod
 
-  private[codecraft] override def frameQueueThreshold: Int =
-    if (multiplayerConfig.isInstanceOf[MultiplayerClientConfig]) tickPeriod + 1 else 2
-  private[codecraft] override def maxFrameQueueSize: Int =
-    if (multiplayerConfig.isInstanceOf[MultiplayerClientConfig]) 2 * tickPeriod else 2
-  private[codecraft] override def framelimitPeriod: Int =
-    if (multiplayerConfig.isInstanceOf[MultiplayerClientConfig]) tickPeriod else 1
+  private[codecraft] override def frameQueueThreshold: Int = if (precomputeFrames) tickPeriod + 1 else 2
+  private[codecraft] override def maxFrameQueueSize: Int = if (precomputeFrames) 2 * tickPeriod else 2
+  private[codecraft] override def framelimitPeriod: Int = if (precomputeFrames) tickPeriod else 1
+  private def precomputeFrames: Boolean =
+    multiplayerConfig.isInstanceOf[MultiplayerClientConfig] && settings.allowFramePrecomputation
 }
 
 private[codecraft] object DroneWorldSimulator {
