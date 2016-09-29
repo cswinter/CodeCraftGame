@@ -19,6 +19,6 @@ class ReplayTest extends FlatSpec {
     val replaySimulator = TheGameMaster.createReplaySimulator(recorder.replayString.get)
     val fromReplay = TestUtils.runAndRecord(replaySimulator, timesteps)
 
-    TestUtils.assertEqual(canonical, fromReplay, recorder.replayString.get)
+    TestUtils.assertEqual(canonical, fromReplay, simulator, replaySimulator)
   }
 }

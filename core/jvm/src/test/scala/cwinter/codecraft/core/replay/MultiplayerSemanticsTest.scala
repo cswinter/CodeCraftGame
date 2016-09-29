@@ -17,7 +17,7 @@ class MultiplayerSemanticsTest extends FlatSpec {
   val timesteps = 7500
   val seed = 42
   val tickPeriod = 10
-  val mapSeed: Option[Int] = None
+  val mapSeed: Option[Int] = Some(-1970076892)
   @volatile var serverRef = Option.empty[ActorRef]
   def ai() = new DeterministicMothership(seed)
   mapSeed.foreach(GlobalRNG.seed = _)

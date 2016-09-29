@@ -49,14 +49,14 @@ object TestUtils extends Matchers {
     simulator.dequeueFrame()._1.filter(_.objectDescriptor.isInstanceOf[DroneModel]).toSet
   }
 
-  def assertEqual(run1: GameRecord, run2: GameRecord, debugInfo: String, tickPeriod: Int = 1): Unit = {
+  def assertEqual(run1: GameRecord, run2: GameRecord, sim1: DroneWorldSimulator, sim2: DroneWorldSimulator, tickPeriod: Int = 1): Unit = {
     require(run1.size == run2.size)
     val timesteps = run1.size
     for (t <- 0 until timesteps) {
       if (run1(t) != run2(t)) {
-        println(debugInfo)
-        println(s"Games diverged at t=${t * tickPeriod}\n")
+        showMismatchAndLog(run1(t), run2(t), sim1, sim2, t)
         showMismatch(run1(t), run2(t))
+        println(s"Games diverged at t=${t * tickPeriod}\n")
       }
     }
   }

@@ -29,13 +29,12 @@ private[core] class StorageModule(positions: Seq[Int], owner: DroneImpl, startin
 
     resourceDepositee.foreach(performResourceDeposit)
 
+    distanceCheck()
     if (!owner.context.isMultiplayerClient) {
       for {
         m <- harvesting
         event <- harvest(m)
       } effects ::= event
-    } else {
-      for (_ <- harvesting) distanceCheck()
     }
 
     storedEnergyGlobes = storedEnergyGlobes.map{ x =>
@@ -59,7 +58,6 @@ private[core] class StorageModule(positions: Seq[Int], owner: DroneImpl, startin
   }
 
   private def harvest(mineral: MineralCrystalImpl): Option[SimulatorEvent] = {
-    distanceCheck()
     harvestCountdown -= positions.size
     if (harvestCountdown <= 0) performHarvest(mineral)
     else None
