@@ -1,7 +1,7 @@
 package cwinter.codecraft.util
 
 
-class AggregateStatistics {
+private[codecraft] class AggregateStatistics {
   private val emaDecay = 0.9
   private[this] var _count = 0
   private[this] var _total = 0.0

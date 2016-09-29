@@ -3,7 +3,7 @@ package cwinter.codecraft.util
 import scala.collection.mutable.ArrayBuffer
 
 
-class Stopwatch {
+private[codecraft] class Stopwatch {
   private type Millis = Double
   private var measurements = Map.empty[Symbol, ArrayBuffer[Long]]
   private var measurementOrder = Map.empty[Symbol, Int]

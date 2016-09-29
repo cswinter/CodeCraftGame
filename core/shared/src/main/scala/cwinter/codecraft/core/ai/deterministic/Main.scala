@@ -112,7 +112,7 @@ private[core] class DeterministicSoldier(rng: RNG) extends DroneController {
   override def onDeath(): Unit = ()
 }
 
-case class DroneDistanceOrdering(origin: Vector2) extends Ordering[Drone] {
+private[core] case class DroneDistanceOrdering(origin: Vector2) extends Ordering[Drone] {
   override def compare(drone1: Drone, drone2: Drone): Int = {
     val dist1 = (drone1.position - origin).lengthSquared
     val dist2 = (drone2.position - origin).lengthSquared

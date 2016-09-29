@@ -53,4 +53,4 @@ private[codecraft] class RNG(
   }
 }
 
-object GlobalRNG extends RNG
+private[codecraft] object GlobalRNG extends RNG

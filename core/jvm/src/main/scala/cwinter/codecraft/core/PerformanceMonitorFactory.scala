@@ -5,14 +5,14 @@ import etm.core.monitor.EtmPoint
 import etm.core.renderer.SimpleTextRenderer
 
 
-object PerformanceMonitorFactory {
+private[codecraft] object PerformanceMonitorFactory {
   @volatile var assigned = false
 
   def performanceMonitor: PerformanceMonitor = new SimplePerformanceMonitor
 }
 
 
-class JETMPerformanceMonitor extends PerformanceMonitor {
+private[codecraft] class JETMPerformanceMonitor extends PerformanceMonitor {
   private val debug = false
   private var activePoints = Map.empty[Symbol, EtmPoint]
 
