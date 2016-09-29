@@ -2,6 +2,6 @@ package cwinter.codecraft.core.replay
 
 
 object Replay {
-  final val CurrentVersion = "0.3.0"
+  final val CurrentVersion = "0.6.0"
 }
 
