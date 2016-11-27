@@ -152,8 +152,20 @@ private[codecraft] class MultiplayerServer(
     val websocketActor = context.actorOf(WebsocketActor.props(rawConnection, worker))
     rawConnection ! Http.Register(websocketActor)
     context.watch(websocketActor)
+    context.system.scheduler.scheduleOnce(10 minutes, new Runnable {
+      override def run(): Unit = {
+        if (!hasStartedMatchmaking(rawConnection)) {
+          context.stop(rawConnection)
+          context.stop(websocketActor)
+        }
+      }
+    })
     Connection(rawConnection, websocketActor, worker)
   }
+
+  private def hasStartedMatchmaking(rawConnection: ActorRef): Boolean =
+    waitingClient.exists(_.rawConnection == rawConnection) ||
+      runningGames.valuesIterator.exists(_.connections.exists(_.rawConnection == rawConnection))
 
   private def rejectConnection(rawConnection: ActorRef): Unit = {
     class RejectConnection extends WebsocketWorker {

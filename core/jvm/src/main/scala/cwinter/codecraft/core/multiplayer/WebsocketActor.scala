@@ -50,11 +50,15 @@ private[core] class WebsocketActor(
       websocketWorker.receive(decoded)
     case Send(message) =>
       send(BinaryFrame(ByteString.fromByteBuffer(message)))
-    case Close => send(CloseFrame())
+    case Close =>
+      send(CloseFrame())
+      context.stop(self)
     case x: FrameCommandFailed =>
       log.error("frame command failed", x)
+      context.stop(self)
       throw new Exception(s"Frame command failed: $x")
     case x: HttpRequest =>
+      context.stop(self)
       throw new Exception("Unexpected HttpRequest")
   }
 
