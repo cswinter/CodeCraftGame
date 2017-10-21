@@ -17,6 +17,6 @@ private[codecraft] class KeepEyeOnEnemy(enemy: Drone) extends Mission[Replicator
 
   override def update(): Unit = if (isDeactivated && enemy.isVisible) reactivate()
 
-  def hasExpired = enemy.isDead
+  def hasExpired: Boolean = enemy.isDead
 }
 

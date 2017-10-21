@@ -8,7 +8,7 @@ private[codecraft] trait Positionable[-T] {
 
 private[codecraft] object Positionable {
   final implicit class PositionableOps[T](t: T)(implicit ev: Positionable[T]) {
-    @inline def position = ev.position(t)
+    @inline def position: Vector2 = ev.position(t)
   }
 
   implicit object Vector2IsPositionable extends Positionable[Vector2] {

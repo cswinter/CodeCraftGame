@@ -37,7 +37,7 @@ object Server {
     seed: Int = scala.util.Random.nextInt,
     mapGenerator: => WorldMap = TheGameMaster.defaultMap,
     displayGame: Boolean = false,
-    recordReplayesToFile: Boolean = false,
+    recordReplaysToFile: Boolean = false,
     maxGames: Int = 10,
     winConditions: Seq[WinCondition] = WinCondition.default
   ): ActorRef = {
@@ -45,7 +45,7 @@ object Server {
                                       seed,
                                       () => mapGenerator,
                                       displayGame,
-                                      recordReplayesToFile,
+                                      recordReplaysToFile,
                                       maxGames,
                                       winConditions),
                                 "websocket")

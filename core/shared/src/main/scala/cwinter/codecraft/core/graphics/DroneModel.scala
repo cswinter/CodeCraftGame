@@ -124,7 +124,6 @@ private[codecraft] case class DroneModel(
   def signature = this
   override def intersects(xPos: Float, yPos: Float, rectangle: Rectangle) =
     intersects(xPos, yPos, 100, rectangle) // FIXME
-
 }
 
 

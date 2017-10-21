@@ -18,8 +18,8 @@ final case class Settings(
   var allowMissileAnimation: Boolean = true,
   var allowModuleAnimation: Boolean = true,
   var allowCollisionAnimation: Boolean = true,
-  val recordReplays: Boolean = true,
-  val allowFramePrecomputation: Boolean = true
+  recordReplays: Boolean = true,
+  allowFramePrecomputation: Boolean = true
 ) {
   /** Sets all graphics options to the fastest setting. */
   def setFastestGraphics(): Unit = {

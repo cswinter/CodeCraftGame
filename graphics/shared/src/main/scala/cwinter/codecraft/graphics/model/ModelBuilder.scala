@@ -17,6 +17,6 @@ private[codecraft] trait ModelBuilder[TStatic, TDynamic] {
   def optimized: ModelBuilder[TStatic, TDynamic] = this
 
   def wireParameters[SDynamic](projection: SDynamic => TDynamic) =
-    new ProjectedParamsModelBuilder(this, projection)
+    ProjectedParamsModelBuilder(this, projection)
 }
 

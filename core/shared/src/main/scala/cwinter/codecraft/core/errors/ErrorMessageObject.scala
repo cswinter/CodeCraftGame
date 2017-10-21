@@ -21,6 +21,5 @@ private[core] class ErrorMessageObject(
     TextModel(message, position.x, position.y, color)
   }
 
-
   def hasFaded: Boolean = age >= lifetime
 }

@@ -11,8 +11,8 @@ class Replayer(lines: Iterator[String]) {
   def readLine: String = lines.next()
 
   private[this] var lineNumber: Int = -1
-  private[this] var currRecord: ReplayRecord = null
-  private[this] var currLine: String = null
+  private[this] var currRecord: ReplayRecord = _
+  private[this] var currLine: String = _
   private[this] def nextLine(): String = {
     lineNumber += 1
     currLine = readLine
@@ -52,7 +52,7 @@ class Replayer(lines: Iterator[String]) {
          }) {
     nextRecord()
   }
-  val startingMinerals = _startingMinerals.toList
+  val startingMinerals: Seq[MineralSpawn] = _startingMinerals.toList
 
   def controllers = spawns.map(_ => new DummyDroneController)
 
@@ -77,7 +77,7 @@ class Replayer(lines: Iterator[String]) {
     }
   }
 
-  def finished = !lines.hasNext
+  def finished: Boolean = !lines.hasNext
 
   def gameConfig = map.createGameConfig(
     droneControllers = map.initialDrones.map(_ => replayDroneController()),

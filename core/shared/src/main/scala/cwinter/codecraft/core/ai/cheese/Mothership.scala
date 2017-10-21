@@ -4,7 +4,7 @@ import cwinter.codecraft.core.api.{Drone, DroneController, DroneSpec, MineralCry
 
 
 private[core] class Mothership extends DroneController {
-  final val destroyerSpec = new DroneSpec(0, 3, 0, 0, 1)
+  final val destroyerSpec = DroneSpec(0, 3, 0, 0, 1)
 
   override def onSpawn(): Unit = {
     buildDrone(new Destroyer(-position), destroyerSpec)

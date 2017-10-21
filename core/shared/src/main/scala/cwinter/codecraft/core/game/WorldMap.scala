@@ -59,7 +59,7 @@ object WorldMap {
     initialDrones: Seq[Spawn]
   ): WorldMap = {
     val minerals =
-      for ((pos, size) <- resources) yield new MineralSpawn(size, pos)
+      for ((pos, size) <- resources) yield MineralSpawn(size, pos)
 
     WorldMap(minerals, size, initialDrones)
   }
@@ -72,7 +72,7 @@ object WorldMap {
     val minerals =
       for (i <- 0 to resourceCount)
         yield
-          new MineralSpawn(
+          MineralSpawn(
             GlobalRNG.int(1, 2),
             Vector2(GlobalRNG.double(size.xMin, size.xMax), GlobalRNG.double(size.yMin, size.yMax))
           )
@@ -124,7 +124,7 @@ object WorldMap {
       val p = math.sqrt(math.exp(-dist * dist / 100000))
       val size = (GlobalRNG.double(0, p) * 3 * maxSize).toInt + 1
       if (!minerals.exists(m => (m.position - pos).lengthSquared <= minDist * minDist * size)) {
-        minerals :+= new MineralSpawn(size, pos)
+        minerals :+= MineralSpawn(size, pos)
       }
     }
 

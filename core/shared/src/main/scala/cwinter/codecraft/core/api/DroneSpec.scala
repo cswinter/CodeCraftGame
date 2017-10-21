@@ -16,9 +16,11 @@ import scala.scalajs.js.annotation.JSExportAll
  *
  * @param storageModules Number of storage modules. Allows for storage of mineral crystals and energy globes.
  * @param missileBatteries Number of missile batteries. Allows for firing homing missiles.
- * @param constructors Number of constructors. Allows for constructing new drones and moving minerals from/to other drones.
+ * @param constructors Number of constructors.
+  *                     Allows for constructing new drones and moving minerals from/to other drones.
  * @param engines Number of engines. Increases move speed.
- * @param shieldGenerators Number of shield generators. Gives the drone an additional 7 hitpoints each. Shields regenerate over time.
+ * @param shieldGenerators Number of shield generators. Gives the drone an additional 7 hitpoints each.
+  *                         Shields regenerate over time.
  */
 @JSExportAll
 case class DroneSpec(

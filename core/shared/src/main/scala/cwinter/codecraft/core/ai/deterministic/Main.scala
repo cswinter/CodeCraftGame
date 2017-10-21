@@ -9,14 +9,14 @@ private[codecraft] class DeterministicMothership(rngSeed: Int) extends DroneCont
   var t = 0
   var collectors = 0
 
-  val collectorDroneSpec = new DroneSpec(storageModules = 1)
-  val fastCollectorDroneSpec = new DroneSpec(storageModules = 1, engines = 1)
-  val attackDroneSpec1 = new DroneSpec(missileBatteries = 1, shieldGenerators = 1)
-  val attackDroneSpec2 = new DroneSpec(missileBatteries = 2)
+  val collectorDroneSpec = DroneSpec(storageModules = 1)
+  val fastCollectorDroneSpec = DroneSpec(storageModules = 1, engines = 1)
+  val attackDroneSpec1 = DroneSpec(missileBatteries = 1, shieldGenerators = 1)
+  val attackDroneSpec2 = DroneSpec(missileBatteries = 2)
 
   // abstract methods for event handling
   override def onSpawn(): Unit = {
-    buildDrone(new DeterministicScout(this), new DroneSpec(storageModules = 1))
+    buildDrone(new DeterministicScout(this), DroneSpec(storageModules = 1))
   }
 
   override def onTick(): Unit = {

@@ -11,7 +11,7 @@ class JSDroneController(
   private[this] var _errorHandler: Option[(Throwable, String, JSDroneController) => Unit] = None,
   private[this] var _nativeControllerName: String = ""
 ) extends DroneControllerBase {
-  private[this] var _nativeController: js.Dynamic = null
+  private[this] var _nativeController: js.Dynamic = _
   def errorHandler_=(value: (Throwable, String, JSDroneController) => Unit) = _errorHandler = Some(value)
 
   private[this] var _preEventProcessingHook: () => Unit = () => {}

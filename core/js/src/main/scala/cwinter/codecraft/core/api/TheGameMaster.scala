@@ -18,7 +18,7 @@ import scala.util.{Failure, Success}
 @JSExport
 @JSExportAll
 object TheGameMaster extends GameMasterLike {
-  var canvas: html.Canvas = null
+  var canvas: html.Canvas = _
   private[this] var runContext: Option[RunContext] = None
   private[codecraft] var outputFPS: Boolean = false
 
@@ -124,7 +124,8 @@ class FPSMeter(context: RunContext) {
 
 
   def drawFPS(): Unit = {
-    context.simulator.debug.drawText(fpsString, -1, 1, ColorRGBA(1, 1, 1, 1), true, false, false)
+    context.simulator.debug.drawText(fpsString, -1, 1, ColorRGBA(1, 1, 1, 1),
+      absolutePosition = true, centered = false, largeFont = false)
   }
 
   def printFPS(): Unit = println(fpsString)
