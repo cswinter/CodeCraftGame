@@ -1,11 +1,10 @@
 package cwinter.codecraft.core.replay
 
 import cwinter.codecraft.core.api.{DroneSpec, Player}
-import cwinter.codecraft.core.game.{GameConfig, MineralSpawn, Spawn, WorldMap}
+import cwinter.codecraft.core.game.{GameConfig, MineralSpawn, Spawn}
 import cwinter.codecraft.core.objects.drone.{DroneCommand, SerializableDroneCommand}
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 import upickle.default._
-
 
 
 private sealed trait ReplayRecord

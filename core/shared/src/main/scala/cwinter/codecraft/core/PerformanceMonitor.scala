@@ -13,8 +13,8 @@ private[codecraft] trait PerformanceMonitor {
 private[codecraft] class MockPerformanceMonitor extends PerformanceMonitor {
   override def measure[T](name: Symbol)(code: => T): T = code
   override def compileReport: String = "MockPerformanceMonitor does not perform any measurements."
-  override def beginMeasurement(name: Symbol) = ()
-  override def endMeasurement(name: Symbol) = ()
+  override def beginMeasurement(name: Symbol): Unit = ()
+  override def endMeasurement(name: Symbol): Unit = ()
 }
 
 private[codecraft] class SimplePerformanceMonitor extends Stopwatch with PerformanceMonitor

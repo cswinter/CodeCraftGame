@@ -68,7 +68,7 @@ class DroneWorldSimulator(
   private[this] var _currentPhase: Symbol = 'NotStarted
 
   /** Returns the winning player. */
-  def winner = _winner
+  def winner: Option[Player] = _winner
 
   private val visionTracker = new VisionTracker[WorldObject with VisionTracking](
     config.worldSize.xMin.toInt, config.worldSize.xMax.toInt,
@@ -269,7 +269,7 @@ class DroneWorldSimulator(
     WorldStateMessage(missileHits, stateChanges, mineralHarvests, droneSpawns)
   }
 
-  private var remoteWorldState: WorldStateMessage = null
+  private var remoteWorldState: WorldStateMessage = _
   private def awaitWorldState = Async('AwaitWorldState) { implicit ec =>
     val MultiplayerClientConfig(_, _, server) = multiplayerConfig.asInstanceOf[MultiplayerClientConfig]
     server.receiveWorldState().map {

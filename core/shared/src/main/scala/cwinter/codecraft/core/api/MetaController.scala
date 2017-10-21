@@ -9,9 +9,9 @@ import cwinter.codecraft.util.maths.Rectangle
   * You can instantiate your [[MetaController]] using the [[DroneControllerBase.metaController]] method.
   */
 trait MetaController {
-  private[core] var _worldSize: Rectangle = null
+  private[core] var _worldSize: Rectangle = _
   private[core] var _tickPeriod: Int = -1
-  private[core] implicit var _simulationContext: SimulationContext = null
+  private[core] implicit var _simulationContext: SimulationContext = _
 
   def onTick(): Unit
   def init(): Unit = ()

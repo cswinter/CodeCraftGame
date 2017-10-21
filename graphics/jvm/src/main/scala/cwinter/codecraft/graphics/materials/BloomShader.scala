@@ -12,10 +12,11 @@ import cwinter.codecraft.util.maths.{ColorRGB, VertexXYZ, VertexUV, VertexXY}
 /*
 Notes on framebuffer objects.
 
-A framebuffer objects encapsulates a whole stack of elements required for rendering.
+A framebuffer object encapsulates a whole stack of elements required for rendering.
 In particular, you can attach textures, render buffers, depth buffer and stencil buffers.
 
-It is not possible to attach the default depth buffer to a framebuffer (source: http://gamedev.stackexchange.com/questions/25495/can-i-use-the-default-depth-buffer-when-drawing-to-fbo)
+It is not possible to attach the default depth buffer to a framebuffer
+(source: http://gamedev.stackexchange.com/questions/25495/can-i-use-the-default-depth-buffer-when-drawing-to-fbo)
 This means that if we want access to the depth buffer during offscreen drawing,
 the whole rendering pipeline must use a custom framebuffer.
 The final image can then be copied to the (screen) buffer using a texture blip.

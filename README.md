@@ -35,12 +35,12 @@ The bulk of the code is inside the `shared` directories, with only some platform
 
 # IDE Setup
 
-## IntelliJ 15
+## IntelliJ
 
 You need to have the Scala plugin installed.  
-`File` → `New` → `Project from Existing Sources..` → select root directory → `Import project from external model` → `SBT` → `Next` → select whatever options you want → `Finish`
+`File` → `New` → `Project from Existing Sources..` → select root directory → `Import project from external model` → `SBT` → `Next` → keep default options unless you have a reason to change them → `Finish`
 
-IntelliJ 14 should be similar.
+Tested on versions 15 and 2017.
 
 ## Eclipse
 I don't use Eclipse, but presumably this is relatively straightforward as well.

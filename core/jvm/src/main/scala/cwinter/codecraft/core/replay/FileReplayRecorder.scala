@@ -10,8 +10,8 @@ import scala.annotation.tailrec
 private[core] class FileReplayRecorder(path: String) extends ReplayRecorder {
   final val format = DateTimeFormat.forPattern("YYMMdd-HHmmss")
   val replay = new StringBuilder
-  val dir = new File(path).mkdirs()
-  val replayFile = createNewFile(format.print(new DateTime), ".replay")
+  val dir: Boolean = new File(path).mkdirs()
+  val replayFile: File = createNewFile(format.print(new DateTime), ".replay")
   val writer = new FileWriter(replayFile)
 
 
@@ -29,7 +29,7 @@ private[core] class FileReplayRecorder(path: String) extends ReplayRecorder {
     writer.flush()
   }
 
-  def filename = replayFile.getAbsoluteFile
+  def filename: File = replayFile.getAbsoluteFile
 
   override def replayFilepath = Some(filename.toString)
 }
