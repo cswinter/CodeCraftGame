@@ -14,10 +14,12 @@ object Dependencies {
   val javaxWebsocketImpl = "org.glassfish.tyrus" % "tyrus-container-grizzly-client" % "1.13"
   val jetm = "fm.void.jetm" % "jetm" % "1.2.3"
   val async = "org.scala-lang.modules" % "scala-async_2.11" % "0.9.5"
+  val scalaXml = "org.scala-lang.modules" %% "scala-xml" % "1.0.4"
 
 
   val commonDependencies: Seq[ModuleID] = Seq(
-    scalatest
+    scalatest,
+    scalaXml
   )
 
   val coreJVMDependencies: Seq[ModuleID] = Seq(
