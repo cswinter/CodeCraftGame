@@ -18,7 +18,7 @@ object DroneFactory {
   val blueDroneContext = mockDroneContext(BluePlayer)
   val redDroneContext = mockDroneContext(RedPlayer)
 
-  def mockDroneContext(player: Player): DroneContext = new DroneContext(
+  def mockDroneContext(player: Player): DroneContext = DroneContext(
     player,
     Rectangle(-100, 100, -100, 100),
     1,
