@@ -35,7 +35,7 @@ lazy val graphics = (crossProject in file("graphics")).
   ).jsSettings(
     libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.9.0",
     // add resources of the current project into the build classpath
-    unmanagedClasspath in Compile <++= unmanagedResources in Compile
+    unmanagedClasspath in Compile ++= {unmanagedResources in Compile}.value
   ).dependsOn(util)
 lazy val graphicsJVM = graphics.jvm
 lazy val graphicsJS = graphics.js
@@ -123,8 +123,8 @@ lazy val docs = (project in file("docs"))
     libraryDependencies += "me.chrons" %%% "boopickle" % "1.1.3",
     libraryDependencies += "com.lihaoyi" %%% "upickle" % "0.4.1",
     libraryDependencies ++= coreJVMDependencies,
-    unmanagedSourceDirectories in Compile <<=
-      (projects map (unmanagedSourceDirectories in _ in Compile)).join.apply{(s) => s.flatten},
+    unmanagedSourceDirectories in Compile :=
+      { (projects map (unmanagedSourceDirectories in _ in Compile)).join.apply{(s) => s.flatten}.value },
     // this might not work under Windows (which uses ; as separator)
     scalacOptions in (Compile, doc) ++= List(s"-skip-packages", skippedPackages.mkString(":"))
   )
