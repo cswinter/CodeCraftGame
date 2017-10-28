@@ -3,18 +3,18 @@ package cwinter.codecraft.core.ai.basic
 import cwinter.codecraft.core.api.{Drone, DroneController, DroneSpec, MineralCrystal}
 import cwinter.codecraft.util.maths.{GlobalRNG, RNG, Vector2}
 
-
+/** Default mothership */
 private[core] class Mothership extends DroneController {
   var t = 0
   var collectors = 0
 
-  val collectorDroneSpec = new DroneSpec(storageModules = 2)
-  val fastCollectorDroneSpec = new DroneSpec(storageModules = 1, engines = 1)
-  val attackDroneSpec = new DroneSpec(missileBatteries = 2)
+  val collectorDroneSpec = DroneSpec(storageModules = 2)
+  val fastCollectorDroneSpec = DroneSpec(storageModules = 1, engines = 1)
+  val attackDroneSpec = DroneSpec(missileBatteries = 2)
 
   // abstract methods for event handling
   override def onSpawn(): Unit = {
-    buildDrone(new ScoutingDroneController(this), new DroneSpec(storageModules = 1))
+    buildDrone(new ScoutingDroneController(this), DroneSpec(storageModules = 1))
   }
 
   override def onTick(): Unit = {

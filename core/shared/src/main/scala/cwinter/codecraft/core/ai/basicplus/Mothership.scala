@@ -19,7 +19,7 @@ private[core] class Mothership extends BasicPlusController('Mothership) {
   private val collectorSpec = DroneSpec(storageModules = 1)
   private val hunterSpec = DroneSpec(missileBatteries = 1, engines = 1)
   private val destroyerSpec = DroneSpec(missileBatteries = 3, shieldGenerators = 1)
-  private[basicplus] var searchTokens: Set[SearchToken] = null
+  private[basicplus] var searchTokens: Set[SearchToken] = _
 
   // abstract methods for event handling
   override def onSpawn(): Unit = {
