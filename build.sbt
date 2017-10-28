@@ -66,15 +66,6 @@ lazy val testai = (project in file("testai")).
     libraryDependencies += jetm
   ).dependsOn(coreJVM)
 
-val demos = (crossProject in file("demos")).
-  settings(Commons.settings: _*).
-  settings(
-    name := "codecraft-demos",
-    libraryDependencies ++= commonDependencies
-  ).dependsOn(graphics, collisions, physics)
-lazy val demosJVM = demos.jvm
-lazy val demosJS = demos.js
-
 
 val core = (crossProject in file("core")).
   settings(Commons.settings: _*).
