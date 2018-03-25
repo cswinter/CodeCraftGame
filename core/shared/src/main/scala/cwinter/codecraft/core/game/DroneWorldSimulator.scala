@@ -179,7 +179,10 @@ class DroneWorldSimulator(
         wc <- config.winConditions.reverse;
         player <- players
         if playerHasWon(wc, player)
-      ) _winner = Some(player)
+      ) {
+        _winner = Some(player)
+        gameStatus = Stopped(s"$player won")
+      }
     }
   }
 
