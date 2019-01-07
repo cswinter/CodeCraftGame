@@ -694,6 +694,7 @@ class DroneWorldSimulator(
   }
 
   private def playerHasWon(winCondition: WinCondition, player: Player): Boolean = {
+    if (player.isObserver) return false
     winCondition match {
       case DestroyEnemyMotherships => !drones.exists(isLivingEnemyMothership(player))
       case LargestFleet(timeout: Int) =>

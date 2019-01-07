@@ -16,7 +16,7 @@ class DroneWorldSimulatorTest extends FlatSpec with Matchers {
     Seq(Spawn(mockDroneSpec, Vector2(0, 0), BluePlayer))
   )
 
-  val config = map.createGameConfig(Seq(mockDrone))
+  val config = map.createGameConfig(Seq(mockDrone), winConditions = Seq(LargestFleet(999999999)))
 
   val simulator = new DroneWorldSimulator(config, forceReplayRecorder = Some(NullReplayRecorder))
   val mineral = simulator.minerals.head
