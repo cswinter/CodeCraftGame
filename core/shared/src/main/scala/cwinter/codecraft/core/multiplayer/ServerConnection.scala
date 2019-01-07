@@ -53,8 +53,8 @@ class ServerConnection(
     val serverPlayers = sync.remotePlayers
     val gameConfig = sync.gameConfig(Seq(controller))
     val mpConfig = MultiplayerClientConfig(clientPlayers, serverPlayers, conn)
-    assert(gameConfig.drones.count { case (d, _) => mpConfig.isLocalPlayer(d.player) } == 1,
-           "Must have one drone owned by local player.")
+    // assert(gameConfig.drones.count { case (d, _) => mpConfig.isLocalPlayer(d.player) } == 1,
+    //       "Must have one drone owned by local player.")
     new DroneWorldSimulator(
       config = gameConfig,
       multiplayerConfig = mpConfig

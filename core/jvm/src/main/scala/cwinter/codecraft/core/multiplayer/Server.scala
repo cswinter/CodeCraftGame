@@ -4,7 +4,7 @@ import java.nio.ByteBuffer
 
 import akka.actor._
 import akka.io.IO
-import cwinter.codecraft.core.api.{BluePlayer, OrangePlayer, TheGameMaster}
+import cwinter.codecraft.core.api._
 import cwinter.codecraft.core.game._
 import cwinter.codecraft.core.objects.drone.{GameClosed, ServerBusy, ServerMessage}
 import cwinter.codecraft.core.replay.DummyDroneController
@@ -22,33 +22,32 @@ object Server {
   implicit val system = ActorSystem()
 
   def spawnServerInstance2(
-    seed: Int = scala.util.Random.nextInt,
-    mapGenerator: => WorldMap = TheGameMaster.defaultMap,
-    displayGame: Boolean = false,
-    recordReplaysToFile: Boolean = false,
-    maxGames: Int = 10,
-    winConditions: Seq[WinCondition] = WinCondition.default
-  ): Unit = {
+                            seed: Int = scala.util.Random.nextInt,
+                            mapGenerator: => WorldMap = TheGameMaster.defaultMap,
+                            displayGame: Boolean = false,
+                            recordReplaysToFile: Boolean = false,
+                            maxGames: Int = 10,
+                            winConditions: Seq[WinCondition] = WinCondition.default
+                          ): Unit = {
     start(seed, mapGenerator, displayGame, recordReplaysToFile, maxGames)
     system.awaitTermination()
   }
 
   def start(
-    seed: Int = scala.util.Random.nextInt,
-    mapGenerator: => WorldMap = TheGameMaster.defaultMap,
-    displayGame: Boolean = false,
-    recordReplaysToFile: Boolean = false,
-    maxGames: Int = 10,
-    winConditions: Seq[WinCondition] = WinCondition.default
-  ): ActorRef = {
+             seed: Int = scala.util.Random.nextInt,
+             mapGenerator: => WorldMap = TheGameMaster.defaultMap,
+             displayGame: Boolean = false,
+             recordReplaysToFile: Boolean = false,
+             maxGames: Int = 10,
+             winConditions: Seq[WinCondition] = WinCondition.default
+           ): ActorRef = {
     val server = system.actorOf(Props(classOf[MultiplayerServer],
-                                      seed,
-                                      () => mapGenerator,
-                                      displayGame,
-                                      recordReplaysToFile,
-                                      maxGames,
-                                      winConditions),
-                                "websocket")
+      seed,
+      () => mapGenerator,
+      displayGame,
+      recordReplaysToFile,
+      maxGames,
+      winConditions))
     IO(UHttp) ! Http.Bind(server, "0.0.0.0", 8080)
     server
   }
@@ -58,21 +57,29 @@ object Server {
   }
 
   object Stop
+
   object GetStatus
+
   object GetDetailedStatus
+
+  object ScrewThis
+
   case class MatchmakingRequest(client: WebsocketClientConnection)
+
 }
 
-private[codecraft] class MultiplayerServer(
-  private var nextRNGSeed: Int = scala.util.Random.nextInt,
-  val mapGenerator: () => WorldMap = () => TheGameMaster.defaultMap,
-  val displayGame: Boolean = false,
-  val recordReplaysToFile: Boolean = false,
-  val maxGames: Int = 10,
-  val winConditions: Seq[WinCondition] = WinCondition.default
-) extends Actor
-    with ActorLogging {
+class MultiplayerServer(
+                         private var nextRNGSeed: Int = scala.util.Random.nextInt,
+                         val mapGenerator: () => WorldMap = () => TheGameMaster.defaultMap,
+                         val displayGame: Boolean = false,
+                         val recordReplaysToFile: Boolean = false,
+                         val maxGames: Int = 10,
+                         val winConditions: Seq[WinCondition] = WinCondition.default
+                       ) extends Actor
+  with ActorLogging {
+
   import Server._
+
   val tickPeriod = 10
   val startTimestamp = new DateTime().getMillis
 
@@ -82,22 +89,23 @@ private[codecraft] class MultiplayerServer(
   private var completedGames = List.empty[GameStatus]
 
   case class Connection(
-    rawConnection: ActorRef,
-    websocketActor: ActorRef,
-    worker: WebsocketClientConnection
-  ) {
+                         rawConnection: ActorRef,
+                         websocketActor: ActorRef,
+                         worker: WebsocketClientConnection
+                       ) {
     var assignedGame: Option[DroneWorldSimulator] = None
   }
 
   case class GameInfo(
-    connections: Seq[Connection],
-    startTimestamp: Long
-  )
+                       connections: Seq[Connection],
+                       startTimestamp: Long
+                     )
 
   case class GameTimedOut(simulatorRef: WeakReference[DroneWorldSimulator])
 
   def receive = {
-    case m @ Http.Connected(remoteAddress, localAddress) =>
+    case ScrewThis => sender() ! this
+    case m@Http.Connected(remoteAddress, localAddress) =>
       val rawConnection = sender()
       if (connectionInfo.size < 2 * maxGames) {
         val connection = acceptConnection(rawConnection)
@@ -129,10 +137,10 @@ private[codecraft] class MultiplayerServer(
         for ((sim, info) <- runningGames)
           yield gameStatus(sim, info)
       sender() ! DetailedStatus(waitingClient.nonEmpty,
-                                connectionInfo.size,
-                                gameDetails.toSeq ++ completedGames,
-                                new DateTime().getMillis,
-                                startTimestamp)
+        connectionInfo.size,
+        gameDetails.toSeq ++ completedGames,
+        new DateTime().getMillis,
+        startTimestamp)
     case Stop =>
       for (simulator <- runningGames.keys)
         stopGame(simulator, GameClosed.ServerStopped)
@@ -147,20 +155,72 @@ private[codecraft] class MultiplayerServer(
       }
   }
 
+  def startLocalGame(): Unit = {
+    log.info("Starting Local Game")
+    val map = mapGenerator()
+    var remotePlayers = Set.empty[Player]
+    var remoteClients = Set.empty[RemoteClient]
+    var controllers = Seq(TheGameMaster.destroyerAI(), TheGameMaster.replicatorAI())
+    var connections = Seq.empty[Connection]
+
+    for (observer <- waitingClient) {
+      log.info("Observer Joined")
+      val player = Observer(3)
+      remotePlayers = Set(player)
+      controllers = Seq(TheGameMaster.destroyerAI(), TheGameMaster.replicatorAI(), new DummyDroneController())
+      remoteClients = Set(observer.worker.asInstanceOf[RemoteClient])
+      connections = Seq(observer)
+      observer.worker.initialise(Set(player), map, nextRNGSeed, tickPeriod, WinCondition.default)
+      waitingClient = None
+    }
+
+    val simulator = new DroneWorldSimulator(
+      map.createGameConfig(
+        controllers,
+        tickPeriod = tickPeriod,
+        rngSeed = nextRNGSeed,
+        winConditions = winConditions
+      ),
+      multiplayerConfig = AuthoritativeServerConfig(
+        Set(BluePlayer, OrangePlayer),
+        remotePlayers,
+        remoteClients,
+        updateCompleted,
+        onTimeout),
+      settings = Settings.default.copy(recordReplays = false)
+    ) with JVMAsyncRunner
+    simulator.graphicsEnabled = displayGame
+    nextRNGSeed = scala.util.Random.nextInt
+    simulator.framerateTarget = if (displayGame) 60 else 1001
+    simulator.onException((e: Throwable) => {
+      log.info(s"Terminating running multiplayer game because of uncaught exception.")
+      log.info(s"Exception message:\n${e.getStackTrace.mkString("\n")}")
+      stopGame(simulator, GameClosed.Crash(e.getMessage + "\n" + e.getStackTrace.mkString("\n")))
+    })
+    context.system.scheduler.scheduleOnce(20 minutes, self, GameTimedOut(WeakReference(simulator)))
+    runningGames += simulator -> GameInfo(connections, new DateTime().getMillis)
+
+    for (c <- connections) c.assignedGame = Some(simulator)
+
+    if (displayGame) TheGameMaster.run(simulator) else simulator.runAsync()
+  }
+
   private def acceptConnection(rawConnection: ActorRef): Connection = {
     val worker = new WebsocketClientConnection(self)
     val websocketActor = context.actorOf(WebsocketActor.props(rawConnection, worker))
     rawConnection ! Http.Register(websocketActor)
     context.watch(websocketActor)
+    val connection = Connection(rawConnection, websocketActor, worker)
     context.system.scheduler.scheduleOnce(10 minutes, new Runnable {
       override def run(): Unit = {
         if (!hasStartedMatchmaking(rawConnection)) {
           context.stop(rawConnection)
           context.stop(websocketActor)
+          connectionInfo -= connection.websocketActor
         }
       }
     })
-    Connection(rawConnection, websocketActor, worker)
+    connection
   }
 
   private def hasStartedMatchmaking(rawConnection: ActorRef): Boolean =
@@ -170,8 +230,11 @@ private[codecraft] class MultiplayerServer(
   private def rejectConnection(rawConnection: ActorRef): Unit = {
     class RejectConnection extends WebsocketWorker {
       var closed = false
+
       override def receiveBytes(bytes: ByteBuffer): Unit = close()
+
       override def receive(message: String): Unit = close()
+
       def close(): Unit = if (!closed) {
         send(ServerMessage.serializeBinary(ServerBusy))
         closeConnection()
@@ -207,10 +270,10 @@ private[codecraft] class MultiplayerServer(
         winConditions = winConditions
       ),
       multiplayerConfig = AuthoritativeServerConfig(Set.empty,
-                                                    clients.flatMap(_.players),
-                                                    clients,
-                                                    updateCompleted,
-                                                    onTimeout),
+        clients.flatMap(_.players),
+        clients,
+        updateCompleted,
+        onTimeout),
       settings = Settings.default.copy(recordReplays = false)
     ) with JVMAsyncRunner
     simulator.graphicsEnabled = displayGame
@@ -272,14 +335,14 @@ private[codecraft] class MultiplayerServer(
           else sum + c.worker.totalBytesIn
       }
     GameStatus(closeReason,
-               sim.measuredFramerate,
-               (1000 * sim.timestep / math.max(1, nowMS - info.startTimestamp)).toInt,
-               sim.timestep,
-               info.startTimestamp,
-               closeReason.map(_ => nowMS),
-               info.connections.map(_.worker.msSinceLastResponse).max,
-               sim.currentPhase.toString,
-               outBandwidth,
-               inBandwidth)
+      sim.measuredFramerate,
+      (1000 * sim.timestep / math.max(1, nowMS - info.startTimestamp)).toInt,
+      sim.timestep,
+      info.startTimestamp,
+      closeReason.map(_ => nowMS),
+      if (info.connections.isEmpty) 0 else info.connections.map(_.worker.msSinceLastResponse).max,
+      sim.currentPhase.toString,
+      outBandwidth,
+      inBandwidth)
   }
 }
