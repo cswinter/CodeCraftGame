@@ -155,19 +155,19 @@ class MultiplayerServer(
       }
   }
 
-  def startLocalGame(): Unit = {
+  def startLocalGame(c1: DroneControllerBase, c2: DroneControllerBase): DroneWorldSimulator = {
     log.info("Starting Local Game")
     val map = mapGenerator()
     var remotePlayers = Set.empty[Player]
     var remoteClients = Set.empty[RemoteClient]
-    var controllers = Seq(TheGameMaster.destroyerAI(), TheGameMaster.replicatorAI())
+    var controllers = Seq(c1, c2)
     var connections = Seq.empty[Connection]
 
     for (observer <- waitingClient) {
       log.info("Observer Joined")
       val player = Observer(3)
       remotePlayers = Set(player)
-      controllers = Seq(TheGameMaster.destroyerAI(), TheGameMaster.replicatorAI(), new DummyDroneController())
+      controllers = Seq(c1, c2, new DummyDroneController())
       remoteClients = Set(observer.worker.asInstanceOf[RemoteClient])
       connections = Seq(observer)
       observer.worker.initialise(Set(player), map, nextRNGSeed, tickPeriod, WinCondition.default)
@@ -203,6 +203,8 @@ class MultiplayerServer(
     for (c <- connections) c.assignedGame = Some(simulator)
 
     if (displayGame) TheGameMaster.run(simulator) else simulator.runAsync()
+
+    simulator
   }
 
   private def acceptConnection(rawConnection: ActorRef): Connection = {
