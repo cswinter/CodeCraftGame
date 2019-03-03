@@ -23,5 +23,8 @@ class JDroneController extends DroneControllerBase {
 
   /** Gets all drones currently within the sight radius of this drone. */
   def alliesInSight: java.util.Set[Drone] = super.alliesInSightScala.asJava
+
+  /** Gets all mineral crystals currently within the sight radius of this drone. */
+  def mineralsInSight: java.util.Set[MineralCrystal] = super.mineralsInSightScala.asJava
 }
 

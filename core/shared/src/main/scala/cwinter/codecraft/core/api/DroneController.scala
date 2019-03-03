@@ -21,5 +21,8 @@ class DroneController extends DroneControllerBase {
 
   /** Gets all allied drones currently within the sight radius of this drone. */
   def alliesInSight: Set[Drone] = super.alliesInSightScala
+
+  /** Gets all mineral crystals currently within the sight radius of this drone. */
+  def mineralsInSight: Set[MineralCrystal] = super.mineralsInSightScala
  }
 

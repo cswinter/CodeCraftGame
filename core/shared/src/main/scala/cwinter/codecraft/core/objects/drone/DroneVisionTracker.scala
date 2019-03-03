@@ -47,4 +47,5 @@ private[codecraft] trait DroneVisionTracker extends ActiveVisionTracking { self:
   def dronesInSight: Set[Drone] = if (isDead) Set.empty else _dronesInSight
   def enemiesInSight: Set[Drone] = if (isDead) Set.empty else _enemiesInSight
   def alliesInSight: Set[Drone] = if (isDead) Set.empty else _alliesInSight
+  def mineralsInSight: Set[MineralCrystal]  = if (isDead) Set.empty else _mineralsInSight
 }

@@ -203,6 +203,7 @@ trait DroneControllerBase extends Drone {
   @inline private[core] final def dronesInSightScala: Set[Drone] = drone.dronesInSight
   @inline private[core] final def alliesInSightScala: Set[Drone] = drone.alliesInSight
   @inline private[core] final def enemiesInSightScala: Set[Drone] = drone.enemiesInSight
+  @inline private[core] final def mineralsInSightScala: Set[MineralCrystal] = drone.mineralsInSight
 
   /** Returns the confines of the game world. */
   def worldSize: Rectangle = drone.context.worldSize
