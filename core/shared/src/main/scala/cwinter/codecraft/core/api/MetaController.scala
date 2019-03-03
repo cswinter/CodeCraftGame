@@ -14,6 +14,7 @@ trait MetaController {
   private[core] implicit var _simulationContext: SimulationContext = _
 
   def onTick(): Unit
+  def gameOver(winner: Player): Unit = ()
   def init(): Unit = ()
 
   private[codecraft] def onTick(simulationContext: SimulationContext): Unit = {

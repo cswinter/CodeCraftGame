@@ -22,7 +22,7 @@ private[codecraft] trait JVMAsyncRunner { self: Simulator =>
 
 private[codecraft] object JVMAsyncRunner {
   val count = new AtomicInteger(0)
-  private val threadPool = Executors.newFixedThreadPool(32)
+  private val threadPool = Executors.newFixedThreadPool(1024)
   implicit val ec = new ExecutionContext {
     override def reportFailure(cause: Throwable): Unit = { cause.printStackTrace() }
     override def execute(runnable: Runnable): Unit = threadPool.submit(runnable)

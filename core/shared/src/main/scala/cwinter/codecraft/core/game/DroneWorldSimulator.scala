@@ -182,6 +182,7 @@ class DroneWorldSimulator(
       ) {
         _winner = Some(player)
         gameStatus = Stopped(s"$player won")
+        for (c <- metaControllers) c.gameOver(player)
       }
     }
   }
@@ -614,25 +615,23 @@ class DroneWorldSimulator(
 
   private case class SimulationPhaseSeq(subphases: Seq[SimulationPhase]) extends SimulationPhase {
     override def run(): Unit = subphases.foreach { phase =>
-      if (gameStatus == Running) phase.run()
+      phase.run()
     }
 
     override def runAsync()(implicit ec: ExecutionContext): Future[Unit] = runAsync(subphases)
 
     private def runAsync(remaining: Seq[SimulationPhase])(implicit ec: ExecutionContext): Future[Unit] =
-      if (gameStatus == Running) {
-        remaining match {
-          case Seq(last) =>
-            last.runAsync()
-          case Seq(head, tail@_*) =>
-            if (head.isFullyLocal) {
-              head.run()
-              runAsync(tail)
-            } else {
-              head.runAsync().flatMap(_ => runAsync(tail))
-            }
-        }
-      } else Future.successful(Unit)
+      remaining match {
+        case Seq(last) =>
+          last.runAsync()
+        case Seq(head, tail@_*) =>
+          if (head.isFullyLocal) {
+            head.run()
+            runAsync(tail)
+          } else {
+            head.runAsync().flatMap(_ => runAsync(tail))
+          }
+      }
 
     override def isFullyLocal = subphases.forall(_.isFullyLocal)
   }

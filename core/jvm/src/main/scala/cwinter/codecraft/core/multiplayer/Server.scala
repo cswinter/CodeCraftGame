@@ -301,7 +301,7 @@ class MultiplayerServer(
     if (runningGames.contains(simulator))
       stopGame(simulator, GameClosed.PlayerTimedOut)
 
-  private def stopGame(simulator: DroneWorldSimulator, reason: GameClosed.Reason) = synchronized {
+  private def stopGame(simulator: DroneWorldSimulator, reason: GameClosed.Reason): Unit = synchronized {
     runningGames.get(simulator) match {
       case Some(info) =>
         simulator.terminate()
