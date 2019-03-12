@@ -46,7 +46,7 @@ abstract private[core] class ConstantVelocityDynamics(
 
     val result = x.filter(_._1 < timeDelta).map {
       case (t, dir) =>
-        if (t < 0 && t > -1e-12) (0.0, dir)
+        if (t < 0 && t > -1e-2) (0.0, dir)
         else (t, dir)
     }
 
