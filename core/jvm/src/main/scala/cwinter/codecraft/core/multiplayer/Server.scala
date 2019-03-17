@@ -216,8 +216,10 @@ class MultiplayerServer(
     context.system.scheduler.scheduleOnce(10 minutes, new Runnable {
       override def run(): Unit = {
         if (!hasStartedMatchmaking(rawConnection)) {
-          context.stop(rawConnection)
-          context.stop(websocketActor)
+          if (context != null) {
+            context.stop(rawConnection)
+            context.stop(websocketActor)
+          }
           connectionInfo -= connection.websocketActor
         }
       }

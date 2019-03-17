@@ -33,7 +33,7 @@ class TightCollisionTest extends FlatSpec with Matchers {
     val runFor10Steps = Future {
       simulator.run(10)
     }
-    Await.result(runFor10Steps, 1.seconds)
+    Await.result(runFor10Steps, 5.seconds)
   }
 
   // TODO: fix this bug and enable test

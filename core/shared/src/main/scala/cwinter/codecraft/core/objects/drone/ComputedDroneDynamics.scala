@@ -25,6 +25,7 @@ private[core] class ComputedDroneDynamics(
   private[drone] var isStunned: Boolean = false
   private var oldPos = pos
   private var oldOrientation = orientation
+  private var collisionCount = 0;
 
 
   def setPosition(value: Vector2): Unit = pos = value
@@ -93,6 +94,7 @@ private[core] class ComputedDroneDynamics(
   }
 
   def recomputeVelocity(): Unit = {
+    collisionCount = 0
     velocity =
       if (isStunned) {
         if (velocity.length <= maxSpeed * 0.10f) {
@@ -138,6 +140,8 @@ private[core] class ComputedDroneDynamics(
     if (dx <= dy && xCollisionPossible) velocity = velocity.copy(_x = -velocity.x)
     else velocity = velocity.copy(_y = -velocity.y)
     isStunned = true
+    collisionCount += 1
+    if (collisionCount > 20) velocity = Vector2.Null
   }
 
   override def handleObjectCollision(other: ConstantVelocityDynamics): Unit = {
@@ -154,6 +158,9 @@ private[core] class ComputedDroneDynamics(
         other.velocity = v2 - 2 * w1 / (w1 + w2) * (v2 - v1 dot x2 - x1) / (x2 - x1).lengthSquared * (x2 - x1) - v3 / w2
         isStunned = true
         other.isStunned = true
+
+        collisionCount += 1
+        if (collisionCount > 20) velocity = Vector2.Null
 
         drone.collidedWith(other.drone)
         other.drone.collidedWith(drone)
