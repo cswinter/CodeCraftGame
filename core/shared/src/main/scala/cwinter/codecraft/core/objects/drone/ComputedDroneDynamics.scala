@@ -1,35 +1,36 @@
 package cwinter.codecraft.core.objects.drone
 
 import cwinter.codecraft.core.api.GameConstants.HarvestingRange
-import cwinter.codecraft.core.objects.{ConstantVelocityDynamics, MissileDynamics}
+import cwinter.codecraft.core.objects.{
+  ConstantVelocityDynamics,
+  MissileDynamics
+}
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 
-
 private[core] class ComputedDroneDynamics(
-  val drone: DroneImpl,
-  val maxSpeed: Float,
-  val weight: Float,
-  radius: Float,
-  initialPosition: Vector2,
-  initialTime: Double
+    val drone: DroneImpl,
+    val maxSpeed: Float,
+    val weight: Float,
+    radius: Float,
+    initialPosition: Vector2,
+    initialTime: Double
 ) extends ConstantVelocityDynamics(
-  radius,
-  drone.player.id,
-  true,
-  initialPosition,
-  initialTime
-) with DroneDynamicsBasics {
+      radius,
+      drone.player.id,
+      true,
+      initialPosition,
+      initialTime
+    )
+    with DroneDynamicsBasics {
 
   final val MaxTurnSpeed = 0.25f
   private var speed = maxSpeed
   private[drone] var isStunned: Boolean = false
   private var oldPos = pos
   private var oldOrientation = orientation
-  private var collisionCount = 0;
-
+  private var collisionCount = 0
 
   def setPosition(value: Vector2): Unit = pos = value
-
 
   def limitSpeed(limit: Float): Unit = {
     require(limit <= maxSpeed)
@@ -40,7 +41,6 @@ private[core] class ComputedDroneDynamics(
     if (!isStunned) velocity = Vector2.Null
     _movementCommand = HoldPosition
   }
-
 
   def adjustOrientation(target: Float): Unit = {
     if (target == orientation) return
@@ -63,10 +63,10 @@ private[core] class ComputedDroneDynamics(
   override def arrivalEvent: Option[DroneEvent] = _movementCommand match {
     case MoveToPosition(position) if position ~ this.pos =>
       Some(ArrivedAtPosition)
-      // TODO: create a rigorous method to get within radius of some position, unify with moveToDrone
+    // TODO: create a rigorous method to get within radius of some position, unify with moveToDrone
     case MoveToMineralCrystal(mc)
-    if (mc.position - this.pos).lengthSquared <=
-      (HarvestingRange - 4) * (HarvestingRange - 4) =>
+        if (mc.position - this.pos).lengthSquared <=
+          (HarvestingRange - 4) * (HarvestingRange - 4) =>
       Some(ArrivedAtMineral(mc))
     case MoveToDrone(other) =>
       val r = other.radius + drone.radius + 18
@@ -85,7 +85,8 @@ private[core] class ComputedDroneDynamics(
       val targetOrientation = dist.orientation
       adjustOrientation(targetOrientation)
       if (targetOrientation == orientation) {
-        if (dist.lengthSquared > maxSpeed * maxSpeed) maxSpeed * dist.normalized
+        if (dist.lengthSquared > maxSpeed * maxSpeed)
+          maxSpeed * dist.normalized
         else dist
       } else {
         Vector2.Null
@@ -95,31 +96,30 @@ private[core] class ComputedDroneDynamics(
 
   def recomputeVelocity(): Unit = {
     collisionCount = 0
-    velocity =
-      if (isStunned) {
-        if (velocity.length <= maxSpeed * 0.10f) {
-          isStunned = false
-          Vector2.Null
-        } else velocity * 0.9f
-      } else if (drone.immobile) {
+    velocity = if (isStunned) {
+      if (velocity.length <= maxSpeed * 0.10f) {
+        isStunned = false
         Vector2.Null
-      } else {
-        _movementCommand match {
-          case MoveInDirection(direction) => moveInDirection(direction)
-          case MoveToPosition(position) =>
-            moveToPosition(position)
-          case MoveToMineralCrystal(mc) =>
-            val targetDirection = (mc.position - pos).normalized
-            val targetPos = mc.position - (HarvestingRange - 5) * targetDirection
-            moveToPosition(targetPos)
-          case MoveToDrone(other) =>
-            val targetDirection = (other.position - pos).normalized
-            val targetPos = other.position - (other.radius + drone.radius + 12) * targetDirection
-            moveToPosition(targetPos)
-          case HoldPosition =>
-            Vector2.Null
-        }
+      } else velocity * 0.9f
+    } else if (drone.immobile) {
+      Vector2.Null
+    } else {
+      _movementCommand match {
+        case MoveInDirection(direction) => moveInDirection(direction)
+        case MoveToPosition(position) =>
+          moveToPosition(position)
+        case MoveToMineralCrystal(mc) =>
+          val targetDirection = (mc.position - pos).normalized
+          val targetPos = mc.position - (HarvestingRange - 5) * targetDirection
+          moveToPosition(targetPos)
+        case MoveToDrone(other) =>
+          val targetDirection = (other.position - pos).normalized
+          val targetPos = other.position - (other.radius + drone.radius + 12) * targetDirection
+          moveToPosition(targetPos)
+        case HoldPosition =>
+          Vector2.Null
       }
+    }
   }
 
   def moveInDirection(direction: Float): Vector2 = {
@@ -132,12 +132,16 @@ private[core] class ComputedDroneDynamics(
 
   override def handleWallCollision(areaBounds: Rectangle): Unit = {
     // find closest wall
-    val dx = math.min(math.abs(pos.x - areaBounds.xMax), math.abs(pos.x - areaBounds.xMin))
-    val dy = math.min(math.abs(pos.y - areaBounds.yMax), math.abs(pos.y - areaBounds.yMin))
+    val dx = math.min(math.abs(pos.x - areaBounds.xMax),
+                      math.abs(pos.x - areaBounds.xMin))
+    val dy = math.min(math.abs(pos.y - areaBounds.yMax),
+                      math.abs(pos.y - areaBounds.yMin))
     val xCollisionPossible =
-      if (math.abs(pos.x - areaBounds.xMax) < math.abs(pos.x - areaBounds.xMin)) velocity.x > 0
+      if (math.abs(pos.x - areaBounds.xMax) < math.abs(
+            pos.x - areaBounds.xMin)) velocity.x > 0
       else velocity.x < 0
-    if (dx <= dy && xCollisionPossible) velocity = velocity.copy(_x = -velocity.x)
+    if (dx <= dy && xCollisionPossible)
+      velocity = velocity.copy(_x = -velocity.x)
     else velocity = velocity.copy(_y = -velocity.y)
     isStunned = true
     collisionCount += 1
@@ -153,7 +157,7 @@ private[core] class ComputedDroneDynamics(
         val x2 = other.pos
         val w1 = weight
         val w2 = other.weight
-        val v3 =  8 * (x1 - x2).normalized
+        val v3 = 8 * (x1 - x2).normalized
         velocity = v1 - 2 * w2 / (w1 + w2) * (v1 - v2 dot x1 - x2) / (x1 - x2).lengthSquared * (x1 - x2) + v3 / w1
         other.velocity = v2 - 2 * w1 / (w1 + w2) * (v2 - v1 dot x2 - x1) / (x2 - x1).lengthSquared * (x2 - x1) - v3 / w2
         isStunned = true
@@ -161,6 +165,8 @@ private[core] class ComputedDroneDynamics(
 
         collisionCount += 1
         if (collisionCount > 20) velocity = Vector2.Null
+        other.collisionCount += 1
+        if (other.collisionCount > 20) other.velocity = Vector2.Null
 
         drone.collidedWith(other.drone)
         other.drone.collidedWith(drone)
@@ -170,16 +176,19 @@ private[core] class ComputedDroneDynamics(
     }
   }
 
-  override def toString: String = s"DroneDynamics(pos=$pos, velocity=$velocity)"
+  override def toString: String =
+    s"DroneDynamics(pos=$pos, velocity=$velocity)"
 
   def syncMsg(): Option[DroneMovementMsg] = {
     val positionChanged = oldPos != pos
     val orientationChanged = oldOrientation != orientation
     oldPos = pos
     oldOrientation = orientation
-    if (positionChanged && orientationChanged) Some(PositionAndOrientationChanged(pos, orientation, drone.id))
+    if (positionChanged && orientationChanged)
+      Some(PositionAndOrientationChanged(pos, orientation, drone.id))
     else if (positionChanged) Some(PositionChanged(pos, drone.id))
-    else if (orientationChanged) Some(OrientationChanged(orientation, drone.id))
+    else if (orientationChanged)
+      Some(OrientationChanged(orientation, drone.id))
     else None
   }
 
@@ -188,11 +197,11 @@ private[core] class ComputedDroneDynamics(
 }
 
 private[core] case class MissileHit(
-  droneID: Int,
-  location: Vector2,
-  missileID: Int,
-  shieldDamage: Int,
-  hullDamage: Int
+    droneID: Int,
+    location: Vector2,
+    missileID: Int,
+    shieldDamage: Int,
+    hullDamage: Int
 )
 
 private[core] case class DroneSpawned(droneID: Int)
@@ -202,23 +211,22 @@ private[core] sealed trait DroneMovementMsg {
 }
 
 private[core] case class PositionChanged(
-  newPosition: Vector2,
-  droneID: Int
+    newPosition: Vector2,
+    droneID: Int
 ) extends DroneMovementMsg
 
 private[core] case class OrientationChanged(
-  newOrientation: Float,
-  droneID: Int
+    newOrientation: Float,
+    droneID: Int
 ) extends DroneMovementMsg
 
 private[core] case class PositionAndOrientationChanged(
-  newPosition: Vector2,
-  newOrientation: Float,
-  droneID: Int
+    newPosition: Vector2,
+    newOrientation: Float,
+    droneID: Int
 ) extends DroneMovementMsg
 
 private[core] case class NewArrivalEvent(
-  arrivalEvent: SerializableDroneEvent,
-  droneID: Int
+    arrivalEvent: SerializableDroneEvent,
+    droneID: Int
 ) extends DroneMovementMsg
-
