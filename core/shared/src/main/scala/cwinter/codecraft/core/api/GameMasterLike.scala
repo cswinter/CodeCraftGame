@@ -29,18 +29,15 @@ private[codecraft] trait GameMasterLike {
   final val JavascriptAPIVersion = "0.2"
 
   private final val DefaultResourceDistribution = Seq(
-    (10, 4),
-    (10, 4),
-    (10, 6),
-    (10, 6),
-    (10, 8),
-    (10, 8),
     (10, 10),
     (10, 10),
     (7, 20),
     (7, 20),
     (5, 30),
-    (5, 30)
+    (5, 30),
+    (5, 50),
+    (5, 70),
+    (5, 100)
   )
 
   private final val SmallResourceDistribution =
@@ -60,8 +57,8 @@ private[codecraft] trait GameMasterLike {
   )
 
   private def constructSpawns(pos1: Vector2, pos2: Vector2): Seq[Spawn] = {
-    val spawn1 = Spawn(DefaultMothership, pos1, BluePlayer, 21)
-    val spawn2 = Spawn(DefaultMothership, pos2, OrangePlayer, 21)
+    val spawn1 = Spawn(DefaultMothership, pos1, BluePlayer, 0)
+    val spawn2 = Spawn(DefaultMothership, pos2, OrangePlayer, 0)
     Seq(spawn1, spawn2)
   }
 
@@ -88,7 +85,8 @@ private[codecraft] trait GameMasterLike {
     mothership1: DroneControllerBase,
     mothership2: DroneControllerBase,
     map: WorldMap
-  ): DroneWorldSimulator = new DroneWorldSimulator(map.createGameConfig(Seq(mothership1, mothership2)))
+  ): DroneWorldSimulator =
+    new DroneWorldSimulator(map.createGameConfig(Seq(mothership1, mothership2)))
 
   /** Creates a new drone world simulator from a replay string. */
   def createReplaySimulator(replayText: String): DroneWorldSimulator = {
@@ -128,13 +126,15 @@ private[codecraft] trait GameMasterLike {
   def bonusLevelAI(): DroneControllerBase = new ai.cheese.Mothership
 
   /** Returns a drone controller for the level 4 AI */
-  def level4AI(): DroneControllerBase = replicatorAI(aggressive = true, confident = true)
+  def level4AI(): DroneControllerBase =
+    replicatorAI(aggressive = true, confident = true)
 
   /** Returns a drone controller for the level 4 AI */
   def level5AI(): DroneControllerBase = destroyerAI()
 
   /** Returns a drone controller for the level 4 AI */
-  def level6AI(): DroneControllerBase = replicatorAI(greedy = true, confident = true)
+  def level6AI(): DroneControllerBase =
+    replicatorAI(greedy = true, confident = true)
 
   /** Returns a drone controller for the level 4 AI */
   def level7AI(): DroneControllerBase = replicatorAI()
@@ -146,7 +146,8 @@ private[codecraft] trait GameMasterLike {
     new ai.replicator.Replicator(greedy, confident, aggressive)
 
   /** Returns a drone controller for the Destroyer AI. */
-  def destroyerAI(): DroneControllerBase = new ai.destroyer.DestroyerContext().mothership
+  def destroyerAI(): DroneControllerBase =
+    new ai.destroyer.DestroyerContext().mothership
 
   /** The default [[cwinter.codecraft.core.game.WorldMap]]. */
   def defaultMap: WorldMap = {
@@ -195,49 +196,58 @@ private[codecraft] trait GameMasterLike {
     *
     * @param mothership The controller for your mothership.
     */
-  def runLevel2(mothership: DroneControllerBase) = runGame(mothership, level2AI())
+  def runLevel2(mothership: DroneControllerBase) =
+    runGame(mothership, level2AI())
 
   /** Runs the third level.
     *
     * @param mothership The controller for your mothership.
     */
-  def runLevel3(mothership: DroneControllerBase) = runGame(mothership, bonusLevelAI())
+  def runLevel3(mothership: DroneControllerBase) =
+    runGame(mothership, bonusLevelAI())
 
   /** Runs the fourth level.
     *
     * @param mothership The controller for your mothership.
     */
-  def runLevel4(mothership: DroneControllerBase) = runGame(mothership, level4AI())
+  def runLevel4(mothership: DroneControllerBase) =
+    runGame(mothership, level4AI())
 
   /** Runs the fifth level.
     *
     * @param mothership The controller for your mothership.
     */
-  def runLevel5(mothership: DroneControllerBase) = runGame(mothership, level5AI())
+  def runLevel5(mothership: DroneControllerBase) =
+    runGame(mothership, level5AI())
 
   /** Runs the sixth level.
     *
     * @param mothership The controller for your mothership.
     */
-  def runLevel6(mothership: DroneControllerBase) = runGame(mothership, level6AI())
+  def runLevel6(mothership: DroneControllerBase) =
+    runGame(mothership, level6AI())
 
   /** Runs the seventh level.
     *
     * @param mothership The controller for your mothership.
     */
-  def runLevel7(mothership: DroneControllerBase) = runGame(mothership, level7AI())
+  def runLevel7(mothership: DroneControllerBase) =
+    runGame(mothership, level7AI())
 
   /** Runs a game with the level 1 AI versus the level 2 AI. */
-  def runL1vL2(): DroneWorldSimulator = runGame(new ai.basic.Mothership, new Mothership)
+  def runL1vL2(): DroneWorldSimulator =
+    runGame(new ai.basic.Mothership, new Mothership)
 
   /** Runs a game with the level 3 AI versus the level 3 AI. */
-  def runL3vL3(): DroneWorldSimulator = runGame(new ai.basicplus.Mothership, new ai.basicplus.Mothership)
+  def runL3vL3(): DroneWorldSimulator =
+    runGame(new ai.basicplus.Mothership, new ai.basicplus.Mothership)
 
   /** Sets up a multiplayer game with the specified server. */
   def prepareMultiplayerGame(
     serverAddress: String,
     controller: DroneControllerBase
-  ): Future[DroneWorldSimulator] = prepareMultiplayerGame(serverAddress).map(_(controller))
+  ): Future[DroneWorldSimulator] =
+    prepareMultiplayerGame(serverAddress).map(_(controller))
 
   /** Sets up a multiplayer game with the specified server. */
   def prepareMultiplayerGame(

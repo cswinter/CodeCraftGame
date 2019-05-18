@@ -52,9 +52,8 @@ import cwinter.codecraft.util.maths.{Rectangle, Vector2}
   *
   * ## Proof of progress
   */
-private[codecraft] class PhysicsEngine[T <: DynamicObject[T]](
-    val worldBoundaries: Rectangle,
-    val maxRadius: Int) {
+private[codecraft] class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle,
+                                                              val maxRadius: Int) {
   private[this] val objects =
     collection.mutable.ArrayBuffer.empty[ObjectRecord]
   private[this] val recordMap = collection.mutable.Map.empty[T, ObjectRecord]
@@ -102,9 +101,7 @@ private[codecraft] class PhysicsEngine[T <: DynamicObject[T]](
     nextTime = discreteTime
 
     objects.foreach(obj => {
-      updateNextCollision(obj,
-                          grid.reducedNearbyObjects(obj.cellX, obj.cellY),
-                          erase = false)
+      updateNextCollision(obj, grid.reducedNearbyObjects(obj.cellX, obj.cellY), erase = false)
       updateTransfer(obj)
     })
 
@@ -126,15 +123,14 @@ private[codecraft] class PhysicsEngine[T <: DynamicObject[T]](
         case ObjectWallCollision(obj, t) =>
           if (obj.nextCollision.contains(collision)) {
             _time = t
-            obj.updatePosition(t)
+            obj.updatePosition(t, worldBoundaries)
 
             obj.handleWallCollision(worldBoundaries)
 
             if (obj.removed) {
               remove(obj)
             } else {
-              updateNextCollision(obj,
-                                  grid.nearbyObjects(obj.cellX, obj.cellY))
+              updateNextCollision(obj, grid.nearbyObjects(obj.cellX, obj.cellY))
               updateTransfer(obj)
             }
           }
@@ -142,30 +138,27 @@ private[codecraft] class PhysicsEngine[T <: DynamicObject[T]](
           if (obj1.nextCollision.contains(collision)) {
             if (obj2.nextCollision.contains(collision)) {
               _time = t
-              obj1.updatePosition(t)
-              obj2.updatePosition(t)
+              obj1.updatePosition(t, worldBoundaries)
+              obj2.updatePosition(t, worldBoundaries)
 
               obj1.handleObjectCollision(obj2)
 
-              updateNextCollision(obj2,
-                                  grid.nearbyObjects(obj2.cellX, obj2.cellY))
+              updateNextCollision(obj2, grid.nearbyObjects(obj2.cellX, obj2.cellY))
 
               updateTransfer(obj1)
               updateTransfer(obj2)
 
               if (obj2.removed) remove(obj2)
             }
-            updateNextCollision(obj1,
-                                grid.nearbyObjects(obj1.cellX, obj1.cellY))
+            updateNextCollision(obj1, grid.nearbyObjects(obj1.cellX, obj1.cellY))
             if (obj1.removed) remove(obj1)
           } else if (obj2.nextCollision.contains(collision)) {
-            updateNextCollision(obj2,
-                                grid.nearbyObjects(obj2.cellX, obj2.cellY))
+            updateNextCollision(obj2, grid.nearbyObjects(obj2.cellX, obj2.cellY))
           }
         case Transfer(obj, t, x, y, d) =>
           if (obj.nextTransfer.contains(collision)) {
             _time = t
-            obj.updatePosition(t)
+            obj.updatePosition(t, worldBoundaries)
 
             // TODO: rework Transfer to eliminate superfluous cell computations, parameters etc.
             val newlyNearbyObjects =
@@ -174,17 +167,14 @@ private[codecraft] class PhysicsEngine[T <: DynamicObject[T]](
               else grid.yTransfer(obj, (obj.cellX, obj.cellY), d.y)
             obj.cellX = x
             obj.cellY = y
-            updateNextCollision(obj,
-                                newlyNearbyObjects,
-                                erase = false,
-                                pathUnchanged = true)
+            updateNextCollision(obj, newlyNearbyObjects, erase = false, pathUnchanged = true)
 
             updateTransfer(obj)
           }
       }
     }
 
-    objects.foreach(_.obj.updatePosition(nextTime))
+    objects.foreach(_.obj.updatePosition(nextTime, worldBoundaries))
     _time = nextTime
   }
 
@@ -220,7 +210,7 @@ private[codecraft] class PhysicsEngine[T <: DynamicObject[T]](
                                 nearbyObjects: Iterator[ObjectRecord],
                                 pathUnchanged: Boolean): Seq[Collision] = {
     val nearby = nearbyObjects.toSeq
-    nearby.foreach(_.obj.updatePosition(_time))
+    nearby.foreach(_.obj.updatePosition(_time, worldBoundaries))
     val objectObjectCollisions =
       for {
         obji <- nearby
@@ -267,8 +257,7 @@ private[codecraft] class PhysicsEngine[T <: DynamicObject[T]](
 
   private implicit def objectRecordIsT(objRec: ObjectRecord): T = objRec.obj
 
-  private implicit object ObjectRecordHasPosition
-      extends Positionable[ObjectRecord] {
+  private implicit object ObjectRecordHasPosition extends Positionable[ObjectRecord] {
     override def position(t: ObjectRecord): Vector2 = t.obj.pos
   }
 
@@ -282,22 +271,22 @@ private[codecraft] class PhysicsEngine[T <: DynamicObject[T]](
   }
 
   private final case class ObjectObjectCollision(
-      obj1: ObjectRecord,
-      obj2: ObjectRecord,
-      time: Double
+    obj1: ObjectRecord,
+    obj2: ObjectRecord,
+    time: Double
   ) extends Collision
 
   private final case class ObjectWallCollision(
-      obj: ObjectRecord,
-      time: Double
+    obj: ObjectRecord,
+    time: Double
   ) extends Collision
 
   private final case class Transfer(
-      obj: ObjectRecord,
-      time: Double,
-      newCellX: Int,
-      newCellY: Int,
-      direction: Direction
+    obj: ObjectRecord,
+    time: Double,
+    newCellX: Int,
+    newCellY: Int,
+    direction: Direction
   ) extends Collision
 
 }

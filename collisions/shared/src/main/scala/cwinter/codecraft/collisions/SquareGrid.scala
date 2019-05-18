@@ -23,7 +23,6 @@ private[codecraft] class SquareGrid[T: Positionable](
   //private[this]
   val cells = Array.fill(width + 2 * Padding, height + 2 * Padding)(Set.empty[T])
 
-
   def insert(obj: T): Unit = insert(obj, computeCell(obj))
 
   def insert(obj: T, cell: (Int, Int)): Unit = {
@@ -52,12 +51,12 @@ private[codecraft] class SquareGrid[T: Positionable](
   }
 
   /**
-   * Updates the x grid position of an object.
-   * @param obj The object to be updated.
-   * @param cell The old cell value.
-   * @param direction The change in x value. The new cell will be `cell + (direction, 0)`.
-   * @return Returns all objects which are now adjacent.
-   */
+    * Updates the x grid position of an object.
+    * @param obj The object to be updated.
+    * @param cell The old cell value.
+    * @param direction The change in x value. The new cell will be `cell + (direction, 0)`.
+    * @return Returns all objects which are now adjacent.
+    */
   def xTransfer(obj: T, cell: (Int, Int), direction: Int): Iterator[T] = {
     assert(direction == 1 || direction == -1)
     remove(obj, cell)
@@ -71,9 +70,9 @@ private[codecraft] class SquareGrid[T: Positionable](
       cells(x + direction)(y + 1).iterator
   }
 
-
   def yTransfer(obj: T, cell: (Int, Int), direction: Int): Iterator[T] = {
-    assert(direction == 1 || direction == -1, s"Parameter direction must be either 1 or -1. Actual value: $direction")
+    assert(direction == 1 || direction == -1,
+           s"Parameter direction must be either 1 or -1. Actual value: $direction")
     remove(obj, cell)
 
     val x = cell._1
@@ -85,29 +84,30 @@ private[codecraft] class SquareGrid[T: Positionable](
       cells(x + 1)(y + direction).iterator
   }
 
-
   def computeCell[T2: Positionable](elem: T2): (Int, Int) = {
     // if an object spawns outside of the bounds, expression can be negative, so we need floor
     // toInt will round UP for negative values
     // ALSO: we must floor the x/y components of the position BEFORE subtracting xMin/yMin, otherwise there might
     // be precision loss (e.g. adding denormalized to xMin will do nothing)
-    val cellX = Padding + ((math.floor(elem.position.x) - xMin) / cellWidth).toInt
-    val cellY = Padding + ((math.floor(elem.position.y) - yMin) / cellWidth).toInt
-    assert({
-      val bounds = cellBounds(cellX, cellY)
-      val Vector2(x, y) = elem.position
-      x <= bounds.xMax && x >= bounds.xMin && y <= bounds.yMax && y >= bounds.yMin
-    }, s"invalid cell: ${(cellX, cellY)} with bounds ${cellBounds(cellX, cellY)} for ${elem.position}")
+    val cellX = Padding + math.floor((math.floor(elem.position.x) - xMin) / cellWidth).toInt
+    val cellY = Padding + math.floor((math.floor(elem.position.y) - yMin) / cellWidth).toInt
+    assert(
+      {
+        val bounds = cellBounds(cellX, cellY)
+        val Vector2(x, y) = elem.position
+        x <= bounds.xMax && x >= bounds.xMin && y <= bounds.yMax && y >= bounds.yMin
+      },
+      s"invalid cell: ${(cellX, cellY)} with bounds ${cellBounds(cellX, cellY)} for ${elem.position}"
+    )
     (cellX, cellY)
   }
 
-
   def cellBounds(x: Int, y: Int): Rectangle = {
-    Rectangle(
-      cellWidth * (x - Padding) + xMin, cellWidth * (x - Padding + 1) + xMin,
-      cellWidth * (y - Padding) + yMin, cellWidth * (y - Padding + 1) + yMin)
+    Rectangle(cellWidth * (x - Padding) + xMin,
+              cellWidth * (x - Padding + 1) + xMin,
+              cellWidth * (y - Padding) + yMin,
+              cellWidth * (y - Padding + 1) + yMin)
   }
-
 
   def nearbyObjects(x: Int, y: Int): Iterator[T] =
     cells(x - 1)(y + 1).iterator ++
@@ -126,7 +126,6 @@ private[codecraft] class SquareGrid[T: Positionable](
       cells(x + 1)(y + 1).iterator ++
       cells(x - 1)(y + 0).iterator ++
       cells(x)(y).iterator
-
 
   def minX: Int = Padding - 1
   def minY: Int = Padding - 1

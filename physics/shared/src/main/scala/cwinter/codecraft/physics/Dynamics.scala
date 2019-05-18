@@ -2,7 +2,6 @@ package cwinter.codecraft.physics
 
 import cwinter.codecraft.util.maths.{Rectangle, Vector2, Solve}
 
-
 private[codecraft] abstract class DynamicObject[T](initialPos: Vector2, initialTime: Double) {
   private[this] var _pos: Vector2 = initialPos
   private[this] var _time: Double = initialTime
@@ -13,7 +12,6 @@ private[codecraft] abstract class DynamicObject[T](initialPos: Vector2, initialT
   def pos: Vector2 = _pos
   protected def pos_=(value: Vector2): Unit = _pos = value
 
-
   def setTime(time: Double): Unit = _time = time
 
   def collisionTime(other: T, time: Double): Option[Double] =
@@ -22,11 +20,11 @@ private[codecraft] abstract class DynamicObject[T](initialPos: Vector2, initialT
   def wallCollisionTime(areaBounds: Rectangle, time: Double): Option[(Double, Direction)] =
     computeWallCollisionTime(areaBounds, time - _time)
 
-  @inline final def updatePosition(time: Double): Unit = {
+  @inline final def updatePosition(time: Double, bounds: Rectangle): Unit = {
     if (time != _time) {
       val dt = time - _time
       if (dt <= 0) throw new Exception(s"dt=$dt") //assert(dt > 0, s"dt=$dt")
-      _pos = computeNewPosition(dt)
+      _pos = clip(computeNewPosition(dt), bounds)
       _time = time
     }
   }
@@ -38,10 +36,19 @@ private[codecraft] abstract class DynamicObject[T](initialPos: Vector2, initialT
 
   protected def computeNewPosition(timeDelta: Double): Vector2
   protected def computeCollisionTime(other: T, timeDelta: Double): Option[Double]
-  protected def computeWallCollisionTime(areaBounds: Rectangle, timeDelta: Double): Option[(Double, Direction)]
+  protected def computeWallCollisionTime(areaBounds: Rectangle,
+                                         timeDelta: Double): Option[(Double, Direction)]
   // def calculateBoundingBox(pos: Vector2, command: Command, timestep: Float): Vector2
-}
 
+  def clip(point: Vector2, bounds: Rectangle): Vector2 = {
+    var pos = point
+    if (pos.x < bounds.xMin) pos = pos.copy(_x = bounds.xMin.toFloat)
+    if (pos.x > bounds.xMax) pos = pos.copy(_x = bounds.xMax.toFloat)
+    if (pos.y < bounds.yMin) pos = pos.copy(_y = bounds.yMin.toFloat)
+    if (pos.y > bounds.yMax) pos = pos.copy(_y = bounds.yMax.toFloat)
+    pos
+  }
+}
 
 private[codecraft] class ConstantVelocityObject(
   initialPos: Vector2,
@@ -51,7 +58,6 @@ private[codecraft] class ConstantVelocityObject(
   initialTime: Double = 0
 ) extends DynamicObject[ConstantVelocityObject](initialPos, initialTime) {
   private var velocity: Vector2 = initialVelocity
-
 
   protected def computeNewPosition(timeDelta: Double): Vector2 =
     pos + timeDelta * velocity
@@ -133,7 +139,6 @@ private[codecraft] class ConstantVelocityObject(
 
   override def toString: String = s"ConstantVelocityObject(pos=$pos, velocity=$velocity)"
 }
-
 
 private[codecraft] sealed trait Direction {
   def x: Int
