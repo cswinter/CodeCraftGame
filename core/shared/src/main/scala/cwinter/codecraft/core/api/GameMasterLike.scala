@@ -90,7 +90,7 @@ private[codecraft] trait GameMasterLike {
 
   /** Creates a new drone world simulator from a replay string. */
   def createReplaySimulator(replayText: String): DroneWorldSimulator = {
-    val replayer = new Replayer(replayText.lines)
+    val replayer = new Replayer(Predef.augmentString(replayText).lines)
     new DroneWorldSimulator(replayer.gameConfig)
   }
 
