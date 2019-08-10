@@ -1,19 +1,16 @@
 package cwinter.codecraft.core.objects.drone
 
 import cwinter.codecraft.core.api.GameConstants.HarvestingRange
-import cwinter.codecraft.core.objects.{
-  ConstantVelocityDynamics,
-  MissileDynamics
-}
+import cwinter.codecraft.core.objects.{ConstantVelocityDynamics, MissileDynamics}
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 
 private[core] class ComputedDroneDynamics(
-    val drone: DroneImpl,
-    val maxSpeed: Float,
-    val weight: Float,
-    radius: Float,
-    initialPosition: Vector2,
-    initialTime: Double
+  val drone: DroneImpl,
+  val maxSpeed: Float,
+  val weight: Float,
+  radius: Float,
+  initialPosition: Vector2,
+  initialTime: Double
 ) extends ConstantVelocityDynamics(
       radius,
       drone.player.id,
@@ -123,7 +120,7 @@ private[core] class ComputedDroneDynamics(
   }
 
   def moveInDirection(direction: Float): Vector2 = {
-    val targetOrientation = direction
+    val targetOrientation = canonicalAngle(direction)
     adjustOrientation(targetOrientation)
 
     if (targetOrientation == orientation) maxSpeed * Vector2(orientation)
@@ -132,13 +129,10 @@ private[core] class ComputedDroneDynamics(
 
   override def handleWallCollision(areaBounds: Rectangle): Unit = {
     // find closest wall
-    val dx = math.min(math.abs(pos.x - areaBounds.xMax),
-                      math.abs(pos.x - areaBounds.xMin))
-    val dy = math.min(math.abs(pos.y - areaBounds.yMax),
-                      math.abs(pos.y - areaBounds.yMin))
+    val dx = math.min(math.abs(pos.x - areaBounds.xMax), math.abs(pos.x - areaBounds.xMin))
+    val dy = math.min(math.abs(pos.y - areaBounds.yMax), math.abs(pos.y - areaBounds.yMin))
     val xCollisionPossible =
-      if (math.abs(pos.x - areaBounds.xMax) < math.abs(
-            pos.x - areaBounds.xMin)) velocity.x > 0
+      if (math.abs(pos.x - areaBounds.xMax) < math.abs(pos.x - areaBounds.xMin)) velocity.x > 0
       else velocity.x < 0
     if (dx <= dy && xCollisionPossible)
       velocity = velocity.copy(_x = -velocity.x)
@@ -194,14 +188,21 @@ private[core] class ComputedDroneDynamics(
 
   def arrivalMsg: Option[NewArrivalEvent] =
     arrivalEvent.map(event => NewArrivalEvent(event.toSerializable, drone.id))
+
+  def canonicalAngle(radians: Float): Float = {
+    var result = radians
+    while (result < 0) result += (2 * Math.PI).toFloat
+    while (result >= 2 * Math.PI) result -= (2 * Math.PI).toFloat
+    result
+  }
 }
 
 private[core] case class MissileHit(
-    droneID: Int,
-    location: Vector2,
-    missileID: Int,
-    shieldDamage: Int,
-    hullDamage: Int
+  droneID: Int,
+  location: Vector2,
+  missileID: Int,
+  shieldDamage: Int,
+  hullDamage: Int
 )
 
 private[core] case class DroneSpawned(droneID: Int)
@@ -211,22 +212,22 @@ private[core] sealed trait DroneMovementMsg {
 }
 
 private[core] case class PositionChanged(
-    newPosition: Vector2,
-    droneID: Int
+  newPosition: Vector2,
+  droneID: Int
 ) extends DroneMovementMsg
 
 private[core] case class OrientationChanged(
-    newOrientation: Float,
-    droneID: Int
+  newOrientation: Float,
+  droneID: Int
 ) extends DroneMovementMsg
 
 private[core] case class PositionAndOrientationChanged(
-    newPosition: Vector2,
-    newOrientation: Float,
-    droneID: Int
+  newPosition: Vector2,
+  newOrientation: Float,
+  droneID: Int
 ) extends DroneMovementMsg
 
 private[core] case class NewArrivalEvent(
-    arrivalEvent: SerializableDroneEvent,
-    droneID: Int
+  arrivalEvent: SerializableDroneEvent,
+  droneID: Int
 ) extends DroneMovementMsg
