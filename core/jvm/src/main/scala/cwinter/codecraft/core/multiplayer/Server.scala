@@ -6,13 +6,10 @@ import akka.actor._
 import akka.io.IO
 import cwinter.codecraft.core.api._
 import cwinter.codecraft.core.game._
-import cwinter.codecraft.core.objects.drone.{
-  GameClosed,
-  ServerBusy,
-  ServerMessage
-}
+import cwinter.codecraft.core.objects.drone.{GameClosed, ServerBusy, ServerMessage}
 import cwinter.codecraft.core.replay.DummyDroneController
 import cwinter.codecraft.graphics.engine.JVMAsyncRunner
+import cwinter.codecraft.util.maths.Rectangle
 import org.joda.time.DateTime
 import spray.can.Http
 import spray.can.server.UHttp
@@ -26,24 +23,24 @@ object Server {
   implicit val system = ActorSystem()
 
   def spawnServerInstance2(
-      seed: Int = scala.util.Random.nextInt,
-      mapGenerator: => WorldMap = TheGameMaster.defaultMap,
-      displayGame: Boolean = false,
-      recordReplaysToFile: Boolean = false,
-      maxGames: Int = 10,
-      winConditions: Seq[WinCondition] = WinCondition.default
+    seed: Int = scala.util.Random.nextInt,
+    mapGenerator: => WorldMap = TheGameMaster.defaultMap,
+    displayGame: Boolean = false,
+    recordReplaysToFile: Boolean = false,
+    maxGames: Int = 10,
+    winConditions: Seq[WinCondition] = WinCondition.default
   ): Unit = {
     start(seed, mapGenerator, displayGame, recordReplaysToFile, maxGames)
     system.awaitTermination()
   }
 
   def start(
-      seed: Int = scala.util.Random.nextInt,
-      mapGenerator: => WorldMap = TheGameMaster.defaultMap,
-      displayGame: Boolean = false,
-      recordReplaysToFile: Boolean = false,
-      maxGames: Int = 10,
-      winConditions: Seq[WinCondition] = WinCondition.default
+    seed: Int = scala.util.Random.nextInt,
+    mapGenerator: => WorldMap = TheGameMaster.defaultMap,
+    displayGame: Boolean = false,
+    recordReplaysToFile: Boolean = false,
+    maxGames: Int = 10,
+    winConditions: Seq[WinCondition] = WinCondition.default
   ): ActorRef = {
     val server = system.actorOf(
       Props(classOf[MultiplayerServer],
@@ -74,12 +71,12 @@ object Server {
 }
 
 class MultiplayerServer(
-    private var nextRNGSeed: Int = scala.util.Random.nextInt,
-    val mapGenerator: () => WorldMap = () => TheGameMaster.defaultMap,
-    val displayGame: Boolean = false,
-    val recordReplaysToFile: Boolean = false,
-    val maxGames: Int = 10,
-    val winConditions: Seq[WinCondition] = WinCondition.default
+  private var nextRNGSeed: Int = scala.util.Random.nextInt,
+  val mapGenerator: () => WorldMap = () => TheGameMaster.defaultMap,
+  val displayGame: Boolean = false,
+  val recordReplaysToFile: Boolean = false,
+  val maxGames: Int = 10,
+  val winConditions: Seq[WinCondition] = WinCondition.default
 ) extends Actor
     with ActorLogging {
 
@@ -94,16 +91,16 @@ class MultiplayerServer(
   private var completedGames = List.empty[GameStatus]
 
   case class Connection(
-      rawConnection: ActorRef,
-      websocketActor: ActorRef,
-      worker: WebsocketClientConnection
+    rawConnection: ActorRef,
+    websocketActor: ActorRef,
+    worker: WebsocketClientConnection
   ) {
     var assignedGame: Option[DroneWorldSimulator] = None
   }
 
   case class GameInfo(
-      connections: Seq[Connection],
-      startTimestamp: Long
+    connections: Seq[Connection],
+    startTimestamp: Long
   )
 
   case class GameTimedOut(simulatorRef: WeakReference[DroneWorldSimulator])
@@ -138,10 +135,7 @@ class MultiplayerServer(
         case None =>
       }
     case GetStatus =>
-      sender() ! Status(waitingClient.nonEmpty,
-                        runningGames.size,
-                        connectionInfo.size,
-                        maxGames * 2)
+      sender() ! Status(waitingClient.nonEmpty, runningGames.size, connectionInfo.size, maxGames * 2)
     case GetDetailedStatus =>
       val gameDetails =
         for ((sim, info) <- runningGames)
@@ -168,11 +162,14 @@ class MultiplayerServer(
 
   def startLocalGame(c1: DroneControllerBase,
                      c2: DroneControllerBase,
-                     winConditions: Seq[WinCondition] = WinCondition.default)
-    : DroneWorldSimulator = {
+                     winConditions: Seq[WinCondition] = WinCondition.default,
+                     custom_map: Option[(Rectangle, Seq[Spawn])] = None): DroneWorldSimulator = {
 
     log.info("Starting Local Game")
-    val map = mapGenerator()
+    val map = custom_map match {
+      case Some((size, spawns)) => WorldMap(size, 10, spawns)
+      case None => mapGenerator()
+    }
     var remotePlayers = Set.empty[Player]
     var remoteClients = Set.empty[RemoteClient]
     var controllers = Seq(c1, c2)
@@ -185,44 +182,37 @@ class MultiplayerServer(
       controllers = Seq(c1, c2, new DummyDroneController())
       remoteClients = Set(observer.worker.asInstanceOf[RemoteClient])
       connections = Seq(observer)
-      observer.worker.initialise(Set(player),
-                                 map,
-                                 nextRNGSeed,
-                                 tickPeriod,
-                                 WinCondition.default)
+      observer.worker.initialise(Set(player), map, nextRNGSeed, tickPeriod, winConditions)
       waitingClient = None
     }
 
+    val config = map.createGameConfig(
+      controllers,
+      tickPeriod = tickPeriod,
+      rngSeed = nextRNGSeed,
+      winConditions = winConditions
+    )
+
     val simulator = new DroneWorldSimulator(
-      map.createGameConfig(
-        controllers,
-        tickPeriod = tickPeriod,
-        rngSeed = nextRNGSeed,
-        winConditions = winConditions
-      ),
-      multiplayerConfig =
-        AuthoritativeServerConfig(Set(BluePlayer, OrangePlayer),
-                                  remotePlayers,
-                                  remoteClients,
-                                  updateCompleted,
-                                  onTimeout),
+      config,
+      multiplayerConfig = AuthoritativeServerConfig(Set(BluePlayer, OrangePlayer),
+                                                    remotePlayers,
+                                                    remoteClients,
+                                                    updateCompleted,
+                                                    onTimeout),
       settings = Settings.default.copy(recordReplays = false)
     ) with JVMAsyncRunner
     simulator.graphicsEnabled = displayGame
     nextRNGSeed = scala.util.Random.nextInt
     simulator.framerateTarget = if (displayGame) 60 else 1001
     simulator.onException((e: Throwable) => {
-      log.info(
-        s"Terminating running multiplayer game because of uncaught exception.")
+      log.info(s"Terminating running multiplayer game because of uncaught exception.")
       log.info(s"Exception message:\n${e.getStackTrace.mkString("\n")}")
-      stopGame(
-        simulator,
-        GameClosed.Crash(e.getMessage + "\n" + e.getStackTrace.mkString("\n")))
+      stopGame(simulator, GameClosed.Crash(e.getMessage + "\n" + e.getStackTrace.mkString("\n")))
     })
     context.system.scheduler
       .scheduleOnce(20 minutes, self, GameTimedOut(WeakReference(simulator)))
-    runningGames += simulator -> GameInfo(connections,
-                                          new DateTime().getMillis)
+    runningGames += simulator -> GameInfo(connections, new DateTime().getMillis)
 
     for (c <- connections) c.assignedGame = Some(simulator)
 
@@ -257,8 +247,7 @@ class MultiplayerServer(
 
   private def hasStartedMatchmaking(rawConnection: ActorRef): Boolean =
     waitingClient.exists(_.rawConnection == rawConnection) ||
-      runningGames.valuesIterator.exists(
-        _.connections.exists(_.rawConnection == rawConnection))
+      runningGames.valuesIterator.exists(_.connections.exists(_.rawConnection == rawConnection))
 
   private def rejectConnection(rawConnection: ActorRef): Unit = {
     class RejectConnection extends WebsocketWorker {
@@ -293,11 +282,7 @@ class MultiplayerServer(
     val map = mapGenerator()
     connections.zip(Seq(BluePlayer, OrangePlayer)).foreach {
       case (connection, player) =>
-        connection.worker.initialise(Set(player),
-                                     map,
-                                     nextRNGSeed,
-                                     tickPeriod,
-                                     WinCondition.default)
+        connection.worker.initialise(Set(player), map, nextRNGSeed, tickPeriod, WinCondition.default)
     }
     val clients = connections.map(_.worker.asInstanceOf[RemoteClient]).toSet
     val simulator = new DroneWorldSimulator(
@@ -318,17 +303,13 @@ class MultiplayerServer(
     nextRNGSeed = scala.util.Random.nextInt
     simulator.framerateTarget = if (displayGame) 60 else 1001
     simulator.onException((e: Throwable) => {
-      log.info(
-        s"Terminating running multiplayer game because of uncaught exception.")
+      log.info(s"Terminating running multiplayer game because of uncaught exception.")
       log.info(s"Exception message:\n${e.getStackTrace.mkString("\n")}")
-      stopGame(
-        simulator,
-        GameClosed.Crash(e.getMessage + "\n" + e.getStackTrace.mkString("\n")))
+      stopGame(simulator, GameClosed.Crash(e.getMessage + "\n" + e.getStackTrace.mkString("\n")))
     })
     context.system.scheduler
       .scheduleOnce(20 minutes, self, GameTimedOut(WeakReference(simulator)))
-    runningGames += simulator -> GameInfo(connections,
-                                          new DateTime().getMillis)
+    runningGames += simulator -> GameInfo(connections, new DateTime().getMillis)
     for (c <- connections) c.assignedGame = Some(simulator)
     if (displayGame) TheGameMaster.run(simulator) else simulator.runAsync()
   }
@@ -342,8 +323,7 @@ class MultiplayerServer(
     if (runningGames.contains(simulator))
       stopGame(simulator, GameClosed.PlayerTimedOut)
 
-  private def stopGame(simulator: DroneWorldSimulator,
-                       reason: GameClosed.Reason): Unit = synchronized {
+  private def stopGame(simulator: DroneWorldSimulator, reason: GameClosed.Reason): Unit = synchronized {
     runningGames.get(simulator) match {
       case Some(info) =>
         simulator.terminate()
@@ -364,9 +344,7 @@ class MultiplayerServer(
     }
   }
 
-  private def gameStatus(sim: DroneWorldSimulator,
-                         info: GameInfo,
-                         closeReason: Option[String] = None) = {
+  private def gameStatus(sim: DroneWorldSimulator, info: GameInfo, closeReason: Option[String] = None) = {
     val nowMS = new DateTime().getMillis
     val outBandwidth =
       info.connections.foldLeft(0.0) {

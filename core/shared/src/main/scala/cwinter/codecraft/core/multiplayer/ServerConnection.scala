@@ -37,7 +37,8 @@ class ServerConnection(
       sync match {
         case sync: InitialSync => createGame(sync, messageHandler.get)
         case ServerBusy =>
-          throw new Exception("The server is not accepting additional connections right now. Try again later.")
+          throw new Exception(
+            "The server is not accepting additional connections right now. Try again later.")
       }
     }.onComplete {
       case Success(connection) => state = FoundGame(connection)
@@ -49,6 +50,7 @@ class ServerConnection(
     sync: InitialSync,
     conn: WebsocketServerConnection
   )(controller: DroneControllerBase): DroneWorldSimulator = {
+    println(f"Received initial sync $sync")
     val clientPlayers = sync.localPlayers
     val serverPlayers = sync.remotePlayers
     val gameConfig = sync.gameConfig(Seq(controller))
