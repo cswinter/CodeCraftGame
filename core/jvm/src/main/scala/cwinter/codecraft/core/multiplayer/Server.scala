@@ -160,26 +160,27 @@ class MultiplayerServer(
       }
   }
 
-  def startLocalGame(c1: DroneControllerBase,
-                     c2: DroneControllerBase,
-                     winConditions: Seq[WinCondition] = WinCondition.default,
-                     custom_map: Option[(Rectangle, Seq[Spawn])] = None): DroneWorldSimulator = {
-
+  def startLocalGame(
+    droneControllers: Seq[DroneControllerBase],
+    winConditions: Seq[WinCondition] = WinCondition.default,
+    custom_map: Option[(Rectangle, Seq[Spawn], Seq[(Int, Int)])] = None): DroneWorldSimulator = {
+    var controllers = droneControllers
     log.info("Starting Local Game")
     val map = custom_map match {
-      case Some((size, spawns)) => WorldMap(size, 10, spawns)
+      case Some((size, spawns, resources)) => WorldMap(size, resources, spawns)
       case None => mapGenerator()
     }
     var remotePlayers = Set.empty[Player]
     var remoteClients = Set.empty[RemoteClient]
-    var controllers = Seq(c1, c2)
     var connections = Seq.empty[Connection]
+
+    assert(map.initialDrones.size == controllers.size)
 
     for (observer <- waitingClient) {
       log.info("Observer Joined")
       val player = Observer(3)
       remotePlayers = Set(player)
-      controllers = Seq(c1, c2, new DummyDroneController())
+      controllers = controllers :+ new DummyDroneController()
       remoteClients = Set(observer.worker.asInstanceOf[RemoteClient])
       connections = Seq(observer)
       observer.worker.initialise(Set(player), map, nextRNGSeed, tickPeriod, winConditions)
