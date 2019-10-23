@@ -6,6 +6,7 @@ import cwinter.codecraft.util.maths.Vector2
 private[core] class RemoteDroneDynamics(initialPos: Vector2)
     extends DroneDynamicsBasics
     with SyncableDroneDynamics {
+  private[this] var _isStunned: Boolean = false
   private[this] var _removed: Boolean = false
   private[this] var _arrivalEvent: Option[DroneEvent] = None
   private[this] var position = initialPos
@@ -21,6 +22,7 @@ private[core] class RemoteDroneDynamics(initialPos: Vector2)
     case PositionChanged(newPosition, _) => position = newPosition
     case OrientationChanged(newOrientation, _) => _orientation = newOrientation
     case NewArrivalEvent(event, _) => _arrivalEvent = Some(DroneEvent(event))
+    case Stunned(isStunned, _) => _isStunned = isStunned
   }
 
   override def recomputeVelocity(): Unit = _arrivalEvent = None
@@ -28,4 +30,5 @@ private[core] class RemoteDroneDynamics(initialPos: Vector2)
   override def arrivalEvent: Option[DroneEvent] = _arrivalEvent
   override def halt(): Unit = _movementCommand = HoldPosition
   override def pos: Vector2 = position
+  override def isStunned: Boolean = _isStunned
 }

@@ -44,4 +44,6 @@ private[core] class SpeculatingDroneDynamics(
     remote.recomputeVelocity()
     speculative.recomputeVelocity()
   }
+
+  override def isStunned: Boolean = speculative.isStunned
 }

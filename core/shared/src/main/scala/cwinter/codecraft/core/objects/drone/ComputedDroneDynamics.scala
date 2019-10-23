@@ -22,7 +22,8 @@ private[core] class ComputedDroneDynamics(
 
   final val MaxTurnSpeed = 0.25f
   private var speed = maxSpeed
-  private[drone] var isStunned: Boolean = false
+  private[this] var oldIsStunned: Boolean = false
+  private[drone] var _isStunned: Boolean = false
   private var oldPos = pos
   private var oldOrientation = orientation
   private var collisionCount = 0
@@ -35,7 +36,7 @@ private[core] class ComputedDroneDynamics(
   }
 
   protected def halt(): Unit = {
-    if (!isStunned) velocity = Vector2.Null
+    if (!_isStunned) velocity = Vector2.Null
     _movementCommand = HoldPosition
   }
 
@@ -93,9 +94,9 @@ private[core] class ComputedDroneDynamics(
 
   def recomputeVelocity(): Unit = {
     collisionCount = 0
-    velocity = if (isStunned) {
+    velocity = if (_isStunned) {
       if (velocity.length <= maxSpeed * 0.10f) {
-        isStunned = false
+        _isStunned = false
         Vector2.Null
       } else velocity * 0.9f
     } else if (drone.immobile) {
@@ -137,7 +138,7 @@ private[core] class ComputedDroneDynamics(
     if (dx <= dy && xCollisionPossible)
       velocity = velocity.copy(_x = -velocity.x)
     else velocity = velocity.copy(_y = -velocity.y)
-    isStunned = true
+    _isStunned = true
     collisionCount += 1
     if (collisionCount > 20) velocity = Vector2.Null
   }
@@ -154,8 +155,8 @@ private[core] class ComputedDroneDynamics(
         val v3 = 8 * (x1 - x2).normalized
         velocity = v1 - 2 * w2 / (w1 + w2) * (v1 - v2 dot x1 - x2) / (x1 - x2).lengthSquared * (x1 - x2) + v3 / w1
         other.velocity = v2 - 2 * w1 / (w1 + w2) * (v2 - v1 dot x2 - x1) / (x2 - x1).lengthSquared * (x2 - x1) - v3 / w2
-        isStunned = true
-        other.isStunned = true
+        _isStunned = true
+        other._isStunned = true
 
         collisionCount += 1
         if (collisionCount > 20) velocity = Vector2.Null
@@ -173,17 +174,20 @@ private[core] class ComputedDroneDynamics(
   override def toString: String =
     s"DroneDynamics(pos=$pos, velocity=$velocity)"
 
-  def syncMsg(): Option[DroneMovementMsg] = {
+  def syncMsg(): Seq[DroneMovementMsg] = {
+    var messages = Seq.empty[DroneMovementMsg]
     val positionChanged = oldPos != pos
     val orientationChanged = oldOrientation != orientation
+    val stunnedChanged = oldIsStunned != isStunned
+    oldIsStunned = isStunned
     oldPos = pos
     oldOrientation = orientation
     if (positionChanged && orientationChanged)
-      Some(PositionAndOrientationChanged(pos, orientation, drone.id))
-    else if (positionChanged) Some(PositionChanged(pos, drone.id))
-    else if (orientationChanged)
-      Some(OrientationChanged(orientation, drone.id))
-    else None
+      messages :+= PositionAndOrientationChanged(pos, orientation, drone.id)
+    else if (positionChanged) messages :+= PositionChanged(pos, drone.id)
+    else if (orientationChanged) messages :+= OrientationChanged(orientation, drone.id)
+    if (stunnedChanged) messages :+= Stunned(isStunned, drone.id)
+    messages
   }
 
   def arrivalMsg: Option[NewArrivalEvent] =
@@ -195,6 +199,8 @@ private[core] class ComputedDroneDynamics(
     while (result >= 2 * Math.PI) result -= (2 * Math.PI).toFloat
     result
   }
+
+  def isStunned: Boolean = _isStunned
 }
 
 private[core] case class MissileHit(
@@ -229,5 +235,10 @@ private[core] case class PositionAndOrientationChanged(
 
 private[core] case class NewArrivalEvent(
   arrivalEvent: SerializableDroneEvent,
+  droneID: Int
+) extends DroneMovementMsg
+
+private[core] case class Stunned(
+  isStunned: Boolean,
   droneID: Int
 ) extends DroneMovementMsg

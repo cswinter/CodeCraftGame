@@ -10,7 +10,6 @@ import cwinter.codecraft.core.objects._
 import cwinter.codecraft.core.replay._
 import cwinter.codecraft.util.maths._
 
-
 private[core] final class DroneImpl(
   val spec: DroneSpec,
   val controller: DroneControllerBase,
@@ -19,20 +18,19 @@ private[core] final class DroneImpl(
   time: Double,
   protected val startingResources: Int = 0
 ) extends WorldObject
-  with DroneVisionTracker
-  with DroneGraphicsHandler
-  with DroneMessageDisplay
-  with DroneMovementDetector
-  with DroneHull
-  with DroneEventQueue
-  with DroneModules {
+    with DroneVisionTracker
+    with DroneGraphicsHandler
+    with DroneMessageDisplay
+    with DroneMovementDetector
+    with DroneHull
+    with DroneEventQueue
+    with DroneModules {
 
   val id = context.idGenerator.getAndIncrement()
   val priority = context.rng.int()
   private[this] var _constructionProgress: Option[Int] = None
   private[this] var handles = Map.empty[Player, EnemyDrone]
   val dynamics: DroneDynamics = spec.constructDynamics(this, initialPos, time)
-
 
   def initialise(time: Double): Unit = {
     dynamics.setTime(time)
@@ -93,7 +91,7 @@ private[core] final class DroneImpl(
 
   def applyHarvest(mineral: MineralCrystalImpl): Option[SimulatorEvent] = {
     assert(context.isMultiplayer && !context.isLocallyComputed,
-      "Trying to apply harvest to locally computed drone.")
+           "Trying to apply harvest to locally computed drone.")
     assert(storage.nonEmpty, "Trying to apply harvest to drone without storage module.")
     storage.flatMap(_.performHarvest(mineral))
   }
@@ -151,7 +149,6 @@ private[core] final class DroneImpl(
 
   private[core] def log(msg: => String): Unit = log(UnstructuredEvent(msg))
 
-
   //+------------------------------+
   //| Drone properties             +
   //+------------------------------+
@@ -170,6 +167,7 @@ private[core] final class DroneImpl(
     _constructionProgress = value
     invalidateModelCache()
   }
+  def isStunned: Boolean = dynamics.isStunned
 
   def availableStorage: Int = {
     for (s <- storage) yield s.predictedAvailableStorage
@@ -203,16 +201,20 @@ private[core] final class DroneImpl(
   override def toString: String = id.toString
 }
 
-
 import upickle.default._
 private[core] sealed trait SerializableDroneCommand
-@key("Construct") private[core] case class SerializableConstructDrone(spec: DroneSpec, position: Vector2) extends SerializableDroneCommand
-@key("FireMissiles") private[core] case class SerializableFireMissiles(targetID: Int) extends SerializableDroneCommand
-@key("Deposit") private[core] case class SerializableDepositMinerals(targetID: Int) extends SerializableDroneCommand
-@key("Harvest") private[core] case class SerializableHarvestMineral(mineralID: Int) extends SerializableDroneCommand
-@key("MoveToMineral") private[core] case class SerializableMoveToMineralCrystal(mineralCrystalID: Int) extends SerializableDroneCommand
-@key("MoveToDrone") private[core] case class SerializableMoveToDrone(droneID: Int) extends SerializableDroneCommand
-
+@key("Construct") private[core] case class SerializableConstructDrone(spec: DroneSpec, position: Vector2)
+    extends SerializableDroneCommand
+@key("FireMissiles") private[core] case class SerializableFireMissiles(targetID: Int)
+    extends SerializableDroneCommand
+@key("Deposit") private[core] case class SerializableDepositMinerals(targetID: Int)
+    extends SerializableDroneCommand
+@key("Harvest") private[core] case class SerializableHarvestMineral(mineralID: Int)
+    extends SerializableDroneCommand
+@key("MoveToMineral") private[core] case class SerializableMoveToMineralCrystal(mineralCrystalID: Int)
+    extends SerializableDroneCommand
+@key("MoveToDrone") private[core] case class SerializableMoveToDrone(droneID: Int)
+    extends SerializableDroneCommand
 
 private[core] sealed trait DroneCommand {
   def toSerializable: SerializableDroneCommand
@@ -224,14 +226,19 @@ private[core] object DroneCommand {
     import scala.language.implicitConversions
     implicit def droneLookup(droneID: Int): DroneImpl = {
       if (context.droneRegistry.contains(droneID)) context.droneRegistry(droneID)
-      else throw new Exception(f"Cannot find drone with id $droneID. Available IDs: ${context.droneRegistry.keys}")
+      else
+        throw new Exception(
+          f"Cannot find drone with id $droneID. Available IDs: ${context.droneRegistry.keys}")
     }
     implicit def mineralLookup(mineralID: Int): MineralCrystalImpl = {
       if (context.mineralRegistry.contains(mineralID)) context.mineralRegistry(mineralID)
-      else throw new Exception(f"Cannot find mineral with id $mineralID. Available IDs: ${context.mineralRegistry.keys}")
+      else
+        throw new Exception(
+          f"Cannot find mineral with id $mineralID. Available IDs: ${context.mineralRegistry.keys}")
     }
     serialized match {
-      case SerializableConstructDrone(spec, position) => ConstructDrone(spec, new DummyDroneController, position)
+      case SerializableConstructDrone(spec, position) =>
+        ConstructDrone(spec, new DummyDroneController, position)
       case SerializableFireMissiles(target) => FireMissiles(target)
       case SerializableDepositMinerals(target) => DepositMinerals(target)
       case SerializableHarvestMineral(mineral) => HarvestMineral(mineral)
@@ -262,10 +269,14 @@ private[core] case class HarvestMineral(mineral: MineralCrystalImpl) extends Dro
 }
 
 private[core] sealed trait MovementCommand extends DroneCommand
-@key("MoveInDirec") private[core] case class MoveInDirection(direction: Float) extends MovementCommand with SerializableDroneCommand {
+@key("MoveInDirec") private[core] case class MoveInDirection(direction: Float)
+    extends MovementCommand
+    with SerializableDroneCommand {
   def toSerializable = this
 }
-@key("MoveToPos") private[core] case class MoveToPosition(position: Vector2) extends MovementCommand with SerializableDroneCommand {
+@key("MoveToPos") private[core] case class MoveToPosition(position: Vector2)
+    extends MovementCommand
+    with SerializableDroneCommand {
   def toSerializable = this
 }
 private[core] case class MoveToMineralCrystal(mineralCrystal: MineralCrystalImpl) extends MovementCommand {
@@ -278,10 +289,13 @@ private[core] case class MoveToDrone(drone: DroneImpl) extends MovementCommand {
   def toSerializable = this
 }
 
-
 import upickle.default._
 
-private[core] case class SerializableSpawn(spec: DroneSpec, position: Vector2, playerID: Int, resources: Int, name: Option[String]) {
+private[core] case class SerializableSpawn(spec: DroneSpec,
+                                           position: Vector2,
+                                           playerID: Int,
+                                           resources: Int,
+                                           name: Option[String]) {
   def deserialize: Spawn =
     Spawn(spec, position, Player.fromID(playerID), resources, name)
 }
@@ -290,12 +304,10 @@ private[core] object SerializableSpawn {
     SerializableSpawn(spawn.droneSpec, spawn.position, spawn.player.id, spawn.resources, spawn.name)
 }
 
-
 private[core] sealed trait MultiplayerMessage
 
 private[core] sealed trait ServerMessage extends MultiplayerMessage
 private[core] sealed trait ClientMessage extends MultiplayerMessage
-
 
 private[core] case object Register extends ClientMessage
 
@@ -303,7 +315,8 @@ private[core] case class RTT(sent: Long, msg: String) extends ServerMessage with
 
 private[core] case class CommandsMessage(
   commands: Seq[(Int, SerializableDroneCommand)]
-) extends ServerMessage with ClientMessage
+) extends ServerMessage
+    with ClientMessage
 
 private[core] case class WorldStateMessage(
   missileHits: Seq[MissileHit],
@@ -312,7 +325,6 @@ private[core] case class WorldStateMessage(
   droneSpawns: Seq[DroneSpawned]
 ) extends ServerMessage
 private[core] case class MineralHarvest(droneID: Int, mineralID: Int)
-
 
 private[core] sealed trait InitialServerResponse extends ServerMessage
 
@@ -360,7 +372,6 @@ private[core] object GameClosed {
   case class Crash(exceptionMsg: String) extends Reason
 }
 
-
 private[core] object ServerMessage {
   def parse(json: String): ServerMessage = read[ServerMessage](json)
   def parseBytes(bytes: ByteBuffer): ServerMessage = Unpickle[ServerMessage].fromBytes(bytes)
@@ -378,4 +389,3 @@ private[core] object DroneOrdering extends Ordering[DroneImpl] {
     if (d1.priority == d2.priority) d1.id - d2.id
     else d1.id - d2.id
 }
-
