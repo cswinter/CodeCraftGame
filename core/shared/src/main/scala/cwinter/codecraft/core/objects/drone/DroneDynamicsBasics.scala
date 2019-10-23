@@ -3,7 +3,6 @@ package cwinter.codecraft.core.objects.drone
 import cwinter.codecraft.core.game.SimulationContext
 import cwinter.codecraft.util.maths.Vector2
 
-
 private[core] trait DroneDynamics {
   def setMovementCommand(command: MovementCommand): Boolean
   def checkArrivalConditions(): Option[DroneEvent]
@@ -15,6 +14,7 @@ private[core] trait DroneDynamics {
   def orientation: Float
   def isMoving: Boolean
   def activeCommand: MovementCommand
+  def isStunned: Boolean
 }
 
 private[core] trait SyncableDroneDynamics {
@@ -24,7 +24,6 @@ private[core] trait SyncableDroneDynamics {
 private[core] trait DroneDynamicsBasics extends DroneDynamics {
   protected var _movementCommand: MovementCommand = HoldPosition
   protected var _orientation: Float = 0
-
 
   def setMovementCommand(command: MovementCommand): Boolean = {
     command match {

@@ -5,7 +5,6 @@ import cwinter.codecraft.util.maths.Vector2
 
 import scala.scalajs.js.annotation.JSExportAll
 
-
 @JSExportAll
 trait Drone {
   private[core] def drone: DroneImpl
@@ -67,36 +66,47 @@ trait Drone {
     if (drone.context.settings.allowMessages)
       drone.showText(text)
 
+  def isStunned: Boolean = drone.isStunned
+
   /** Returns an object that specifies how many copies of each module the drone has. */
   @inline
   final def spec: DroneSpec = drone.spec
+
   /** Returns the number of storage modules. */
   final def storageModules: Int = spec.storageModules
+
   /** Returns the number of missile battery modules. */
   final def missileBatteries: Int = spec.missileBatteries
+
   /** Returns the number of constructor modules */
   final def constructors: Int = spec.constructors
+
   /** Returns the number of engine modules */
   final def engines: Int = spec.engines
+
   /** Returns the number of shield generator modules */
   final def shieldGenerators: Int = spec.shieldGenerators
+
   /** Returns the amount of hitpoints at full health. */
   final def maxHitpoints: Int = spec.maxHitpoints
+
   /** Returns the drone's maximum speed. */
   final def maxSpeed: Double = spec.maxSpeed
 
   private def ensureVisible[T](property: => T, message: String = ""): T = {
     if (isVisible) property
-    else drone.context.errors.error(
-      new ObjectNotVisibleException(
-        s"Trying to access state of an enemy drone that is not inside the sight radius of any of your drones.$message"),
-      drone.position
-    )
+    else
+      drone.context.errors.error(
+        new ObjectNotVisibleException(
+          s"Trying to access state of an enemy drone that is not inside the sight radius of any of your drones.$message"),
+        drone.position
+      )
   }
 
   /** Returns a string that encodes various properties of the drone. */
   def displayString: String = {
-    if (drone == null) { spec.maxHitpoints
+    if (drone == null) {
+      spec.maxHitpoints
       return "[Uninitialised drone controller]"
     }
     def m(count: Int, descr: String): Option[String] = count match {
@@ -131,4 +141,3 @@ trait Drone {
   @deprecated("Use missileCooldown instead.", "0.2.4.3")
   def weaponsCooldown: Int = missileCooldown
 }
-
