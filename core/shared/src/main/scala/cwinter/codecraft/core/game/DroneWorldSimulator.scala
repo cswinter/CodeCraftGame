@@ -694,6 +694,7 @@ class DroneWorldSimulator(
       case DestroyEnemyMotherships => !drones.exists(isLivingEnemyMothership(player))
       case LargestFleet(timeout: Int) =>
         if (timestep >= timeout) {
+          if (drones.isEmpty) return true
           val winner = drones
             .groupBy(_.player)
             .maxBy {
