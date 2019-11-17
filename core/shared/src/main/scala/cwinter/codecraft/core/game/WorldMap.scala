@@ -85,7 +85,7 @@ object WorldMap {
     resourceClusters: Seq[(Int, Int)],
     initialDrones: Seq[Spawn]
   ): WorldMap = {
-    val spread = 100
+    var spread = 101
     var clusterPositions = List.empty[Vector2]
     var left = true
     def freshClusterPosition: Vector2 = {
@@ -96,6 +96,7 @@ object WorldMap {
         fairPos =
           if (left) Vector2(math.abs(cpos.x), cpos.y)
           else Vector2(-math.abs(cpos.x), cpos.y)
+        spread -= 1
       } while (clusterPositions.exists(p => (p - fairPos).lengthSquared <= 4 * 4 * spread * spread))
       clusterPositions ::= fairPos
       left = !left
@@ -116,6 +117,7 @@ object WorldMap {
                                       spread: Double,
                                       amount: Int,
                                       maxSize: Int): Seq[MineralSpawn] = {
+    var adjustedMinDist = minDist
     var minerals = Seq.empty[MineralSpawn]
 
     while (minerals.size < amount) {
@@ -123,8 +125,11 @@ object WorldMap {
       val dist = (pos - midpoint).length
       val p = math.sqrt(math.exp(-dist * dist / 100000))
       val size = (GlobalRNG.double(0, p) * 3 * maxSize).toInt + 1
-      if (!minerals.exists(m => (m.position - pos).lengthSquared <= minDist * minDist * size)) {
+      if (!minerals.exists(
+            m => (m.position - pos).lengthSquared <= adjustedMinDist * adjustedMinDist * size)) {
         minerals :+= MineralSpawn(size, pos)
+      } else {
+        adjustedMinDist *= .9
       }
     }
 
