@@ -83,7 +83,8 @@ object WorldMap {
   def apply(
     size: Rectangle,
     resourceClusters: Seq[(Int, Int)],
-    initialDrones: Seq[Spawn]
+    initialDrones: Seq[Spawn],
+    symmetric: Boolean = false
   ): WorldMap = {
     var spread = 101
     var clusterPositions = List.empty[Vector2]
@@ -106,7 +107,12 @@ object WorldMap {
     val minerals =
       for {
         (mineralCount, size) <- resourceClusters
-        m <- generateResourceCluster(freshClusterPosition, 25, spread, mineralCount, GlobalRNG.int(1, size))
+        m <- generateResourceCluster(freshClusterPosition,
+                                     25,
+                                     spread,
+                                     mineralCount,
+                                     GlobalRNG.int(1, size),
+                                     symmetric)
       } yield m
 
     WorldMap(minerals, size, initialDrones)
@@ -116,7 +122,8 @@ object WorldMap {
                                       minDist: Double,
                                       spread: Double,
                                       amount: Int,
-                                      maxSize: Int): Seq[MineralSpawn] = {
+                                      maxSize: Int,
+                                      symmetric: Boolean): Seq[MineralSpawn] = {
     var adjustedMinDist = minDist
     var minerals = Seq.empty[MineralSpawn]
 
@@ -128,6 +135,7 @@ object WorldMap {
       if (!minerals.exists(
             m => (m.position - pos).lengthSquared <= adjustedMinDist * adjustedMinDist * size)) {
         minerals :+= MineralSpawn(size, pos)
+        if (symmetric) minerals :+= MineralSpawn(size, Vector2(-pos.x, -pos.y))
       } else {
         adjustedMinDist *= .9
       }

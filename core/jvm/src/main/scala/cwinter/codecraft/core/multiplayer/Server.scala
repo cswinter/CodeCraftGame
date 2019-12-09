@@ -163,11 +163,11 @@ class MultiplayerServer(
   def startLocalGame(
     droneControllers: Seq[DroneControllerBase],
     winConditions: Seq[WinCondition] = WinCondition.default,
-    custom_map: Option[(Rectangle, Seq[Spawn], Seq[(Int, Int)])] = None): DroneWorldSimulator = {
+    custom_map: Option[(Rectangle, Seq[Spawn], Seq[(Int, Int)], Boolean)] = None): DroneWorldSimulator = {
     var controllers = droneControllers
     log.info("Starting Local Game")
     val map = custom_map match {
-      case Some((size, spawns, resources)) => WorldMap(size, resources, spawns)
+      case Some((size, spawns, resources, symmetric)) => WorldMap(size, resources, spawns, symmetric)
       case None => mapGenerator()
     }
     var remotePlayers = Set.empty[Player]
