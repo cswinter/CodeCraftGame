@@ -31,7 +31,7 @@ import scala.scalajs.js.annotation.JSExport
   * @param settings Additional settings that don't affect gameplay.
   */
 class DroneWorldSimulator(
-  config: GameConfig,
+  val config: GameConfig,
   eventGenerator: Int => Seq[SimulatorEvent] = t => Seq.empty,
   multiplayerConfig: MultiplayerConfig = SingleplayerConfig,
   forceReplayRecorder: Option[ReplayRecorder] = None,
