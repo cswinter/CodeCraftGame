@@ -6,23 +6,21 @@ import cwinter.codecraft.util.maths._
 
 import scala.scalajs.js.annotation.JSExportAll
 
-
 // The description part of this Scaladoc is identical to that in DroneController and JDroneController.
 // It might be possible to deduplicate using doc macros, but I couldn't find a way to use @define
 // when the comments are in different files.
 /**
- * A drone controller is an object that governs the behaviour of a drone.
- * It exposes a wide range of methods to query the underlying drone's state and give it commands.
- * You can inherit from this class and override the `onEvent` methods to implement a
- * drone controller with custom behaviour.
- *
- * NOTE: You should not actually use this class, but one of it's specialisations.
- * In Scala, use [[DroneController]] and in Java use [[JDroneController]].
- */
+  * A drone controller is an object that governs the behaviour of a drone.
+  * It exposes a wide range of methods to query the underlying drone's state and give it commands.
+  * You can inherit from this class and override the `onEvent` methods to implement a
+  * drone controller with custom behaviour.
+  *
+  * NOTE: You should not actually use this class, but one of it's specialisations.
+  * In Scala, use [[DroneController]] and in Java use [[JDroneController]].
+  */
 @JSExportAll
 trait DroneControllerBase extends Drone {
   private[this] var _drone: DroneImpl = null
-
 
   /** Called once when the drone is spawned. Called before any other `onEvent` method is called. */
   def onSpawn(): Unit = ()
@@ -57,7 +55,6 @@ trait DroneControllerBase extends Drone {
     * to give you an opportunity to provide a [[cwinter.codecraft.core.api.MetaController]].
     */
   def metaController: Option[MetaController] = None
-
 
   /** Order the drone to keep moving in the direction of `directionVector`. */
   def moveInDirection(directionVector: Vector2): Unit = {
@@ -146,7 +143,7 @@ trait DroneControllerBase extends Drone {
       cap(pos.x, worldSize.xMin, worldSize.xMax),
       cap(pos.y, worldSize.yMin, worldSize.yMax)
     )
-    drone ! ConstructDrone(spec, controller, drone.position - 110 * Vector2(_drone.dynamics.orientation))
+    drone ! ConstructDrone(spec, controller, cappedPos)
   }
 
   /** Order the drone to start the construction of a new drone.
@@ -247,4 +244,3 @@ trait DroneControllerBase extends Drone {
   @deprecated("The refinery module has been removed.", "0.2.4.0")
   def availableRefineries: Int = 0
 }
-
