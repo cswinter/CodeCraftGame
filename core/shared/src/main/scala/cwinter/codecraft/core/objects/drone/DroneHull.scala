@@ -10,7 +10,10 @@ private[core] trait DroneHull { self: DroneImpl =>
   def missileHit(missile: HomingMissile): Unit = {
     if (context.isMultiplayerClient) return
 
-    val incomingDamage = 1
+    val multiplier = context.specialRules.mothershipDamageMultiplier
+    val incomingDamage = if (multiplier != 1.0 && spec.constructors > 0) {
+      multiplier.toInt + (if (context.rng.bernoulli(multiplier % 1)) 1 else 0)
+    } else { 1 }
     val damage = shieldGenerators.fold(incomingDamage)(_.absorbDamage(incomingDamage))
     for (_ <- 0 until damage) hullState = damageHull(hullState)
 
@@ -50,4 +53,3 @@ private[core] trait DroneHull { self: DroneImpl =>
   def hitpoints: Int = hitpointsHull + shieldGenerators.fold(0)(_.currHitpoints)
   def hitpointsHull: Int = hullState.sum
 }
-

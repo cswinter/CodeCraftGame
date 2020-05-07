@@ -35,7 +35,8 @@ class DroneWorldSimulator(
   eventGenerator: Int => Seq[SimulatorEvent] = t => Seq.empty,
   multiplayerConfig: MultiplayerConfig = SingleplayerConfig,
   forceReplayRecorder: Option[ReplayRecorder] = None,
-  val settings: Settings = Settings.default
+  val settings: Settings = Settings.default,
+  val specialRules: SpecialRules = SpecialRules.default
 ) extends Simulator { outer =>
   private final val MaxDroneRadius = 60
 
@@ -104,7 +105,8 @@ class DroneWorldSimulator(
           this,
           replayRecorder,
           debug,
-          errors
+          errors,
+          specialRules
         )
   }.toMap
 
