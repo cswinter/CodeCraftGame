@@ -2,12 +2,11 @@ package cwinter.codecraft.core.objects.drone
 
 import cwinter.codecraft.core.api.Player
 import cwinter.codecraft.core.errors.Errors
-import cwinter.codecraft.core.game.{CommandRecorder, DroneWorldSimulator, GameConfig}
+import cwinter.codecraft.core.game.{CommandRecorder, DroneWorldSimulator, GameConfig, SpecialRules}
 import cwinter.codecraft.core.objects.IDGenerator
 import cwinter.codecraft.core.replay.{NullReplayRecorder, ReplayRecorder}
 import cwinter.codecraft.graphics.engine.Debug
-import cwinter.codecraft.util.maths.{Rectangle, RNG}
-
+import cwinter.codecraft.util.maths.{RNG, Rectangle}
 
 private[core] case class DroneContext(
   player: Player,
@@ -22,7 +21,8 @@ private[core] case class DroneContext(
   simulator: DroneWorldSimulator,
   replayRecorder: ReplayRecorder = NullReplayRecorder,
   debug: Debug,
-  errors: Errors
+  errors: Errors,
+  specialRules: SpecialRules
 ) {
   def settings = simulator.settings
   def isAuthoritativeServer: Boolean = isMultiplayer && isLocallyComputed
@@ -31,4 +31,3 @@ private[core] case class DroneContext(
   var missileHits = List.empty[MissileHit]
   var mineralHarvests = List.empty[MineralHarvest]
 }
-

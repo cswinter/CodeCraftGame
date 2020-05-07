@@ -163,7 +163,9 @@ class MultiplayerServer(
   def startLocalGame(
     droneControllers: Seq[DroneControllerBase],
     winConditions: Seq[WinCondition] = WinCondition.default,
-    custom_map: Option[(Rectangle, Seq[Spawn], Seq[(Int, Int)], Boolean)] = None): DroneWorldSimulator = {
+    custom_map: Option[(Rectangle, Seq[Spawn], Seq[(Int, Int)], Boolean)] = None,
+    specialRules: SpecialRules = SpecialRules.default
+  ): DroneWorldSimulator = {
     var controllers = droneControllers
     log.info("Starting Local Game")
     val map = custom_map match {
@@ -201,7 +203,8 @@ class MultiplayerServer(
                                                     remoteClients,
                                                     updateCompleted,
                                                     onTimeout),
-      settings = Settings.default.copy(recordReplays = false)
+      settings = Settings.default.copy(recordReplays = false),
+      specialRules = specialRules
     ) with JVMAsyncRunner
     simulator.graphicsEnabled = displayGame
     nextRNGSeed = scala.util.Random.nextInt
