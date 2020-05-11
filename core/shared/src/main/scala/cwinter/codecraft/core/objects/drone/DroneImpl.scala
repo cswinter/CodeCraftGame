@@ -203,7 +203,9 @@ private[core] final class DroneImpl(
 
 import upickle.default._
 private[core] sealed trait SerializableDroneCommand
-@key("Construct") private[core] case class SerializableConstructDrone(spec: DroneSpec, position: Vector2)
+@key("Construct") private[core] case class SerializableConstructDrone(spec: DroneSpec,
+                                                                      position: Vector2,
+                                                                      resourceCost: Int)
     extends SerializableDroneCommand
 @key("FireMissiles") private[core] case class SerializableFireMissiles(targetID: Int)
     extends SerializableDroneCommand
@@ -237,8 +239,8 @@ private[core] object DroneCommand {
           f"Cannot find mineral with id $mineralID. Available IDs: ${context.mineralRegistry.keys}")
     }
     serialized match {
-      case SerializableConstructDrone(spec, position) =>
-        ConstructDrone(spec, new DummyDroneController, position)
+      case SerializableConstructDrone(spec, position, resourceCost) =>
+        ConstructDrone(spec, new DummyDroneController, position, resourceCost)
       case SerializableFireMissiles(target) => FireMissiles(target)
       case SerializableDepositMinerals(target) => DepositMinerals(target)
       case SerializableHarvestMineral(mineral) => HarvestMineral(mineral)
@@ -254,9 +256,10 @@ private[core] object DroneCommand {
 private[core] case class ConstructDrone(
   spec: DroneSpec,
   controller: DroneControllerBase,
-  position: Vector2
+  position: Vector2,
+  resourceCost: Int
 ) extends DroneCommand {
-  def toSerializable = SerializableConstructDrone(spec, position)
+  def toSerializable = SerializableConstructDrone(spec, position, resourceCost)
 }
 private[core] case class FireMissiles(target: DroneImpl) extends DroneCommand {
   def toSerializable = SerializableFireMissiles(target.id)

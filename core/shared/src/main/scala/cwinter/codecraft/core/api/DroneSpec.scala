@@ -8,27 +8,28 @@ import GameConstants.{ModuleResourceCost, DroneConstructionTime}
 import scala.scalajs.js.annotation.JSExportAll
 
 /**
- * Specifies the modules equipped by a drone and computes various properties of a Drone with this
- * configuration of modules.
- *
- * Currently, the total number of modules is currently limited to 10 but this restriction will likely be
- * lifted in the future.
- *
- * @param storageModules Number of storage modules. Allows for storage of mineral crystals and energy globes.
- * @param missileBatteries Number of missile batteries. Allows for firing homing missiles.
- * @param constructors Number of constructors.
+  * Specifies the modules equipped by a drone and computes various properties of a Drone with this
+  * configuration of modules.
+  *
+  * Currently, the total number of modules is currently limited to 10 but this restriction will likely be
+  * lifted in the future.
+  *
+  * @param storageModules Number of storage modules. Allows for storage of mineral crystals and energy globes.
+  * @param missileBatteries Number of missile batteries. Allows for firing homing missiles.
+  * @param constructors Number of constructors.
   *                     Allows for constructing new drones and moving minerals from/to other drones.
- * @param engines Number of engines. Increases move speed.
- * @param shieldGenerators Number of shield generators. Gives the drone an additional 7 hitpoints each.
+  * @param engines Number of engines. Increases move speed.
+  * @param shieldGenerators Number of shield generators. Gives the drone an additional 7 hitpoints each.
   *                         Shields regenerate over time.
- */
+  */
 @JSExportAll
 case class DroneSpec(
   storageModules: Int = 0,
   missileBatteries: Int = 0,
   constructors: Int = 0,
   engines: Int = 0,
-  shieldGenerators: Int = 0
+  shieldGenerators: Int = 0,
+  costModifier: Int = 0
 ) {
   require(storageModules >= 0)
   require(missileBatteries >= 0)
@@ -42,7 +43,8 @@ case class DroneSpec(
   val moduleCount =
     storageModules + missileBatteries + constructors + engines + shieldGenerators
 
-  require(moduleCount <= ModulePosition.MaxModules, s"A drone cannot have more than ${ModulePosition.MaxModules} modules")
+  require(moduleCount <= ModulePosition.MaxModules,
+          s"A drone cannot have more than ${ModulePosition.MaxModules} modules")
 
   /** The number of sides that the drone will have.
     * E.g. a drone with two modules will be rectangular shaped and therefore has 4 sides.
@@ -68,7 +70,6 @@ case class DroneSpec(
 
   /** Returns the speed of a drone with this spec, measured in units distance per timestep. */
   def maxSpeed: Float = 30 * (1 + engines) / weight
-
 
   /** Returns the `radius` for a drone with this spec.
     * The `radius` is used to compute collisions with projectiles or other drones.
@@ -104,15 +105,17 @@ case class DroneSpec(
   }
 
   private[core] def constructStorage(owner: DroneImpl, startingResources: Int = 0): Option[StorageModule] =
-    if (storageModules > 0) Some(
-      new StorageModule(0 until storageModules, owner, startingResources)
-    )
+    if (storageModules > 0)
+      Some(
+        new StorageModule(0 until storageModules, owner, startingResources)
+      )
     else None
 
   private[core] def constructMissilesBatteries(owner: DroneImpl): Option[MissileBatteryModule] =
-    if (missileBatteries > 0) Some(
-      new MissileBatteryModule(storageModules until (storageModules + missileBatteries), owner)
-    )
+    if (missileBatteries > 0)
+      Some(
+        new MissileBatteryModule(storageModules until (storageModules + missileBatteries), owner)
+      )
     else None
 
   private[core] def constructManipulatorModules(owner: DroneImpl): Option[ConstructorModule] =
@@ -133,4 +136,3 @@ case class DroneSpec(
       Some(new ShieldGeneratorModule(startIndex until startIndex + shieldGenerators, owner))
     } else None
 }
-
