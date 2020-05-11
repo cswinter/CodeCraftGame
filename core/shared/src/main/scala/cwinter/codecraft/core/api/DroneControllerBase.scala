@@ -143,7 +143,9 @@ trait DroneControllerBase extends Drone {
       cap(pos.x, worldSize.xMin, worldSize.xMax),
       cap(pos.y, worldSize.yMin, worldSize.yMax)
     )
-    drone ! ConstructDrone(spec, controller, cappedPos)
+    val rng = _drone.context.rng
+    val cost = _drone.context.specialRules.modifiedCost(rng, spec)
+    drone ! ConstructDrone(spec, controller, cappedPos, cost)
   }
 
   /** Order the drone to start the construction of a new drone.
