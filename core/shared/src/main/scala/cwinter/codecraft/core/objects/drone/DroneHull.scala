@@ -11,9 +11,11 @@ private[core] trait DroneHull { self: DroneImpl =>
     if (context.isMultiplayerClient) return
 
     val multiplier = context.specialRules.mothershipDamageMultiplier
-    val incomingDamage = if (multiplier != 1.0 && spec.constructors > 0) {
-      multiplier.toInt + (if (context.rng.bernoulli(multiplier % 1)) 1 else 0)
-    } else { 1 }
+    val isCapitalMothership = spec.constructors > 0 && spec.shieldGenerators > 0 && spec.missileBatteries > 0
+    val incomingDamage =
+      if (multiplier != 1.0 && isCapitalMothership) {
+        multiplier.toInt + (if (context.rng.bernoulli(multiplier % 1)) 1 else 0)
+      } else { 1 }
     val damage = shieldGenerators.fold(incomingDamage)(_.absorbDamage(incomingDamage))
     for (_ <- 0 until damage) hullState = damageHull(hullState)
 
