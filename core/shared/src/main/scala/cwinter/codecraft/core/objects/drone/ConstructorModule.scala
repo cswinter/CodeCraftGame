@@ -49,7 +49,7 @@ private[core] class ConstructorModule(positions: Seq[Int], owner: DroneImpl)
       }
 
       val progress2 = progress + furtherProgress
-      drone.constructionProgress = Some(progress2)
+      drone.constructionProgress = Some(math.max(0, progress2))
       if (progress2 == drone.spec.buildTime) {
         effects ::= SpawnDrone(drone)
         droneConstruction = None
