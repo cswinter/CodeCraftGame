@@ -1,5 +1,6 @@
 package cwinter.codecraft.core.game
 
+import cwinter.codecraft.core.api.GameConstants.ModuleResourceCost
 import cwinter.codecraft.core.api.DroneSpec
 import cwinter.codecraft.util.maths.RNG
 
@@ -24,17 +25,13 @@ case class SpecialRules(
       val fractional = if (rng.bernoulli(double - double.floor)) 1 else 0
       double.floor.toInt + fractional
     }
-    def moduleCost(count: Int, modifier: Double): Int = {
-      import cwinter.codecraft.core.api.GameConstants.ModuleResourceCost
-      val amount = modifier * sizeModifier * count * ModuleResourceCost
-      discretize(amount)
-    }
 
-    moduleCost(spec.missileBatteries, costModifierMissiles) +
-      moduleCost(spec.shieldGenerators, costModifierShields) +
-      moduleCost(spec.storageModules, costModifierStorage) +
-      moduleCost(spec.constructors, costModifierConstructor) +
-      moduleCost(spec.engines, costModifierEngines)
+    discretize(
+      (spec.missileBatteries * costModifierMissiles +
+        spec.shieldGenerators * costModifierShields +
+        spec.storageModules * costModifierStorage +
+        spec.constructors * costModifierConstructor +
+        spec.engines * costModifierEngines) * ModuleResourceCost * sizeModifier)
   }
 
 }
