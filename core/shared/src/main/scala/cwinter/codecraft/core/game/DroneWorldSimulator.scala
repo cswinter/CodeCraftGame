@@ -17,7 +17,6 @@ import cwinter.codecraft.util.modules.ModulePosition
 
 import scala.async.Async._
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
-import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.{implicitConversions, postfixOps}
 import scala.scalajs.js.annotation.JSExport
@@ -592,7 +591,7 @@ class DroneWorldSimulator(
         override def run(): Unit = {
           try {
             CrossPlatformAwait.result(runAsync()(scala.concurrent.ExecutionContext.Implicits.global),
-                                      30 seconds)
+                                      multiplayerConfig.timeoutSecs)
           } catch {
             case _: TimeoutException =>
               gameStatus = Stopped("Connection timed out.")

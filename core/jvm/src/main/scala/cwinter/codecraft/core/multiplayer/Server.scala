@@ -164,7 +164,8 @@ class MultiplayerServer(
     droneControllers: Seq[DroneControllerBase],
     winConditions: Seq[WinCondition] = WinCondition.default,
     custom_map: Option[(Rectangle, Seq[Spawn], Seq[(Int, Int)], Boolean)] = None,
-    specialRules: SpecialRules = SpecialRules.default
+    specialRules: SpecialRules = SpecialRules.default,
+    timeout: Duration
   ): DroneWorldSimulator = {
     var controllers = droneControllers
     log.info("Starting Local Game")
@@ -202,7 +203,8 @@ class MultiplayerServer(
                                                     remotePlayers,
                                                     remoteClients,
                                                     updateCompleted,
-                                                    onTimeout),
+                                                    onTimeout,
+                                                    timeout),
       settings = Settings.default.copy(recordReplays = false),
       specialRules = specialRules
     ) with JVMAsyncRunner
@@ -300,7 +302,8 @@ class MultiplayerServer(
                                                     clients.flatMap(_.players),
                                                     clients,
                                                     updateCompleted,
-                                                    onTimeout),
+                                                    onTimeout,
+                                                    30.seconds),
       settings = Settings.default.copy(recordReplays = false)
     ) with JVMAsyncRunner
     simulator.graphicsEnabled = displayGame
