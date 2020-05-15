@@ -1,9 +1,11 @@
 package cwinter.codecraft.core
 
-import cwinter.codecraft.core.api.{Player, TheGameMaster, BluePlayer, OrangePlayer}
-import cwinter.codecraft.core.game.{MultiplayerClientConfig, AuthoritativeServerConfig, DroneWorldSimulator}
-import cwinter.codecraft.core.multiplayer.{LocalServerConnection, LocalClientConnection, LocalConnection}
+import cwinter.codecraft.core.api.{BluePlayer, OrangePlayer, Player, TheGameMaster}
+import cwinter.codecraft.core.game.{AuthoritativeServerConfig, DroneWorldSimulator, MultiplayerClientConfig}
+import cwinter.codecraft.core.multiplayer.{LocalClientConnection, LocalConnection, LocalServerConnection}
 import cwinter.codecraft.core.replay.DummyDroneController
+
+import scala.concurrent.duration._
 
 private[codecraft] object IntraRuntimeMultiplayerTest {
   def main(args: Array[String]): Unit = {
@@ -18,7 +20,12 @@ private[codecraft] object IntraRuntimeMultiplayerTest {
         tickPeriod = 10
       ),
       t => Seq.empty,
-      AuthoritativeServerConfig(serverPlayers, clientPlayers, Set(clientConnection0), s => (), s => ())
+      AuthoritativeServerConfig(serverPlayers,
+                                clientPlayers,
+                                Set(clientConnection0),
+                                s => (),
+                                s => (),
+                                30.seconds)
     )
     val client = new DroneWorldSimulator(
       TheGameMaster.defaultMap.createGameConfig(
