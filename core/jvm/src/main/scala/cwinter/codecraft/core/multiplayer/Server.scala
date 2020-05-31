@@ -9,7 +9,7 @@ import cwinter.codecraft.core.game._
 import cwinter.codecraft.core.objects.drone.{GameClosed, ServerBusy, ServerMessage}
 import cwinter.codecraft.core.replay.DummyDroneController
 import cwinter.codecraft.graphics.engine.JVMAsyncRunner
-import cwinter.codecraft.util.maths.Rectangle
+import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 import org.joda.time.DateTime
 import spray.can.Http
 import spray.can.server.UHttp
@@ -163,14 +163,19 @@ class MultiplayerServer(
   def startLocalGame(
     droneControllers: Seq[DroneControllerBase],
     winConditions: Seq[WinCondition] = WinCondition.default,
-    custom_map: Option[(Rectangle, Seq[Spawn], Seq[(Int, Int)], Boolean)] = None,
+    custom_map: Option[(Rectangle, Seq[Spawn], Either[Seq[(Int, Int)], List[(Vector2, Int)]], Boolean)] =
+      None,
     specialRules: SpecialRules = SpecialRules.default,
     timeout: Duration
   ): DroneWorldSimulator = {
     var controllers = droneControllers
     log.info("Starting Local Game")
     val map = custom_map match {
-      case Some((size, spawns, resources, symmetric)) => WorldMap(size, resources, spawns, symmetric)
+      case Some((size, spawns, resources, symmetric)) =>
+        resources match {
+          case Left(distribution) => WorldMap(size, distribution, spawns, symmetric)
+          case Right(positions) => WorldMap(size, positions, spawns)
+        }
       case None => mapGenerator()
     }
     var remotePlayers = Set.empty[Player]
