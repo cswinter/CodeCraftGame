@@ -130,6 +130,7 @@ class MultiplayerServer(
     case GameTimedOut(simulatorRef) =>
       simulatorRef.get match {
         case Some(simulator) =>
+          log.warning("Game timed out, stopping simulator!")
           if (runningGames.contains(simulator))
             stopGame(simulator, GameClosed.Timeout)
         case None =>
@@ -222,7 +223,7 @@ class MultiplayerServer(
       stopGame(simulator, GameClosed.Crash(e.getMessage + "\n" + e.getStackTrace.mkString("\n")))
     })
     context.system.scheduler
-      .scheduleOnce(20 minutes, self, GameTimedOut(WeakReference(simulator)))
+      .scheduleOnce(FiniteDuration(timeout.toSeconds, SECONDS), self, GameTimedOut(WeakReference(simulator)))
     runningGames += simulator -> GameInfo(connections, new DateTime().getMillis)
 
     for (c <- connections) c.assignedGame = Some(simulator)
