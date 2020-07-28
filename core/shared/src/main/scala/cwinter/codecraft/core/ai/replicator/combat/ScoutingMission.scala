@@ -2,8 +2,7 @@ package cwinter.codecraft.core.ai.replicator.combat
 
 import cwinter.codecraft.core.ai.shared.Mission
 
-
-private[codecraft] object ScoutingMission extends Mission[ReplicatorCommand] {
+private[codecraft] class ScoutingMission extends Mission[ReplicatorCommand] {
   val minRequired = 1
   val maxRequired = Int.MaxValue
   val missionInstructions = Scout

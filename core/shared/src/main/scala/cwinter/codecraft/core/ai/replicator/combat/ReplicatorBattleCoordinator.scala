@@ -4,7 +4,6 @@ import cwinter.codecraft.core.ai.replicator._
 import cwinter.codecraft.core.ai.shared.BattleCoordinator
 import cwinter.codecraft.core.api.{Drone, DroneSpec}
 
-
 private[codecraft] class ReplicatorBattleCoordinator(val context: ReplicatorContext)
     extends BattleCoordinator[ReplicatorCommand] {
   private[this] var assisting = Map.empty[ReplicatorController, Assist]
@@ -17,8 +16,7 @@ private[codecraft] class ReplicatorBattleCoordinator(val context: ReplicatorCont
   def enemyStrength = _enemyStrength
   def clusters = _enemyClusters
 
-  addMission(ScoutingMission)
-
+  addMission(new ScoutingMission())
 
   override def update(): Unit = {
     super.update()
@@ -45,7 +43,8 @@ private[codecraft] class ReplicatorBattleCoordinator(val context: ReplicatorCont
     var clusters = Map.empty[Drone, EnemyCluster]
     var visited = Set.empty[Drone]
     for (drone <- enemyForces) {
-      val closeby = visited.find(d => (d.lastKnownPosition - drone.lastKnownPosition).lengthSquared < maxDist2)
+      val closeby =
+        visited.find(d => (d.lastKnownPosition - drone.lastKnownPosition).lengthSquared < maxDist2)
       closeby match {
         case None =>
           val newCluster = new EnemyCluster
@@ -66,7 +65,8 @@ private[codecraft] class ReplicatorBattleCoordinator(val context: ReplicatorCont
     else {
       val (priority, radius) =
         if (drone.spec.constructors > 0) (15, 950) else (5, 750)
-      val assistMission = new Assist(drone, priority, math.ceil(drone.normalizedEnemyCount).toInt - 1, radius)
+      val assistMission =
+        new Assist(drone, priority, math.ceil(drone.normalizedEnemyCount).toInt - 1, radius)
       assisting += drone -> assistMission
       addMission(assistMission)
     }
@@ -118,12 +118,12 @@ private[codecraft] class ReplicatorBattleCoordinator(val context: ReplicatorCont
       enemyStrength > context.droneCount(classOf[Soldier]) * 1.5f
     else
       peakEnemyStrength > context.droneCount(classOf[Soldier]) ||
-        guarding.valuesIterator.exists(x => x.nAssigned < x.minRequired)
+      guarding.valuesIterator.exists(x => x.nAssigned < x.minRequired)
 
   class EnemyCluster {
     private[this] var _drones = Set.empty[Drone]
     def add(drone: Drone): Unit = _drones += drone
-    def show(): Unit = ???/*{
+    def show(): Unit = ??? /*{
       val midpoint = _drones.foldLeft(Vector2.Null)(_ + _.lastKnownPosition) / _drones.size
       val totalCover = _drones.flatMap(targetRegistry).foldLeft(0.0)(_ + _.normalizedStrength)
       showText(
@@ -145,4 +145,3 @@ private[codecraft] class ReplicatorBattleCoordinator(val context: ReplicatorCont
     }
   }
 }
-
