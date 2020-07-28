@@ -64,7 +64,7 @@ private[codecraft] class Harvester(
     super.onDeath()
     for (m <- nextCrystal)
       context.harvestCoordinator.abortHarvestingMission(m)
-    master.foreach(_.slaveFailed(this))
+    master.foreach(_.workerFailed(this))
   }
 
   def assignNewMaster(newMaster: Replicator): Unit = {

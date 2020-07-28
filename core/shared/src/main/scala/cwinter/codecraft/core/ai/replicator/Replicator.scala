@@ -26,7 +26,7 @@ private[codecraft] class Replicator(ctx: ReplicatorContext) extends ReplicatorCo
   context.isReplicatorInConstruction = true
 
 
-  private var slaves = Set.empty[Harvester]
+  private var workers = Set.empty[Harvester]
 
 
   override def onSpawn(): Unit = {
@@ -110,7 +110,7 @@ private[codecraft] class Replicator(ctx: ReplicatorContext) extends ReplicatorCo
     }
 
   private def needMoreSlaves: Boolean =
-    slaves.size < this.spec.constructors - 1
+    workers.size < this.spec.constructors - 1
 
   private def shouldBuildReplicator = !(
     spec.constructors <= 1 ||
@@ -124,7 +124,7 @@ private[codecraft] class Replicator(ctx: ReplicatorContext) extends ReplicatorCo
   )
 
   private def isStuck: Boolean =
-    slaves.isEmpty && isConstructing && !isHarvesting && storedResources == 0
+    workers.isEmpty && isConstructing && !isHarvesting && storedResources == 0
 
   private def assessThreatLevel(): Unit = {
     val enemyStrength = normalizedEnemyCount
@@ -157,23 +157,23 @@ private[codecraft] class Replicator(ctx: ReplicatorContext) extends ReplicatorCo
   }
 
   def hasSpareSlave: Boolean =
-    slaves.size > 1 || slaves.size == 1 && !isConstructing
+    workers.size > 1 || workers.size == 1 && !isConstructing
 
   def hasPlentySlaves: Boolean =
-    slaves.size > 1 && storedResources > 10
+    workers.size > 1 && storedResources > 10
 
   def relieveSlave(): Option[Harvester] = {
-    val s = slaves.headOption
-    s.foreach(slaves -= _)
+    val s = workers.headOption
+    s.foreach(workers -= _)
     s
   }
 
-  def registerSlave(slave: Harvester): Unit = {
-    slaves += slave
+  def registerSlave(worker: Harvester): Unit = {
+    workers += worker
   }
 
-  def slaveFailed(slave: Harvester): Unit = {
-    slaves -= slave
+  def workerFailed(worker: Harvester): Unit = {
+    workers -= worker
   }
 }
 
