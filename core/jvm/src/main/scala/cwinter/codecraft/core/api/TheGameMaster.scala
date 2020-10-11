@@ -6,10 +6,9 @@ import cwinter.codecraft.core.game.DroneWorldSimulator
 import cwinter.codecraft.core.multiplayer.{JavaXWebsocketClient, WebsocketClient}
 import cwinter.codecraft.graphics.application.DrawingCanvas
 
-
 /** Main entry point to start the game. */
 object TheGameMaster extends GameMasterLike {
-  override def run(simulator: DroneWorldSimulator): DroneWorldSimulator = {
+  override def run(simulator: DroneWorldSimulator, onComplete: () => Unit = () => {}): DroneWorldSimulator = {
     DrawingCanvas.run(simulator)
     simulator
   }
@@ -27,4 +26,3 @@ object TheGameMaster extends GameMasterLike {
     runReplayFromFile(latest.getPath)
   }
 }
-

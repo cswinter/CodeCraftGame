@@ -7,7 +7,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-
 private[codecraft] trait Simulator {
   private[this] val framequeue = mutable.Queue.empty[(Seq[ModelDescriptor[_]], Iterable[TextModel])]
   @volatile private[this] var running = false
@@ -45,7 +44,7 @@ private[codecraft] trait Simulator {
   }
 
   protected[codecraft] def excessMillis: (Option[Int], Boolean) = {
-    val isSleepFrame =  t % framelimitPeriod == 1 || framelimitPeriod == 1
+    val isSleepFrame = t % framelimitPeriod == 1 || framelimitPeriod == 1
     val nanos = System.nanoTime()
     val dt = nanos - tFrameCompleted
     val sleepMillis = framelimitPeriod * frameMillis - dt / 1000000
@@ -167,11 +166,12 @@ private[codecraft] trait Simulator {
     exceptionHandler = Some(callback)
   }
 
-  private[codecraft] def dequeueFrame(): (Seq[ModelDescriptor[_]], Iterable[TextModel]) = framequeue.synchronized {
-    if (framequeue.size > frameQueueThreshold) framequeue.dequeue()
-    if (framequeue.size > 1) framequeue.dequeue()
-    if (framequeue.isEmpty) (Seq.empty, Seq.empty) else framequeue.front
-  }
+  private[codecraft] def dequeueFrame(): (Seq[ModelDescriptor[_]], Iterable[TextModel]) =
+    framequeue.synchronized {
+      if (framequeue.size > frameQueueThreshold) framequeue.dequeue()
+      if (framequeue.size > 1) framequeue.dequeue()
+      if (framequeue.isEmpty) (Seq.empty, Seq.empty) else framequeue.front
+    }
   private[codecraft] def computeWorldState: Seq[ModelDescriptor[_]]
   private[codecraft] def handleKeypress(keychar: Char): Unit = ()
   private[codecraft] def additionalInfoText: String = ""
@@ -188,4 +188,3 @@ private[codecraft] trait Simulator {
 
   def forceGL2: Boolean = false
 }
-

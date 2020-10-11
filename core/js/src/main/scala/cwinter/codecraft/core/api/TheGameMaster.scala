@@ -13,8 +13,8 @@ import scala.scalajs.js.annotation.{JSExport, JSExportAll}
 import scala.util.{Failure, Success}
 
 /**
- * Main entry point to start the game.
- */
+  * Main entry point to start the game.
+  */
 @JSExport
 @JSExportAll
 object TheGameMaster extends GameMasterLike {
@@ -22,20 +22,18 @@ object TheGameMaster extends GameMasterLike {
   private[this] var runContext: Option[RunContext] = None
   private[codecraft] var outputFPS: Boolean = false
 
-
-  def run(simulator: DroneWorldSimulator): DroneWorldSimulator = {
+  override def run(simulator: DroneWorldSimulator, onComplete: () => Unit): DroneWorldSimulator = {
     require(canvas != null, "Must first set TheGameMaster.canvas variable to the webgl canvas element.")
     require(runContext.isEmpty, "Can only run one CodeCraft game at a time.")
 
     val lockstepGraphics = !simulator.precomputeFrames
     val renderer = new WebGLRenderer(canvas, simulator)
-    val context = new RunContext(simulator, renderer, 16, lockstepGraphics)
+    val context = new RunContext(simulator, renderer, 16, lockstepGraphics, onComplete = onComplete)
     runContext = Some(context)
     runGraphics(context)
     if (!lockstepGraphics) runGame(context)
     simulator
   }
-
 
   private def runGraphics(context: RunContext): Unit = {
     import context._
@@ -59,7 +57,10 @@ object TheGameMaster extends GameMasterLike {
 
   private[codecraft] def runGame(context: RunContext): Unit = {
     import context._
-    if (simulator.stopped || simulator.gameStatus != simulator.Running) return
+    if (simulator.stopped || simulator.gameStatus != simulator.Running) {
+      this.stop()
+      return
+    }
 
     if (simulator.isPaused) scala.scalajs.js.timers.setTimeout(20.0)(runGame(context))
     else {
@@ -85,8 +86,9 @@ object TheGameMaster extends GameMasterLike {
   }
 
   def stop(): Unit = {
-    runContext.foreach(_.stop())
+    val rc = runContext
     runContext = None
+    rc.foreach(_.stop())
   }
 
   def currentFPS: Option[Int] = runContext.map(_.fps.fps)
@@ -97,7 +99,8 @@ class RunContext(
   val renderer: WebGLRenderer,
   val targetMillisPerFrame: Int,
   val lockstepGraphics: Boolean,
-  var lastCompletionTime: Double = js.Date.now()
+  var lastCompletionTime: Double = js.Date.now(),
+  val onComplete: () => Unit = () => {}
 ) {
   val fps = new FPSMeter(this)
   private[this] var _stopped = false
@@ -105,13 +108,15 @@ class RunContext(
   def stop(): Unit = {
     _stopped = true
     renderer.dispose()
+    onComplete()
   }
 
   def computeWaitTime(): Double = {
     val time = js.Date.now()
     val elapsed = time - lastCompletionTime
     lastCompletionTime = time
-    println(s"computeWaitTime: $time, $lastCompletionTime, $elapsed ${math.max(0, targetMillisPerFrame - elapsed)}")
+    println(
+      s"computeWaitTime: $time, $lastCompletionTime, $elapsed ${math.max(0, targetMillisPerFrame - elapsed)}")
     math.max(0, targetMillisPerFrame - elapsed)
   }
 }
@@ -122,10 +127,14 @@ class FPSMeter(context: RunContext) {
   var lastFrameStarted = js.Date.now()
   var fps = 0
 
-
   def drawFPS(): Unit = {
-    context.simulator.debug.drawText(fpsString, -1, 1, ColorRGBA(1, 1, 1, 1),
-      absolutePosition = true, centered = false, largeFont = false)
+    context.simulator.debug.drawText(fpsString,
+                                     -1,
+                                     1,
+                                     ColorRGBA(1, 1, 1, 1),
+                                     absolutePosition = true,
+                                     centered = false,
+                                     largeFont = false)
   }
 
   def printFPS(): Unit = println(fpsString)
@@ -158,4 +167,3 @@ class FPSMeter(context: RunContext) {
     }
   }
 }
-
