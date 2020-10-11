@@ -157,6 +157,9 @@ private[codecraft] trait Simulator {
   /** Returns the initial camera position in the game world. */
   def initialCameraPos: Vector2 = Vector2.Null
 
+  /** Returns the initial camera position in the game world. */
+  var initialCameraZoom: Float = 0.0f
+
   /** Terminates any running game loops. */
   def terminate(): Unit = stopped = true
 
