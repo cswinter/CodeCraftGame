@@ -21,6 +21,7 @@ private[codecraft] class WebGLRenderer(
   lazy val context = new GraphicsContext(renderStack, true, modelCache, compositeModelBuilderCache)
   camera.position = (gameWorld.initialCameraPos.x, gameWorld.initialCameraPos.y)
   camera.screenDims = (canvas.width, canvas.height)
+  camera.zoom = gameWorld.initialCameraZoom
 
   private[this] val keyEventHandler = new KeyEventHandler(gameWorld, camera)
   canvas.onkeypress = onKeyPress _
