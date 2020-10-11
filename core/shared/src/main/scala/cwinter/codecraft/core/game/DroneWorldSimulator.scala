@@ -239,8 +239,13 @@ class DroneWorldSimulator(
   }
 
   private def executeRemoteCommands = Local('ExecuteRemoteCommands) {
-    for ((id, command) <- remoteCommands;
-         drone = simulationContext.drone(id)) drone ! command
+    for ((id, command) <- remoteCommands) {
+      if (simulationContext.droneRegistry.contains(id)) {
+        simulationContext.drone(id) ! command
+      } else {
+        println(s"WARNING: desync, drone with id $id not found.")
+      }
+    }
   }
 
   private def distributeWorldState = Local('DistributeWorldState) {
