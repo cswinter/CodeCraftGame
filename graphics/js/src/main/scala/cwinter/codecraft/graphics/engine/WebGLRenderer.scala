@@ -9,7 +9,6 @@ import org.scalajs.dom.{document, html}
 
 import scala.scalajs.js
 
-
 private[codecraft] class WebGLRenderer(
   canvas: html.Canvas,
   gameWorld: Simulator
@@ -34,7 +33,6 @@ private[codecraft] class WebGLRenderer(
 
   canvas.onmouseup = onMouseUp _
   canvas.onmousemove = onMouseMove _
-
 
   def onKeyPress(e: dom.KeyboardEvent) = {
     val key = e.keyCode match {
@@ -78,7 +76,6 @@ private[codecraft] class WebGLRenderer(
       camera.y -= dy.toFloat * camera.zoomFactor
     }
   }
-
 
   def render(): Unit = {
     Material.resetDrawCalls()
@@ -132,7 +129,8 @@ private[codecraft] class WebGLRenderer(
     val textDiv = document.getElementById("text-container").asInstanceOf[HTMLDivElement]
     val textTestDiv = document.getElementById("text-test-container").asInstanceOf[HTMLDivElement]
     if (textDiv == null || textTestDiv == null) {
-      println("Could not find div#text-container and div#text-test-container. Without this, text cannot be rendered.")
+      println(
+        "Could not find div#text-container and div#text-test-container. Without this, text cannot be rendered.")
     } else if (textModels.nonEmpty || textDiv.innerHTML != "") {
       textTestDiv.innerHTML = """<div id="large-text-dim-test"></div><div id="small-text-dim-test"></div>"""
       textDiv.innerHTML = ""
@@ -142,7 +140,8 @@ private[codecraft] class WebGLRenderer(
           textDiv,
           TextModel(
             "Game Paused. Press SPACEBAR to resume.",
-            width / 2, height / 2,
+            width / 2,
+            height / 2,
             ColorRGBA(1, 1, 1, 1),
             absolutePos = true
           ),
@@ -161,7 +160,6 @@ private[codecraft] class WebGLRenderer(
     val TextModel(text, x, y, ColorRGBA(r, g, b, a), absolutePos, centered, largeFont) = textModel
     def int(f: Float) = Math.round(255 * f)
 
-
     val position =
       if (absolutePos) screenToBrowserCoords(x, y, width, height)
       else worldToBrowserCoords(x, y, width, height)
@@ -175,9 +173,9 @@ private[codecraft] class WebGLRenderer(
       } else (0, 0)
 
     if (!absolutePos && (position.x - textWidth / 2 < 0 ||
-      position.y - textHeight < 0 ||
-      position.x > width + textWidth / 2 ||
-      position.y > height + textHeight / 2)) return
+        position.y - textHeight < 0 ||
+        position.x > width + textWidth / 2 ||
+        position.y > height + textHeight / 2)) return
 
     val textElem = document.createElement("div").asInstanceOf[HTMLDivElement]
     textElem.className = if (largeFont) "large-floating-text" else "floating-text"
@@ -191,7 +189,7 @@ private[codecraft] class WebGLRenderer(
   private def worldToBrowserCoords(x: Float, y: Float, width: Int, height: Int): VertexXY = {
     val worldPos = VertexXY(x, -y)
     val cameraPos = (1 / camera.zoomFactor) * (worldPos - VertexXY(camera.x, -camera.y)) +
-        VertexXY(width / 2f, height / 2f)
+      VertexXY(width / 2f, height / 2f)
     cameraPos
   }
 
@@ -211,4 +209,3 @@ private[codecraft] class WebGLRenderer(
 
   def dispose(): Unit = context.dispose(gl)
 }
-

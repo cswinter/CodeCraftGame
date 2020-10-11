@@ -28,7 +28,7 @@ private[core] trait DroneHull { self: DroneImpl =>
 
   def missileHit(position: Vector2, shieldDamage: Int, hullDamage: Int): Unit = {
     val remainingDamage = shieldGenerators.fold(shieldDamage)(_.absorbDamage(shieldDamage))
-    assert(remainingDamage == 0, s"$hullDamage, $shieldDamage, $remainingDamage, $shieldGenerators")
+    // assert(remainingDamage == 0, s"$hullDamage, $shieldDamage, $remainingDamage, $shieldGenerators")
     for (_ <- 0 until hullDamage) hullState = damageHull(hullState)
 
     missileHit(position, shieldDamage + hullDamage)

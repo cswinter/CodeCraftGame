@@ -63,7 +63,7 @@ private[codecraft] trait GameMasterLike {
   }
 
   /** Runs the `simulator`. */
-  def run(simulator: DroneWorldSimulator): DroneWorldSimulator
+  def run(simulator: DroneWorldSimulator, onComplete: () => Unit): DroneWorldSimulator
 
   /** Creates a new [[cwinter.codecraft.core.game.DroneWorldSimulator]] for a singleplayer game with the specified settings. */
   def createSimulator(
@@ -112,7 +112,7 @@ private[codecraft] trait GameMasterLike {
   def runGame(mothership1: DroneControllerBase, mothership2: DroneControllerBase): DroneWorldSimulator = {
     val controllers = Seq(mothership1, mothership2)
     val simulator = new DroneWorldSimulator(defaultMap.createGameConfig(controllers))
-    run(simulator)
+    run(simulator, () => {})
     simulator
   }
 
@@ -188,7 +188,7 @@ private[codecraft] trait GameMasterLike {
     val map = level1Map
     val controllers = Seq(mothership1, level1AI())
     val simulator = new DroneWorldSimulator(map.createGameConfig(controllers))
-    run(simulator)
+    run(simulator, () => {})
     simulator
   }
 
