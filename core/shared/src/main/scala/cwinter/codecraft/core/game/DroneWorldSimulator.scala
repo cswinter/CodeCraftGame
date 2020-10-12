@@ -233,9 +233,10 @@ class DroneWorldSimulator(
   private def distributeCommandsToClients = Local('DistributeCommandsToClients) {
     val clients = multiplayerConfig.asInstanceOf[AuthoritativeServerConfig].clients
     val allCommands = multiplayerConfig.commandRecorder.popAll() ++ remoteCommands
-    for (client <- clients;
-         commands = allCommands.filter(d => !client.players.contains(simulationContext.drone(d._1).player)))
-      client.sendCommands(commands)
+    for {
+      client <- clients
+      commands = allCommands.filter(d => !client.players.contains(simulationContext.drone(d._1).player))
+    } client.sendCommands(commands)
   }
 
   private def executeRemoteCommands = Local('ExecuteRemoteCommands) {
@@ -296,18 +297,24 @@ class DroneWorldSimulator(
 
     for {
       MineralHarvest(droneID, mineralID) <- mineralHarvests
-      drone = simulationContext.drone(droneID)
+      drone <- simulationContext.maybeDrone(droneID)
       mineral = simulationContext.mineral(mineralID)
       event <- drone.applyHarvest(mineral)
     } processEvent(event)
 
-    for (MissileHit(droneID, position, missileID, shieldDamage, hullDamage) <- missileHits) {
+    for {
+      MissileHit(droneID, position, missileID, shieldDamage, hullDamage) <- missileHits
+      drone <- simulationContext.maybeDrone(droneID)
+    } {
       val missile = missiles(missileID)
-      simulationContext.drone(droneID).missileHit(missile.position, shieldDamage, hullDamage)
+      drone.missileHit(missile.position, shieldDamage, hullDamage)
       missile.dynamics.remove()
     }
 
-    for (state <- stateChanges) simulationContext.drone(state.droneID).applyState(state)
+    for {
+      state <- stateChanges
+      drone <- simulationContext.maybeDrone(state.droneID)
+    } drone.applyState(state)
 
     if (multiplayerConfig.isInstanceOf[MultiplayerClientConfig] && config.tickPeriod > 1)
       correctSpeculativePositions()
