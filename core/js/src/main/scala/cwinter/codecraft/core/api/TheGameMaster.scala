@@ -80,7 +80,12 @@ object TheGameMaster extends GameMasterLike {
               if (resetTime) simulator.tFrameCompleted = System.nanoTime()
               runGame(context)
           }
-        case Failure(x) => x.printStackTrace()
+        case Failure(x) => {
+          println("Simulator crashed:")
+          x.printStackTrace()
+          simulator.terminate()
+          this.stop()
+        }
       }
     }
   }
