@@ -2,7 +2,7 @@ import sbt._
 import Keys._
 
 object Commons {
-  val appVersion = "0.6.1"
+  val appVersion = "0.7.0"
 
   val settings: Seq[Def.Setting[_]] = Seq(
     organization := "org.codecraftgame",
@@ -15,15 +15,15 @@ object Commons {
       "-feature"
     ),
     autoAPIMappings := true,
-
     publishArtifact in Test := false,
     publishTo := {
       val nexus = "https://oss.sonatype.org/"
       if (isSnapshot.value) Some("snapshots" at nexus + "content/repositories/snapshots")
       else Some("releases" at nexus + "service/local/staging/deploy/maven2")
     },
-
-    pomIncludeRepository := { _ => false },
+    pomIncludeRepository := { _ =>
+      false
+    },
     pomExtra :=
       <url>http://www.codecraftgame.org</url>
       <licenses>
@@ -46,4 +46,3 @@ object Commons {
       </developers>
   )
 }
-
