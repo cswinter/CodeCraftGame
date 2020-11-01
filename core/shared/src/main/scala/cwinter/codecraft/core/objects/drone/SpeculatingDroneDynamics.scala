@@ -46,4 +46,6 @@ private[core] class SpeculatingDroneDynamics(
   }
 
   override def isStunned: Boolean = speculative.isStunned
+
+  def setPosition(pos: Vector2): Unit = speculative.setPosition(pos)
 }

@@ -31,4 +31,6 @@ private[core] class RemoteDroneDynamics(initialPos: Vector2)
   override def halt(): Unit = _movementCommand = HoldPosition
   override def pos: Vector2 = position
   override def isStunned: Boolean = _isStunned
+
+  override def setPosition(pos: Vector2): Unit = position = pos
 }

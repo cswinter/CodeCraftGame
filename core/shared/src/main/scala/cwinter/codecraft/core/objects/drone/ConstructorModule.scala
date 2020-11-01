@@ -57,6 +57,20 @@ private[core] class ConstructorModule(positions: Seq[Int], owner: DroneImpl)
         shouldUpdateBeamDescriptor = true
       }
 
+      val dist = (drone.position - owner.position).length
+      if (math.abs(dist - 110) > 20) {
+        def clip(value: Double, min: Double, max: Double): Double =
+          math.min(math.max(value, min), max)
+        val speed = clip((110 - dist) * 0.1, -10.0, 10.0)
+        val newPos = drone.position + speed * (drone.position - owner.position).normalized
+        val worldSize = owner.context.worldSize
+        drone.dynamics.setPosition(
+          Vector2(
+            clip(newPos.x, worldSize.xMin, worldSize.xMax),
+            clip(newPos.y, worldSize.yMin, worldSize.yMax)
+          ))
+      }
+
       (drone, progress2)
     }
 
@@ -91,5 +105,4 @@ private[core] class ConstructorModule(positions: Seq[Int], owner: DroneImpl)
     } yield ConstructionBeamsModel(owner.sides, modules, relativeConstructionPos, owner.player.color)
 
   def droneInConstruction: Option[DroneImpl] = droneConstruction.map(_._1)
-  override def cancelMovement: Boolean = isConstructing
 }

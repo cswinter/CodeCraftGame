@@ -15,6 +15,8 @@ private[core] trait DroneDynamics {
   def isMoving: Boolean
   def activeCommand: MovementCommand
   def isStunned: Boolean
+
+  def setPosition(pos: Vector2): Unit
 }
 
 private[core] trait SyncableDroneDynamics {
