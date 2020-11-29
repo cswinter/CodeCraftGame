@@ -1,6 +1,7 @@
 package cwinter.codecraft.core.api
 
 object GameConstants {
+
   /** The largest distance at which two drones can see each other. */
   final val DroneVisionRange = 500
 
@@ -28,12 +29,11 @@ object GameConstants {
   /** The number of timesteps it takes to build a drone is `DroneConstructionTime` *
     *  (number of modules of the drone being built) / (number constructor modules of the building drone).
     */
-  final val DroneConstructionTime = 100
+  final val DroneConstructionTime = 30
 
-  /** The amount of resources required to build a */
-  final val ModuleResourceCost = 5
+  /** The amount of resources required per module to build a drone */
+  final val ModuleResourceCost = 3
 
   /** The number of timesteps it takes to harvest 1 resource from a mineral crystal. */
-  final val HarvestingInterval = 60
+  final val HarvestingInterval = 120
 }
-
