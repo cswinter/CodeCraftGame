@@ -10,9 +10,8 @@ import cwinter.codecraft.util.modules.ModulePosition
 
 import scala.collection.mutable
 
-
 private[core] class StorageModule(positions: Seq[Int], owner: DroneImpl, startingResources: Int = 0)
-  extends DroneModule(positions, owner) {
+    extends DroneModule(positions, owner) {
   private[this] var storedEnergyGlobes =
     mutable.Stack[EnergyGlobe](Seq.fill(startingResources)(StaticEnergyGlobe): _*)
 
@@ -21,7 +20,6 @@ private[core] class StorageModule(positions: Seq[Int], owner: DroneImpl, startin
   private[this] var resourceDepositee: Option[StorageModule] = None
 
   private[this] var _beamDescriptor: Option[HarvestingBeamsModel] = None
-
 
   override def update(availableResources: Int): (Seq[SimulatorEvent], Seq[Vector2], Seq[Vector2]) = {
     if (harvesting.nonEmpty && owner.hasMoved) updateBeamDescriptor()
@@ -37,7 +35,7 @@ private[core] class StorageModule(positions: Seq[Int], owner: DroneImpl, startin
       } effects ::= event
     }
 
-    storedEnergyGlobes = storedEnergyGlobes.map{ x =>
+    storedEnergyGlobes = storedEnergyGlobes.map { x =>
       val updated = x.updated()
       if (x ne updated) owner.invalidateModelCache()
       updated
@@ -65,8 +63,8 @@ private[core] class StorageModule(positions: Seq[Int], owner: DroneImpl, startin
 
   private def shouldCancelHarvesting(mineral: MineralCrystalImpl): Boolean =
     mineral.harvested ||
-    availableStorage == 0 ||
-    (owner.hasMoved && !owner.isInHarvestingRange(mineral))
+      availableStorage == 0 ||
+      (owner.hasMoved && !owner.isInHarvestingRange(mineral))
 
   private[drone] def performHarvest(mineral: MineralCrystalImpl): Option[SimulatorEvent] = {
     subtractFromResources(-1)
@@ -115,7 +113,8 @@ private[core] class StorageModule(positions: Seq[Int], owner: DroneImpl, startin
   }
 
   def convertGlobeReferenceFrame(other: DroneImpl, pos: Vector2): Vector2 = {
-    ((pos.rotated(owner.dynamics.orientation) + owner.position) - other.position).rotated(-other.dynamics.orientation)
+    ((pos.rotated(owner.dynamics.orientation) + owner.position) - other.position)
+      .rotated(-other.dynamics.orientation)
   }
 
   def depositEnergyGlobe(position: Vector2): Unit = {
@@ -142,8 +141,9 @@ private[core] class StorageModule(positions: Seq[Int], owner: DroneImpl, startin
       owner.warn(s"Trying to harvest mineral crystal, but storage is completely filled.")
     } else if (!owner.isInHarvestingRange(mineralCrystal)) {
       val dist = (owner.position - mineralCrystal.position).length
-      owner.warn(s"Too far away from mineral crystal to harvest. " +
-        s"Required: $HarvestingRange Actual: $dist.")
+      owner.warn(
+        s"Too far away from mineral crystal to harvest. " +
+          s"Required: $HarvestingRange Actual: $dist.")
     } else if (mineralCrystal.harvested) {
       owner.warn("Trying to harvest mineral crystal that has already been harvested.")
     } else if (harvesting.contains(mineralCrystal)) {
@@ -187,12 +187,12 @@ private[core] class StorageModule(positions: Seq[Int], owner: DroneImpl, startin
   override def descriptors: Seq[DroneModuleDescriptor] = {
     val globeStorageIndices: Seq[Int] = positions
     val energyStorageDescriptors =
-      for ((group, i) <- storedEnergyGlobes.reverseIterator.grouped(7).zipAll(globeStorageIndices.iterator, Seq(), 0)) yield {
+      for ((group, i) <- storedEnergyGlobes.reverseIterator
+             .grouped(7)
+             .zipAll(globeStorageIndices.iterator, Seq(), 0)) yield {
         val globes = {
-          for (
-            (eg, i) <- group.zipWithIndex
-            if eg == StaticEnergyGlobe
-          ) yield i
+          for ((eg, i) <- group.zipWithIndex
+               if eg == StaticEnergyGlobe) yield i
         }.toSet
         StorageModuleDescriptor(
           i,
@@ -206,11 +206,17 @@ private[core] class StorageModule(positions: Seq[Int], owner: DroneImpl, startin
   def beamDescriptor: Option[HarvestingBeamsModel] = _beamDescriptor
 
   private def updateBeamDescriptor(): Unit =
-    _beamDescriptor =
-      for {
-        m <- harvesting
-        relativeMineralPos = (m.position - owner.position).rotated(-owner.dynamics.orientation)
-      } yield HarvestingBeamsModel(owner.sides, positions, relativeMineralPos)
+    _beamDescriptor = for {
+      m <- harvesting
+      relativeMineralPos = (m.position - owner.position).rotated(-owner.dynamics.orientation)
+    } yield {
+      val beamPos = if (relativeMineralPos.lengthSquared > HarvestingRange * HarvestingRange) {
+        HarvestingRange * relativeMineralPos.normalized
+      } else {
+        relativeMineralPos
+      }
+      HarvestingBeamsModel(owner.sides, positions, beamPos)
+    }
 
   def energyGlobeAnimations: Seq[ModelDescriptor[_]] = {
     for {
@@ -220,16 +226,15 @@ private[core] class StorageModule(positions: Seq[Int], owner: DroneImpl, startin
       position = meg.position.rotated(owner.dynamics.orientation) + owner.position
       xPos = position.x.toFloat
       yPos = position.y.toFloat
-    } yield ModelDescriptor(
-      PositionDescriptor(xPos, yPos, 0),
-      PlainEnergyGlobeModel
-    )
+    } yield
+      ModelDescriptor(
+        PositionDescriptor(xPos, yPos, 0),
+        PlainEnergyGlobeModel
+      )
   }
-
 
   override def cancelMovement: Boolean = resourceDepositee.nonEmpty
 }
-
 
 private[drone] trait EnergyGlobe {
   def updated(): EnergyGlobe
@@ -253,5 +258,3 @@ private[drone] class MovingEnergyGlobe(
     else this
   }
 }
-
-

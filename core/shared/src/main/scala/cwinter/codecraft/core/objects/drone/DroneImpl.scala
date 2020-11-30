@@ -177,8 +177,10 @@ private[core] final class DroneImpl(
     for (s <- storage) yield s.predictedStoredResources
   }.getOrElse(0)
 
-  def isInHarvestingRange(mineral: MineralCrystalImpl): Boolean =
-    (mineral.position - position).lengthSquared <= HarvestingRange * HarvestingRange
+  def isInHarvestingRange(mineral: MineralCrystalImpl): Boolean = {
+    val maxDist = math.sqrt(mineral.size).toFloat * 3 + HarvestingRange
+    (mineral.position - position).lengthSquared <= maxDist * maxDist
+  }
 
   def wrapperFor(player: Player): Drone = {
     if (player == this.player) controller
