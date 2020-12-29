@@ -23,13 +23,12 @@ import scala.scalajs.js.annotation.JSExportAll
   *                         Shields regenerate over time.
   */
 @JSExportAll
-case class DroneSpec(
+sealed case class DroneSpec(
   storageModules: Int = 0,
   missileBatteries: Int = 0,
   constructors: Int = 0,
   engines: Int = 0,
-  shieldGenerators: Int = 0,
-  costModifier: Int = 0
+  shieldGenerators: Int = 0
 ) {
   require(storageModules >= 0)
   require(missileBatteries >= 0)
