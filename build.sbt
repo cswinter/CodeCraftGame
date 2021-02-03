@@ -136,3 +136,8 @@ lazy val root = project.in(file(".")).
   .settings(publishArtifact := false)
 
 
+// None of this seems to work anymore, just copy text manually into package.html ¯\_(ツ)_/¯
+
+scalacOptions in Compile ++= Seq("-doc-root-content", "root-doc.txt")
+scalacOptions in (Compile, doc) ++= Seq("-doc-root-content", baseDirectory.value+"root-doc.txt")
+
