@@ -37,6 +37,7 @@ private[core] class ShieldGeneratorModule(positions: Seq[Int], owner: DroneImpl)
   def absorbDamage(damage: Int): Int = {
     owner.invalidateModelCache()
     val absorbed = math.min(damage, _currHitpoints)
+    regenCooldown = ShieldRegenerationInterval
     _currHitpoints -= absorbed
     damage - absorbed
   }

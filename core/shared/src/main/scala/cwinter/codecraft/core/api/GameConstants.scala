@@ -17,11 +17,13 @@ object GameConstants {
   /** The speed of missiles measured in units distance per timestep. */
   final val MissileSpeed = 17
 
-  /** The number of timesteps it takes for shield hitpoints to increase by one (per shield generator module). */
-  final val ShieldRegenerationInterval = 100
+  /** The number of timesteps it takes for shield hitpoints to increase by one (per shield generator module).
+    * Cooldown resets whenever drone takes damage.
+    * */
+  final val ShieldRegenerationInterval = 35
 
   /** The amount of hitpoints provided per shield generator module. */
-  final val ShieldMaximumHitpoints = 7
+  final val ShieldMaximumHitpoints = 4
 
   /** The largest distance at which minerals can be harvested. */
   final val HarvestingRange = 70
