@@ -35,5 +35,5 @@ object GameConstants {
   final val ModuleResourceCost = 3
 
   /** The number of timesteps it takes to harvest 1 resource from a mineral crystal. */
-  final val HarvestingInterval = 120
+  final val HarvestingInterval = 60
 }
