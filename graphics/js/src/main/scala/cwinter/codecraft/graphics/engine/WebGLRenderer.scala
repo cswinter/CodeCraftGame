@@ -158,6 +158,8 @@ private[codecraft] class WebGLRenderer(
   }
 
   private def renderText(container: HTMLDivElement, textModel: TextModel, width: Int, height: Int): Unit = {
+    // Disabled because it destroys framerate
+    return
     val TextModel(text, x, y, ColorRGBA(r, g, b, a), absolutePos, centered, largeFont) = textModel
     def int(f: Float) = Math.round(255 * f)
 
