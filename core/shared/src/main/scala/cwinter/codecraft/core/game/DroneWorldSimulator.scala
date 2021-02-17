@@ -292,8 +292,10 @@ class DroneWorldSimulator(
 
     for {
       DroneSpawned(droneID) <- droneSpawns
-      drone <- unsyncedDroneSpawns.find(_.id == droneID)
-    } spawnDrone(drone)
+    } unsyncedDroneSpawns.find(_.id == droneID) match {
+      case None => println("Desync, drone spawned on server, but not yet spawned on client!")
+      case Some(drone) => spawnDrone(drone)
+    }
 
     for {
       MineralHarvest(droneID, mineralID) <- mineralHarvests

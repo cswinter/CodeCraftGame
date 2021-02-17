@@ -73,7 +73,7 @@ private[core] final class DroneImpl(
       case mc: MovementCommand =>
         redundant = giveMovementCommand(mc)
       case cd: ConstructDrone => startDroneConstruction(cd)
-      case DepositMinerals(target) => depositMinerals(target)
+      case DepositMinerals(target) => redundant = depositMinerals(target)
       case FireMissiles(target) => fireWeapons(target)
       case HarvestMineral(mineral) => harvestResource(mineral)
     }
@@ -130,7 +130,8 @@ private[core] final class DroneImpl(
     }
   }
 
-  private def depositMinerals(other: DroneImpl): Unit = {
+  private def depositMinerals(other: DroneImpl): Boolean = {
+    var succeeded = false
     if (other == this) {
       warn("Drone is trying to deposit minerals into itself!")
     } else if (other.storage.isEmpty) {
@@ -141,7 +142,9 @@ private[core] final class DroneImpl(
       warn("Too far away to deposit minerals.")
     } else {
       for (s <- storage) s.depositResources(other.storage)
+      succeeded = true
     }
+    !succeeded
   }
 
   private[core] def log(datum: DebugLogDatum): Unit =
