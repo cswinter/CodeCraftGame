@@ -23,7 +23,7 @@ object GameConstants {
   final val ShieldRegenerationInterval = 35
 
   /** The amount of hitpoints provided per shield generator module. */
-  final val ShieldMaximumHitpoints = 2
+  final val ShieldMaximumHitpoints = 3
 
   /** The largest distance at which minerals can be harvested. */
   final val HarvestingRange = 70
