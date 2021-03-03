@@ -1,6 +1,6 @@
 package cwinter.codecraft.core.api
 
-import cwinter.codecraft.core.api.GameConstants.MissileLockOnRange
+import cwinter.codecraft.core.api.GameConstants.{MissileLockOnRange, LongRangeMissileLockOnRange}
 import cwinter.codecraft.core.objects.drone._
 import cwinter.codecraft.util.maths._
 
@@ -179,6 +179,15 @@ trait DroneControllerBase extends Drone {
     }
   }
 
+  /** Fires all long range homing missiles at `target`. */
+  def fireLongRangeMissilesAt(target: Drone): Unit = {
+    if (target.isDead) {
+      drone.warn("Trying to fireMissilesAt a drone that does not exist anymore!")
+    } else {
+      drone ! FireLongRangeMissiles(target.drone)
+    }
+  }
+
   /** Always returns true */
   override def isVisible: Boolean = true
 
@@ -194,6 +203,10 @@ trait DroneControllerBase extends Drone {
   /** Returns true if `otherDrone` is within range of this drones homing missiles, otherwise false. */
   def isInMissileRange(otherDrone: Drone): Boolean =
     (otherDrone.position - drone.position).lengthSquared <= MissileLockOnRange * MissileLockOnRange
+
+  /** Returns true if `otherDrone` is within range of this drones homing missiles, otherwise false. */
+  def isInLongRangeMissileRange(otherDrone: Drone): Boolean =
+    (otherDrone.position - drone.position).lengthSquared <= LongRangeMissileLockOnRange * LongRangeMissileLockOnRange
 
   /** Returns true if `mineralCrystal` is within harvesting range, otherwise false. */
   def isInHarvestingRange(mineralCrystal: MineralCrystal): Boolean =

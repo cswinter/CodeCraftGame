@@ -1,6 +1,11 @@
 package cwinter.codecraft.core.objects
 
-import cwinter.codecraft.core.api.GameConstants.{MissileLifetime, MissileSpeed}
+import cwinter.codecraft.core.api.GameConstants.{
+  MissileLifetime,
+  MissileSpeed,
+  LongRangeMissileLifetime,
+  LongRangeMissileAcceleration
+}
 import cwinter.codecraft.core.api.Player
 import cwinter.codecraft.core.game.{HomingMissileFaded, MissileExplodes, SimulatorEvent}
 import cwinter.codecraft.core.graphics.{BasicHomingMissileModel, HomingMissileModel}
@@ -13,10 +18,17 @@ private[core] class HomingMissile(
   initialPos: Vector2,
   val id: Int,
   time: Double,
-  target: DroneImpl
+  target: DroneImpl,
+  longRange: Boolean = false
 ) extends WorldObject {
   val dynamics: MissileDynamics =
-    new MissileDynamics(MissileSpeed, target.dynamics, player.id, this, initialPos, time)
+    new MissileDynamics(if (longRange) 0.0 else MissileSpeed,
+                        target.dynamics,
+                        player.id,
+                        this,
+                        initialPos,
+                        time,
+                        acceleration = if (longRange) LongRangeMissileAcceleration else 0.0)
   val previousPositions = collection.mutable.Queue(initialPos)
   val positions = 7
   var lifetime = MissileLifetime
@@ -74,14 +86,14 @@ private[core] class HomingMissile(
 
   private def fancyModelDescriptor =
     HomingMissileModel(
-      previousPositions.map{case Vector2(x, y) => (x.toFloat, y.toFloat)},
+      previousPositions.map { case Vector2(x, y) => (x.toFloat, y.toFloat) },
       math.min(MissileLifetime - lifetime, positions),
-      player.color
+      player.color,
+      if (longRange) 5.0f else 3.0f
     )
 
   private def basicModelDescriptor =
-    BasicHomingMissileModel(position.x.toFloat, position.y.toFloat, player.color)
+    BasicHomingMissileModel(position.x, position.y, player.color, if (longRange) 8.0f else 5.0f)
 
   override private[core] def isDead = lifetime <= 0
 }
-

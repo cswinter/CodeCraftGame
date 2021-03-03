@@ -75,6 +75,7 @@ private[core] final class DroneImpl(
       case cd: ConstructDrone => startDroneConstruction(cd)
       case DepositMinerals(target) => redundant = depositMinerals(target)
       case FireMissiles(target) => fireWeapons(target)
+      case FireLongRangeMissiles(target) => fireLongRangeWeapons(target)
       case HarvestMineral(mineral) => harvestResource(mineral)
     }
     if (!redundant) {
@@ -123,6 +124,16 @@ private[core] final class DroneImpl(
     }
   }
 
+  private def fireLongRangeWeapons(target: DroneImpl): Unit = {
+    if (target == this) {
+      warn("Drone tried to shoot itself!")
+    } else {
+      longRangeMissiles match {
+        case Some(w) => w.fire(target)
+        case None => warn("Firing long range missiles requires a long range missile module.")
+      }
+    }
+  }
   private def harvestResource(mineralCrystal: MineralCrystalImpl): Unit = {
     storage match {
       case Some(s) => s.harvestMineral(mineralCrystal)
@@ -157,6 +168,7 @@ private[core] final class DroneImpl(
   //+------------------------------+
   override def position: Vector2 = dynamics.pos
   def missileCooldown: Int = weapons.map(_.cooldown).getOrElse(1)
+  def longRangeMissileCooldown: Int = longRangeMissiles.map(_.cooldown).getOrElse(1)
   def isConstructing: Boolean = manipulator.exists(_.isConstructing)
   def isHarvesting: Boolean = storage.exists(_.isHarvesting)
   def isMoving: Boolean = dynamics.isMoving
@@ -214,6 +226,8 @@ private[core] sealed trait SerializableDroneCommand
     extends SerializableDroneCommand
 @key("FireMissiles") private[core] case class SerializableFireMissiles(targetID: Int)
     extends SerializableDroneCommand
+@key("FireLongRangeMissiles") private[core] case class SerializableFireLongRangeMissiles(targetID: Int)
+    extends SerializableDroneCommand
 @key("Deposit") private[core] case class SerializableDepositMinerals(targetID: Int)
     extends SerializableDroneCommand
 @key("Harvest") private[core] case class SerializableHarvestMineral(mineralID: Int)
@@ -247,6 +261,7 @@ private[core] object DroneCommand {
       case SerializableConstructDrone(spec, position, resourceCost) =>
         ConstructDrone(spec, new DummyDroneController, position, resourceCost)
       case SerializableFireMissiles(target) => FireMissiles(target)
+      case SerializableFireLongRangeMissiles(target) => FireLongRangeMissiles(target)
       case SerializableDepositMinerals(target) => DepositMinerals(target)
       case SerializableHarvestMineral(mineral) => HarvestMineral(mineral)
       case SerializableMoveToMineralCrystal(mineral) => MoveToMineralCrystal(mineral)
@@ -268,6 +283,9 @@ private[core] case class ConstructDrone(
 }
 private[core] case class FireMissiles(target: DroneImpl) extends DroneCommand {
   def toSerializable = SerializableFireMissiles(target.id)
+}
+private[core] case class FireLongRangeMissiles(target: DroneImpl) extends DroneCommand {
+  def toSerializable = SerializableFireLongRangeMissiles(target.id)
 }
 private[core] case class DepositMinerals(target: DroneImpl) extends DroneCommand {
   def toSerializable = SerializableDepositMinerals(target.id)

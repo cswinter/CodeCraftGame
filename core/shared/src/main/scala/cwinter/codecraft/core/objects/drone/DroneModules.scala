@@ -9,7 +9,8 @@ private[core] trait DroneModules { self: DroneImpl =>
   protected val manipulator = spec.constructManipulatorModules(this)
   protected val shieldGenerators = spec.constructShieldGenerators(this)
   protected val engines = spec.constructEngineModules(this)
-  val droneModules = Seq(weapons, manipulator, storage, shieldGenerators, engines)
+  protected val longRangeMissiles = spec.constructLongRangeMissiles(this)
+  val droneModules = Seq(weapons, manipulator, storage, shieldGenerators, engines, longRangeMissiles)
 
   def updateModules(): Seq[SimulatorEvent] = {
     var simulatorEvents = List.empty[SimulatorEvent]

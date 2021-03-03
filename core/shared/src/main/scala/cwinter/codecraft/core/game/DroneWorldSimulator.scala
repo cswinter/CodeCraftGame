@@ -442,6 +442,13 @@ class DroneWorldSimulator(
         val newMissile = new HomingMissile(player, position, missileID, physicsEngine.time, target)
         spawnMissile(newMissile)
       }
+    case SpawnLongRangeHomingMissile(player, position, missileID, target) =>
+      // TODO: remove this check once boundary collisions are done properly
+      if (config.worldSize.contains(position)) {
+        val newMissile =
+          new HomingMissile(player, position, missileID, physicsEngine.time, target, longRange = true)
+        spawnMissile(newMissile)
+      }
     case HomingMissileFaded(missile) =>
       visibleObjects.remove(missile)
       dynamicObjects.remove(missile)
@@ -774,6 +781,11 @@ private[codecraft] case class SpawnHomingMissile(player: Player,
                                                  position: Vector2,
                                                  missileID: Int,
                                                  target: DroneImpl)
+    extends SimulatorEvent
+private[codecraft] case class SpawnLongRangeHomingMissile(player: Player,
+                                                          position: Vector2,
+                                                          missileID: Int,
+                                                          target: DroneImpl)
     extends SimulatorEvent
 private[codecraft] case class SpawnEnergyGlobeAnimation(energyGlobeObject: EnergyGlobeObject)
     extends SimulatorEvent

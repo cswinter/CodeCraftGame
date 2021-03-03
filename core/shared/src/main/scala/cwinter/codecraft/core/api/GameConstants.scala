@@ -3,19 +3,31 @@ package cwinter.codecraft.core.api
 object GameConstants {
 
   /** The largest distance at which two drones can see each other. */
-  final val DroneVisionRange = 500
+  final val DroneVisionRange = 750
 
   /** The largest distance at which homing missiles can be fired at another drone. */
   final val MissileLockOnRange = 300
 
+  /** The largest distance at which long range homing missiles can be fired at another drone. */
+  final val LongRangeMissileLockOnRange = 550
+
   /** The number of timesteps that have to elapse before homing missiles can be fired again. */
   final val MissileCooldown = 30
+
+  /** The number of timesteps that have to elapse before long range homing missiles can be fired again. */
+  final val LongRangeMissileCooldown = 90
 
   /** The number of timesteps it takes for a missile to disappear after being fired. */
   final val MissileLifetime = 50
 
+  /** The number of timesteps it takes for a missile to disappear after being fired. */
+  final val LongRangeMissileLifetime = 100
+
   /** The speed of missiles measured in units distance per timestep. */
   final val MissileSpeed = 17
+
+  /** The acceleration of missiles measured in units distance per timestep per timestep. */
+  final val LongRangeMissileAcceleration = 0.5
 
   /** The number of timesteps it takes for shield hitpoints to increase by one (per shield generator module).
     * Cooldown resets whenever drone takes damage.

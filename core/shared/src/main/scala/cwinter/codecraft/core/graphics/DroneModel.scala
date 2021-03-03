@@ -10,7 +10,6 @@ import cwinter.codecraft.util.modules.ModulePosition
 
 import scala.math._
 
-
 private[codecraft] case class DroneModel(
   sides: Int,
   modules: Seq[DroneModuleDescriptor],
@@ -19,11 +18,13 @@ private[codecraft] case class DroneModel(
   isBuilding: Boolean,
   animationTime: Int,
   playerColor: ColorRGB
-) extends CompositeModelBuilder[DroneModel, DroneModelParameters] with WorldObjectDescriptor[DroneModelParameters] {
+) extends CompositeModelBuilder[DroneModel, DroneModelParameters]
+    with WorldObjectDescriptor[DroneModelParameters] {
 
   require(hullState.size == sides - 1)
 
-  override protected def buildSubcomponents: (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, DroneModelParameters]]) = {
+  override protected def buildSubcomponents
+    : (Seq[ModelBuilder[_, Unit]], Seq[ModelBuilder[_, DroneModelParameters]]) = {
     val colorPalette =
       if (signature.isBuilding) MutedDroneColors
       else DefaultDroneColors
@@ -66,19 +67,24 @@ private[codecraft] case class DroneModel(
     val modulesModel =
       for {
         module <- modules
-      } yield module match {
-        case EnginesDescriptor(position) =>
-          DroneEnginesModel(ModulePosition(sides, position), colorPalette, playerColor, animationTime)(rs)
-        case MissileBatteryDescriptor(position, n) =>
-          DroneMissileBatteryModel(colorPalette, playerColor, ModulePosition(sides, position), n)(rs)
-        case ShieldGeneratorDescriptor(position) =>
-          DroneShieldGeneratorModel(ModulePosition(sides, position), colorPalette, playerColor)(rs)
-        case StorageModuleDescriptor(position, contents) =>
-          DroneStorageModel(ModulePosition(sides, position), colorPalette, contents)(rs)
-        case ManipulatorDescriptor(position) =>
-          DroneConstructorModel(colorPalette, playerColor, ModulePosition(sides, position))(rs)
-      }
-
+      } yield
+        module match {
+          case EnginesDescriptor(position) =>
+            DroneEnginesModel(ModulePosition(sides, position), colorPalette, playerColor, animationTime)(rs)
+          case MissileBatteryDescriptor(position, n) =>
+            DroneMissileBatteryModel(colorPalette, playerColor, ModulePosition(sides, position), n)(rs)
+          case LongRangeMissileBatteryDescriptor(position, active) =>
+            DroneLongRangeMissileBatteryModel(colorPalette,
+                                              playerColor,
+                                              ModulePosition(sides, position),
+                                              active)(rs)
+          case ShieldGeneratorDescriptor(position) =>
+            DroneShieldGeneratorModel(ModulePosition(sides, position), colorPalette, playerColor)(rs)
+          case StorageModuleDescriptor(position, contents) =>
+            DroneStorageModel(ModulePosition(sides, position), colorPalette, contents)(rs)
+          case ManipulatorDescriptor(position) =>
+            DroneConstructorModel(colorPalette, playerColor, ModulePosition(sides, position))(rs)
+        }
 
     val staticModels = body +: hull +: modulesModel
 
@@ -109,7 +115,6 @@ private[codecraft] case class DroneModel(
     (staticModels, dynamicModels)
   }
 
-
   override protected def decorate(
     model: Model[DroneModelParameters],
     context: GraphicsContext
@@ -126,12 +131,14 @@ private[codecraft] case class DroneModel(
     intersects(xPos, yPos, 100, rectangle) // FIXME
 }
 
-
 private[codecraft] sealed trait DroneModuleDescriptor
 
 private[codecraft] case class EnginesDescriptor(position: Int) extends DroneModuleDescriptor
 private[codecraft] case class ShieldGeneratorDescriptor(position: Int) extends DroneModuleDescriptor
-private[codecraft] case class MissileBatteryDescriptor(position: Int, n: Int = 3) extends DroneModuleDescriptor
+private[codecraft] case class MissileBatteryDescriptor(position: Int, n: Int = 3)
+    extends DroneModuleDescriptor
+private[codecraft] case class LongRangeMissileBatteryDescriptor(position: Int, active: Boolean)
+    extends DroneModuleDescriptor
 private[codecraft] case class ManipulatorDescriptor(position: Int) extends DroneModuleDescriptor
 private[codecraft] case class StorageModuleDescriptor(
   position: Int,
@@ -141,8 +148,8 @@ private[codecraft] case class StorageModuleDescriptor(
 private[codecraft] sealed trait StorageModuleContents
 private[codecraft] case object EmptyStorage extends StorageModuleContents
 private[codecraft] case object MineralStorage extends StorageModuleContents
-private[codecraft] case class EnergyStorage(filledPositions: Set[Int] = Set(0, 1, 2, 3, 4, 5, 6)) extends StorageModuleContents
-
+private[codecraft] case class EnergyStorage(filledPositions: Set[Int] = Set(0, 1, 2, 3, 4, 5, 6))
+    extends StorageModuleContents
 
 private[codecraft] case class DroneModelParameters(
   shieldState: Option[Float],
@@ -182,5 +189,3 @@ private[graphics] object MutedDroneColors extends DroneColors {
   final val ColorThrusters = DefaultDroneColors.ColorThrusters * dimmingFactor
   final val ColorBackplane = DefaultDroneColors.ColorBackplane * dimmingFactor
 }
-
-

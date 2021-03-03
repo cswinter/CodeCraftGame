@@ -28,19 +28,21 @@ sealed case class DroneSpec(
   missileBatteries: Int = 0,
   constructors: Int = 0,
   engines: Int = 0,
-  shieldGenerators: Int = 0
+  shieldGenerators: Int = 0,
+  longRangeMissiles: Int = 0
 ) {
   require(storageModules >= 0)
   require(missileBatteries >= 0)
   require(constructors >= 0)
   require(engines >= 0)
   require(shieldGenerators >= 0)
+  require(longRangeMissiles >= 0)
 
   def this() = this(0)
 
   /** Total number of modules. */
   val moduleCount =
-    storageModules + missileBatteries + constructors + engines + shieldGenerators
+    storageModules + missileBatteries + constructors + engines + shieldGenerators + longRangeMissiles
 
   require(moduleCount <= ModulePosition.MaxModules,
           s"A drone cannot have more than ${ModulePosition.MaxModules} modules")
@@ -133,5 +135,13 @@ sealed case class DroneSpec(
     if (shieldGenerators > 0) {
       val startIndex = storageModules + missileBatteries + constructors + engines
       Some(new ShieldGeneratorModule(startIndex until startIndex + shieldGenerators, owner))
+    } else None
+
+  private[core] def constructLongRangeMissiles(owner: DroneImpl): Option[LongRangeMissileModule] =
+    if (longRangeMissiles > 0) {
+      val startIndex = storageModules + missileBatteries + constructors + engines + shieldGenerators
+      Some(
+        new LongRangeMissileModule(startIndex until (startIndex + longRangeMissiles), owner)
+      )
     } else None
 }

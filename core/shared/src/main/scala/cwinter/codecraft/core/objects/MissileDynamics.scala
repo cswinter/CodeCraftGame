@@ -4,12 +4,13 @@ import cwinter.codecraft.core.objects.drone.{ComputedDroneDynamics, DroneDynamic
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 
 private[core] class MissileDynamics(
-  val speed: Double,
+  var speed: Double,
   val target: DroneDynamics,
   val ownerID: Int,
   val missile: HomingMissile,
   initialPosition: Vector2,
-  initialTime: Double
+  initialTime: Double,
+  val acceleration: Double = 0.0
 ) extends ConstantVelocityDynamics(1, ownerID, false, initialPosition, initialTime) {
   var hasHit = false
 
@@ -29,6 +30,7 @@ private[core] class MissileDynamics(
   }
 
   def recomputeVelocity(): Unit = {
+    speed += acceleration
     val targetDirection = target.pos - pos
     if (!target.removed && targetDirection.length >= 0.0001) {
       velocity = speed * targetDirection.normalized
