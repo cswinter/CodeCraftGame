@@ -18,10 +18,10 @@ object GameConstants {
   final val LongRangeMissileCooldown = 90
 
   /** The number of timesteps it takes for a missile to disappear after being fired. */
-  final val MissileLifetime = 50
+  final val MissileLifetime = 60
 
   /** The number of timesteps it takes for a missile to disappear after being fired. */
-  final val LongRangeMissileLifetime = 100
+  final val LongRangeMissileLifetime = 70
 
   /** The speed of missiles measured in units distance per timestep. */
   final val MissileSpeed = 17

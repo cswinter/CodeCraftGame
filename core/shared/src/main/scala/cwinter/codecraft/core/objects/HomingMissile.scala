@@ -31,7 +31,7 @@ private[core] class HomingMissile(
                         acceleration = if (longRange) LongRangeMissileAcceleration else 0.0)
   val previousPositions = collection.mutable.Queue(initialPos)
   val positions = 7
-  var lifetime = MissileLifetime
+  var lifetime = if (longRange) LongRangeMissileLifetime else MissileLifetime
   var fading: Boolean = false
 
   def update(): Seq[SimulatorEvent] = {
