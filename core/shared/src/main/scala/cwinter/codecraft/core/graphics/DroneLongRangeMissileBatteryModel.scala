@@ -9,7 +9,7 @@ private[codecraft] case class DroneLongRangeMissileBatteryModel(
   colors: DroneColors,
   playerColor: ColorRGB,
   position: VertexXY,
-  active: Boolean
+  chargeup: Int
 )(implicit rs: RenderStack)
     extends CompositeModelBuilder[DroneLongRangeMissileBatteryModel, Unit] {
   override def signature: DroneLongRangeMissileBatteryModel = this
@@ -30,7 +30,11 @@ private[codecraft] case class DroneLongRangeMissileBatteryModel(
         rs.BloomShader,
         position.x,
         position.y,
-        if (active) 4.0f else 1.0f,
+        if (chargeup > 0) {
+          1.0f + 0.1f * chargeup
+        } else {
+          0.1f
+        },
         colors.White,
         2
       )

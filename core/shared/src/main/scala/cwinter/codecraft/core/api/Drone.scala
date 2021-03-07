@@ -38,7 +38,7 @@ trait Drone {
   def missileCooldown: Int = ensureVisible(drone.missileCooldown)
 
   /** Returns the drone's long range homing missile cooldown. */
-  def longRangeMissileCooldown: Int = ensureVisible(drone.longRangeMissileCooldown)
+  def longRangeMissileChargeup: Int = ensureVisible(drone.longRangeMissileChargeup)
 
   /** Returns the amount of resources store by this drone. */
   def storedResources: Int = ensureVisible(drone.storedResources)

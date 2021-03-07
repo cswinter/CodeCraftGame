@@ -168,7 +168,7 @@ private[core] final class DroneImpl(
   //+------------------------------+
   override def position: Vector2 = dynamics.pos
   def missileCooldown: Int = weapons.map(_.cooldown).getOrElse(1)
-  def longRangeMissileCooldown: Int = longRangeMissiles.map(_.cooldown).getOrElse(1)
+  def longRangeMissileChargeup: Int = longRangeMissiles.map(_.chargeup).getOrElse(1)
   def isConstructing: Boolean = manipulator.exists(_.isConstructing)
   def isHarvesting: Boolean = storage.exists(_.isHarvesting)
   def isMoving: Boolean = dynamics.isMoving

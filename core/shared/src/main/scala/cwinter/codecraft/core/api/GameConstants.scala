@@ -15,7 +15,7 @@ object GameConstants {
   final val MissileCooldown = 30
 
   /** The number of timesteps that have to elapse before long range homing missiles can be fired again. */
-  final val LongRangeMissileCooldown = 90
+  final val LongRangeMissileChargeup = 90
 
   /** The number of timesteps it takes for a missile to disappear after being fired. */
   final val MissileLifetime = 60

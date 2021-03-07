@@ -73,11 +73,11 @@ private[codecraft] case class DroneModel(
             DroneEnginesModel(ModulePosition(sides, position), colorPalette, playerColor, animationTime)(rs)
           case MissileBatteryDescriptor(position, n) =>
             DroneMissileBatteryModel(colorPalette, playerColor, ModulePosition(sides, position), n)(rs)
-          case LongRangeMissileBatteryDescriptor(position, active) =>
+          case LongRangeMissileBatteryDescriptor(position, chargeup) =>
             DroneLongRangeMissileBatteryModel(colorPalette,
                                               playerColor,
                                               ModulePosition(sides, position),
-                                              active)(rs)
+                                              chargeup)(rs)
           case ShieldGeneratorDescriptor(position) =>
             DroneShieldGeneratorModel(ModulePosition(sides, position), colorPalette, playerColor)(rs)
           case StorageModuleDescriptor(position, contents) =>
@@ -137,7 +137,7 @@ private[codecraft] case class EnginesDescriptor(position: Int) extends DroneModu
 private[codecraft] case class ShieldGeneratorDescriptor(position: Int) extends DroneModuleDescriptor
 private[codecraft] case class MissileBatteryDescriptor(position: Int, n: Int = 3)
     extends DroneModuleDescriptor
-private[codecraft] case class LongRangeMissileBatteryDescriptor(position: Int, active: Boolean)
+private[codecraft] case class LongRangeMissileBatteryDescriptor(position: Int, chargeup: Int)
     extends DroneModuleDescriptor
 private[codecraft] case class ManipulatorDescriptor(position: Int) extends DroneModuleDescriptor
 private[codecraft] case class StorageModuleDescriptor(
