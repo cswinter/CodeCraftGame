@@ -10,7 +10,7 @@ private[core] class LongRangeMissileModule(positions: Seq[Int], owner: DroneImpl
 
   private[this] var _chargeup = 0
   private[this] var target: Option[DroneImpl] = None
-  private[this] var nextMissiles: Option[Seq[SpawnLongRangeHomingMissile]] = None
+  private[this] var nextMissileID: Int = 0
 
   def chargeup: Int = _chargeup
 
@@ -28,7 +28,9 @@ private[core] class LongRangeMissileModule(positions: Seq[Int], owner: DroneImpl
         }
         if (_chargeup == LongRangeMissileChargeup) {
           _chargeup = 0
-          effect = (nextMissiles.head, Seq.empty[Vector2], Seq.empty[Vector2])
+          val spawnMissiles = for (pos <- absoluteModulePositions)
+            yield SpawnLongRangeHomingMissile(owner.player, pos, nextMissileID, t)
+          effect = (spawnMissiles, Seq.empty[Vector2], Seq.empty[Vector2])
           owner.invalidateModelCache()
         }
       }
@@ -45,14 +47,7 @@ private[core] class LongRangeMissileModule(positions: Seq[Int], owner: DroneImpl
       this.target = Some(target)
       _chargeup = 0
       owner.invalidateModelCache()
-      nextMissiles = Some(
-        for (pos <- absoluteModulePositions)
-          yield
-            SpawnLongRangeHomingMissile(owner.player,
-                                        pos,
-                                        owner.context.idGenerator.getAndIncrement(),
-                                        target)
-      )
+      nextMissileID = owner.context.idGenerator.getAndIncrement()
     }
   }
 
