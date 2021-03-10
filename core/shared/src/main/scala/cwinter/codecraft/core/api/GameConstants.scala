@@ -9,13 +9,13 @@ object GameConstants {
   final val MissileLockOnRange = 300
 
   /** The largest distance at which long range homing missiles can be fired at another drone. */
-  final val LongRangeMissileLockOnRange = 550
+  final val LongRangeMissileLockOnRange = 600
 
   /** The number of timesteps that have to elapse before homing missiles can be fired again. */
   final val MissileCooldown = 30
 
   /** The number of timesteps that have to elapse before long range homing missiles can be fired again. */
-  final val LongRangeMissileChargeup = 90
+  final val LongRangeMissileChargeup = 70
 
   /** The number of timesteps it takes for a missile to disappear after being fired. */
   final val MissileLifetime = 60
