@@ -9,13 +9,13 @@ object GameConstants {
   final val MissileLockOnRange = 300
 
   /** The largest distance at which long range homing missiles can be fired at another drone. */
-  final val LongRangeMissileLockOnRange = 600
+  final val LongRangeMissileLockOnRange = 650
 
   /** The number of timesteps that have to elapse before homing missiles can be fired again. */
   final val MissileCooldown = 30
 
   /** The number of timesteps that have to elapse before long range homing missiles can be fired again. */
-  final val LongRangeMissileChargeup = 70
+  final val LongRangeMissileChargeup = 60
 
   /** The number of timesteps it takes for a missile to disappear after being fired. */
   final val MissileLifetime = 60
@@ -35,7 +35,7 @@ object GameConstants {
   final val ShieldRegenerationInterval = 35
 
   /** The amount of hitpoints provided per shield generator module. */
-  final val ShieldMaximumHitpoints = 3
+  final val ShieldMaximumHitpoints = 4
 
   /** The largest distance at which minerals can be harvested. */
   final val HarvestingRange = 70
