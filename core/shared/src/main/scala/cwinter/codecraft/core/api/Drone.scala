@@ -58,6 +58,10 @@ trait Drone {
   /** Returns true of this drone has a movement command active or queued up, false otherwise. */
   def isMoving: Boolean = ensureVisible(drone.isMoving)
 
+  def requiredEnergy: Option[Int] = ensureVisible(drone.requiredEnergy)
+  def availableEnergy: Int = ensureVisible(drone.availableEnergy)
+  def constructionSpec: Option[DroneSpec] = ensureVisible(drone.constructionSpec)
+
   /** Returns the identifier of the player that owns this drone. */
   def playerID: Int = drone.player.id
 

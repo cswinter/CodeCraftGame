@@ -105,4 +105,7 @@ private[core] class ConstructorModule(positions: Seq[Int], owner: DroneImpl)
     } yield ConstructionBeamsModel(owner.sides, modules, relativeConstructionPos, owner.player.color)
 
   def droneInConstruction: Option[DroneImpl] = droneConstruction.map(_._1)
+
+  def requiredEnergy: Option[Int] = droneConstruction.map(_._2)
+  def availableEnergy: Int = constructorEnergy.sum
 }

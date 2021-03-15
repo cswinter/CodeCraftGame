@@ -170,6 +170,9 @@ private[core] final class DroneImpl(
   def missileCooldown: Int = weapons.map(_.cooldown).getOrElse(1)
   def longRangeMissileChargeup: Int = longRangeMissiles.map(_.chargeup).getOrElse(1)
   def isConstructing: Boolean = manipulator.exists(_.isConstructing)
+  def requiredEnergy: Option[Int] = manipulator.flatMap(_.requiredEnergy)
+  def availableEnergy: Int = manipulator.map(_.availableEnergy).getOrElse(0)
+  def constructionSpec: Option[DroneSpec] = manipulator.flatMap(_.droneInConstruction.map(_.spec))
   def isHarvesting: Boolean = storage.exists(_.isHarvesting)
   def isMoving: Boolean = dynamics.isMoving
   def storageCapacity = spec.storageModules
