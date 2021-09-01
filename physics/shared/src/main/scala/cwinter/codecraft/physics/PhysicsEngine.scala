@@ -3,57 +3,56 @@ package cwinter.codecraft.physics
 import cwinter.codecraft.collisions.{Positionable, SquareGrid}
 import cwinter.codecraft.util.maths.{Rectangle, Vector2}
 
-/**
-  * Simulates movement of colliding particles.
+/** Simulates movement of colliding particles.
   *
-  * @param worldBoundaries All particles are confined inside this rectangle.
-  * @param maxRadius Bound on the radii of the particles.
-  * @tparam T Type of the particles.
+  * @param worldBoundaries
+  *   All particles are confined inside this rectangle.
+  * @param maxRadius
+  *   Bound on the radii of the particles.
+  * @tparam T
+  *   Type of the particles.
   *
-  * A good summary of the type of algorithm used is found in the first section of
-  * "Algorithms for Particle-Field Simulations with Collisions".
-  * (link: http://homepages.warwick.ac.uk/~masdr/JOURNALPUBS/stuart48.pdf)
+  * A good summary of the type of algorithm used is found in the first section of "Algorithms for
+  * Particle-Field Simulations with Collisions". (link:
+  * http://homepages.warwick.ac.uk/~masdr/JOURNALPUBS/stuart48.pdf)
   *
   * ## Main datastructures
-  * 1. `objects`: set of particles
-  * 2. `grid`: partitions the world into square cells. each object is assigned to one cell.
-  * 3. `events`: priority queue of collisions that (may) happen in the future
+  *   1. `objects`: set of particles 2. `grid`: partitions the world into square cells. each object is
+  *      assigned to one cell. 3. `events`: priority queue of collisions that (may) happen in the future
   *
   * ## A note on nomenclature
-  * 1. Distinguish between potential collisions (which have been calculated, but may become
-  * invalid because of other collisions), and true collisions (the "ground truth" values
-  * of what collision will actually take place.
-  * 2. A->B (A records a potential collision with B)
-  * 3. Write A<->B for A->B & B->A
+  *   1. Distinguish between potential collisions (which have been calculated, but may become invalid because
+  *      of other collisions), and true collisions (the "ground truth" values of what collision will actually
+  *      take place. 2. A->B (A records a potential collision with B) 3. Write A<->B for A->B & B->A
   *
   * ## Key invariances:
-  * - if obj.nextCollision == Some(collision), then the time of the next true collision
-  *    of obj is greater or equal to collision.time
-  * - if `collision` is the next event in the queue, and for all objects `obji` that are involved
+  *   - if obj.nextCollision == Some(collision), then the time of the next true collision of obj is greater or
+  *     equal to collision.time
+  *   - if `collision` is the next event in the queue, and for all objects `obji` that are involved
   *     `obji.nextCollision` == `Some(collision)`, then `collision` is a true collision
   *
   * ## Gotchas/edge cases/potential bugs:
-  * - events in the queue might not be valid anymore
-  * - it is possible that the next (potential) collision of `obj1` is with `obj2`, but the
-  *    next collision of `obj2` is with `obj3`
-  * - the same event might be in the queue twice in a row:
-  *    - recomputed wall transfer (this type of duplicated can be avoided)
-  *    - objects A and B have computed a different time for their collision, this is only
-  *       reconciled after reentering the collision once
-  *       (B->C at t=9. A->B at t=10. B->C becomes invalid, B->A at t=11.
-  *        A->B is processed, computes A<->B at t=10. A->B is processed again, this time A and B agree.
-  *        (TODO: WHAT IF THIS RECOMPUTATION NOW GIVES A<->B at t=9.9??? VERY UNLIKELY TO HAPPEN,
-  *          SINCE TIME OF PREVIOUS EVENT GENERALLY << 10, BUT IF ALREADY time >9.9, WE GET ASSERTION ERROR,
-  *          NEGATIVE MOVEMENTS)
-  * - numerical issues:
-  *    - after transfer, an object might still be (just) inside the previous cell
-  *    - at and shortly after a collision, two objects may overlap
-  *    - the time for a collision may change when computed at a later time, or by a different object
+  *   - events in the queue might not be valid anymore
+  *   - it is possible that the next (potential) collision of `obj1` is with `obj2`, but the next collision of
+  *     `obj2` is with `obj3`
+  *   - the same event might be in the queue twice in a row:
+  *     - recomputed wall transfer (this type of duplicated can be avoided)
+  *     - objects A and B have computed a different time for their collision, this is only reconciled after
+  *       reentering the collision once (B->C at t=9. A->B at t=10. B->C becomes invalid, B->A at t=11. A->B
+  *       is processed, computes A<->B at t=10. A->B is processed again, this time A and B agree. (TODO: WHAT
+  *       IF THIS RECOMPUTATION NOW GIVES A<->B at t=9.9??? VERY UNLIKELY TO HAPPEN, SINCE TIME OF PREVIOUS
+  *       EVENT GENERALLY << 10, BUT IF ALREADY time >9.9, WE GET ASSERTION ERROR, NEGATIVE MOVEMENTS)
+  *   - numerical issues:
+  *     - after transfer, an object might still be (just) inside the previous cell
+  *     - at and shortly after a collision, two objects may overlap
+  *     - the time for a collision may change when computed at a later time, or by a different object
   *
   * ## Proof of progress
   */
-private[codecraft] class PhysicsEngine[T <: DynamicObject[T]](val worldBoundaries: Rectangle,
-                                                              val maxRadius: Int) {
+private[codecraft] class PhysicsEngine[T <: DynamicObject[T]](
+  val worldBoundaries: Rectangle,
+  val maxRadius: Int
+) {
   private[this] val objects =
     collection.mutable.ArrayBuffer.empty[ObjectRecord]
   private[this] val recordMap = collection.mutable.Map.empty[T, ObjectRecord]
@@ -93,8 +92,7 @@ private[codecraft] class PhysicsEngine[T <: DynamicObject[T]](val worldBoundarie
     }
   }
 
-  /**
-    * Advance simulation by one timestep.
+  /** Advance simulation by one timestep.
     */
   def update(): Unit = {
     discreteTime += 1
@@ -106,10 +104,11 @@ private[codecraft] class PhysicsEngine[T <: DynamicObject[T]](val worldBoundarie
     })
 
     var count = 0
-    while (events.nonEmpty) {
+    while (events.nonEmpty && count < 1005) {
       count += 1
       val collision = events.dequeue()
       if (count > 1000) {
+        println(f"WARNING: processed $count collision events, potentially infinite loop")
         println(collision)
         collision match {
           case ObjectObjectCollision(obj1, obj2, _) =>
@@ -180,10 +179,12 @@ private[codecraft] class PhysicsEngine[T <: DynamicObject[T]](val worldBoundarie
 
   // TODO: return new collision, rather than assigning?
   // TODO: eradicate use of Iterator. how could you?
-  private def updateNextCollision(obj: ObjectRecord,
-                                  nearbyObjects: Iterator[ObjectRecord],
-                                  erase: Boolean = true,
-                                  pathUnchanged: Boolean = false): Unit = {
+  private def updateNextCollision(
+    obj: ObjectRecord,
+    nearbyObjects: Iterator[ObjectRecord],
+    erase: Boolean = true,
+    pathUnchanged: Boolean = false
+  ): Unit = {
     // TODO: retain previous collision, unless erased
     if (erase) {
       obj.nextCollision = None
@@ -201,14 +202,16 @@ private[codecraft] class PhysicsEngine[T <: DynamicObject[T]](val worldBoundarie
           if (obj2.nextCollision.forall(_ < nextCol))
             obj2.nextCollision = nextColOpt
         case owc: ObjectWallCollision =>
-        case _ => throw new Exception("this shouldn't happen...")
+        case _                        => throw new Exception("this shouldn't happen...")
       }
     }
   }
 
-  private def computeCollisions(obj: ObjectRecord,
-                                nearbyObjects: Iterator[ObjectRecord],
-                                pathUnchanged: Boolean): Seq[Collision] = {
+  private def computeCollisions(
+    obj: ObjectRecord,
+    nearbyObjects: Iterator[ObjectRecord],
+    pathUnchanged: Boolean
+  ): Seq[Collision] = {
     val nearby = nearbyObjects.toSeq
     nearby.foreach(_.obj.updatePosition(_time, worldBoundaries))
     val objectObjectCollisions =
