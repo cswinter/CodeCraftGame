@@ -907,6 +907,7 @@ class FollowPlayerObserver(
   var currMinY = 0.0
   var currMaxX = 0.0
   var currMaxY = 0.0
+  var step0 = true
 
   var locked = false
 
@@ -923,6 +924,14 @@ class FollowPlayerObserver(
         minY = math.min(minY, drone.position.y)
         maxY = math.max(maxY, drone.position.y)
       }
+    }
+
+    if (step0) {
+      currMinX = minX
+      currMinY = minY
+      currMaxX = maxX
+      currMaxY = maxY
+      step0 = false
     }
 
     if (locked) {
