@@ -43,7 +43,7 @@ private[codecraft] class WebGLRenderer(
       case 40 => DownArrow
       case 33 => PageUp
       case 34 => PageDown
-      case _ => Letter(e.charCode.toChar)
+      case _  => Letter(e.charCode.toChar)
     }
     keyEventHandler.keypress(key)
   }
@@ -98,7 +98,24 @@ private[codecraft] class WebGLRenderer(
     gl.clearColor(0.02, 0.02, 0.02, 1)
     gl.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT)
 
-    val (worldObjects, textModels) = gameWorld.dequeueFrame()
+    val (worldObjects, textModels, cameraOverride) = gameWorld.dequeueFrame()
+    cameraOverride match {
+      case Some(Left((Vector2(x, y), zoom))) => {
+        camera.position = (x, y)
+        camera.zoom = zoom
+      }
+      case Some(Right((minCoord, maxCoord))) => {
+        camera.position = (0.5f * (minCoord.x + maxCoord.x), 0.5f * (minCoord.y + maxCoord.y))
+
+        // Expand minCoord and maxCoord to match aspect ratio of screen
+        val aspectRatio = camera.screenWidth / camera.screenHeight.toFloat
+        val width = maxCoord.x - minCoord.x + 1500
+        val height = maxCoord.y - minCoord.y + 1500
+        val targetWidth = if (width / height > aspectRatio) width else height * aspectRatio
+        camera.zoomFactor = targetWidth / camera.screenWidth
+      }
+      case None =>
+    }
     val projectionT = camera.projection.transposed
     val onScreen =
       Rectangle(
@@ -131,7 +148,8 @@ private[codecraft] class WebGLRenderer(
     val textTestDiv = document.getElementById("text-test-container").asInstanceOf[HTMLDivElement]
     if (textDiv == null || textTestDiv == null) {
       println(
-        "Could not find div#text-container and div#text-test-container. Without this, text cannot be rendered.")
+        "Could not find div#text-container and div#text-test-container. Without this, text cannot be rendered."
+      )
     } else if (textModels.nonEmpty || textDiv.innerHTML != "") {
       textTestDiv.innerHTML = """<div id="large-text-dim-test"></div><div id="small-text-dim-test"></div>"""
       textDiv.innerHTML = ""
@@ -175,10 +193,12 @@ private[codecraft] class WebGLRenderer(
         (testDiv.clientWidth + 1, testDiv.clientHeight + 1)
       } else (0, 0)
 
-    if (!absolutePos && (position.x - textWidth / 2 < 0 ||
+    if (
+      !absolutePos && (position.x - textWidth / 2 < 0 ||
         position.y - textHeight < 0 ||
         position.x > width + textWidth / 2 ||
-        position.y > height + textHeight / 2)) return
+        position.y > height + textHeight / 2)
+    ) return
 
     val textElem = document.createElement("div").asInstanceOf[HTMLDivElement]
     textElem.className = if (largeFont) "large-floating-text" else "floating-text"

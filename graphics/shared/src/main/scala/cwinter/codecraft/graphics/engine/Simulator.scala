@@ -8,7 +8,10 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 private[codecraft] trait Simulator {
-  private[this] val framequeue = mutable.Queue.empty[(Seq[ModelDescriptor[_]], Iterable[TextModel])]
+  private[this] val framequeue =
+    mutable.Queue.empty[
+      (Seq[ModelDescriptor[_]], Iterable[TextModel], Option[Either[(Vector2, Float), (Vector2, Vector2)]])
+    ]
   @volatile private[this] var running = false
   private[this] var paused = false
   protected[codecraft] var tFrameCompleted = System.nanoTime()
@@ -113,16 +116,18 @@ private[codecraft] trait Simulator {
 
   private def recomputeGraphicsState(): Unit = framequeue.synchronized {
     if (gameStatus == Running && graphicsEnabled) {
-      framequeue.enqueue((debug.debugObjects ++ computeWorldState, textModels))
+      framequeue.enqueue((debug.debugObjects ++ computeWorldState, textModels, cameraOverride))
       if (framequeue.size > maxFrameQueueSize) framequeue.dequeue()
     }
   }
 
+  var cameraOverride: Option[Either[(Vector2, Float), (Vector2, Vector2)]] = None
+
   /** Performs one timestep. */
   protected def update(): Unit
 
-  /** Asynchronously performs one timestep.
-    * Returns a future which completes once all changes have taken effect.
+  /** Asynchronously performs one timestep. Returns a future which completes once all changes have taken
+    * effect.
     */
   protected def asyncUpdate()(implicit ec: ExecutionContext): Future[Unit]
 
@@ -138,7 +143,8 @@ private[codecraft] trait Simulator {
 
   /** Sets the target framerate to the given value.
     *
-    * @param value The new framerate target.
+    * @param value
+    *   The new framerate target.
     */
   def framerateTarget_=(value: Int): Unit = {
     require(value > 0)
@@ -160,6 +166,8 @@ private[codecraft] trait Simulator {
   /** Returns the initial camera position in the game world. */
   var initialCameraZoom: Float = 0.0f
 
+  var cameraPos: Option[Vector2] = None
+
   /** Terminates any running game loops. */
   def terminate(): Unit = stopped = true
 
@@ -169,11 +177,12 @@ private[codecraft] trait Simulator {
     exceptionHandler = Some(callback)
   }
 
-  private[codecraft] def dequeueFrame(): (Seq[ModelDescriptor[_]], Iterable[TextModel]) =
+  private[codecraft] def dequeueFrame()
+    : (Seq[ModelDescriptor[_]], Iterable[TextModel], Option[Either[(Vector2, Float), (Vector2, Vector2)]]) =
     framequeue.synchronized {
       if (framequeue.size > frameQueueThreshold) framequeue.dequeue()
       if (framequeue.size > 1) framequeue.dequeue()
-      if (framequeue.isEmpty) (Seq.empty, Seq.empty) else framequeue.front
+      if (framequeue.isEmpty) (Seq.empty, Seq.empty, None) else framequeue.front
     }
   private[codecraft] def computeWorldState: Seq[ModelDescriptor[_]]
   private[codecraft] def handleKeypress(keychar: Char): Unit = ()

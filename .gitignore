@@ -1,6 +1,7 @@
 # Scala
 target
 *.class
+.metals
 
 # IntelliJ
 *.impl
@@ -20,3 +21,6 @@ tags
 
 # nohup
 nohup.out
+
+# vscode
+.vscode

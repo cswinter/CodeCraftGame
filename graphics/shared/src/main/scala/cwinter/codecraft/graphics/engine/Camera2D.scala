@@ -2,7 +2,6 @@ package cwinter.codecraft.graphics.engine
 
 import cwinter.codecraft.util.maths.matrices.{IdentityMatrix4x4, Matrix4x4, OrthographicProjectionMatrix4x4}
 
-
 private[graphics] class Camera2D {
   private[this] var _screenWidth: Int = 0
   private[this] var _screenHeight: Int = 0
@@ -12,21 +11,18 @@ private[graphics] class Camera2D {
   private[this] var _zoom: Float = 0
   private[this] var _zoomFactor: Float = 1
 
-
   def projection = _projection
 
   private def recomputeProjection() = {
-    _projection =
-      new OrthographicProjectionMatrix4x4(
-        x + screenWidth * 0.5f * zoomFactor,
-        x - screenWidth * 0.5f * zoomFactor,
-        y + screenHeight * 0.5f * zoomFactor,
-        y - screenHeight * 0.5f * zoomFactor,
-        -20,
-        20
-      )
+    _projection = new OrthographicProjectionMatrix4x4(
+      x + screenWidth * 0.5f * zoomFactor,
+      x - screenWidth * 0.5f * zoomFactor,
+      y + screenHeight * 0.5f * zoomFactor,
+      y - screenHeight * 0.5f * zoomFactor,
+      -20,
+      20
+    )
   }
-
 
   def screenDims = (_screenWidth, _screenHeight)
 
@@ -88,4 +84,11 @@ private[graphics] class Camera2D {
   }
 
   def zoomFactor: Float = _zoomFactor
+
+  def zoomFactor_=(zoomFactor: Float) = {
+    _zoomFactor = zoomFactor
+    _zoom = math.log(zoomFactor).toFloat
+
+    recomputeProjection()
+  }
 }

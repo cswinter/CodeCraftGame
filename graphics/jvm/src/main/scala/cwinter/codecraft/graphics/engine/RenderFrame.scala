@@ -12,9 +12,7 @@ import org.joda.time.DateTime
 
 import scala.util.Try
 
-
-private[graphics] class RenderFrame(val gameWorld: Simulator)
-    extends GLEventListener {
+private[graphics] class RenderFrame(val gameWorld: Simulator) extends GLEventListener {
   val DebugMode = false
 
   implicit var fbo: FramebufferObject = null
@@ -33,7 +31,6 @@ private[graphics] class RenderFrame(val gameWorld: Simulator)
   var textField: TextField = null
   var error = false
   @volatile var rendering = true
-
 
   override def display(drawable: GLAutoDrawable): Unit = {
     implicit val gl = drawable.getGL
@@ -61,7 +58,7 @@ private[graphics] class RenderFrame(val gameWorld: Simulator)
     else glClearColor(0.1f, 0, 0.0f, 0.0f)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-    val (worldObjects, textModels) = gameWorld.dequeueFrame()
+    val (worldObjects, textModels, _) = gameWorld.dequeueFrame()
     val projection = camera.projection
 
     for (material <- renderStack.materials) {
@@ -76,7 +73,6 @@ private[graphics] class RenderFrame(val gameWorld: Simulator)
             t.printStackTrace()
         }
       }
-
 
       material.afterDraw()
     }
@@ -96,13 +92,13 @@ private[graphics] class RenderFrame(val gameWorld: Simulator)
     val fps = FrametimeSamples * 1000 / (now - tThen)
     textField.setText(
       f"FPS: $fps   " +
-      f"TPS: ${gameWorld.measuredFramerate}   " +
-      f"Draw calls: ${Material.drawCalls}   " +
-      f"Modelview uploads: ${Material.modelviewUploads}   " +
-      f"Cached models: ${modelCache.CachedModelCount}   " +
-      f"Allocated VBOs: ${VBO.count}   " +
-      f"Timestep: ${gameWorld.timestep}   " +
-      f"Last cached model: ${modelCache.lastCachedModel}"
+        f"TPS: ${gameWorld.measuredFramerate}   " +
+        f"Draw calls: ${Material.drawCalls}   " +
+        f"Modelview uploads: ${Material.modelviewUploads}   " +
+        f"Cached models: ${modelCache.CachedModelCount}   " +
+        f"Allocated VBOs: ${VBO.count}   " +
+        f"Timestep: ${gameWorld.timestep}   " +
+        f"Last cached model: ${modelCache.lastCachedModel}"
     )
 
     rendering = false
@@ -151,7 +147,6 @@ private[graphics] class RenderFrame(val gameWorld: Simulator)
     renderer.draw(text, position.x.toInt, position.y.toInt)
   }
 
-
   private def infoText: String =
     s"""Game speed target: ${gameWorld.framerateTarget}
        |
@@ -162,9 +157,7 @@ private[graphics] class RenderFrame(val gameWorld: Simulator)
        |Slow mode: P
        |""".stripMargin + gameWorld.additionalInfoText
 
-
   def dispose(arg0: GLAutoDrawable): Unit = context.dispose(arg0.getGL)
-
 
   def init(drawable: GLAutoDrawable): Unit = {
     printGLInfo(drawable, drawable.getGL)
@@ -202,8 +195,10 @@ private[graphics] class RenderFrame(val gameWorld: Simulator)
     val gl4Supported = !gameWorld.forceGL2 && !isGL2OrGL3 && Try { gl.getGL4 }.isSuccess
     val gl2Supported = Try { gl.getGL2 }.isSuccess
     if (!gl2Supported && !gl4Supported) {
-      println("Failed to obtain OpenGL graphics device :(\n" +
-        "CodeCraft requires OpenGL version 2.0 or higher, which your hardware does not seem to support.")
+      println(
+        "Failed to obtain OpenGL graphics device :(\n" +
+          "CodeCraft requires OpenGL version 2.0 or higher, which your hardware does not seem to support."
+      )
     }
     gl4Supported
   }
@@ -218,14 +213,15 @@ private[graphics] class RenderFrame(val gameWorld: Simulator)
   }
 
   def getGL4(drawable: GLAutoDrawable): Option[GL4] =
-    if (isGL4Supported) Some(
-      if (DebugMode) new DebugGL4(drawable.getGL.getGL4)
-      else drawable.getGL.getGL4
-    ) else None
+    if (isGL4Supported)
+      Some(
+        if (DebugMode) new DebugGL4(drawable.getGL.getGL4)
+        else drawable.getGL.getGL4
+      )
+    else None
 
   def getEitherGL(drawable: GLAutoDrawable): Either[GL2, GL4] = {
     if (isGL4Supported) Right(drawable.getGL.getGL4)
     else Left(drawable.getGL.getGL2)
   }
 }
-

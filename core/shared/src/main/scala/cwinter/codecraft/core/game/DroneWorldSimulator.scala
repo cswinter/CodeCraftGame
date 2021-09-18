@@ -23,11 +23,16 @@ import scala.scalajs.js.annotation.JSExport
 
 /** Aggregates all datastructures required to run a game and implements the game loop.
   *
-  * @param config Describes the initial state of the game world.
-  * @param eventGenerator Allows for triggering custom events.
-  * @param multiplayerConfig Additional configuration for multiplayer games.
-  * @param forceReplayRecorder If set to `Some(r)`, the Simulator will replay the events recorded by `r`.
-  * @param settings Additional settings that don't affect gameplay.
+  * @param config
+  *   Describes the initial state of the game world.
+  * @param eventGenerator
+  *   Allows for triggering custom events.
+  * @param multiplayerConfig
+  *   Additional configuration for multiplayer games.
+  * @param forceReplayRecorder
+  *   If set to `Some(r)`, the Simulator will replay the events recorded by `r`.
+  * @param settings
+  *   Additional settings that don't affect gameplay.
   */
 class DroneWorldSimulator(
   val config: GameConfig,
@@ -35,7 +40,8 @@ class DroneWorldSimulator(
   multiplayerConfig: MultiplayerConfig = SingleplayerConfig,
   forceReplayRecorder: Option[ReplayRecorder] = None,
   val settings: Settings = Settings.default,
-  val specialRules: SpecialRules = SpecialRules.default
+  val specialRules: SpecialRules = SpecialRules.default,
+  var autoObs: Option[AutoObserver] = None
 ) extends Simulator { outer =>
   private final val MaxDroneRadius = 60
 
@@ -52,7 +58,7 @@ class DroneWorldSimulator(
   private var _drones = Map.empty[Int, DroneImpl]
   private val missiles = collection.mutable.Map.empty[Int, HomingMissile]
 
-  private def drones = _drones.values
+  private[game] def drones = _drones.values
 
   def dronesFor(player: Player): Seq[Drone] =
     (for {
@@ -90,23 +96,22 @@ class DroneWorldSimulator(
 
   private val contextForPlayer: Map[Player, DroneContext] = {
     for (player <- players)
-      yield
-        player -> DroneContext(
-          player,
-          config.worldSize,
-          config.tickPeriod,
-          if (shouldRecordCommands(player)) Some(multiplayerConfig.commandRecorder) else None,
-          debugLog,
-          new IDGenerator(player.id),
-          rng,
-          !multiplayerConfig.isInstanceOf[MultiplayerClientConfig],
-          !multiplayerConfig.isInstanceOf[SingleplayerConfig.type],
-          this,
-          replayRecorder,
-          debug,
-          errors,
-          specialRules
-        )
+      yield player -> DroneContext(
+        player,
+        config.worldSize,
+        config.tickPeriod,
+        if (shouldRecordCommands(player)) Some(multiplayerConfig.commandRecorder) else None,
+        debugLog,
+        new IDGenerator(player.id),
+        rng,
+        !multiplayerConfig.isInstanceOf[MultiplayerClientConfig],
+        !multiplayerConfig.isInstanceOf[SingleplayerConfig.type],
+        this,
+        replayRecorder,
+        debug,
+        errors,
+        specialRules
+      )
   }.toMap
 
   val worldBoundaries = ModelDescriptor(NullPositionDescriptor, RectangleModelBuilder(config.worldSize))
@@ -168,6 +173,8 @@ class DroneWorldSimulator(
     for (drone <- dronesSorted) events.appendAll(drone.update())
     physicsEngine.update()
     processSimulatorEvents(events.toList)
+
+    for (ao <- autoObs) ao.observe(this)
   }
 
   private def processDeathEvents = Local('ProcessDeathEvents) {
@@ -184,9 +191,11 @@ class DroneWorldSimulator(
 
   private def checkWinConditions = Local('CheckWinConditions) {
     if (winner.isEmpty) {
-      for (wc <- config.winConditions.reverse;
-           player <- players
-           if playerHasWon(wc, player)) {
+      for (
+        wc <- config.winConditions.reverse;
+        player <- players
+        if playerHasWon(wc, player)
+      ) {
         _winner = Some(player)
         gameStatus = Stopped(s"$player won")
         for (c <- metaControllers) c.gameOver(player)
@@ -211,7 +220,7 @@ class DroneWorldSimulator(
   private def awaitRemoteCommands = Async('AwaitRemoteCommands) { implicit ec =>
     val MultiplayerClientConfig(_, _, server) = multiplayerConfig.asInstanceOf[MultiplayerClientConfig]
     server.receiveCommands().map {
-      case Left(commands) => remoteCommands = commands
+      case Left(commands)          => remoteCommands = commands
       case Right(gameClosedReason) => gameStatus = Stopped(gameClosedReason.toString)
     }
   }
@@ -259,8 +268,10 @@ class DroneWorldSimulator(
     val stateChanges = ArrayBuffer.empty[DroneMovementMsg]
     val missileHits = ArrayBuffer.empty[MissileHit]
     val mineralHarvests = ArrayBuffer.empty[MineralHarvest]
-    for (drone <- drones;
-         dynamics = drone.dynamics.asInstanceOf[ComputedDroneDynamics]) {
+    for (
+      drone <- drones;
+      dynamics = drone.dynamics.asInstanceOf[ComputedDroneDynamics]
+    ) {
       stateChanges.appendAll(dynamics.syncMsg())
       stateChanges.appendAll(dynamics.arrivalMsg)
     }
@@ -282,7 +293,7 @@ class DroneWorldSimulator(
   private def awaitWorldState = Async('AwaitWorldState) { implicit ec =>
     val MultiplayerClientConfig(_, _, server) = multiplayerConfig.asInstanceOf[MultiplayerClientConfig]
     server.receiveWorldState().map {
-      case Left(worldState) => remoteWorldState = worldState
+      case Left(worldState)        => remoteWorldState = worldState
       case Right(gameClosedReason) => gameStatus = Stopped(gameClosedReason.toString)
     }
   }
@@ -293,7 +304,7 @@ class DroneWorldSimulator(
     for {
       DroneSpawned(droneID) <- droneSpawns
     } unsyncedDroneSpawns.find(_.id == droneID) match {
-      case None => println("Desync, drone spawned on server, but not yet spawned on client!")
+      case None        => println("Desync, drone spawned on server, but not yet spawned on client!")
       case Some(drone) => spawnDrone(drone)
     }
 
@@ -323,8 +334,10 @@ class DroneWorldSimulator(
   }
 
   private def correctSpeculativePositions(): Unit = {
-    for (drone <- drones
-         if !drone.isDead) drone.dynamics match {
+    for (
+      drone <- drones
+      if !drone.isDead
+    ) drone.dynamics match {
       case speculating: SpeculatingDroneDynamics =>
         if (speculating.syncSpeculator()) {
           physicsEngine.remove(speculating.speculative)
@@ -338,13 +351,15 @@ class DroneWorldSimulator(
   private def updateTextModels = Local('UpdateTextModels) {
     errors.updateMessages()
     for (winner <- winner)
-      debug.drawText(s"${winner.name} has won!",
-                     0,
-                     0,
-                     ColorRGBA(winner.color, 0.6f),
-                     absolutePosition = true,
-                     centered = true,
-                     largeFont = true)
+      debug.drawText(
+        s"${winner.name} has won!",
+        0,
+        0,
+        ColorRGBA(winner.color, 0.6f),
+        absolutePosition = true,
+        centered = true,
+        largeFont = true
+      )
   }
 
   private def serverCallback = Local('ServerCallback) {
@@ -354,12 +369,11 @@ class DroneWorldSimulator(
   @JSExport
   val namedDrones = (
     for ((Spawn(_, _, player, _, Some(name)), controller) <- config.drones)
-      yield
-        (
-          name,
-          if (player == BluePlayer) controller
-          else new EnemyDrone(controller.drone, controller.drone.player)
-        )
+      yield (
+        name,
+        if (player == BluePlayer) controller
+        else new EnemyDrone(controller.drone, controller.drone.player)
+      )
   ).toMap
 
   private def spawnMineral(mineralCrystal: MineralCrystalImpl): Unit = {
@@ -384,7 +398,7 @@ class DroneWorldSimulator(
     _drones += drone.id -> drone
     visionTracker.insertActive(drone)
     drone.dynamics match {
-      case local: ComputedDroneDynamics => physicsEngine.addObject(local)
+      case local: ComputedDroneDynamics          => physicsEngine.addObject(local)
       case speculating: SpeculatingDroneDynamics => physicsEngine.addObject(speculating.speculative)
     }
     drone.initialise(physicsEngine.time)
@@ -397,7 +411,7 @@ class DroneWorldSimulator(
     _drones -= drone.id
     visionTracker.removeActive(drone)
     drone.dynamics match {
-      case local: ComputedDroneDynamics => physicsEngine.remove(local)
+      case local: ComputedDroneDynamics          => physicsEngine.remove(local)
       case speculating: SpeculatingDroneDynamics => physicsEngine.remove(speculating.speculative)
     }
 
@@ -493,15 +507,21 @@ class DroneWorldSimulator(
       d <- drones
       if d.spec.missileBatteries > 0
     } buffer.append(
-      ModelDescriptor(PositionDescriptor(d.position.x, d.position.y, 0),
-                      CircleOutlineModelBuilder(GameConstants.MissileLockOnRange, ColorRGB(1, 0, 0))))
+      ModelDescriptor(
+        PositionDescriptor(d.position.x, d.position.y, 0),
+        CircleOutlineModelBuilder(GameConstants.MissileLockOnRange, ColorRGB(1, 0, 0))
+      )
+    )
   }
 
   private def appendSightRadii(buffer: ListBuffer[ModelDescriptor[_]]): Unit = {
     for (d <- drones)
       buffer.append(
-        ModelDescriptor(PositionDescriptor(d.position.x, d.position.y, 0),
-                        CircleOutlineModelBuilder(GameConstants.DroneVisionRange, ColorRGB(0, 1, 0))))
+        ModelDescriptor(
+          PositionDescriptor(d.position.x, d.position.y, 0),
+          CircleOutlineModelBuilder(GameConstants.DroneVisionRange, ColorRGB(0, 1, 0))
+        )
+      )
   }
 
   private implicit def droneRegistry: Map[Int, DroneImpl] = _drones
@@ -522,7 +542,7 @@ class DroneWorldSimulator(
     keyChar match {
       case '1' => settings.showSightRadius = !settings.showSightRadius
       case '2' => settings.showMissileRadius = !settings.showMissileRadius
-      case _ =>
+      case _   =>
     }
   }
 
@@ -530,23 +550,24 @@ class DroneWorldSimulator(
     s"""${if (settings.showSightRadius) "Hide" else "Show"} sight radius: 1
        |${if (settings.showMissileRadius) "Hide" else "Show"} missile range: 2
        |${replayRecorder.replayFilepath match {
-         case Some(path) => "Replay path: " + path
-         case _ => ""
-       }}
+      case Some(path) => "Replay path: " + path
+      case _          => ""
+    }}
        |""".stripMargin
   }
 
   protected override def textModels: Iterable[TextModel] = {
     val extraText = gameStatus match {
       case Crashed(exception) => Some(s"Game has crashed: ${exception.getMessage}")
-      case Stopped(msg) => Some(s"Game has been stopped: $msg")
+      case Stopped(msg)       => Some(s"Game has been stopped: $msg")
       case _ =>
         multiplayerConfig match {
           case MultiplayerClientConfig(_, _, connection) =>
             val elapsed = connection.msSinceLastResponse
             if (elapsed >= 1000)
               Some(
-                s"Connection issue. Seconds since last reply from server: ${connection.msSinceLastResponse / 1000}s")
+                s"Connection issue. Seconds since last reply from server: ${connection.msSinceLastResponse / 1000}s"
+              )
             else None
           case _ => None
         }
@@ -571,12 +592,12 @@ class DroneWorldSimulator(
   private object SimulationPhase {
     def sequence(phase1: SimulationPhase, phase2: SimulationPhase): SimulationPhase =
       (phase1, phase2) match {
-        case (NoopSimulationPhase, _) => phase2
-        case (_, NoopSimulationPhase) => phase1
+        case (NoopSimulationPhase, _)                             => phase2
+        case (_, NoopSimulationPhase)                             => phase1
         case (SimulationPhaseSeq(seq1), SimulationPhaseSeq(seq2)) => SimulationPhaseSeq(seq1 ++ seq2)
-        case (SimulationPhaseSeq(seq), _) => SimulationPhaseSeq(seq :+ phase2)
-        case (_, SimulationPhaseSeq(seq)) => SimulationPhaseSeq(phase1 +: seq)
-        case _ => SimulationPhaseSeq(Seq(phase1, phase2))
+        case (SimulationPhaseSeq(seq), _)                         => SimulationPhaseSeq(seq :+ phase2)
+        case (_, SimulationPhaseSeq(seq))                         => SimulationPhaseSeq(phase1 +: seq)
+        case _                                                    => SimulationPhaseSeq(Seq(phase1, phase2))
       }
 
     sealed trait Result
@@ -611,14 +632,16 @@ class DroneWorldSimulator(
         override def runAsync()(implicit ec: ExecutionContext): Future[Unit] = instrumentedCode
         override def run(): Unit = {
           try {
-            CrossPlatformAwait.result(runAsync()(scala.concurrent.ExecutionContext.Implicits.global),
-                                      multiplayerConfig.timeoutSecs)
+            CrossPlatformAwait.result(
+              runAsync()(scala.concurrent.ExecutionContext.Implicits.global),
+              multiplayerConfig.timeoutSecs
+            )
           } catch {
             case _: TimeoutException =>
               gameStatus = Stopped("Connection timed out.")
               multiplayerConfig match {
                 case a: AuthoritativeServerConfig => a.onTimeout(outer)
-                case _ =>
+                case _                            =>
               }
           }
         }
@@ -645,7 +668,7 @@ class DroneWorldSimulator(
       remaining match {
         case Seq(last) =>
           last.runAsync()
-        case Seq(head, tail @ _ *) =>
+        case Seq(head, tail @ _*) =>
           if (head.isFullyLocal) {
             head.run()
             runAsync(tail)
@@ -719,15 +742,14 @@ class DroneWorldSimulator(
           if (drones.isEmpty) return true
           val winner = drones
             .groupBy(_.player)
-            .maxBy {
-              case (_, drones) =>
-                drones.map(_.spec.resourceCost).sum
+            .maxBy { case (_, drones) =>
+              drones.map(_.spec.resourceCost).sum
             }
             ._1
           winner == player
         } else false
       case DestroyAllEnemies => drones.forall(_.player == player)
-      case DroneCount(c) => drones.count(_.player == player) >= c
+      case DroneCount(c)     => drones.count(_.player == player) >= c
     }
   }
 
@@ -738,7 +760,7 @@ class DroneWorldSimulator(
   protected def gameStatus_=(value: Status) = {
     value match {
       case Stopped(msg) => println(s"Game has ended: $msg")
-      case _ =>
+      case _            =>
     }
     _gameStatus = value
   }
@@ -746,7 +768,7 @@ class DroneWorldSimulator(
 
   override def togglePause(): Unit = multiplayerConfig match {
     case SingleplayerConfig => super.togglePause()
-    case _ =>
+    case _                  =>
   }
 
   def currentPhase = _currentPhase
@@ -777,15 +799,190 @@ private[codecraft] case class MineralCrystalHarvested(mineralCrystal: MineralCry
     extends SimulatorEvent
 private[codecraft] case class MissileExplodes(homingMissile: HomingMissile) extends SimulatorEvent
 private[codecraft] case class SpawnDrone(drone: DroneImpl) extends SimulatorEvent
-private[codecraft] case class SpawnHomingMissile(player: Player,
-                                                 position: Vector2,
-                                                 missileID: Int,
-                                                 target: DroneImpl)
-    extends SimulatorEvent
-private[codecraft] case class SpawnLongRangeHomingMissile(player: Player,
-                                                          position: Vector2,
-                                                          missileID: Int,
-                                                          target: DroneImpl)
-    extends SimulatorEvent
+private[codecraft] case class SpawnHomingMissile(
+  player: Player,
+  position: Vector2,
+  missileID: Int,
+  target: DroneImpl
+) extends SimulatorEvent
+private[codecraft] case class SpawnLongRangeHomingMissile(
+  player: Player,
+  position: Vector2,
+  missileID: Int,
+  target: DroneImpl
+) extends SimulatorEvent
 private[codecraft] case class SpawnEnergyGlobeAnimation(energyGlobeObject: EnergyGlobeObject)
     extends SimulatorEvent
+
+trait AutoObserver {
+  def observe(simulator: DroneWorldSimulator): Unit
+}
+
+class FollowDroneObserver(
+  val targetZoom: Double = 0.5
+) extends AutoObserver {
+  private val rng = new RNG()
+  private var chosenDrone: Option[DroneImpl] = None
+  var droneChoiceCountdown: Int = 1000
+  var cpos = Vector2(0, 0)
+  var czoom = targetZoom
+
+  def observe(simulator: DroneWorldSimulator): Unit = {
+    droneChoiceCountdown -= 1
+    if (droneChoiceCountdown == 0 || chosenDrone.map(d => d.isDead).getOrElse(true)) {
+      chosenDrone = None
+      val ratedDrones = simulator.drones.toSeq
+        .filter(d => d.player == BluePlayer)
+        .map(d => {
+          val rating = rateDrone(d)
+          d.showText(s"${rating}")
+          (d, rating)
+        })
+      if (ratedDrones.nonEmpty) {
+        val weights = ratedDrones.map(_._2)
+        val index = search(rng.double() * weights.sum, cdf(weights))
+        chosenDrone = Some(ratedDrones(index)._1)
+        droneChoiceCountdown = 1000
+      }
+    }
+    val speedMultiplier = 10.0;
+    val zoomStepsize = 0.005;
+    for (drone <- chosenDrone) {
+      val targetPos = drone.position
+      val update = targetPos - cpos
+      val dist = update.length
+
+      // TODO: remove abs, invert base if we need to zoom out
+      val base = math.exp(-zoomStepsize)
+      val steps = math.floor((czoom - targetZoom).abs / zoomStepsize) + 1
+      val distUntilTargetZoom =
+        speedMultiplier * math.exp(czoom) * (1 - math.pow(base, steps + 1)) / (1 - base)
+      if (dist < distUntilTargetZoom) {
+        if (czoom > targetZoom) {
+          czoom -= zoomStepsize;
+        }
+      } else {
+        czoom += zoomStepsize
+      }
+
+      val maxSpeed = math.exp(czoom).toFloat * speedMultiplier
+      if (dist > maxSpeed) {
+        cpos += update.normalized * maxSpeed
+      } else {
+        cpos = targetPos
+      }
+      simulator.cameraOverride = Some(Left((cpos, czoom.toFloat)))
+    }
+  }
+
+  /** Returns the index result of a binary search to find @n in the discrete
+    * @cdf
+    *   array.
+    */
+  private def search(n: Double, cdf: Seq[Double]): Int = {
+    if (n > cdf.head)
+      1 + search(n - cdf.head, cdf.tail)
+    else
+      0
+  }
+
+  /** Returns the cumulative density function (CDF) of @list (in simple terms, the cumulative sums of the
+    * weights).
+    */
+  private def cdf(list: Seq[Double]) = list.map {
+    var s = 0.0;
+    d => { s += d; s }
+  }
+
+  private def rateDrone(d: DroneImpl): Double = {
+    1.0 * d.spec.moduleCount + 1.0 * d.enemiesInSight.size
+  }
+
+}
+
+class FollowPlayerObserver(
+  players: Set[Player] = Set(BluePlayer)
+) extends AutoObserver {
+  var currMinX = 0.0
+  var currMinY = 0.0
+  var currMaxX = 0.0
+  var currMaxY = 0.0
+
+  var locked = false
+
+  def observe(simulator: DroneWorldSimulator): Unit = {
+    var minX = Double.MaxValue
+    var maxX = Double.MinValue
+    var minY = Double.MaxValue
+    var maxY = Double.MinValue
+
+    for (drone <- simulator.drones) {
+      if (players.contains(drone.player)) {
+        minX = math.min(minX, drone.position.x)
+        maxX = math.max(maxX, drone.position.x)
+        minY = math.min(minY, drone.position.y)
+        maxY = math.max(maxY, drone.position.y)
+      }
+    }
+
+    if (locked) {
+      // unlock if difference is more than 750
+      val maxDiff = 750
+      if (
+        math.abs(currMinX - minX) > maxDiff || math.abs(currMinY - minY) > maxDiff ||
+        math.abs(currMaxX - maxX) > maxDiff || math.abs(currMaxY - maxY) > maxDiff
+      ) {
+        locked = false
+      }
+    }
+
+    val speed = 20
+    if (!locked) {
+      var lock = true
+      // Bring curr values closer to target values
+      if (math.abs(currMaxX - maxX) < speed) {
+        currMaxX = maxX
+      } else if (currMaxX > maxX) {
+        currMaxX -= speed
+        lock = false
+      } else {
+        currMaxX += speed
+        lock = false
+      }
+      if (math.abs(currMinX - minX) < speed) {
+        currMinX = minX
+      } else if (currMinX > minX) {
+        currMinX -= speed
+        lock = false
+      } else {
+        currMinX += speed
+        lock = false
+      }
+      if (math.abs(currMaxY - maxY) < speed) {
+        currMaxY = maxY
+      } else if (currMaxY > maxY) {
+        currMaxY -= speed
+        lock = false
+      } else {
+        currMaxY += speed
+        lock = false
+      }
+      if (math.abs(currMinY - minY) < speed) {
+        currMinY = minY
+      } else if (currMinY > minY) {
+        currMinY -= speed
+        lock = false
+      } else {
+        currMinY += speed
+        lock = false
+      }
+      locked = lock
+    }
+
+    simulator.cameraOverride = Some(
+      Right(
+        (Vector2(currMinX, currMinY), Vector2(currMaxX, currMaxY))
+      )
+    )
+  }
+}
