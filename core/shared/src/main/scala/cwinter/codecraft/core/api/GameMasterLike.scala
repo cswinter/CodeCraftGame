@@ -15,16 +15,16 @@ import scala.util.{Failure, Success}
 private[codecraft] trait GameMasterLike {
 
   /** Default dimensions for the size of the game world. */
-  final val DefaultWorldSize = Rectangle(-3000, 3000, -2000, 2000)
+  final val DefaultWorldSize = Rectangle(-3000, 3000, -1875, 1875)
 
   /** Smaller than default dimensions for the size of the game world. */
-  final val SmallWorldSize = Rectangle(-2000, 2000, -1500, 1500)
+  final val SmallWorldSize = Rectangle(-1875, 1875, -1500, 1500)
 
   /** Larger than default dimensions for the size of the game world. */
   final val LargeWorldSize = Rectangle(-4500, 4500, -3000, 3000)
 
-  /** Identifies the current version of the JavaScript API.
-    * This value is incremented whenever a backwards incompatible change is made to the JavaScript API.
+  /** Identifies the current version of the JavaScript API. This value is incremented whenever a backwards
+    * incompatible change is made to the JavaScript API.
     */
   final val JavascriptAPIVersion = "0.2"
 
@@ -65,7 +65,9 @@ private[codecraft] trait GameMasterLike {
   /** Runs the `simulator`. */
   def run(simulator: DroneWorldSimulator, onComplete: () => Unit): DroneWorldSimulator
 
-  /** Creates a new [[cwinter.codecraft.core.game.DroneWorldSimulator]] for a singleplayer game with the specified settings. */
+  /** Creates a new [[cwinter.codecraft.core.game.DroneWorldSimulator]] for a singleplayer game with the
+    * specified settings.
+    */
   def createSimulator(
     mothership1: DroneControllerBase,
     mothership2: DroneControllerBase,
@@ -80,7 +82,9 @@ private[codecraft] trait GameMasterLike {
     new DroneWorldSimulator(gameConfig)
   }
 
-  /** Creates a new [[cwinter.codecraft.core.game.DroneWorldSimulator]] for a singleplayer game with the specified settings. */
+  /** Creates a new [[cwinter.codecraft.core.game.DroneWorldSimulator]] for a singleplayer game with the
+    * specified settings.
+    */
   def createSimulator(
     mothership1: DroneControllerBase,
     mothership2: DroneControllerBase,
@@ -96,18 +100,21 @@ private[codecraft] trait GameMasterLike {
 
   /** Starts a new game with two players.
     *
-    * @param mothership1 The controller for the initial mothership of player 1.
-    * @param mothership2 The controller for the initial mothership of player 2.
+    * @param mothership1
+    *   The controller for the initial mothership of player 1.
+    * @param mothership2
+    *   The controller for the initial mothership of player 2.
     */
-  @deprecated("This method has been renamed to `runGame` and will be removed in a future version.",
-              "0.2.4.3")
+  @deprecated("This method has been renamed to `runGame` and will be removed in a future version.", "0.2.4.3")
   def startGame(mothership1: DroneControllerBase, mothership2: DroneControllerBase): DroneWorldSimulator =
     runGame(mothership1, mothership2)
 
   /** Runs a game with default settings.
     *
-    * @param mothership1 The drone controller for player 1.
-    * @param mothership2 The drone controller for player 2.
+    * @param mothership1
+    *   The drone controller for player 1.
+    * @param mothership2
+    *   The drone controller for player 2.
     */
   def runGame(mothership1: DroneControllerBase, mothership2: DroneControllerBase): DroneWorldSimulator = {
     val controllers = Seq(mothership1, mothership2)
@@ -140,9 +147,11 @@ private[codecraft] trait GameMasterLike {
   def level7AI(): DroneControllerBase = replicatorAI()
 
   /** Returns a drone controller for the Replicator AI. */
-  def replicatorAI(greedy: Boolean = false,
-                   confident: Boolean = false,
-                   aggressive: Boolean = false): DroneControllerBase =
+  def replicatorAI(
+    greedy: Boolean = false,
+    confident: Boolean = false,
+    aggressive: Boolean = false
+  ): DroneControllerBase =
     new ai.replicator.Replicator(greedy, confident, aggressive)
 
   /** Returns a drone controller for the Destroyer AI. */
@@ -182,7 +191,8 @@ private[codecraft] trait GameMasterLike {
 
   /** Runs the first level.
     *
-    * @param mothership1 The controller for your mothership.
+    * @param mothership1
+    *   The controller for your mothership.
     */
   def runLevel1(mothership1: DroneControllerBase): DroneWorldSimulator = {
     val map = level1Map
@@ -194,42 +204,48 @@ private[codecraft] trait GameMasterLike {
 
   /** Runs the second level.
     *
-    * @param mothership The controller for your mothership.
+    * @param mothership
+    *   The controller for your mothership.
     */
   def runLevel2(mothership: DroneControllerBase) =
     runGame(mothership, level2AI())
 
   /** Runs the third level.
     *
-    * @param mothership The controller for your mothership.
+    * @param mothership
+    *   The controller for your mothership.
     */
   def runLevel3(mothership: DroneControllerBase) =
     runGame(mothership, bonusLevelAI())
 
   /** Runs the fourth level.
     *
-    * @param mothership The controller for your mothership.
+    * @param mothership
+    *   The controller for your mothership.
     */
   def runLevel4(mothership: DroneControllerBase) =
     runGame(mothership, level4AI())
 
   /** Runs the fifth level.
     *
-    * @param mothership The controller for your mothership.
+    * @param mothership
+    *   The controller for your mothership.
     */
   def runLevel5(mothership: DroneControllerBase) =
     runGame(mothership, level5AI())
 
   /** Runs the sixth level.
     *
-    * @param mothership The controller for your mothership.
+    * @param mothership
+    *   The controller for your mothership.
     */
   def runLevel6(mothership: DroneControllerBase) =
     runGame(mothership, level6AI())
 
   /** Runs the seventh level.
     *
-    * @param mothership The controller for your mothership.
+    * @param mothership
+    *   The controller for your mothership.
     */
   def runLevel7(mothership: DroneControllerBase) =
     runGame(mothership, level7AI())
