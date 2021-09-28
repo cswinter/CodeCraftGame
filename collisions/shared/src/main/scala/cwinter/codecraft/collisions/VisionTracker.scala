@@ -4,7 +4,6 @@ import cwinter.codecraft.util.maths.Vector2
 
 import scala.collection.mutable
 
-
 private[codecraft] trait VisionTracking {
   def position: Vector2
   def maxSpeed: Double
@@ -47,7 +46,6 @@ private[codecraft] trait ActiveVisionTracking extends VisionTracking {
   def objectLeftVision(obj: VisionTracking): Unit
   def objectRemoved(obj: VisionTracking): Unit
 
-
   private[collisions] def objectIsNearby(obj: VisionTracking): Unit = {
     require(obj != this)
     if (!nearbyObjects.contains(obj)) {
@@ -58,7 +56,7 @@ private[codecraft] trait ActiveVisionTracking extends VisionTracking {
 
   private[collisions] def recomputeVisible(time: Int, radius: Double): Unit = {
     while (collisionQueue.nonEmpty && collisionQueue.head.timeNextCheck <= time) {
-      val no@NearbyObject(obj, wasVisible, _) = collisionQueue.dequeue()
+      val no @ NearbyObject(obj, wasVisible, _) = collisionQueue.dequeue()
       if (!obj.removed) {
         val displacement = obj.position - position
         val distance = displacement.length
@@ -79,12 +77,10 @@ private[codecraft] trait ActiveVisionTracking extends VisionTracking {
   }
 }
 
-
 private[codecraft] trait PassiveVisionTracking extends VisionTracking {
   private[collisions] def objectIsNearby(other: VisionTracking): Unit = ()
   private[collisions] def objectRemoved(other: VisionTracking): Unit = ()
 }
-
 
 private[codecraft] final class VisionTracker[T <: VisionTracking](
   val xMin: Int,
@@ -93,10 +89,10 @@ private[codecraft] final class VisionTracker[T <: VisionTracking](
   val yMax: Int,
   val radius: Int
 ) {
-  require((xMax - xMin) % radius == 0)
-  require((yMax - yMin) % radius == 0)
-  require(yMax > yMin)
-  require(xMax > xMin)
+  require((xMax - xMin) % radius == 0, f"xMax - xMin = $xMax - $xMin, but radius = $radius")
+  require((yMax - yMin) % radius == 0, f"yMax - yMin = $yMax - $yMin, but radius = $radius")
+  require(yMax > yMin, f"yMax = $yMax, but yMin = $yMin")
+  require(xMax > xMin, f"xMax = $xMax, but xMin = $xMin")
 
   val width = (xMax - xMin) / radius
   val height = (yMax - yMin) / radius
@@ -108,7 +104,6 @@ private[codecraft] final class VisionTracker[T <: VisionTracking](
   private val grid = new SquareGrid[T](xMin, xMax, yMin, yMax, radius)
   private var time = 0
 
-
   def insertActive[S <: T with ActiveVisionTracking](obj: S): Unit = {
     trackingObjects += obj
     insert(obj)
@@ -119,7 +114,7 @@ private[codecraft] final class VisionTracker[T <: VisionTracking](
   private[this] def insert(obj: T): Unit = {
     allObjects += obj
     if (obj.maxSpeed != 0) movingObjects += obj
-    val cell@(x, y) = grid.computeCell(obj)
+    val cell @ (x, y) = grid.computeCell(obj)
     obj.cell = cell
 
     updateNearby(obj, grid.nearbyObjects(x, y))
@@ -187,4 +182,3 @@ private[codecraft] final class VisionTracker[T <: VisionTracking](
     }
   }
 }
-
